@@ -1,0 +1,440 @@
+{"text":"change the home link in the nav to \"Tall Order Treats\"","label":"rename_section"}
+{"text":"lift the pricing table section up","label":"move_section"}
+{"text":"make everytihng narrower","label":"resize"}
+{"text":"features ko chhota karo","label":"resize"}
+{"text":"call to action is too tall, reduce it","label":"resize"}
+{"text":"rate list me spacing zyada karo","label":"resize"}
+{"text":"make FAQs text left aligned","label":"align"}
+{"text":"how it works ka padding badhao","label":"resize"}
+{"text":"left align everything","label":"align"}
+{"text":"text left me chahiye hero me","label":"align"}
+{"text":"team center me","label":"align"}
+{"text":"packages ko photos ke baad rakho","label":"move_section"}
+{"text":"packages heading to the right","label":"align"}
+{"text":"rihgt align the FAQ","label":"align"}
+{"text":"lift the rates section up","label":"move_section"}
+{"text":"how it works 40% kam karo","label":"resize"}
+{"text":"FAQs right aligned pls","label":"align"}
+{"text":"footer heading to the right","label":"align"}
+{"text":"services page ko menu me last karo","label":"move_section"}
+{"text":"increase the width of hero","label":"resize"}
+{"text":"increase padding in features","label":"resize"}
+{"text":"rename my news part Our Plans pls","label":"rename_section"}
+{"text":"फीचर्स को ब्लॉग के नीचे रखो","label":"move_section"}
+{"text":"footer ka text right me karo","label":"align"}
+{"text":"rteitle menu as Memberships","label":"rename_section"}
+{"text":"top banner ka gap kam karo","label":"resize"}
+{"text":"push about us down","label":"move_section"}
+{"text":"center the photos heading","label":"align"}
+{"text":"ऑफर का हेडिंग बीच में रखो","label":"align"}
+{"text":"text should be centered in questions","label":"align"}
+{"text":"is section ka naam \"Humari Kahani\" rakho","label":"rename_section"}
+{"text":"cange the name of menu section to Got Questions?","label":"rename_section"}
+{"text":"move pricing before team in the menu","label":"move_section"}
+{"text":"center the text in rates","label":"align"}
+{"text":"put the staff title in the middle","label":"align"}
+{"text":"packages center me","label":"align"}
+{"text":"sab kuch center me karo","label":"align"}
+{"text":"align reviews text to the right","label":"align"}
+{"text":"center the text in top banner","label":"align"}
+{"text":"gallery -> \"Stay Connected\"","label":"rename_section"}
+{"text":"prices section name should be Our Plans","label":"rename_section"}
+{"text":"plans ko top par lao","label":"move_section"}
+{"text":"make the whole site left aligned","label":"align"}
+{"text":"कीमत वाले का नाम हमारी सेवाएं रखो","label":"rename_section"}
+{"text":"staff ka title badlo, Reach Us","label":"rename_section"}
+{"text":"staff -> Wide Range of Services","label":"rename_section"}
+{"text":"set how it works width to 400px","label":"resize"}
+{"text":"questions container 200px","label":"resize"}
+{"text":"pls rename call to action to Fees","label":"rename_section"}
+{"text":"center everything","label":"align"}
+{"text":"move services down one","label":"move_section"}
+{"text":"new title for blog: Pricing & Packages","label":"rename_section"}
+{"text":"FAQ को एक कदम ऊपर करो","label":"move_section"}
+{"text":"pricing left align karo","label":"align"}
+{"text":"home page ka naam Wide Range of Services karo","label":"rename_section"}
+{"text":"reviews left align","label":"align"}
+{"text":"align hero to center","label":"align"}
+{"text":"shrink the features","label":"resize"}
+{"text":"rename blog tab to \"Our Work\"","label":"rename_section"}
+{"text":"right align the photos","label":"align"}
+{"text":"टीम को Meet the Team नाम दो","label":"rename_section"}
+{"text":"menu me about ka naam \"Hamare Plans\" karo","label":"rename_section"}
+{"text":"how it works ka title badlo, Behind the Scenes","label":"rename_section"}
+{"text":"put the blog ttle in the middle","label":"align"}
+{"text":"gallry right aligned pls","label":"align"}
+{"text":"move FAQs above questions","label":"move_section"}
+{"text":"rename the pricing section to Our Work","label":"rename_section"}
+{"text":"change how it works title to Happy Clients","label":"rename_section"}
+{"text":"गैलरी की ऊंचाई 200px करो","label":"resize"}
+{"text":"sawal ko gallery ke upar rakho","label":"move_section"}
+{"text":"move the pricing tab to the end of the menu","label":"move_section"}
+{"text":"center the questions heading","label":"align"}
+{"text":"testimonials section thoda ooncha karo","label":"resize"}
+{"text":"questions heading: Top Picks","label":"rename_section"}
+{"text":"put feedback below reviews","label":"move_section"}
+{"text":"how it works at the bottom pls","label":"move_section"}
+{"text":"FAQ ko right side karo","label":"align"}
+{"text":"center the text in news","label":"align"}
+{"text":"put the how it works title in the middle","label":"align"}
+{"text":"move features up","label":"move_section"}
+{"text":"संपर्क को बीच में करो","label":"align"}
+{"text":"news neeche le jao","label":"move_section"}
+{"text":"make pricing centered","label":"align"}
+{"text":"change the team link in the nav to Say Hello","label":"rename_section"}
+{"text":"कीमत वाले को हमारे बारे में के ऊपर लाओ","label":"move_section"}
+{"text":"gallery sould come before FAQs","label":"move_section"}
+{"text":"features ka text left align karo","label":"align"}
+{"text":"सवाल सेंटर करो","label":"align"}
+{"text":"poora page right align karo","label":"align"}
+{"text":"menu me services ko about us se pehle karo","label":"move_section"}
+{"text":"put team below about us","label":"move_section"}
+{"text":"pricing heading to the right","label":"align"}
+{"text":"rate list ka gap kam karo","label":"resize"}
+{"text":"set the FAQ title as Say Hello","label":"rename_section"}
+{"text":"center the how it works heading","label":"align"}
+{"text":"team ko aadha karo","label":"resize"}
+{"text":"news section name should be Meet the Team","label":"rename_section"}
+{"text":"news below how it works","label":"move_section"}
+{"text":"कीमत वाले सेक्शन का टाइटल 'हमारा काम' करो","label":"rename_section"}
+{"text":"ब्लॉग की चौड़ाई 1100px करो","label":"resize"}
+{"text":"make hero centered","label":"align"}
+{"text":"reduce testimonials padding by 40%","label":"resize"}
+{"text":"is section ka naam \"Happy Clients\" rakho","label":"rename_section"}
+{"text":"left align gallery please","label":"align"}
+{"text":"Our Plans naam rakh do blog section ka","label":"rename_section"}
+{"text":"set heaedr width to 500px","label":"resize"}
+{"text":"about us page ka naam Humari Kahani karo","label":"rename_section"}
+{"text":"align team to center","label":"align"}
+{"text":"footer right aligned pls","label":"align"}
+{"text":"rates ko ek step upar karo","label":"move_section"}
+{"text":"rate list ko rename karo Behind the Scenes","label":"rename_section"}
+{"text":"services ko \"Stay Connected\" naam do","label":"rename_section"}
+{"text":"hero is too tall, reduce it","label":"resize"}
+{"text":"bring questions to top","label":"move_section"}
+{"text":"too much sapce in reviews, cut it","label":"resize"}
+{"text":"blog section name should be Behind the Scenes","label":"rename_section"}
+{"text":"increase features height by 40%","label":"resize"}
+{"text":"navbar me services ko \"Hamara Kaam\" likho","label":"rename_section"}
+{"text":"rename FAQ tab to Fees","label":"rename_section"}
+{"text":"center the blog heading","label":"align"}
+{"text":"customer reviews is too tall, reduce it","label":"resize"}
+{"text":"menu me contact ki jagah \"Latest Updates\" dikhao","label":"rename_section"}
+{"text":"make photos the last section","label":"move_section"}
+{"text":"change staff tilte to Real Stories","label":"rename_section"}
+{"text":"hero ko center karo","label":"align"}
+{"text":"make navbar shorter","label":"resize"}
+{"text":"put about us below reviews","label":"move_section"}
+{"text":"photos ko beech me laao","label":"align"}
+{"text":"make plans the last section","label":"move_section"}
+{"text":"FAQ ko plans ke aage rakh do","label":"move_section"}
+{"text":"contact rgiht aligned pls","label":"align"}
+{"text":"about us section height 500 px","label":"resize"}
+{"text":"make the features heading say Pricing & Packages","label":"rename_section"}
+{"text":"move packages above reviews","label":"move_section"}
+{"text":"rename my call to action part \"Big Plans\" pls","label":"rename_section"}
+{"text":"reviews heading: \"Offers\"","label":"rename_section"}
+{"text":"align blog to ceter","label":"align"}
+{"text":"make pricing the last section","label":"move_section"}
+{"text":"टीम की ऊंचाई कम करो","label":"resize"}
+{"text":"top banner section height 500 px","label":"resize"}
+{"text":"reduce the gap in how it works","label":"resize"}
+{"text":"move photos before features","label":"move_section"}
+{"text":"shift services up a bit","label":"move_section"}
+{"text":"in the menu change about to Latest Updates","label":"rename_section"}
+{"text":"increase packages height by 60%","label":"resize"}
+{"text":"header section thoda ooncha karo","label":"resize"}
+{"text":"increase the width of reviews","label":"resize"}
+{"text":"पूरी वेबसाइट को पतला करो","label":"resize"}
+{"text":"make photos the last secton","label":"move_section"}
+{"text":"make the about us section 15% shorter","label":"resize"}
+{"text":"right align the hero","label":"align"}
+{"text":"hero section thoda ooncha karo","label":"resize"}
+{"text":"move menu before gallery","label":"move_section"}
+{"text":"sab sections patle karo","label":"resize"}
+{"text":"प्लान की ऊंचाई कम करो","label":"resize"}
+{"text":"much wider about us","label":"resize"}
+{"text":"प्लान को एक कदम ऊपर करो","label":"move_section"}
+{"text":"double the height of rates","label":"resize"}
+{"text":"left align header please","label":"align"}
+{"text":"rates ko right side karo","label":"align"}
+{"text":"right align the services","label":"align"}
+{"text":"features heading: Latest Updates","label":"rename_section"}
+{"text":"feedback ko ek step upar karo","label":"move_section"}
+{"text":"ye section upar le jao","label":"move_section"}
+{"text":"daam wala ko beech me laao","label":"align"}
+{"text":"FAQ को बीच में करो","label":"align"}
+{"text":"make menu centered","label":"align"}
+{"text":"menu me blog ko gallery se pehle karo","label":"move_section"}
+{"text":"rates ko FAQ ke baad rakho","label":"move_section"}
+{"text":"reviews ka title badlo, 'Top Picks'","label":"rename_section"}
+{"text":"make the packages section 60% shorter","label":"resize"}
+{"text":"rates ki chaurai kam karo","label":"resize"}
+{"text":"how it works heading: News","label":"rename_section"}
+{"text":"make the whole page narrower","label":"resize"}
+{"text":"make plans half the height","label":"resize"}
+{"text":"reorder: reviews above menu","label":"move_section"}
+{"text":"make the FAQ heading say Top Picks","label":"rename_section"}
+{"text":"glalery is too tall, reduce it","label":"resize"}
+{"text":"retitle feedabck as Treatments","label":"rename_section"}
+{"text":"cta ka title badlo, \"Treatments\"","label":"rename_section"}
+{"text":"services ka heading 'Our Plans' kar do","label":"rename_section"}
+{"text":"move FAQs above photos","label":"move_section"}
+{"text":"put photos below packages","label":"move_section"}
+{"text":"reviews section ka title Big Plans","label":"rename_section"}
+{"text":"feedback ko \"Say Hello\" naam do","label":"rename_section"}
+{"text":"photos bahut lamba hai, kam karo","label":"resize"}
+{"text":"too much space in features, cut it","label":"resize"}
+{"text":"make rates shorter","label":"resize"}
+{"text":"services ko sabse neeche karo","label":"move_section"}
+{"text":"send quesitons to the bottom","label":"move_section"}
+{"text":"blog left align karo","label":"align"}
+{"text":"much wider services","label":"resize"}
+{"text":"make testimonials narrower","label":"resize"}
+{"text":"increase padding in gallery","label":"resize"}
+{"text":"packages ko top par lao","label":"move_section"}
+{"text":"pls rename contact to \"Shop\"","label":"rename_section"}
+{"text":"call the gallery section Our Story","label":"rename_section"}
+{"text":"services page ka naam 'Packages 2024' karo","label":"rename_section"}
+{"text":"questions section height 500 px","label":"resize"}
+{"text":"hero text right side","label":"align"}
+{"text":"cta ko gallery ke aage rakh do","label":"move_section"}
+{"text":"rename the contact section to \"Fees\"","label":"rename_section"}
+{"text":"rename services in the navigation to Rates","label":"rename_section"}
+{"text":"reduce footer padding by 50%","label":"resize"}
+{"text":"align blog text to the right","label":"align"}
+{"text":"testimonials ki height kam karo","label":"resize"}
+{"text":"कीमत वाले को हमारे बारे में के नीचे रखो","label":"move_section"}
+{"text":"रिव्यू की चौड़ाई बढ़ाओ","label":"resize"}
+{"text":"make header narrower","label":"resize"}
+{"text":"lift the FAQ section up","label":"move_section"}
+{"text":"rates ko center karo","label":"align"}
+{"text":"team is too tall, reduce it","label":"resize"}
+{"text":"reorder: photos above FAQ","label":"move_section"}
+{"text":"update menu label FAQ to 'Our Work'","label":"rename_section"}
+{"text":"packages should come before about us","label":"move_section"}
+{"text":"reviews sabse upar chahiye","label":"move_section"}
+{"text":"make customer reviews the first section","label":"move_section"}
+{"text":"मेन्यू में ब्लॉग को गैलरी के बाद करो","label":"move_section"}
+{"text":"feedback heading to the right","label":"align"}
+{"text":"reviews ko beech me laao","label":"align"}
+{"text":"इस सेक्शन का नाम सवाल जवाब रखें","label":"rename_section"}
+{"text":"make contact narrower","label":"resize"}
+{"text":"navbar me team ko Latest Updates likho","label":"rename_section"}
+{"text":"navbar ko thoda chauda karo","label":"resize"}
+{"text":"rename this section to 'Wide Range of Services'","label":"rename_section"}
+{"text":"pricing ka text left align karo","label":"align"}
+{"text":"reduce the gap in team","label":"resize"}
+{"text":"move FAQ before news","label":"move_section"}
+{"text":"ऑफर की चौड़ाई 250px करो","label":"resize"}
+{"text":"move about us before gallery in the menu","label":"move_section"}
+{"text":"shift packages up a bit","label":"move_section"}
+{"text":"news section ka title Journal","label":"rename_section"}
+{"text":"footer height 480px","label":"resize"}
+{"text":"photos ko rate list ke baad rakho","label":"move_section"}
+{"text":"plans center me","label":"align"}
+{"text":"features -> \"Our Menu\"","label":"rename_section"}
+{"text":"place FAQs after contact","label":"move_section"}
+{"text":"FAQ section height 500 px","label":"resize"}
+{"text":"कीमत वाले को सवाल के ऊपर लाओ","label":"move_section"}
+{"text":"services ke andar text center kar do","label":"align"}
+{"text":"move menu above questions","label":"move_section"}
+{"text":"move about page up in the nav","label":"move_section"}
+{"text":"move blog up","label":"move_section"}
+{"text":"make everything narrower","label":"resize"}
+{"text":"pls rename packages to \"Journal\"","label":"rename_section"}
+{"text":"make the photos heading say Meet the Team","label":"rename_section"}
+{"text":"move blog before questions","label":"move_section"}
+{"text":"put feedback just after blog","label":"move_section"}
+{"text":"सेवाएं का हेडिंग बदलकर Rates करो","label":"rename_section"}
+{"text":"move packages down one","label":"move_section"}
+{"text":"ye bahut bada hai chhota karo","label":"resize"}
+{"text":"FAQ bahut lamba hai, kam karo","label":"resize"}
+{"text":"navbar 40% kam karo","label":"resize"}
+{"text":"संपर्क को प्लान के नीचे रखो","label":"move_section"}
+{"text":"make features the last section","label":"move_section"}
+{"text":"make plans the fist section","label":"move_section"}
+{"text":"ऑफर को 'Rates' नाम दो","label":"rename_section"}
+{"text":"plans ko features se pehle lagao","label":"move_section"}
+{"text":"फुटर का हेडिंग बीच में रखो","label":"align"}
+{"text":"team ka gap kam karo","label":"resize"}
+{"text":"call to action -> 'Our Plans'","label":"rename_section"}
+{"text":"packages left side me karo","label":"align"}
+{"text":"set the reviews title as \"Why Us\"","label":"rename_section"}
+{"text":"change the FAQ link in the nav to Our Sotry","label":"rename_section"}
+{"text":"footer ko thoda chauda karo","label":"resize"}
+{"text":"center prices","label":"align"}
+{"text":"the services section should be called Our Plans","label":"rename_section"}
+{"text":"how it works ki height kam karo","label":"resize"}
+{"text":"services section ka title Meet the Team karo","label":"rename_section"}
+{"text":"footer ki chaurai kam karo","label":"resize"}
+{"text":"poori website center","label":"align"}
+{"text":"FAQ sabse upar chahiye","label":"move_section"}
+{"text":"place FAQ after rates","label":"move_section"}
+{"text":"change pricing page name to Real Stories","label":"rename_section"}
+{"text":"bring blog to top","label":"move_section"}
+{"text":"menu me pricing ki jagah Humare Log dikhao","label":"rename_section"}
+{"text":"cta wale section ka naam badal ke 'Treatments' rakh do","label":"rename_section"}
+{"text":"गैलरी सेंटर करो","label":"align"}
+{"text":"top banner is too tall, reduce it","label":"resize"}
+{"text":"less spacing in blog","label":"resize"}
+{"text":"put feedback below menu","label":"move_section"}
+{"text":"menu me gallery ko services se pehle karo","label":"move_section"}
+{"text":"left align blog please","label":"align"}
+{"text":"too much space in customer reviews, cut it","label":"resize"}
+{"text":"align customer reviews text to the right","label":"align"}
+{"text":"move plans above features","label":"move_section"}
+{"text":"how it works text right side","label":"align"}
+{"text":"increase padding in prices","label":"resize"}
+{"text":"features ka naam Rate List rakho","label":"rename_section"}
+{"text":"sawal wale section ka naam badal ke Tall Order Treats rakh do","label":"rename_section"}
+{"text":"is section ka naam Fees rakho","label":"rename_section"}
+{"text":"sawal section ka title Journal karo","label":"rename_section"}
+{"text":"make gallery text left aligned","label":"align"}
+{"text":"center the hero heading","label":"align"}
+{"text":"menu me FAQ ki jagah \"Hamare Plans\" dikhao","label":"rename_section"}
+{"text":"reduce features padding by 15%","label":"resize"}
+{"text":"text should be centered in FAQ","label":"align"}
+{"text":"new title for prices: \"Fees\"","label":"rename_section"}
+{"text":"make staff text left aligned","label":"align"}
+{"text":"less spacing in reviews","label":"resize"}
+{"text":"pls rename staff to \"Memberships\"","label":"rename_section"}
+{"text":"make about us the last section","label":"move_section"}
+{"text":"contact sabse upar chahiye","label":"move_section"}
+{"text":"menu heading to the right","label":"align"}
+{"text":"how it works ka text right me karo","label":"align"}
+{"text":"blog page ko menu me last karo","label":"move_section"}
+{"text":"move the team tab to the end of the menu","label":"move_section"}
+{"text":"change the name of photos section to 'Pricing & Packages'","label":"rename_section"}
+{"text":"put feedback below customer reviews","label":"move_section"}
+{"text":"pls rename customer reviews to \"Our Menu\"","label":"rename_section"}
+{"text":"change the FAQ link in the nav to Our Story","label":"rename_section"}
+{"text":"how it works height 650px","label":"resize"}
+{"text":"header bahut lamba hai, kam karo","label":"resize"}
+{"text":"menu text right side","label":"align"}
+{"text":"put pricing just after plans","label":"move_section"}
+{"text":"टीम को लेफ्ट अलाइन करो","label":"align"}
+{"text":"testimonials 15% kam karo","label":"resize"}
+{"text":"put menu below testimonails","label":"move_section"}
+{"text":"team ko right side karo","label":"align"}
+{"text":"features ka gap kam karo","label":"resize"}
+{"text":"about us wala section pricing ke niche daalo","label":"move_section"}
+{"text":"FAQ wala section testimonials ke niche daalo","label":"move_section"}
+{"text":"move FAQ down one","label":"move_section"}
+{"text":"less sapcing in reviews","label":"resize"}
+{"text":"फोटो को हमारे प्लान नाम दो","label":"rename_section"}
+{"text":"tasveeren ko team ke upar rakho","label":"move_section"}
+{"text":"पूरा पेज बाएं करो","label":"align"}
+{"text":"change the name of FAQ section to 'News'","label":"rename_section"}
+{"text":"features text right side","label":"align"}
+{"text":"ऑफर को एक कदम ऊपर करो","label":"move_section"}
+{"text":"menu me FAQ ka naam Big Plans karo","label":"rename_section"}
+{"text":"top banner left side me karo","label":"align"}
+{"text":"rates left align karo","label":"align"}
+{"text":"team ko staff ke upar rakho","label":"move_section"}
+{"text":"send customer reviews to the bottom","label":"move_section"}
+{"text":"ब्लॉग को सेवाएं के ऊपर लाओ","label":"move_section"}
+{"text":"sawal ko beech me laao","label":"align"}
+{"text":"call the gallery section Latest Updates","label":"rename_section"}
+{"text":"इस सेक्शन का नाम संपर्क करें रखें","label":"rename_section"}
+{"text":"rate list ka text right me karo","label":"align"}
+{"text":"text should be centered in reviews","label":"align"}
+{"text":"testimonials ko top par lao","label":"move_section"}
+{"text":"packages ka padding badhao","label":"resize"}
+{"text":"text should be centered in packages","label":"align"}
+{"text":"set staff width to 400px","label":"resize"}
+{"text":"make photos shorter","label":"resize"}
+{"text":"services ko features ke baad rakho","label":"move_section"}
+{"text":"staff left align","label":"align"}
+{"text":"contact wala section services ke niche daalo","label":"move_section"}
+{"text":"is section ka naam \"Tall Order Treats\" rakho","label":"rename_section"}
+{"text":"right align the top banner","label":"align"}
+{"text":"news ka gap kam karo","label":"resize"}
+{"text":"move the home tab to the end of the menu","label":"move_section"}
+{"text":"move contact down one","label":"move_section"}
+{"text":"reviews ka title badlo, Our Work","label":"rename_section"}
+{"text":"blog ko right side karo","label":"align"}
+{"text":"पूरी वेबसाइट सेंटर करो","label":"align"}
+{"text":"put pricing just after features","label":"move_section"}
+{"text":"staff neeche le jao","label":"move_section"}
+{"text":"footer section thoda ooncha karo","label":"resize"}
+{"text":"make the pricing section 50% shorter","label":"resize"}
+{"text":"is section ka naam Short & Sweet rakho","label":"rename_section"}
+{"text":"set prices width to 400px","label":"resize"}
+{"text":"put contact just after plans","label":"move_section"}
+{"text":"call to action text right side","label":"align"}
+{"text":"हीरो की चौड़ाई 250px करो","label":"resize"}
+{"text":"call the team section Wide Range of Services","label":"rename_section"}
+{"text":"testimonials me spacing zyada karo","label":"resize"}
+{"text":"rename the FAQ section to 'Our Plans'","label":"rename_section"}
+{"text":"सवाल की ऊंचाई कम करो","label":"resize"}
+{"text":"ऑफर सेक्शन का टाइटल Happy Clients करो","label":"rename_section"}
+{"text":"मेन्यू में होम को टीम के बाद करो","label":"move_section"}
+{"text":"make photos the first section","label":"move_section"}
+{"text":"packages ko sawal ke aage rakh do","label":"move_section"}
+{"text":"make it smaller","label":"resize"}
+{"text":"make pricing shorter","label":"resize"}
+{"text":"blog ka text right me karo","label":"align"}
+{"text":"update menu label FAQ to \"Meet the Team\"","label":"rename_section"}
+{"text":"blog ko center karo","label":"align"}
+{"text":"footer ko beech me laao","label":"align"}
+{"text":"make menu half the height","label":"resize"}
+{"text":"bring FAQ to top","label":"move_section"}
+{"text":"heading of prices = Pricing & Packages","label":"rename_section"}
+{"text":"rename my staff part 'Short & Sweet' pls","label":"rename_section"}
+{"text":"इस सेक्शन का नाम Packages रखें","label":"rename_section"}
+{"text":"update menu label about us to Tall Order Treats","label":"rename_section"}
+{"text":"testimonials heading to the right","label":"align"}
+{"text":"मेन्यू में गैलरी का नाम हमारे प्लान कर दो","label":"rename_section"}
+{"text":"news ko ek step upar karo","label":"move_section"}
+{"text":"rates text right side","label":"align"}
+{"text":"center nvabar","label":"align"}
+{"text":"reviews 15% kam karo","label":"resize"}
+{"text":"move pricing page up in the nav","label":"move_section"}
+{"text":"how it works left align","label":"align"}
+{"text":"blog ko ek step upar karo","label":"move_section"}
+{"text":"सवाल का हेडिंग बीच में रखो","label":"align"}
+{"text":"bhai tasveeren ka title change karo, Our Work likho","label":"rename_section"}
+{"text":"shift prcing up a bit","label":"move_section"}
+{"text":"how it works should come before blog","label":"move_section"}
+{"text":"rename my pricing table part 'Wide Range of Services' pls","label":"rename_section"}
+{"text":"संपर्क का टेक्स्ट राइट में करो","label":"align"}
+{"text":"center navbar","label":"align"}
+{"text":"हीरो को छोटा करो","label":"resize"}
+{"text":"bring rates to top","label":"move_section"}
+{"text":"move home page up in the nav","label":"move_section"}
+{"text":"make the feedback heading say Our Work","label":"rename_section"}
+{"text":"customer reviews right aligned pls","label":"align"}
+{"text":"header a bit taller","label":"resize"}
+{"text":"set the news title as \"Latest Updates\"","label":"rename_section"}
+{"text":"rate list ko chhota karo","label":"resize"}
+{"text":"daam wala center me","label":"align"}
+{"text":"set the pricing table title as What We Do","label":"rename_section"}
+{"text":"how it works heading: Pricing & Packages","label":"rename_section"}
+{"text":"rate list ko thoda chauda karo","label":"resize"}
+{"text":"make staff wider","label":"resize"}
+{"text":"contact left align","label":"align"}
+{"text":"make gallery half the height","label":"resize"}
+{"text":"about us a bit taller","label":"resize"}
+{"text":"questions height 900px","label":"resize"}
+{"text":"navbar me home ko 'Packages 2024' likho","label":"rename_section"}
+{"text":"send FAQ to the bottom","label":"move_section"}
+{"text":"shrink the footer","label":"resize"}
+{"text":"center the header heading","label":"align"}
+{"text":"make the pricing table heading say 'Our Menu'","label":"rename_section"}
+{"text":"features ka text right me karo","label":"align"}
+{"text":"team ka padding badhao","label":"resize"}
+{"text":"photos a bit taller","label":"resize"}
+{"text":"chagne the contact link in the nav to \"Our Work\"","label":"rename_section"}
+{"text":"center align the whole page","label":"align"}
+{"text":"change team page name to Memberships","label":"rename_section"}
+{"text":"make contact shorter","label":"resize"}
+{"text":"services container 600px","label":"resize"}
+{"text":"reviews container 250px","label":"resize"}
+{"text":"ऑफर को छोटा करो","label":"resize"}
+{"text":"rename FAQ tab to Tall Order Treats","label":"rename_section"}
+{"text":"rename gallery tab to Behind the Scenes","label":"rename_section"}
+{"text":"about us ko rename karo Rates","label":"rename_section"}
+{"text":"staff heading to the right","label":"align"}
+{"text":"put the menu title in the middle","label":"align"}
+{"text":"prcing container 320px","label":"resize"}

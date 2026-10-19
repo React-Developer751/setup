@@ -27,6 +27,24 @@ export type Target = (typeof TARGETS)[number]
 export const HARMONIES = ['complementary', 'analogous', 'triadic', 'split'] as const
 export type Harmony = (typeof HARMONIES)[number]
 
+/** sections that have a heading of their own, and pages of a multi-page site that have a label in the navigation */
+export const TITLE_SECTIONS = ['features', 'about', 'steps', 'pricing', 'gallery', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact'] as const
+export type TitleSection = (typeof TITLE_SECTIONS)[number]
+export const NAV_PAGES = ['home', 'about', 'services', 'pricing', 'team', 'gallery', 'blog', 'faq', 'contact'] as const
+export type NavPage = (typeof NAV_PAGES)[number]
+
+/** where a section goes: to the top / bottom of the page, one step up / down, or right before / after another section */
+export const MOVES = ['top', 'bottom', 'up', 'down', 'before', 'after'] as const
+export type Move = (typeof MOVES)[number]
+
+/** the part of the page a size or alignment change is about: a part, or the whole page */
+export const FIT_TARGETS = ['page', 'header', 'hero', 'footer', ...SECTIONS] as const
+export type FitTarget = (typeof FIT_TARGETS)[number]
+export type Axis = 'height' | 'width'
+export type Align = 'left' | 'center' | 'right'
+/** a size change: a factor of the normal size (0.7 = 30% less), or an exact size in pixels */
+export type SizeChange = { factor?: number; px?: number }
+
 export const CONTACT_FIELDS = ['email', 'phone', 'address', 'whatsapp', 'hours'] as const
 export type ContactField = (typeof CONTACT_FIELDS)[number]
 
@@ -56,6 +74,13 @@ export type EditOp =
   | { op: 'contact'; field: ContactField; value: string }
   /** what the business offers, with prices when the person gives them: the feature cards, and the price list when prices are there */
   | { op: 'services'; items: ServiceItem[] }
+  | { op: 'title'; target: TitleSection; text: string }
+  | { op: 'navLabel'; target: NavPage; text: string }
+  | { op: 'move'; section: SectionKey; where: Move; target?: SectionKey }
+  | { op: 'movePage'; page: NavPage; where: Move; target?: NavPage }
+  | { op: 'size'; target: FitTarget; axis: Axis; factor?: number; px?: number }
+  | { op: 'align'; target: FitTarget; align: Align }
+  | { op: 'resetLayout'; target?: FitTarget }
   | ({ op: 'photos' } & PhotoSet)
   | { op: 'clearPhotos' }
   | { op: 'tier'; tier: Tier }
@@ -84,12 +109,22 @@ export type SiteEdits = {
   contact: Partial<Record<ContactField, string>>
   services?: ServiceItem[]
   photos?: PhotoSet
+  /** new headings of sections */
+  titles: Partial<Record<TitleSection, string>>
+  /** new labels of the pages in the navigation */
+  navLabels: Partial<Record<NavPage, string>>
+  /** moves of sections and pages, in the order they were asked */
+  moves: { section: SectionKey; where: Move; target?: SectionKey }[]
+  pageMoves: { page: NavPage; where: Move; target?: NavPage }[]
+  /** size changes per part and direction (factors multiply when asked again) */
+  sizes: Partial<Record<FitTarget, Partial<Record<Axis, SizeChange>>>>
+  aligns: Partial<Record<FitTarget, Align>>
   tier?: Tier
   motion?: MotionSetting
   theme?: ThemeKey
 }
 
-export const noEdits = (): SiteEdits => ({ tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
+export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
 
 const HEX = /^#[0-9a-f]{6}$/i
 const clean = (text: unknown, max: number) => (typeof text === 'string' ? text.replace(/\p{Cc}+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '')
@@ -142,6 +177,36 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       const value = clean(o.value, 120)
       return (CONTACT_FIELDS as readonly unknown[]).includes(o.field) && value ? { op: 'contact', field: o.field as ContactField, value } : undefined
     }
+    case 'title': {
+      const text = clean(o.text, 80)
+      return (TITLE_SECTIONS as readonly unknown[]).includes(o.target) && text.length >= 2 ? { op: 'title', target: o.target as TitleSection, text } : undefined
+    }
+    case 'navLabel': {
+      const text = clean(o.text, 24)
+      return (NAV_PAGES as readonly unknown[]).includes(o.target) && text.length >= 2 ? { op: 'navLabel', target: o.target as NavPage, text } : undefined
+    }
+    case 'move': {
+      if (!(SECTIONS as readonly unknown[]).includes(o.section) || !(MOVES as readonly unknown[]).includes(o.where)) return undefined
+      const needsTarget = o.where === 'before' || o.where === 'after'
+      if (needsTarget && (!(SECTIONS as readonly unknown[]).includes(o.target) || o.target === o.section)) return undefined
+      return { op: 'move', section: o.section as SectionKey, where: o.where as Move, ...(needsTarget ? { target: o.target as SectionKey } : {}) }
+    }
+    case 'movePage': {
+      if (!(NAV_PAGES as readonly unknown[]).includes(o.page) || !(MOVES as readonly unknown[]).includes(o.where)) return undefined
+      const needsTarget = o.where === 'before' || o.where === 'after'
+      if (needsTarget && (!(NAV_PAGES as readonly unknown[]).includes(o.target) || o.target === o.page)) return undefined
+      return { op: 'movePage', page: o.page as NavPage, where: o.where as Move, ...(needsTarget ? { target: o.target as NavPage } : {}) }
+    }
+    case 'size': {
+      if (!(FIT_TARGETS as readonly unknown[]).includes(o.target) || (o.axis !== 'height' && o.axis !== 'width')) return undefined
+      const factor = typeof o.factor === 'number' && Number.isFinite(o.factor) ? Math.max(0.3, Math.min(2.5, Math.round(o.factor * 100) / 100)) : undefined
+      const px = typeof o.px === 'number' && Number.isFinite(o.px) ? Math.max(60, Math.min(2400, Math.round(o.px))) : undefined
+      return factor || px ? { op: 'size', target: o.target as FitTarget, axis: o.axis, ...(px ? { px } : { factor }) } : undefined
+    }
+    case 'align':
+      return (FIT_TARGETS as readonly unknown[]).includes(o.target) && (o.align === 'left' || o.align === 'center' || o.align === 'right') ? { op: 'align', target: o.target as FitTarget, align: o.align } : undefined
+    case 'resetLayout':
+      return o.target === undefined ? { op: 'resetLayout' } : (FIT_TARGETS as readonly unknown[]).includes(o.target) ? { op: 'resetLayout', target: o.target as FitTarget } : undefined
     case 'photos': {
       const url = (v: unknown) => (typeof v === 'string' && (/^https:\/\/[^\s"'<>]{4,600}$/i.test(v) || /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=]{20,450000}$/.test(v)) ? v : undefined)
       const gallery = (Array.isArray(o.gallery) ? o.gallery : []).map(url).filter((x): x is string => !!x).slice(0, 8)
@@ -237,6 +302,41 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'services':
         e.services = op.items
         break
+      case 'title':
+        e.titles = { ...e.titles, [op.target]: op.text }
+        break
+      case 'navLabel':
+        e.navLabels = { ...e.navLabels, [op.target]: op.text }
+        break
+      case 'move':
+        e.moves = [...e.moves, { section: op.section, where: op.where, target: op.target }].slice(-24)
+        break
+      case 'movePage':
+        e.pageMoves = [...e.pageMoves, { page: op.page, where: op.where, target: op.target }].slice(-24)
+        break
+      case 'size': {
+        const now = e.sizes[op.target]?.[op.axis]
+        // an exact size replaces; a factor multiplies what was asked before (so "less" twice is less than once)
+        const next: SizeChange = op.px ? { px: op.px } : { factor: Math.max(0.3, Math.min(2.5, (now?.px ? 1 : (now?.factor ?? 1)) * (op.factor ?? 1))) }
+        e.sizes = { ...e.sizes, [op.target]: { ...e.sizes[op.target], [op.axis]: next } }
+        break
+      }
+      case 'align':
+        e.aligns = { ...e.aligns, [op.target]: op.align }
+        break
+      case 'resetLayout':
+        if (!op.target) {
+          e.sizes = {}
+          e.aligns = {}
+          e.moves = []
+          e.pageMoves = []
+        } else {
+          const { [op.target]: _s, ...sizes } = e.sizes
+          const { [op.target]: _a, ...aligns } = e.aligns
+          e.sizes = sizes
+          e.aligns = aligns
+        }
+        break
       case 'photos': {
         const { op: _op, ...set } = op
         e.photos = { ...e.photos, ...set }
@@ -295,6 +395,20 @@ export function describeOp(op: EditOp): string {
       return `Replaced "${op.from}" with "${op.to}"`
     case 'contact':
       return `Set the ${op.field} to ${op.value}`
+    case 'title':
+      return `Renamed the ${op.target} section to "${op.text}"`
+    case 'navLabel':
+      return `The ${op.target} page is called "${op.text}" in the menu`
+    case 'move':
+      return `Moved the ${op.section} section ${op.where === 'before' || op.where === 'after' ? `${op.where} ${op.target}` : op.where === 'top' ? 'to the top' : op.where === 'bottom' ? 'to the bottom' : op.where}`
+    case 'movePage':
+      return `Moved the ${op.page} page ${op.where === 'before' || op.where === 'after' ? `${op.where} ${op.target}` : op.where === 'top' ? 'to the front of the menu' : op.where === 'bottom' ? 'to the end of the menu' : op.where} in the menu`
+    case 'size':
+      return `${op.axis === 'height' ? 'Height' : 'Width'} of ${op.target === 'page' ? 'the whole page' : `the ${op.target}`}: ${op.px ? `${op.px}px` : `${Math.round((op.factor ?? 1) * 100)}%`}`
+    case 'align':
+      return `Aligned ${op.target === 'page' ? 'the whole page' : `the ${op.target}`} to the ${op.align}`
+    case 'resetLayout':
+      return op.target ? `The ${op.target} has its normal size and place again` : 'All sizes, alignments and moves are back to normal'
     case 'photos':
       return `Added photos: ${[op.hero ? 'first screen' : '', op.about ? 'about' : '', op.gallery ? `${op.gallery.length} in the gallery` : ''].filter(Boolean).join(', ')}`
     case 'clearPhotos':

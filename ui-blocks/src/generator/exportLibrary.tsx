@@ -246,10 +246,10 @@ function renderLibrary(lib: Library) {
   flushSync(() =>
     root.render(
       <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content}>
-        {lib.sections.map(({ role, componentId, paint }) => {
+        {lib.sections.map(({ role, componentId, paint, fit, band }) => {
           const Component = libraryComponents[componentId]
           return (
-            <Section key={role} role={role} paint={paint}>
+            <Section key={role} role={role} paint={paint} fit={fit} band={band}>
               <Component />
             </Section>
           )

@@ -30,6 +30,9 @@ export type WebsiteContent = {
   testimonials: Quote[]
   blog: { title: string; posts: { tag: string; title: string; slug?: string }[] }
   contact: { title: string; text: string; email: string; phone: string; address: string; whatsapp?: string; hoursText?: string; /** the address is the person's own: show a real map */ showMap?: boolean }
+  /** headings and menu labels the person changed (see edit/edits.ts) */
+  titles?: Partial<Record<string, string>>
+  navLabels?: Partial<Record<string, string>>
   /** real pictures instead of the drawn ones (see edit/edits.ts) */
   photos?: { hero?: string; about?: string; gallery?: string[]; credit?: string }
   /** words for the scrolling keyword strip */

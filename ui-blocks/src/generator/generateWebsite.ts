@@ -13,8 +13,9 @@ import { generateWebsiteContent } from './finalPrompt'
 import { buildLayout, compileWebsiteCode, compileWebsiteHtml, type LayoutChoice } from './finalProductionTemplate'
 import { hash, seededRandom } from './random'
 import { paintsFrom } from './edit/sectionColors'
-import { applyChoiceEdits, applyColorEdits, applyContentEdits, filterLayout, needsLongPage } from './edit/applyEdits'
-import type { SiteEdits } from './edit/edits'
+import { applyChoiceEdits, applyColorEdits, applyContentEdits, filterLayout, needsLongPage, orderLayout } from './edit/applyEdits'
+import { fitsFrom } from './edit/fit'
+import { TARGETS, type SiteEdits } from './edit/edits'
 import { decideTheme } from './themeClassifier'
 import { withFont } from './fonts'
 import { detectNiche } from './niche/applyNiche'
@@ -145,7 +146,9 @@ export function generateWebsite(
 ) {
   const plan = planWebsite(userPrompt, variation, tierOverride, creative, motionSetting, { edits })
   const { theme, content, tokens, initialMode, tier, motion, choice } = plan
-  const layoutIds = filterLayout(buildLayout(choice), edits)
+  const layoutIds = orderLayout(filterLayout(buildLayout(choice), edits), edits)
+  // sizes and alignments of single parts ("make the pricing section shorter")
+  const fits = fitsFrom(edits, TARGETS)
   // parts with a colour of their own ("footer green")
   const paints = paintsFrom(edits, plan.palette)
 
@@ -169,7 +172,7 @@ export function generateWebsite(
     brainsForced: plan.brainsForced,
     colorReasons: plan.colorReasons,
     visuals: plan.visuals,
-    html: compileWebsiteHtml(theme, layoutIds, content, tokens, initialMode, tier, motion, plan.visuals, paints),
-    code: compileWebsiteCode(theme, layoutIds, content, tokens, initialMode, tier, motion, plan.visuals, paints),
+    html: compileWebsiteHtml(theme, layoutIds, content, tokens, initialMode, tier, motion, plan.visuals, paints, fits),
+    code: compileWebsiteCode(theme, layoutIds, content, tokens, initialMode, tier, motion, plan.visuals, paints, fits),
   }
 }

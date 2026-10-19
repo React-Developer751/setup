@@ -1,0 +1,88 @@
+{"text":"plans wala section bahut neeche pada hai, usko upar ki taraf kar do","label":"move_section"}
+{"text":"poori website ka alignment center kar do, abhi sab left me laga hua hai","label":"align"}
+{"text":"boss packages ka heading change kar dena, naya naam 'Reach Us' hoga","label":"rename_section"}
+{"text":"there is way too much empty space above and below the questions text, could you trim it down","label":"resize"}
+{"text":"in the top menu I would like about us to appear before pricing, the order feels wrong","label":"move_section"}
+{"text":"for the menu block, left alignment would read much more naturally than centered","label":"align"}
+{"text":"in the navigation bar, the about us link should say Real Stories, I do not like the current wording","label":"rename_section"}
+{"text":"मुझे सेवाएं वाले हिस्से का नाम पसंद नहीं आ रहा, उसे बदलकर ग्राहकों की राय कर दीजिए","label":"rename_section"}
+{"text":"reviews ke upar neeche kaafi jagah chhoot rahi hai, usko kam kar do please","label":"resize"}
+{"text":"पूरी वेबसाइट की चौड़ाई थोड़ी घटा दीजिए, किनारों पर जगह चाहिए","label":"resize"}
+{"text":"menu me jo blog likha hai usko Happy Clients likh sakte ho kya, zyada achha lagega","label":"rename_section"}
+{"text":"please make the top banner content centered, it looks lopsided right now","label":"align"}
+{"text":"sorry, one more thing: relabel the blog tab in the header menu as 'Big Plans'","label":"rename_section"}
+{"text":"the pricing section looks cramped, add a bit more breathing room around it","label":"resize"}
+{"text":"can you drop the features below the rates, right now the order feels odd","label":"move_section"}
+{"text":"reviews ka sab text left me aa jaye to zyada clean lagega","label":"align"}
+{"text":"navbar wale part ko right side me align kar dena, abhi thoda ajeeb hai","label":"align"}
+{"text":"ye team bahut lambi hai thodi chhoti karo","label":"resize"}
+{"text":"sorry, one more thing: relabel the team tab in the header menu as Reach Us","label":"rename_section"}
+{"text":"I think the footer would look neater with its text aligned to the right","label":"align"}
+{"text":"cut the padding on the contact section by 70 percent, it wastes scrolling space","label":"resize"}
+{"text":"cta ke upar jo heading hai wo purani si lag rahi hai, nayi heading \"Meet the Team\" rakhna","label":"rename_section"}
+{"text":"tasveeren se pehle reviews aana chahiye, thoda reorder kar do please","label":"move_section"}
+{"text":"there is way too much empty space above and below the blog text, could you trim it down","label":"resize"}
+{"text":"mujhe blog sabse last me chahiye, footer se thoda pehle","label":"move_section"}
+{"text":"please push the rates section one step higher, it is too far down","label":"move_section"}
+{"text":"can the title on top of our reviews block be changed? we want it to be Customer Love","label":"rename_section"}
+{"text":"FAQ ke upar neeche kaafi jagah chhoot rahi hai, usko kam kar do please","label":"resize"}
+{"text":"I want the reviews before the FAQ area, it makes more sense for visitors to see it first","label":"move_section"}
+{"text":"please push the pices section one step higher, it is too far down","label":"move_section"}
+{"text":"सेवाएं को पेज के सबसे नीचे कर दीजिए, अभी बीच में अजीब लग रहा है","label":"move_section"}
+{"text":"when people open the site the rates part is called something generic, I would prefer \"Offers\" as its title","label":"rename_section"}
+{"text":"cut the padding on the FAQs section by 25 percent, it wastes scrolling space","label":"resize"}
+{"text":"menu me team ko FAQ ke baad dikhana hai, order sahi nahi lag raha","label":"move_section"}
+{"text":"services part ka title thoda boring hai, Why Us kar do na please","label":"rename_section"}
+{"text":"hero ka text ek taraf chipka hua hai, usko beech me kar do please","label":"align"}
+{"text":"can you drop the reviews below the feedback, right now the order feels odd","label":"move_section"}
+{"text":"the headline in the hero looks off to one side, could you put it in the center","label":"align"}
+{"text":"ek step neeche kar do packages ko, cta ke piche aa jaye","label":"move_section"}
+{"text":"let us reorder the page so FAQ comes right after features","label":"move_section"}
+{"text":"in the top menu I would like blog to appear before team, the order feels wrong","label":"move_section"}
+{"text":"रिव्यू वाला हिस्सा दाईं तरफ कर दें","label":"align"}
+{"text":"footer ki likhawat center me chahiye, abhi side me hai","label":"align"}
+{"text":"in the navigation bar, the FAQ link should say \"Why Us\", I do not like the current wording","label":"rename_section"}
+{"text":"mujhe FAQ ka gap aadha chahiye, abhi bahut khula khula hai","label":"resize"}
+{"text":"can you slide the features section down one position, it is competing with rates","label":"move_section"}
+{"text":"could you please change what the heading above the menu says so it reads 'Fees' instead","label":"rename_section"}
+{"text":"yaar rate list wale section ka jo naam hai wo thik nahi lag raha, usko badal ke Rate List kar do","label":"rename_section"}
+{"text":"the features block is buried at the bottom, could you bring it much closer to the top","label":"move_section"}
+{"text":"the call to action title and paragraph should be pushed to the right side to match our layout","label":"align"}
+{"text":"photos ke upar neeche kaafi jagah chhoot rahi hai, usko kam kar do please","label":"resize"}
+{"text":"the whole page is too wide for my taste, pull it in by aronud 10%","label":"resize"}
+{"text":"mujhe feedback sabse last me chahiye, footer se thoda pehle","label":"move_section"}
+{"text":"mujhe navbar me blog ke naam ki jagah \"Fees\" dikhana hai, label change kar dena","label":"rename_section"}
+{"text":"I would like all the text in the saff section to line up on the left, it looks messy now","label":"align"}
+{"text":"कीमत वाले वाला हिस्सा बहुत लंबा लग रहा है, उसकी ऊंचाई थोड़ी कम कर दीजिए","label":"resize"}
+{"text":"everything looks a little too big, can you shrink the spacing between all the sections","label":"resize"}
+{"text":"फुटर का टेक्स्ट सेंटर में चाहिए","label":"align"}
+{"text":"I would like all the text in the testimonials section to line up on the left, it looks messy now","label":"align"}
+{"text":"I would like all the text in the pricing section to line up on the left, it looks messy now","label":"align"}
+{"text":"our top banner heading is stuck in the left corner, can you center it on the screen","label":"align"}
+{"text":"yaar pricing ko testimonials ke upar le aao, pehle wo dikhna chahiye customers ko","label":"move_section"}
+{"text":"feedback wala part thoda aur ooncha kar do, chhota lag raha hai","label":"resize"}
+{"text":"mujhe blog ka gap aadha chahiye, abhi bahut khula khula hai","label":"resize"}
+{"text":"when people open the site the packages part is called something generic, I would prefer \"Treatments\" as its title","label":"rename_section"}
+{"text":"ऑफर को पेज के सबसे नीचे कर दीजिए, अभी बीच में अजीब लग रहा है","label":"move_section"}
+{"text":"menu me jo home likha hai usko Offers likh sakte ho kya, zyada achha lagega","label":"rename_section"}
+{"text":"rate list part ka title thoda boring hai, \"Wide Range of Services\" kar do na please","label":"rename_section"}
+{"text":"in the navigation bar, the pricing link should say 'Reach Us', I do not like the current wording","label":"rename_section"}
+{"text":"mujhe rate list sabse last me chahiye, footer se thoda pehle","label":"move_section"}
+{"text":"the section where we show services should be titled Rates from now on","label":"rename_section"}
+{"text":"कृपया हमारे बारे में का टाइटल 'Packages' रख दीजिए, बाकी सब वैसा ही रहे","label":"rename_section"}
+{"text":"top banner ka sab text left me aa jaye to zyada clean lagega","label":"align"}
+{"text":"in the navigation bar, the blog link shuld say \"Stay Connected\", I do not like the current wording","label":"rename_section"}
+{"text":"feedback wale part ko right side me align kar dena, abhi thoda ajeeb hai","label":"align"}
+{"text":"the customer reviews title and paragraph should be pushed to the right side to match our layout","label":"align"}
+{"text":"the pricing title and paragraph should be pushed to the right side to match our layout","label":"align"}
+{"text":"the testimonials content looks stretched across the whole screen, make it narrower so it feels more focused","label":"resize"}
+{"text":"the feedback content looks stretched across the whole screen, make it narrower so it feels more focused","label":"resize"}
+{"text":"could you please change what the heading above the about us says so it reads Short & Sweet instead","label":"rename_section"}
+{"text":"please make the services noticeably wider, it looks squeezed in the middle","label":"resize"}
+{"text":"please make the contact content centered, it looks lopsided right now","label":"align"}
+{"text":"let us reorder the page so photos comes right after FAQs","label":"move_section"}
+{"text":"mujhe staff ka gap aadha chahiye, abhi bahut khula khula hai","label":"resize"}
+{"text":"let us reorder the page so reviews comes right after menu","label":"move_section"}
+{"text":"please make the menu noticeably wider, it looks squeezed in the middle","label":"resize"}
+{"text":"feedback ka sab text left me aa jaye to zyada clean lagega","label":"align"}
+{"text":"please make the feedback noticeably wider, it looks squeezed in the middle","label":"resize"}

@@ -4,9 +4,10 @@ import { compileSiteFiles, compileSiteHtml, type SiteFile, type SiteSpec } from 
 import type { Tier } from './designBrain'
 import { hash, planWebsite, seededRandom } from './generateWebsite'
 import type { MotionSetting } from './motionBrain'
-import { applyContentEdits } from './edit/applyEdits'
+import { applyContentEdits, orderLayout } from './edit/applyEdits'
+import { fitsFrom, reorderPages } from './edit/fit'
 import { paintsFrom } from './edit/sectionColors'
-import type { SiteEdits } from './edit/edits'
+import { TARGETS, type NavPage, type SiteEdits } from './edit/edits'
 import { writeSiteData } from './siteData'
 import { planSite } from './siteBrain'
 
@@ -27,7 +28,15 @@ export function generateSite(
   const { locale } = written
   // the data of the extra pages is written after the plan, so the person's texts and contact details are applied again
   const content = applyContentEdits(written.content, edits, written.locale.currency)
-  const sitePlan = planSite(plan.themeKey, plan.tier, content, plan.choice, rand, content.posts ?? [], edits)
+  const planned = planSite(plan.themeKey, plan.tier, content, plan.choice, rand, content.posts ?? [], edits)
+  // the order of the sections on every page, the order and the names of the pages in the menu
+  const sitePlan = {
+    ...planned,
+    pages: reorderPages(
+      planned.pages.map((page) => ({ ...page, label: edits?.navLabels[page.id as NavPage] ?? page.label, sections: orderLayout(page.sections, edits) })),
+      edits?.pageMoves ?? [],
+    ),
+  }
 
   const spec: SiteSpec = {
     brand: plan.brand,
@@ -43,6 +52,7 @@ export function generateSite(
     headerStyle: sitePlan.headerStyle,
     visuals: plan.visuals,
     paints: paintsFrom(edits, plan.palette),
+    fits: fitsFrom(edits, TARGETS),
   }
 
   const pagesHtml: Record<string, string> = Object.fromEntries(sitePlan.pages.map((page) => [page.path, compileSiteHtml(spec, page)]))

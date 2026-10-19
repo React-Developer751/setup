@@ -10,7 +10,7 @@ const mix = (a: string, percent: number, b: string) => `color-mix(in oklab, ${a}
 
 export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: ThemeKey) {
   const dark = mode === 'dark'
-  const { bg, surface, text, accent } = palette[mode]
+  const { bg, surface, text, accent, alt } = palette[mode]
   const onAccent = onColor(accent)
   const accentDeep = mix(accent, 86, '#000000')
 
@@ -38,9 +38,14 @@ export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: The
     colorScheme: mode,
     // Tailblocks components
     '--color-white': surface,
-    '--color-gray-50': gray(3),
-    '--color-gray-100': gray(7),
-    '--color-gray-200': gray(14),
+    // the light greys of cards and borders lean towards the main colour, so the page is not only black and white
+    '--color-gray-50': mix(accent, 5, bg),
+    '--color-gray-100': mix(accent, 10, bg),
+    '--color-gray-200': mix(accent, 18, bg),
+    '--g-accent': accent,
+    '--g-alt': alt ?? accent,
+    '--g-band': mix(accent, 7, bg),
+    '--g-glow': mix(accent, 20, 'transparent'),
     '--color-gray-300': gray(24),
     '--color-gray-400': gray(42),
     '--color-gray-500': gray(56),

@@ -32,7 +32,7 @@ type Props = {
   onReset: () => void
 }
 
-const SUGGESTIONS = ['remove the FAQ', 'rename it to Green Leaf', 'make the buttons blue', 'dark mode', 'pricing hatao', 'add a gallery', 'no animations', 'headline: Fresh Every Day']
+const SUGGESTIONS = ['remove the FAQ', 'rename it to Green Leaf', 'make the buttons blue', 'dark mode', 'pricing hatao', 'add a gallery', 'no animations', 'rename pricing to Our Plans', 'move FAQ above pricing', 'make the gallery shorter', 'center the hero']
 
 function EditChat({ messages, busy, canUndo, canRedo, changes, serverReady, useServer, onUseServer, onSend, onChoose, onColor, onUndo, onRedo, onReset }: Props) {
   const [text, setText] = useState('')

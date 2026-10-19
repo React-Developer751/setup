@@ -4,6 +4,7 @@
 import type { WebsiteContent } from './finalPrompt'
 import { sectionOfLayout } from './edit/applyEdits'
 import type { Target } from './edit/edits'
+import { fitMarkup, type Fits } from './edit/fit'
 import { paintMarkup, targetOfLayout, type Paints } from './edit/sectionColors'
 import { art, logoMark, toJsx, type ArtKind } from './artBrain'
 import { tierSwaps, type Tier } from './designBrain'
@@ -561,7 +562,7 @@ const sections: Record<LayoutId, (ctx: Ctx) => string> = {
     return `
     <section id="faq" ${k}="${t.bg} ${t.font} px-6 py-20 md:px-12">
       <div ${k}="mx-auto max-w-3xl">
-        ${sectionTitle(ctx, 'Questions? Answers.')}
+        ${sectionTitle(ctx, c.titles?.faq ?? 'Questions? Answers.')}
         <div ${k}="space-y-3">${c.faq
           .map(
             (item, i) => `
@@ -717,7 +718,7 @@ const sections: Record<LayoutId, (ctx: Ctx) => string> = {
     return `
     <section ${k}="${t.bg} ${t.font} px-6 py-20 md:px-12">
       <div ${k}="mx-auto max-w-6xl">
-        ${sectionTitle(ctx, 'Loved by our customers')}
+        ${sectionTitle(ctx, c.titles?.testimonials ?? 'Loved by our customers')}
         <div ${k}="grid grid-cols-1 gap-6 md:grid-cols-3">${c.testimonials
           .map(
             (q, i) => `
@@ -1134,6 +1135,22 @@ export function buildLayout(choice: LayoutChoice): LayoutId[] {
 /** What a page of a multi-page site needs to know about the site around it. */
 export type SiteRender = { pages: PagePlan[]; current: string; page?: PageInfo; posts?: Post[]; post?: Post }
 
+/** the links of a single page, in the order of its sections, with the labels the person chose */
+function pageLinks(content: WebsiteContent, layoutIds: LayoutId[], has: (prefix: string) => boolean) {
+  const label = (page: string, fallback: string) => content.navLabels?.[page] ?? fallback
+  const at = (prefix: string) => layoutIds.findIndex((id) => id.startsWith(prefix))
+  const sections = [
+    { at: at('about'), link: { href: '#about', label: label('about', 'About') }, on: has('about') },
+    { at: at('features'), link: { href: '#features', label: label('services', 'Features') }, on: has('features') },
+    { at: at('pricing'), link: { href: '#pricing', label: label('pricing', 'Pricing') }, on: has('pricing') },
+    { at: at('faq'), link: { href: '#faq', label: label('faq', 'FAQ') }, on: has('faq') },
+  ]
+    .filter((s) => s.on)
+    .sort((a, b) => a.at - b.at)
+    .map((s) => s.link)
+  return [{ href: '#home', label: label('home', 'Home') }, ...sections, { href: '#contact', label: label('contact', 'Contact') }]
+}
+
 export function renderSections(
   theme: Theme,
   layoutIds: LayoutId[],
@@ -1144,19 +1161,13 @@ export function renderSections(
   site?: SiteRender,
   visuals?: Visuals,
   paints?: Paints,
+  fits?: Fits,
 ) {
   const k = mode === 'jsx' ? 'className' : 'class'
   const has = (prefix: string) => layoutIds.some((id) => id.startsWith(prefix))
   const links = site
     ? site.pages.filter((p) => p.inNav).map((p) => ({ href: `#${p.path}`, label: p.label }))
-    : [
-        { href: '#home', label: 'Home' },
-        ...when(has('about'), { href: '#about', label: 'About' }),
-        ...when(has('features'), { href: '#features', label: 'Features' }),
-        ...when(has('pricing'), { href: '#pricing', label: 'Pricing' }),
-        ...when(has('faq'), { href: '#faq', label: 'FAQ' }),
-        { href: '#contact', label: 'Contact' },
-      ]
+    : pageLinks(content, layoutIds, has)
   const full = !!site || layoutIds.includes('contact')
   // the tier changes spacing / type size (e.g. premium = roomier, bigger headings)
   const swap = (html: string) => tierSwaps[tier].reduce((out, [from, to]) => out.split(from).join(to), html)
@@ -1167,8 +1178,11 @@ export function renderSections(
       sections[id]({ t: theme, c: content, k, m, mode, full, links, site: siteCtx, page: site?.page, posts: site?.posts, post: site?.post, v: visuals, has }),
     )
     const routed = (site ? routeLinks(html, site.pages) : html) + (id.startsWith('footer') ? whatsappButton(content, k) : '')
-    const tokens = paints?.[targetOfLayout(id, sectionOfLayout as (id: string) => Target | undefined) as Target]
-    return tokens ? paintMarkup(routed, tokens, mode) : routed
+    const part = targetOfLayout(id, sectionOfLayout as (id: string) => Target | undefined) as Target
+    const tokens = paints?.[part]
+    const painted = tokens ? paintMarkup(routed, tokens, mode) : routed
+    const fit = fits?.[part]
+    return fit ? fitMarkup(painted, fit, mode) : painted
   })
 }
 
@@ -1189,9 +1203,10 @@ export function compileWebsiteHtml(
   motion: MotionPlan = noMotion(),
   visuals?: Visuals,
   paints?: Paints,
+  fits?: Fits,
 ): string {
   const css = themeCss(tokens)
-  return `<style>${css}</style><div data-mode="${initialMode}" class="g-root min-h-screen overflow-x-clip [overflow-wrap:anywhere] ${theme.bg} ${theme.text_main}">${renderSections(theme, layoutIds, content, 'html', tier, motion, undefined, visuals, paints).join('\n')}\n</div>`
+  return `<style>${css}</style><div data-mode="${initialMode}" class="g-root min-h-screen overflow-x-clip [overflow-wrap:anywhere] ${theme.bg} ${theme.text_main}">${renderSections(theme, layoutIds, content, 'html', tier, motion, undefined, visuals, paints, fits).join('\n')}\n</div>`
 }
 
 /** A complete React component file as a string (with a working light / dark switch). */
@@ -1205,8 +1220,9 @@ export function compileWebsiteCode(
   motion: MotionPlan = noMotion(),
   visuals?: Visuals,
   paints?: Paints,
+  fits?: Fits,
 ): string {
-  const body = renderSections(theme, layoutIds, content, 'jsx', tier, motion, undefined, visuals, paints).join('\n')
+  const body = renderSections(theme, layoutIds, content, 'jsx', tier, motion, undefined, visuals, paints, fits).join('\n')
   // React wants camelCase for standard style properties (custom --g-* variables stay as they are)
   const reactTokens = Object.fromEntries(
     Object.entries(tokens).map(([mode, values]) => [mode, Object.fromEntries(Object.entries(values).map(([key, value]) => [key === 'color-scheme' ? 'colorScheme' : key, value]))]),

@@ -49,6 +49,22 @@ export function clarify(intent: Intent, context: EditContext): Clarify | undefin
       return { question: 'Which text? Say it like: headline: Fresh Every Day, button: Order Now, subtitle: Baked with love', choices: [], expect: 'text' }
     case 'replace_text':
       return { question: 'Which word should be replaced? Say it like: replace coaches with trainers', choices: [], expect: 'text' }
+    case 'rename_section':
+      return { question: 'Which section should get a new name, and what name? Say it like: rename pricing to Our Plans, or: in the menu, change About to Our Story', choices: [], expect: 'text' }
+    case 'move_section':
+      return { question: 'Which section should move, and where? Say it like: move FAQ above pricing, gallery to the top, or: move Blog page to the end of the menu', choices: [], expect: 'text' }
+    case 'resize':
+      return {
+        question: 'Which size should change?',
+        choices: [
+          { label: 'Whole page: shorter', ops: [{ op: 'size', target: 'page', axis: 'height', factor: 0.7 }] },
+          { label: 'Whole page: taller', ops: [{ op: 'size', target: 'page', axis: 'height', factor: 1.3 }] },
+          { label: 'Whole page: narrower', ops: [{ op: 'size', target: 'page', axis: 'width', factor: 0.8 }] },
+          { label: 'Whole page: wider', ops: [{ op: 'size', target: 'page', axis: 'width', factor: 1.25 }] },
+        ],
+      }
+    case 'align':
+      return { question: 'How should the text be aligned?', choices: [{ label: 'Left', ops: [{ op: 'align', target: 'page', align: 'left' }] }, { label: 'Center', ops: [{ op: 'align', target: 'page', align: 'center' }] }, { label: 'Right', ops: [{ op: 'align', target: 'page', align: 'right' }] }] }
     case 'new_site':
       return { question: 'That sounds like a new website. Make a new one from it? (your earlier changes belong to the old site)', choices: [{ label: 'Yes, make a new website', action: 'newSite' }, { label: 'No, I meant a change', action: 'dismiss' }] }
     default:

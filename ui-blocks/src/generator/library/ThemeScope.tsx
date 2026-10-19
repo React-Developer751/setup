@@ -25,20 +25,48 @@ const linkLabels: [string, string][] = [
 /** the page palette: a part with a colour of its own (`paint`) works out its text and accent from it */
 const PaletteContext = createContext<Palette | undefined>(undefined)
 
-export function Section({ role, paint, children }: { role: Role; /** background colour of this part only */ paint?: string; children: ReactNode }) {
+/** Makes the roomy parts of a stored component taller or shorter. The page is drawn off screen (no layout to measure), so the Tailwind padding classes
+ * (py-24, pt-16 ...) of every box up to three levels deep are read and scaled; a padding of 1.5rem or more counts as roomy. */
+function useHeightFactor(ref: React.RefObject<HTMLDivElement | null>, factor: number | undefined) {
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root || !factor || factor === 1) return
+    const changed: { el: HTMLElement; top: string; bottom: string }[] = []
+    const biggest = (classes: string[], axes: string[]) => Math.max(0, ...classes.map((c) => c.match(new RegExp(`^(?:[a-z0-9]+:)*(?:${axes.join('|')})-(\\d+)$`))).map((m) => (m ? Number(m[1]) : 0)))
+    const walk = (el: HTMLElement, depth: number) => {
+      const classes = (el.getAttribute('class') ?? '').split(/\s+/)
+      const top = biggest(classes, ['py', 'pt'])
+      const bottom = biggest(classes, ['py', 'pb'])
+      if (top >= 6 || bottom >= 6) {
+        changed.push({ el, top: el.style.paddingTop, bottom: el.style.paddingBottom })
+        if (top >= 6) el.style.paddingTop = `${(top * 0.25 * factor).toFixed(2)}rem`
+        if (bottom >= 6) el.style.paddingBottom = `${(bottom * 0.25 * factor).toFixed(2)}rem`
+      }
+      if (depth < 3) for (const child of el.children) if (child instanceof HTMLElement) walk(child, depth + 1)
+    }
+    for (const child of root.children) if (child instanceof HTMLElement) walk(child, 1)
+    return () => changed.forEach(({ el, top, bottom }) => { el.style.paddingTop = top; el.style.paddingBottom = bottom })
+  }, [ref, factor])
+}
+
+export function Section({ role, paint, fit, band, children }: { role: Role; /** a soft band of the main colour behind this part (every other part), so the page has colour */ band?: boolean; /** background colour of this part only */ paint?: string; /** size and alignment of this part */ fit?: { minHeight?: number; heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }; children: ReactNode }) {
   const palette = useContext(PaletteContext)
+  const box = useRef<HTMLDivElement>(null)
+  useHeightFactor(box, fit?.heightFactor)
+  const bandStyle = role === 'hero' ? { backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, var(--g-glow), transparent 70%)' } : band ? { background: 'var(--g-band)' } : undefined
+  const fitStyle = fit ? { ...(fit.minHeight ? { minHeight: fit.minHeight } : {}), ...(fit.maxWidth ? { maxWidth: fit.maxWidth, marginInline: 'auto' } : {}), ...(fit.align ? { textAlign: fit.align } : {}) } : undefined
   if (paint && palette) {
     const t = sectionTokens(paint, palette)
     const own = { bg: t['--g-bg'], surface: t['--g-surface'], border: t['--g-border'], text: t['--g-text'], muted: t['--g-muted'], accent: t['--g-accent'], alt: t['--g-accent'] }
     const { style, dark } = libraryThemeStyle({ name: 'part', light: own, dark: own }, 'light')
     return (
-      <div id={sectionIds[role]} data-role={role} style={style} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
+      <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...style, ...fitStyle }} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
         {children}
       </div>
     )
   }
   return (
-    <div id={sectionIds[role]} data-role={role}>
+    <div ref={box} id={sectionIds[role]} data-role={role} style={bandStyle || fitStyle ? { ...bandStyle, ...fitStyle } : undefined}>
       {children}
     </div>
   )

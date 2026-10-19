@@ -5,7 +5,7 @@ import { loadGeneratorModule } from './lib/load-generator.mjs'
 const { parseEdit } = await loadGeneratorModule('edit/understand.ts')
 const file = process.argv[2] ?? 'src/data/training/edit-intents.test.jsonl'
 const rows = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l))
-const OPS = { rename: ['rename'], recolor: ['accent', 'tone'], mode: ['mode'], remove: ['remove', 'removePage'], add: ['add', 'addPage'], set_text: ['text'], replace_text: ['replace'], contact: ['contact'], tier: ['tier'], motion: ['motion'], change_business: ['theme'] }
+const OPS = { rename: ['rename'], recolor: ['accent', 'tone'], mode: ['mode'], remove: ['remove', 'removePage'], add: ['add', 'addPage'], set_text: ['text'], replace_text: ['replace'], contact: ['contact'], tier: ['tier'], motion: ['motion'], change_business: ['theme'], rename_section: ['title', 'navLabel'], move_section: ['move', 'movePage'], resize: ['size', 'resetLayout'], align: ['align'] }
 const kindOf = (got) => (got.kind === 'control' ? got.control : got.kind === 'newSite' ? 'new_site' : got.kind === 'ops' && got.ops.length ? 'ops' : 'other')
 let ok = 0
 const per = {}

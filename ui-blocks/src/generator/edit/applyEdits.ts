@@ -7,6 +7,7 @@ import type { ThemeKey } from '../themes'
 import type { OpeningHours } from '../siteTypes'
 import { serviceText } from '../personalize'
 import type { SectionKey, SiteEdits } from './edits'
+import { reorder } from './fit'
 
 /** which section a layout block belongs to */
 export function sectionOfLayout(id: LayoutId): SectionKey | undefined {
@@ -17,6 +18,9 @@ export function sectionOfLayout(id: LayoutId): SectionKey | undefined {
   if (id === 'stats' || id === 'marquee' || id === 'gallery' || id === 'pricing' || id === 'team' || id === 'blog' || id === 'faq' || id === 'cta' || id === 'contact') return id
   return undefined
 }
+
+/** the blocks of the page in the order the person asked for (navigation, first screen and footer stay where they are) */
+export const orderLayout = <T extends string>(ids: T[], edits: SiteEdits | undefined, sectionOf: (id: T) => SectionKey | undefined = sectionOfLayout as (id: T) => SectionKey | undefined) => (edits?.moves.length ? reorder(ids, edits.moves, sectionOf) : ids)
 
 /** removes the blocks of hidden sections (the navigation, hero and footer are never removed) */
 export const filterLayout = <T extends string>(ids: T[], edits: SiteEdits | undefined, sectionOf: (id: T) => SectionKey | undefined = sectionOfLayout as (id: T) => SectionKey | undefined) =>
@@ -85,6 +89,24 @@ export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | un
   if (whatsapp) next = { ...next, contact: { ...next.contact, whatsapp } }
   if (hours) next = { ...next, hours: parseHours(hours), contact: { ...next.contact, hoursText: hours } }
   if (edits.photos) next = { ...next, photos: edits.photos }
+  // new headings: the field the template reads, and `titles` for the headings that were fixed text before
+  const T = edits.titles
+  if (Object.keys(T).length) {
+    next = {
+      ...next,
+      titles: { ...next.titles, ...T },
+      ...(T.features ? { features: { ...next.features, title: T.features } } : {}),
+      ...(T.about ? { about: { ...next.about, title: T.about } } : {}),
+      ...(T.steps ? { steps: { ...next.steps, title: T.steps } } : {}),
+      ...(T.pricing ? { pricing: { ...next.pricing, title: T.pricing } } : {}),
+      ...(T.gallery ? { gallery: { ...next.gallery, title: T.gallery } } : {}),
+      ...(T.team ? { team: { ...next.team, title: T.team } } : {}),
+      ...(T.blog ? { blog: { ...next.blog, title: T.blog } } : {}),
+      ...(T.cta ? { cta: { ...next.cta, title: T.cta } } : {}),
+      ...(T.contact ? { contact: { ...next.contact, title: T.contact } } : {}),
+    }
+  }
+  if (Object.keys(edits.navLabels).length) next = { ...next, navLabels: { ...next.navLabels, ...edits.navLabels } }
   // the services the person listed are the feature cards; the priced ones are the price list
   if (edits.services?.length) {
     const items = edits.services

@@ -6,18 +6,18 @@ import type { SectionKey, Tone } from './edits'
 export const wordRegex = (terms: string[]) => new RegExp(`(?<![\\p{L}\\p{M}\\p{N}])(?:${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+')).join('|')})(?![\\p{L}\\p{M}\\p{N}])`, 'iu')
 
 export const SECTION_TERMS: Record<SectionKey, string[]> = {
-  stats: ['stats', 'statistics', 'stat', 'numbers', 'counters', 'counter', 'achievements', 'figures', 'metrics', 'ankde', 'आंकड़े', 'numbers section'],
+  stats: ['stats', 'statistics', 'stat', 'numbers', 'counters', 'counter', 'achievements', 'figures', 'metrics', 'ankde', 'आंकड़े', 'numbers section', 'स्टैट्स'],
   marquee: ['marquee', 'ticker', 'scrolling strip', 'scrolling text', 'scrolling words', 'moving text', 'keyword strip', 'keywords strip', 'keywords bar', 'keyword bar', 'मार्की', 'running text', 'scroll strip', 'sliding text'],
   features: ['features', 'सेवाओं', 'सेवाएँ', 'सेवाएं', 'feature', 'services', 'service', 'offerings', 'what we do', 'menu', 'programs', 'program', 'classes', 'treatments', 'courses', 'products', 'seva', 'सेवाएं', 'sevayein', 'facilities', 'फीचर्स', 'सर्विसेज', 'सेवा'],
-  about: ['about us', 'about', 'our story', 'who we are', 'story', 'hamare baare mein', 'hamare bare me', 'hamare baare me', 'parichay', 'हमारे बारे में', 'about section', 'अबाउट', 'हमारे बारे', 'अबाउट अस'],
-  steps: ['how it works', 'process', 'steps', 'working', 'our process', 'kaise kaam karta hai', 'how we work', 'timeline'],
+  about: ['about us', 'about', 'our story', 'who we are', 'story', 'hamare baare mein', 'hamare bare me', 'hamare baare me', 'parichay', 'हमारे बारे में', 'about section', 'अबाउट', 'एबाउट', 'हमारे बारे', 'अबाउट अस'],
+  steps: ['how it works', 'process', 'steps', 'working', 'our process', 'kaise kaam karta hai', 'how we work', 'timeline', 'स्टेप्स', 'स्टेप'],
   gallery: ['gallery', 'photos', 'photo', 'pictures', 'picture', 'images', 'image', 'pics', 'pic', 'portfolio', 'tasveer', 'tasveeren', 'tasvire', 'photo gallery', 'फोटो', 'तस्वीरें', 'work samples', 'गैलरी', 'फोटोज'],
   pricing: ['pricing', 'prices', 'price', 'plans', 'plan', 'packages', 'package', 'rates', 'rate', 'fees', 'fee', 'daam', 'dam', 'membership', 'memberships', 'pricing plans', 'cost', 'costs', 'कीमत', 'rate card', 'प्राइसिंग', 'प्लान', 'प्लान्स', 'दाम', 'रेट'],
   team: ['team', 'staff', 'our people', 'people', 'doctors', 'coaches', 'chefs', 'trainers', 'employees', 'meet the team', 'members', 'teachers', 'टीम', 'our team', 'स्टाफ', 'कर्मचारी'],
-  testimonials: ['testimonials', 'testimonial', 'reviews', 'review', 'feedback', 'ratings', 'rating', 'what customers say', 'customer reviews', 'clients say', 'praise', 'customer feedback', 'रिव्यू', 'testimonial section', 'टेस्टिमोनियल', 'समीक्षा', 'ग्राहक समीक्षा'],
+  testimonials: ['testimonials', 'testimonial', 'reviews', 'review', 'feedback', 'ratings', 'rating', 'what customers say', 'customer reviews', 'clients say', 'praise', 'customer feedback', 'रिव्यू', 'रिव्यूज', 'रिव्यूज़', 'रिव्यूज़', 'testimonial section', 'टेस्टिमोनियल', 'समीक्षा', 'ग्राहक समीक्षा'],
   blog: ['blog', 'blogs', 'news', 'articles', 'article', 'journal', 'posts', 'updates', 'latest news', 'ब्लॉग', 'खबरें', 'लेख'],
   faq: ['faq', 'faqs', 'questions', 'common questions', 'q&a', 'q and a', 'sawal', 'sawaal', 'frequently asked questions', 'frequently asked', 'सवाल', 'एफएक्यू', 'अक्सर पूछे जाने वाले सवाल'],
-  cta: ['cta', 'call to action', 'call-to-action', 'banner', 'get started banner', 'action banner', 'bottom banner', 'cta banner', 'cta section'],
+  cta: ['cta', 'call to action', 'call-to-action', 'banner', 'get started banner', 'action banner', 'bottom banner', 'cta banner', 'cta section', 'सीटीए'],
   contact: ['contact', 'contact form', 'contact us', 'get in touch', 'sampark', 'contact section', 'संपर्क', 'कॉन्टैक्ट', 'कांटेक्ट', 'कांटेक्ट फॉर्म'],
 }
 
@@ -110,7 +110,7 @@ export const MOTION_TERMS = {
 /** parts of the page that can get a colour of their own, besides the sections (SECTION_TERMS) */
 export const TARGET_TERMS: Record<'header' | 'hero' | 'footer', string[]> = {
   header: ['header', 'navbar', 'nav bar', 'nav', 'navigation', 'navigation bar', 'top bar', 'topbar', 'menu bar', 'top menu', 'हेडर', 'नेवबार'],
-  hero: ['hero', 'hero section', 'first screen', 'top section', 'main section', 'first section', 'landing section', 'pehla section', 'पहला हिस्सा'],
+  hero: ['hero', 'hero section', 'first screen', 'top section', 'main section', 'first section', 'landing section', 'pehla section', 'पहला हिस्सा', 'हीरो', 'हीरो सेक्शन'],
   footer: ['footer', 'bottom bar', 'bottom section', 'last section', 'footer section', 'फुटर', 'neeche wala hissa'],
 }
 

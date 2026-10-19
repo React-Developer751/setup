@@ -4,7 +4,7 @@
 import { smartIntent } from '../ml/smart'
 import { SparseModel, type SparseFile } from '../ml/sparseModel'
 
-export const INTENTS = ['rename', 'recolor', 'mode', 'remove', 'add', 'set_text', 'replace_text', 'contact', 'tier', 'motion', 'change_business', 'undo', 'redo', 'reset', 'new_site', 'other'] as const
+export const INTENTS = ['rename', 'rename_section', 'move_section', 'resize', 'align', 'recolor', 'mode', 'remove', 'add', 'set_text', 'replace_text', 'contact', 'tier', 'motion', 'change_business', 'undo', 'redo', 'reset', 'new_site', 'other'] as const
 export type Intent = (typeof INTENTS)[number]
 
 // the word model is a separate file (1 MB): it is loaded the first time a message is not understood by the rules

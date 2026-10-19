@@ -131,7 +131,7 @@ export function planSite(
     team: { title: content.team.title, subtitle: content.about.paragraphs[1] ?? content.about.paragraphs[0] },
     gallery: { title: content.gallery.title, subtitle: content.about.paragraphs[0] },
     blog: { title: content.blog.title, subtitle: 'Notes, guides and stories from the people behind the work.' },
-    faq: { title: 'Frequently asked questions', subtitle: 'Quick answers to the things people ask us most.' },
+    faq: { title: content.titles?.faq ?? 'Frequently asked questions', subtitle: 'Quick answers to the things people ask us most.' },
     contact: { title: content.contact.title, subtitle: content.contact.text },
     privacy: { title: 'Privacy Policy', subtitle: `How ${content.brandName} collects, uses and protects your information.` },
     terms: { title: 'Terms of Service', subtitle: `The rules for using the ${content.brandName} website and services.` },

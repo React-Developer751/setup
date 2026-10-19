@@ -460,14 +460,56 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   replaceBrand(root, c)
 }
 
+// The components bring grey placeholder pictures (dummyimage.com). The pictures the person added (or drew with the image AI) take their place;
+// without pictures a soft gradient in the colours of the site stands there, never a grey "720 x 600" box.
+const DUMMY = /dummyimage\.com\/(\d+)x(\d+)/
+const blank = (w: number, h: number) => `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"/>`)}`
+function fillImages(root: Element, role: Role, c: WebsiteContent) {
+  const photos = c.photos
+  const gallery = photos?.gallery ?? []
+  const pool = role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about] : role === 'gallery' ? gallery : [...gallery, photos?.about, photos?.hero]
+  const own = pool.filter((p): p is string => !!p)
+  let next = 0
+  root.querySelectorAll('img').forEach((img) => {
+    const m = DUMMY.exec(img.getAttribute('src') ?? '')
+    if (!m) return
+    const w = Number(m[1])
+    const h = Number(m[2])
+    if (w >= 200 && h >= 100 && own.length) {
+      img.setAttribute('src', own[next++ % own.length])
+      img.removeAttribute('srcset')
+      img.classList.add('object-cover')
+      return
+    }
+    img.setAttribute('src', blank(w, h))
+    img.style.background = 'linear-gradient(135deg, var(--g-accent, #6366f1), color-mix(in oklab, var(--g-accent, #6366f1) 70%, var(--g-alt, #a855f7)))'
+  })
+}
+
+const TITLE_KEY: Partial<Record<Role, string>> = { features: 'features', about: 'about', profile: 'about', steps: 'steps', gallery: 'gallery', pricing: 'pricing', team: 'team', testimonial: 'testimonials', blog: 'blog' }
+/** A heading the person asked for ("rename pricing to Our Plans") must show, also in a stored component that has no heading of its own. */
+function ensureTitle(root: Element, role: Role, c: WebsiteContent) {
+  const key = TITLE_KEY[role]
+  const text = key ? (c as unknown as Record<string, { title?: string } | undefined>)[key]?.title : undefined
+  if (!key || !text || !c.titles?.[key] || visibleText(root).includes(text)) return
+  const section = root.querySelector('section') ?? root
+  const holder = (section.firstElementChild as HTMLElement | null) ?? (section as HTMLElement)
+  const h = root.ownerDocument.createElement('h2')
+  h.className = 'title-font sm:text-3xl text-2xl font-medium text-gray-900 text-center mx-auto mb-10 px-5 pt-10'
+  h.textContent = text
+  section.insertBefore(h, holder === section ? section.firstChild : holder)
+}
+
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[]) {
   try {
+    if (role !== 'nav' && role !== 'footer') fillImages(root, role, c)
     if (role === 'nav') return fillNav(root, c, links)
     if (role === 'footer') return fillFooter(root, c, links)
     if (role === 'hero') fillHero(root, c)
     else fillSection(root, role, c)
     fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button)
     setPlaceholders(root)
+    ensureTitle(root, role, c)
     replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members)
   } catch (error) {
     console.warn(`fillContent(${role}) skipped:`, error)

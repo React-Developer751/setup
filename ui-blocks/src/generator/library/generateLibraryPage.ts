@@ -4,7 +4,8 @@ import { generateWebsite, hash, seededRandom } from '../generateWebsite'
 import { applyPoolToContent } from '../siteData'
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
-import type { SectionKey, SiteEdits, Target } from '../edit/edits'
+import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
+import { fitsFrom, reorder } from '../edit/fit'
 import { rolePools, tierPools, type Role } from './libraryRoles'
 
 /** the part of a page that a library component fills, for each section a person can ask to remove or add */
@@ -22,7 +23,9 @@ const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
   contact: ['contact'],
 }
 
-export type LibrarySection = { role: Role; componentId: string; /** background colour of this part only ("footer green") */ paint?: string }
+/** size and alignment of one part (a minimum height and a maximum width in pixels, a text alignment) */
+export type LibraryFit = { minHeight?: number; /** scales the roomy parts (padding) of the component */ heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }
+export type LibrarySection = { role: Role; componentId: string; /** a soft band of the main colour behind this part */ band?: boolean; /** background colour of this part only ("footer green") */ paint?: string; fit?: LibraryFit }
 
 const componentName = (id: string) => id.split('/')[1]
 
@@ -72,16 +75,31 @@ export function generateLibraryPage(
   )
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   for (const section of edits?.hidden ?? []) for (const role of ROLE_OF[section] ?? []) visible.delete(role)
-  const order: Role[] = FULL.filter((role) => visible.has(role))
+  const sectionOfRole = (role: Role): SectionKey | undefined => (role === 'profile' ? 'about' : (Object.keys(ROLE_OF) as SectionKey[]).find((key) => ROLE_OF[key]?.includes(role)))
+  const order: Role[] = reorder(FULL.filter((role) => visible.has(role)), edits?.moves ?? [], sectionOfRole)
   const targetOfRole = (role: Role): Target | undefined =>
     role === 'nav' ? 'header' : role === 'hero' ? 'hero' : role === 'footer' ? 'footer' : role === 'profile' ? 'about' : ((Object.keys(ROLE_OF) as SectionKey[]).find((key) => ROLE_OF[key]?.includes(role)) as Target | undefined)
-  const sections: LibrarySection[] = order.map((role) => ({ role, componentId: chosen[role], paint: edits?.sectionColors[targetOfRole(role) as Target] }))
+  const fits = fitsFrom(edits, TARGETS)
+  const fitOf = (role: Role): LibraryFit | undefined => {
+    const f = fits?.[targetOfRole(role) as Target]
+    if (!f) return undefined
+    const maxWidth = f.width ? (f.width.px ?? Math.round(1152 * (f.width.factor ?? 1))) : undefined
+    return { ...(f.height?.px ? { minHeight: f.height.px } : f.height?.factor && f.height.factor !== 1 ? { heightFactor: f.height.factor } : {}), ...(maxWidth ? { maxWidth } : {}), ...(f.align ? { align: f.align } : {}) }
+  }
+  // every other body part gets a band of the main colour; the call-to-action gets the main colour itself
+  let bodyIndex = 0
+  const sections: LibrarySection[] = order.map((role) => {
+    const body = role !== 'nav' && role !== 'hero' && role !== 'footer'
+    const band = body && bodyIndex++ % 2 === 1 && role !== 'cta'
+    const own = edits?.sectionColors[targetOfRole(role) as Target]
+    return { role, componentId: chosen[role], paint: own ?? (role === 'cta' ? base.palette.light.accent : undefined), band: band || undefined, fit: fitOf(role) }
+  })
 
   const imports = sections
     .map(({ componentId }) => `import ${componentName(componentId)} from './components/${componentId}'`)
     .join('\n')
   const body = sections
-    .map(({ role, componentId, paint }) => `      <Section role="${role}"${paint ? ` paint="${paint}"` : ''}>\n        <${componentName(componentId)} />\n      </Section>`)
+      .map(({ role, componentId, paint, fit, band }) => `      <Section role="${role}"${band ? ' band' : ''}${paint ? ` paint="${paint}"` : ''}${fit && Object.keys(fit).length ? ` fit={${JSON.stringify(fit)}}` : ''}>\n        <${componentName(componentId)} />\n      </Section>`)
     .join('\n')
 
   const code = `// Page assembled from the stored components. Save as src/GeneratedLandingPage.tsx
