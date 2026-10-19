@@ -2,6 +2,7 @@
 // Rule based, offline, in English, Hinglish and Hindi: the text is split into commands, and every command is read for its
 // subject (section, page, colour, text field, contact detail ...) and what to do with it. The result is only a list of
 // operations (see edits.ts); the learned model (intent.ts) and the optional AI server (serverEdit.ts) produce the same thing.
+import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
@@ -308,11 +309,14 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
     if (ok) ops.push(ok)
   }
 
+  const extra = extraOps(showQuotes(clause, quotes))
+  if (extra) return { ops: extra.ops.flatMap((op) => (cleanOp(op) ? [cleanOp(op) as EditOp] : [])), notes: extra.notes }
+
   // layout: names of sections, places, sizes, alignment ─────────
   const layout = layoutOps(clause, context, quotes, stripEnds, carry.target)
   if (layout) {
     for (const op of layout.ops) push(op)
-    const t = layout.ops.map((o) => ('section' in o ? o.section : 'target' in o ? o.target : undefined)).find((v) => typeof v === 'string' && v !== 'page')
+    const t = layout.ops.map((o) => ('section' in o ? o.section : 'page' in o ? (o.page === 'services' ? 'features' : o.page) : 'target' in o ? o.target : undefined)).find((v) => typeof v === 'string' && v !== 'page')
     if (t) carry.target = t
     return { ops, notes: layout.notes }
   }
@@ -681,7 +685,7 @@ const STARTERS = [
   ...VERBS.add,
   ...VERBS.rename,
   ...VERBS.replace,
-  'make', 'change', 'set', 'use', 'move', 'shift', 'align', 'center', 'centre', 'increase', 'decrease', 'reduce', 'shrink', 'expand', 'shorten', 'widen', 'narrow', 'reset', 'restore', 'bring', 'put', 'send', 'badhao', 'ghatao', 'uski', 'iski', 'uska', 'iska', 'usko', 'isko', 'ise', 'उसे', 'इसे', 'उसकी', 'इसकी', 'height', 'width', 'phir', 'fir', 'then', 'switch', 'turn', 'update', 'edit', 'keep', 'give', 'let', 'also', 'dark', 'light', 'no', 'not', 'phone', 'email', 'address', 'call', 'write', 'treat', 'consider', 'this is', 'it is', 'its', 'डार्क', 'लाइट', 'मोड', 'headline', 'button', 'title', 'subtitle',
+  'make', 'change', 'set', 'use', 'move', 'shift', 'align', 'right align', 'left align', 'center align', 'center', 'centre', 'increase', 'decrease', 'reduce', 'shrink', 'expand', 'shorten', 'widen', 'narrow', 'reset', 'restore', 'bring', 'put', 'send', 'badhao', 'ghatao', 'uski', 'iski', 'uska', 'iska', 'usko', 'isko', 'ise', 'उसे', 'इसे', 'उसकी', 'इसकी', 'height', 'width', 'phir', 'fir', 'then', 'switch', 'turn', 'update', 'edit', 'keep', 'give', 'let', 'also', 'dark', 'light', 'no', 'not', 'phone', 'email', 'address', 'call', 'write', 'treat', 'consider', 'this is', 'it is', 'its', 'डार्क', 'लाइट', 'मोड', 'headline', 'button', 'title', 'subtitle',
   ...Object.values(SECTION_TERMS).flat(),
   ...Object.values(TARGET_TERMS).flat(),
   ...Object.keys(COLOR_HEX),
@@ -692,7 +696,7 @@ const STARTERS = [
 ]
 const STARTER_RE = new RegExp(`^${wordRegex(longestFirst(STARTERS)).source}`, 'iu')
 // words that begin a command whatever came before: verbs, the word "the colour", a field name
-const STRONG = ['a bit', 'a little', 'bit', 'little', 'go', 'mode', 'tone', ...VERBS.remove, ...VERBS.add, ...VERBS.rename, ...VERBS.replace, 'make', 'change', 'set', 'use', 'move', 'shift', 'align', 'center', 'centre', 'increase', 'decrease', 'reduce', 'shrink', 'expand', 'shorten', 'widen', 'narrow', 'reset', 'restore', 'bring', 'put', 'send', 'badhao', 'ghatao', 'uski', 'iski', 'uska', 'iska', 'usko', 'isko', 'ise', 'उसे', 'इसे', 'उसकी', 'इसकी', 'height', 'width', 'phir', 'fir', 'then', 'switch', 'turn', 'update', 'edit', 'keep', 'give', 'let', 'also', 'treat', 'consider', 'this is', 'it is', 'the', 'pls', 'please', 'plz', 'more', 'less', 'thoda', 'zyada', 'kam', ...COLOR_NOUNS, ...Object.values(FIELD_TERMS).flat(), ...MOTION_TERMS.topic, 'phone', 'email', 'address']
+const STRONG = ['a bit', 'a little', 'bit', 'little', 'go', 'mode', 'tone', ...VERBS.remove, ...VERBS.add, ...VERBS.rename, ...VERBS.replace, 'make', 'change', 'set', 'use', 'move', 'shift', 'align', 'right align', 'left align', 'center align', 'center', 'centre', 'increase', 'decrease', 'reduce', 'shrink', 'expand', 'shorten', 'widen', 'narrow', 'reset', 'restore', 'bring', 'put', 'send', 'badhao', 'ghatao', 'uski', 'iski', 'uska', 'iska', 'usko', 'isko', 'ise', 'उसे', 'इसे', 'उसकी', 'इसकी', 'height', 'width', 'phir', 'fir', 'then', 'switch', 'turn', 'update', 'edit', 'keep', 'give', 'let', 'also', 'treat', 'consider', 'this is', 'it is', 'the', 'pls', 'please', 'plz', 'more', 'less', 'thoda', 'zyada', 'kam', ...COLOR_NOUNS, ...Object.values(FIELD_TERMS).flat(), ...MOTION_TERMS.topic, 'phone', 'email', 'address']
 const STRONG_RE = new RegExp(`^${wordRegex(longestFirst(STRONG)).source}`, 'iu')
 const FIELD_ANY = /(?<![\p{L}\p{M}])(?:title|heading|headline|subtitle|button)(?![\p{L}\p{M}])/iu
 const VALUE_TALK = /(?<![\p{L}\p{M}])(?:rename|call|called|name|naam|replace|headline|heading|title|subtitle|tagline|button|address|pata|likho|write|text|ko|to|as)(?![\p{L}\p{M}])|[:=]/iu
@@ -756,7 +760,7 @@ export function parseEdit(input: string, context: EditContext = 'single'): Under
   if (isNewSite(plain)) return { kind: 'newSite' }
 
   // a list with commas ("services: haircut 300, facial 800") must not be cut into commands
-  const listed = parseServices(plain)
+  const listed = parseServices(plain) ?? parseServices(plain.replace(/^(?:add|jodo|rakho|put|daalo)\s+\d*\s*(?:new\s+)?(?=services?\b)/i, ''))
   if (listed) return { kind: 'ops', ops: [{ op: 'services', items: listed }], notes: [] }
   const hoursText = parseHoursText(plain)
   if (hoursText) return { kind: 'ops', ops: [{ op: 'contact', field: 'hours', value: hoursText }], notes: [] }
@@ -768,7 +772,7 @@ export function parseEdit(input: string, context: EditContext = 'single'): Under
     const result = clauseOps(command, context, hidden.quotes, carry)
     carry.last = result.ops.at(-1)?.op
     for (const o of result.ops) {
-      const t = 'section' in o ? o.section : 'target' in o ? o.target : undefined
+      const t = 'section' in o ? o.section : 'page' in o ? (o.page === 'services' ? 'features' : o.page) : 'target' in o ? o.target : undefined
       if (typeof t === 'string' && t !== 'page') carry.target = t
     }
     ops.push(...result.ops)
@@ -784,6 +788,10 @@ export function parseEdit(input: string, context: EditContext = 'single'): Under
   const unique = ops.filter((op) => !seen.has(JSON.stringify(op)) && !!seen.add(JSON.stringify(op)))
   ops.length = 0
   ops.push(...unique)
+  if (!ops.length && !notes.length) {
+    const note = unsupportedNote(plain)
+    if (note) notes.push(note)
+  }
   if (!ops.length) return notes.length ? { kind: 'ops', ops, notes } : { kind: 'none', reason: 'I could not find a change in that. Try, for example: "remove the FAQ", "rename it to Green Leaf" or "make the buttons blue".' }
   return { kind: 'ops', ops, notes }
 }

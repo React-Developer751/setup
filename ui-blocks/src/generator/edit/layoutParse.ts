@@ -213,7 +213,7 @@ export function layoutOps(clause: string, context: 'single' | 'multi', quotes: s
   const value0 = newName(text, quotes, 0)
   const frame = value0 ? (text.includes(value0) ? text.slice(0, text.lastIndexOf(value0)) + ' ' + text.slice(text.lastIndexOf(value0) + value0.length) : text).replace(/§\d+§/g, ' ') : text.replace(/§\d+§/g, ' ')
   const realMents = mentions(frame, true)
-  if (!realMents.length && lastTarget && /(?<![\p{L}\p{M}])(?:it|its|isko|usko|ise|use|इसे|उसे)(?![\p{L}\p{M}])/iu.test(frame) && !['header', 'hero', 'footer'].includes(lastTarget)) realMents.push({ value: lastTarget, at: 0, end: 0 })
+  if (!realMents.length && lastTarget && (has(NAV_WORDS, frame) || has(HEADING_WORD, frame)) && /(?<![\p{L}\p{M}])(?:it|its|isko|usko|ise|use|इसे|उसे)(?![\p{L}\p{M}])/iu.test(frame) && !['header', 'hero', 'footer'].includes(lastTarget)) realMents.push({ value: lastTarget, at: 0, end: 0 })
   const nameSections = realMents.filter((m) => !['header', 'hero', 'footer'].includes(m.value))
   const frameHome = has(HOME_RE, frame)
   const frameNav = has(NAV_WORDS, frame)

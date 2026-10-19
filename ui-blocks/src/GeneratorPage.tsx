@@ -47,6 +47,9 @@ function GeneratorPage() {
   const [prompt, setPrompt] = useState(EXAMPLES[0])
   const [submitted, setSubmitted] = useState(EXAMPLES[0])
   const [variation, setVariation] = useState(0)
+  // counts every "Generate website" / "Another variation" click, so the pictures are drawn again for the same prompt too
+  const [runs, setRuns] = useState(0)
+  const autoMade = useRef(false)
   const [level, setLevel] = useState<'auto' | Tier>('auto')
   const [creative, setCreative] = useState(true)
   const [motionSetting, setMotionSetting] = useState<MotionSetting>('auto')
@@ -135,6 +138,8 @@ function GeneratorPage() {
     setUndone([])
     setMessages([])
     setVariation(0)
+    setRuns((n) => n + 1)
+    autoMade.current = false
     setRoute('/')
     setFileIndex(0)
     setView('preview')
@@ -206,18 +211,20 @@ function GeneratorPage() {
   hasPhotosRef.current = history.some((h) => h.ops.some((o) => o.op === 'photos'))
   const autoDraw = useRef<() => Promise<void>>(async () => undefined)
   autoDraw.current = async () => {
-    const key = `${submitted}|${variation}`
+    const key = `${submitted}|${variation}|${runs}`
     if (drawnFor.current === key) return
     drawnFor.current = key
-    if (!(await imageEngineUp()) || hasPhotosRef.current) return
+    // pictures the person added themselves stay; pictures drawn earlier by this page are drawn again for a new variation
+    if (!(await imageEngineUp()) || (hasPhotosRef.current && !autoMade.current)) return
     say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
     const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined)
-    if (drawnFor.current !== key || hasPhotosRef.current) return
+    if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return
+    autoMade.current = true
     if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', 'Pictures added. You can draw other ones or use your own in "Real photos".')
   }
   useEffect(() => {
     void autoDraw.current()
-  }, [submitted, variation])
+  }, [submitted, variation, runs])
 
   const undo = () => {
     const last = history[history.length - 1]
@@ -393,6 +400,7 @@ function GeneratorPage() {
               type="button"
               onClick={() => {
                 setVariation((v) => v + 1)
+                setRuns((n) => n + 1)
                 setView('preview')
               }}
               className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100"
@@ -478,6 +486,7 @@ function GeneratorPage() {
             supported={shownEngine === 'templates'}
             planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
             onApply={(ops, label) => {
+              autoMade.current = false
               say({ role: 'user', text: label })
               applyOps(label, ops, 'rules', 'Put the photos on your site.')
             }}
