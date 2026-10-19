@@ -24,7 +24,7 @@ const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
 }
 
 /** size and alignment of one part (a minimum height and a maximum width in pixels, a text alignment) */
-export type LibraryFit = { minHeight?: number; /** scales the roomy parts (padding) of the component */ heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }
+export type LibraryFit = { /** the buttons alone */ buttons?: 'left' | 'center' | 'right'; minHeight?: number; /** scales the roomy parts (padding) of the component */ heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }
 export type LibrarySection = { role: Role; componentId: string; /** a soft band of the main colour behind this part */ band?: boolean; /** background colour of this part only ("footer green") */ paint?: string; fit?: LibraryFit }
 
 const componentName = (id: string) => id.split('/')[1]
@@ -84,7 +84,7 @@ export function generateLibraryPage(
     const f = fits?.[targetOfRole(role) as Target]
     if (!f) return undefined
     const maxWidth = f.width ? (f.width.px ?? Math.round(1152 * (f.width.factor ?? 1))) : undefined
-    return { ...(f.height?.px ? { minHeight: f.height.px } : f.height?.factor && f.height.factor !== 1 ? { heightFactor: f.height.factor } : {}), ...(maxWidth ? { maxWidth } : {}), ...(f.align ? { align: f.align } : {}) }
+    return { ...(f.buttons ? { buttons: f.buttons } : {}), ...(f.height?.px ? { minHeight: f.height.px } : f.height?.factor && f.height.factor !== 1 ? { heightFactor: f.height.factor } : {}), ...(maxWidth ? { maxWidth } : {}), ...(f.align ? { align: f.align } : {}) }
   }
   // every other body part gets a band of the main colour; the call-to-action gets the main colour itself
   let bodyIndex = 0

@@ -49,10 +49,12 @@ function useHeightFactor(ref: React.RefObject<HTMLDivElement | null>, factor: nu
   }, [ref, factor])
 }
 
-export function Section({ role, paint, fit, band, children }: { role: Role; /** a soft band of the main colour behind this part (every other part), so the page has colour */ band?: boolean; /** background colour of this part only */ paint?: string; /** size and alignment of this part */ fit?: { minHeight?: number; heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }; children: ReactNode }) {
+export function Section({ role, paint, fit, band, children }: { role: Role; /** a soft band of the main colour behind this part (every other part), so the page has colour */ band?: boolean; /** background colour of this part only */ paint?: string; /** size and alignment of this part */ fit?: { buttons?: 'left' | 'center' | 'right'; minHeight?: number; heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }; children: ReactNode }) {
   const palette = useContext(PaletteContext)
   const box = useRef<HTMLDivElement>(null)
   useHeightFactor(box, fit?.heightFactor)
+  // the rows of buttons (a flex row that starts with a link or a button) move to the side that was asked for
+  const buttonCss = fit?.buttons ? `[data-role="${role}"] .flex:has(> a):has(> a), [data-role="${role}"] .flex:has(> button) { justify-content: ${{ left: 'flex-start', center: 'center', right: 'flex-end' }[fit.buttons]} !important; }` : undefined
   const bandStyle = role === 'hero' ? { backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, var(--g-glow), transparent 70%)' } : band ? { background: 'var(--g-band)' } : undefined
   const fitStyle = fit ? { ...(fit.minHeight ? { minHeight: fit.minHeight } : {}), ...(fit.maxWidth ? { maxWidth: fit.maxWidth, marginInline: 'auto' } : {}), ...(fit.align ? { textAlign: fit.align } : {}) } : undefined
   if (paint && palette) {
@@ -61,12 +63,14 @@ export function Section({ role, paint, fit, band, children }: { role: Role; /** 
     const { style, dark } = libraryThemeStyle({ name: 'part', light: own, dark: own }, 'light')
     return (
       <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...style, ...fitStyle }} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
+        {buttonCss && <style>{buttonCss}</style>}
         {children}
       </div>
     )
   }
   return (
     <div ref={box} id={sectionIds[role]} data-role={role} style={bandStyle || fitStyle ? { ...bandStyle, ...fitStyle } : undefined}>
+      {buttonCss && <style>{buttonCss}</style>}
       {children}
     </div>
   )

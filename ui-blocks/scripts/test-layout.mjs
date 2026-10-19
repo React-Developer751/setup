@@ -111,6 +111,20 @@ const baseLib = library([])
   ok(!/undefined|\[object Object\]|NaN/.test(mh.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, '')), 'multi: no "undefined" text')
 }
 
+// 6b. the buttons alone
+{
+  const o = ops(['hero button ko left karo'], 'single')
+  ok(o.length === 1 && o[0].op === 'align' && o[0].part === 'buttons' && o[0].align === 'left', 'button alignment is understood (not the text of the button)')
+  const s = single(o)
+  ok(s.html !== base.html && /justify-start/.test(s.html), 'single: the buttons move to the left')
+  const r = single(ops(['hero button ko right karo'], 'single'))
+  ok(/justify-end/.test(r.html), 'single: the buttons move to the right')
+  const whole = single(ops(['hero left align karo'], 'single'))
+  ok(/justify-start/.test(whole.html) && /text-left/.test(whole.html), 'a left aligned hero moves its buttons too')
+  ok(JSON.stringify(multi(ops(['hero button ko left karo'], 'multi')).pagesHtml) !== JSON.stringify(baseMulti.pagesHtml), 'multi: the buttons move')
+  ok(library(o).code.includes('buttons'), 'library: the buttons alignment reaches the page')
+  ok(single(ops(['hero button ko left karo', 'reset the layout'], 'single')).html === base.html, 'reset brings the buttons back')
+}
 // 9. the library engine is not black and white, and the pictures reach it
 {
   const lib = library([])

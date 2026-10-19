@@ -79,7 +79,7 @@ export type EditOp =
   | { op: 'move'; section: SectionKey; where: Move; target?: SectionKey }
   | { op: 'movePage'; page: NavPage; where: Move; target?: NavPage }
   | { op: 'size'; target: FitTarget; axis: Axis; factor?: number; px?: number }
-  | { op: 'align'; target: FitTarget; align: Align }
+  | { op: 'align'; target: FitTarget; align: Align; /** only the buttons of that part */ part?: 'buttons' }
   | { op: 'resetLayout'; target?: FitTarget }
   | ({ op: 'photos' } & PhotoSet)
   | { op: 'clearPhotos' }
@@ -119,12 +119,14 @@ export type SiteEdits = {
   /** size changes per part and direction (factors multiply when asked again) */
   sizes: Partial<Record<FitTarget, Partial<Record<Axis, SizeChange>>>>
   aligns: Partial<Record<FitTarget, Align>>
+  /** alignment of the buttons alone */
+  buttonAligns: Partial<Record<FitTarget, Align>>
   tier?: Tier
   motion?: MotionSetting
   theme?: ThemeKey
 }
 
-export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
+export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
 
 const HEX = /^#[0-9a-f]{6}$/i
 const clean = (text: unknown, max: number) => (typeof text === 'string' ? text.replace(/\p{Cc}+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '')
@@ -204,7 +206,7 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       return factor || px ? { op: 'size', target: o.target as FitTarget, axis: o.axis, ...(px ? { px } : { factor }) } : undefined
     }
     case 'align':
-      return (FIT_TARGETS as readonly unknown[]).includes(o.target) && (o.align === 'left' || o.align === 'center' || o.align === 'right') ? { op: 'align', target: o.target as FitTarget, align: o.align } : undefined
+      return (FIT_TARGETS as readonly unknown[]).includes(o.target) && (o.align === 'left' || o.align === 'center' || o.align === 'right') ? { op: 'align', target: o.target as FitTarget, align: o.align, ...(o.part === 'buttons' ? { part: 'buttons' as const } : {}) } : undefined
     case 'resetLayout':
       return o.target === undefined ? { op: 'resetLayout' } : (FIT_TARGETS as readonly unknown[]).includes(o.target) ? { op: 'resetLayout', target: o.target as FitTarget } : undefined
     case 'photos': {
@@ -322,19 +324,23 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
         break
       }
       case 'align':
-        e.aligns = { ...e.aligns, [op.target]: op.align }
+        if (op.part === 'buttons') e.buttonAligns = { ...e.buttonAligns, [op.target]: op.align }
+        else e.aligns = { ...e.aligns, [op.target]: op.align }
         break
       case 'resetLayout':
         if (!op.target) {
           e.sizes = {}
           e.aligns = {}
+          e.buttonAligns = {}
           e.moves = []
           e.pageMoves = []
         } else {
           const { [op.target]: _s, ...sizes } = e.sizes
           const { [op.target]: _a, ...aligns } = e.aligns
+          const { [op.target]: _b, ...buttonAligns } = e.buttonAligns
           e.sizes = sizes
           e.aligns = aligns
+          e.buttonAligns = buttonAligns
         }
         break
       case 'photos': {
@@ -406,7 +412,7 @@ export function describeOp(op: EditOp): string {
     case 'size':
       return `${op.axis === 'height' ? 'Height' : 'Width'} of ${op.target === 'page' ? 'the whole page' : `the ${op.target}`}: ${op.px ? `${op.px}px` : `${Math.round((op.factor ?? 1) * 100)}%`}`
     case 'align':
-      return `Aligned ${op.target === 'page' ? 'the whole page' : `the ${op.target}`} to the ${op.align}`
+      return `Aligned ${op.part === 'buttons' ? 'the buttons of ' : ''}${op.target === 'page' ? 'the whole page' : `the ${op.target}`} to the ${op.align}`
     case 'resetLayout':
       return op.target ? `The ${op.target} has its normal size and place again` : 'All sizes, alignments and moves are back to normal'
     case 'photos':

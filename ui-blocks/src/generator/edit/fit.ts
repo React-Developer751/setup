@@ -3,7 +3,7 @@
 // container with the width factor (or an exact pixel size). Nothing in the templates has to know about it.
 import type { Align, Axis, FitTarget, Move, SectionKey, SiteEdits, SizeChange, Target } from './edits'
 
-export type Fit = { height?: SizeChange; width?: SizeChange; align?: Align }
+export type Fit = { height?: SizeChange; width?: SizeChange; align?: Align; /** the buttons alone */ buttons?: Align }
 export type Fits = Partial<Record<Target, Fit>>
 
 const MERGE = (page: SizeChange | undefined, own: SizeChange | undefined): SizeChange | undefined => {
@@ -15,7 +15,7 @@ const MERGE = (page: SizeChange | undefined, own: SizeChange | undefined): SizeC
 
 /** the fit of every part that was changed (the whole-page change is merged into each part) */
 export function fitsFrom(edits: SiteEdits | undefined, targets: readonly Target[]): Fits | undefined {
-  if (!edits || (!Object.keys(edits.sizes).length && !Object.keys(edits.aligns).length)) return undefined
+  if (!edits || (!Object.keys(edits.sizes).length && !Object.keys(edits.aligns).length && !Object.keys(edits.buttonAligns ?? {}).length)) return undefined
   const out: Fits = {}
   for (const target of targets) {
     const page = edits.sizes.page
@@ -23,7 +23,8 @@ export function fitsFrom(edits: SiteEdits | undefined, targets: readonly Target[
     const height = MERGE(page?.height, own?.height)
     const width = MERGE(page?.width, own?.width)
     const align = edits.aligns[target as FitTarget] ?? edits.aligns.page
-    if (height || width || align) out[target] = { ...(height ? { height } : {}), ...(width ? { width } : {}), ...(align ? { align } : {}) }
+    const buttons = edits.buttonAligns?.[target as FitTarget] ?? edits.buttonAligns?.page
+    if (height || width || align || buttons) out[target] = { ...(height ? { height } : {}), ...(width ? { width } : {}), ...(align ? { align } : {}), ...(buttons ? { buttons } : {}) }
   }
   return Object.keys(out).length ? out : undefined
 }
@@ -142,14 +143,53 @@ function widthOf(html: string, change: SizeChange, mode: 'html' | 'jsx', tags: T
 
 const alignWords = { left: 'text-left', center: 'text-center', right: 'text-right' } as const
 
+const JUSTIFY = { left: 'justify-start', center: 'justify-center', right: 'justify-end' } as const
+const ITEMS = { left: 'items-start', center: 'items-center', right: 'items-end' } as const
+const AUTO_MARGIN = { left: ['mr-auto'], center: ['mx-auto'], right: ['ml-auto'] } as const
+
+/** a row of flex items (buttons, badges ...) and a centred column move with the alignment, not only the text of a block */
+const flexAlign = (classes: string[], align: Align, onlyAnchors: boolean): string[] | undefined => {
+  const isFlex = classes.includes('flex') || classes.includes('inline-flex')
+  const justify = classes.filter((c) => /^(?:(?:sm|md|lg):)?justify-(?:center|start|end)$/.test(c))
+  const items = classes.filter((c) => /^(?:(?:sm|md|lg):)?items-(?:center|start|end)$/.test(c))
+  const auto = classes.filter((c) => /^(?:mx-auto|ml-auto|mr-auto)$/.test(c))
+  if (onlyAnchors) {
+    if (!isFlex || !justify.length) return isFlex ? [...classes, JUSTIFY[align]] : undefined
+  }
+  if (!justify.length && !(items.length && classes.includes('flex-col')) && !auto.length) return undefined
+  let out = classes.filter((c) => !justify.includes(c) && !(classes.includes('flex-col') && items.includes(c)) && !auto.includes(c))
+  if (justify.length) out = [...out, JUSTIFY[align]]
+  if (items.length && classes.includes('flex-col')) out = [...out, ITEMS[align]]
+  if (auto.length) out = [...out, ...AUTO_MARGIN[align]]
+  return out
+}
+
 function alignOf(html: string, align: Align, mode: 'html' | 'jsx', tags: Tag[]): string {
   const out: [Tag, string][] = []
   tags.forEach((tag, i) => {
     const classes = (classAttr(tag.attrs, mode)?.[1] ?? '').split(/\s+/).filter(Boolean)
     const has = classes.some((c) => /^text-(?:left|center|right)$/.test(c))
-    if (!has && i > 0) return
-    out.push([tag, rebuild(tag, mode, (cs) => [...cs.filter((c) => !/^text-(?:left|center|right)$/.test(c)), alignWords[align]], i === 0 && mode === 'html' ? `text-align:${align}` : '')])
+    const moved = flexAlign(classes, align, false)
+    if (!has && !moved && i > 0) return
+    out.push([tag, rebuild(tag, mode, (cs) => {
+      const base = moved && cs.length === classes.length ? moved : cs
+      return [...base.filter((c) => !/^text-(?:left|center|right)$/.test(c)), alignWords[align]]
+    }, i === 0 && mode === 'html' ? `text-align:${align}` : '')])
   })
+  return replaceTags(html, out)
+}
+
+/** the rows that hold the buttons of a block (a flex row whose first child is a link or a button) */
+function buttonsAlignOf(html: string, align: Align, mode: 'html' | 'jsx', tags: Tag[]): string {
+  const out: [Tag, string][] = []
+  for (const tag of tags) {
+    if (!/^(?:div|p|nav)$/.test(tag.name)) continue
+    if (!/^\s*<(?:a|button)\b/.test(html.slice(tag.end, tag.end + 80))) continue
+    const classes = (classAttr(tag.attrs, mode)?.[1] ?? '').split(/\s+/).filter(Boolean)
+    if (!classes.includes('flex')) continue
+    const moved = flexAlign(classes, align, true)
+    if (moved) out.push([tag, rebuild(tag, mode, () => moved, '')])
+  }
   return replaceTags(html, out)
 }
 
@@ -163,6 +203,7 @@ export function fitMarkup(markup: string, fit: Fit, mode: 'html' | 'jsx'): strin
     html = axis === 'height' ? heightOf(html, change, mode, tags) : widthOf(html, change, mode, tags)
   }
   if (fit.align) html = alignOf(html, fit.align, mode, tagsOf(html))
+  if (fit.buttons) html = buttonsAlignOf(html, fit.buttons, mode, tagsOf(html))
   return html
 }
 

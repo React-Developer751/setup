@@ -232,10 +232,18 @@ export function layoutOps(clause: string, context: 'single' | 'multi', quotes: s
 
   // ── align
   const alignWord = has(w(['align', 'aligned', 'alignment', 'aligning', 'justify', 'sidha', 'सीधा']), text)
-  const aligns = ALIGN_RE.filter(([re]) => has(re, text))
+  // "center se left karo": the word that comes last is where it goes
+  const aligns = ALIGN_RE.map(([re, value]) => ({ value, at: text.search(re) })).filter((h) => h.at >= 0).sort((a, b) => b.at - a.at).slice(0, 1).map((h) => [null, h.value] as const)
   const alignTextWord = /(?<![\p{L}\p{M}])(?:text|heading|headings|title|content|words|writing|line|lines|likha|likhai|टेक्स्ट|हेडिंग)(?![\p{L}\p{M}])/iu.test(text)
   const placeWord = /(?<![\p{L}\p{M}])(?:me|mein|mai|par|pe|side|taraf|karo|kar do|kardo|rakho|lao|lagao|please|में|पर|करो|कर दो|रखो|लाओ)(?![\p{L}\p{M}])/iu.test(text)
   const isCenter = aligns[0]?.[1] === 'center'
+  // the buttons alone: "button ko left karo", "move the button to the right", "hero button center me"
+  const buttonWord = /(?<![\p{L}\p{M}])(?:buttons?|btns?|cta\s+buttons?|बटन|बटन्स)(?![\p{L}\p{M}])/iu.test(text)
+  if (buttonWord && aligns.length === 1 && !quotes.length && !/§/.test(text) && !has(REMOVALS, text) && !/(?<![\p{L}])(?:text|label|likho|write|naam|name|colou?r|rang|size|bada|chhota|round)(?![\p{L}])/iu.test(text)) {
+    const parts = ments.filter((m) => m.value !== 'header')
+    const targets: FitTarget[] = parts.length && !has(PAGE_ALL_RE, text) ? (parts.map((m) => m.value) as FitTarget[]) : lastTarget && !has(PAGE_ALL_RE, text) && ['hero', 'cta'].includes(lastTarget) ? [lastTarget as FitTarget] : ['hero']
+    return { ops: targets.map((target) => ({ op: 'align', target, align: aligns[0][1], part: 'buttons' }) as EditOp), notes: [] }
+  }
   if (aligns.length === 1 && (alignWord || alignTextWord || (isCenter && (ments.length > 0 || has(PAGE_ALL_RE, text))) || ((ments.length > 0 || has(PAGE_ALL_RE, text)) && placeWord)) && !has(REMOVALS, text) && !sizeAmount(text) && !relBeforeEn && !relAfterEn && !(ments.length && has(MOVE_VERB_STRICT, text))) {
     const parts = ments.filter((m) => !(m.value === 'hero' && false))
     const targets: FitTarget[] = parts.length && !has(PAGE_ALL_RE, text) ? (parts.map((m) => m.value) as FitTarget[]) : ['page']
