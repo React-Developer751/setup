@@ -108,7 +108,7 @@ export function ThemeScope({
       // React StrictMode runs effects twice in development; fill each section only once
       if (el.dataset.filled) return
       el.dataset.filled = '1'
-      fillContent(el, el.dataset.role as Role, content, links)
+      fillContent(el, el.dataset.role as Role, content, links, { accent: pagePalette[mode].accent, alt: pagePalette[mode].alt })
     })
     // Preline wires up collapse / dropdown behaviour of the navigation blocks
     import('preline').then(({ HSStaticMethods }) => HSStaticMethods.autoInit()).catch(() => {})

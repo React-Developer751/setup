@@ -464,7 +464,23 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
 // without pictures a soft gradient in the colours of the site stands there, never a grey "720 x 600" box.
 const DUMMY = /dummyimage\.com\/(\d+)x(\d+)/
 const blank = (w: number, h: number) => `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"/>`)}`
-function fillImages(root: Element, role: Role, c: WebsiteContent) {
+/** a round avatar with the initials of a person, in the colours of the site (for the pictures of reviews and team members) */
+const initialsOf = (name: string) => (name.replace(/[^\p{L}\s]/gu, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?')
+const avatar = (name: string, accent: string, alt: string) =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${accent}"/><stop offset="1" stop-color="${alt}"/></linearGradient></defs><rect width="200" height="200" fill="url(#g)"/><text x="100" y="100" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="78" text-anchor="middle" dominant-baseline="central">${initialsOf(name).replace(/[<>&]/g, '')}</text></svg>`)}`
+
+function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { accent: string; alt: string }) {
+  if ((role === 'testimonial' || role === 'team') && colors) {
+    const names = role === 'testimonial' ? c.testimonials.map((t) => t.author) : c.team.members.map((m) => m.name)
+    let n = 0
+    root.querySelectorAll('img').forEach((img) => {
+      if (!DUMMY.test(img.getAttribute('src') ?? '')) return
+      img.setAttribute('src', avatar(names[n++ % Math.max(1, names.length)] ?? c.brandName, colors.accent, colors.alt))
+      img.removeAttribute('srcset')
+      img.classList.add('object-cover')
+    })
+    return
+  }
   const photos = c.photos
   const gallery = photos?.gallery ?? []
   const pool = role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about] : role === 'gallery' ? gallery : [...gallery, photos?.about, photos?.hero]
@@ -500,9 +516,9 @@ function ensureTitle(root: Element, role: Role, c: WebsiteContent) {
   section.insertBefore(h, holder === section ? section.firstChild : holder)
 }
 
-export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[]) {
+export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
   try {
-    if (role !== 'nav' && role !== 'footer') fillImages(root, role, c)
+    if (role !== 'nav' && role !== 'footer') fillImages(root, role, c, colors)
     if (role === 'nav') return fillNav(root, c, links)
     if (role === 'footer') return fillFooter(root, c, links)
     if (role === 'hero') fillHero(root, c)

@@ -1057,6 +1057,7 @@ const sections: Record<LayoutId, (ctx: Ctx) => string> = {
           .map(
             (q) => `
           <figure data-slide ${k}="${t.surface} ${t.border} ${t.radius} mb-4 border px-8 py-12 text-center">
+            <div ${k}="${t.badge} mx-auto mb-4 flex size-14 items-center justify-center rounded-full text-lg font-bold" aria-hidden="true">${esc(initials(q.author))}</div>
             <div ${k}="text-5xl font-serif leading-none ${t.accent}">&ldquo;</div>
             <blockquote ${k}="mt-2 text-xl font-medium ${t.text_main} md:text-2xl">${esc(q.quote)}</blockquote>
             <figcaption ${k}="mt-6 text-sm ${t.text_muted}">

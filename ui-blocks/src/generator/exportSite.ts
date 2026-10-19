@@ -380,6 +380,8 @@ const unescapeClass = (token: string) =>
 export function usedCss(htmls: string[], prune = true): string {
   const classes = new Set<string>()
   for (const html of htmls) for (const match of html.matchAll(/class="([^"]*)"/g)) match[1].split(/\s+/).forEach((c) => classes.add(c))
+  // classes that only the motion script puts on the elements (the rotating testimonials show their slide through `is-active`)
+  for (const c of ['is-active', 'is-in', 'm-lift']) classes.add(c)
 
   const wanted = (selector: string) =>
     !prune ||
