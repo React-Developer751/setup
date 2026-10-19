@@ -115,6 +115,8 @@ export function ThemeScope({
 
     // reveal on scroll, card hover, count-up ... (the runtime tags the components' cards itself)
     return motion ? initMotion(root, motion) : undefined
+    // the avatars are drawn once, in the colours of the first mode; switching light / dark must not fill or restart the page again
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [content, motion])
 
   return (
