@@ -1,0 +1,1 @@
+{ "note": "Scene prompts the image AI drew badly again and again (written by npm run images:learn from server/data/image-feedback.jsonl). The scene plan avoids them.", "blocked": [] }

@@ -28,13 +28,14 @@
     "eval:business": "node scripts/eval-models.mjs --test=src/data/training/business-blind.jsonl",
     "build:lite": "node scripts/build-lite.mjs",
     "check:niches": "node scripts/check-niches.mjs",
-    "test": "node scripts/test-edit.mjs && node scripts/test-layout.mjs && node scripts/test-colors.mjs && node scripts/test-niche.mjs && node scripts/test-business.mjs && node scripts/test-projects.mjs && node scripts/test-images.mjs && node scripts/e2e-edit.mjs && node scripts/audit-sites.mjs && npm run test:ml",
+    "test": "node scripts/test-edit.mjs && node scripts/test-layout.mjs && node scripts/test-colors.mjs && node scripts/test-image-check.mjs && node scripts/test-niche.mjs && node scripts/test-business.mjs && node scripts/test-projects.mjs && node scripts/test-images.mjs && node scripts/e2e-edit.mjs && node scripts/audit-sites.mjs && npm run test:ml",
     "test:niche": "node scripts/test-niche.mjs",
     "eval:niches": "node scripts/eval-niches.mjs",
     "test:business": "node scripts/test-business.mjs",
     "test:projects": "node scripts/test-projects.mjs",
     "images": "node scripts/run-pixelmath.mjs",
     "app": "node scripts/start-all.mjs",
+    "images:learn": "node scripts/image-learn.mjs",
     "test:images": "node scripts/test-images.mjs"
   },
   "dependencies": {

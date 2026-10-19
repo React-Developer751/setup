@@ -2,6 +2,7 @@
 //   ANTHROPIC_API_KEY=... node server/index.mjs        (or: npm run server)
 // POST /api/edit      { text, state }   -> { ops, control?, newSite?, reply }   the AI reads the request and answers with operations
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
+// GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
 // GET  /api/health    -> { ok, ai }
 // The page checks every operation again (cleanOp), so this server is never trusted with more than the offline rules may do.
 import fs from 'node:fs'
@@ -26,7 +27,7 @@ const RATE_PER_MINUTE = Number(process.env.EDIT_RATE_PER_MINUTE ?? 30)
 const KEY = process.env.ANTHROPIC_API_KEY
 const BASE = (process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com').replace(/\/$/, '')
 const MODEL = process.env.EDIT_MODEL ?? 'claude-haiku-5-5'
-const DATA = path.join(here, 'data')
+const DATA = process.env.EDIT_DATA_DIR ?? path.join(here, 'data')
 const MAX_BODY = 20_000
 
 const SECTIONS = ['stats', 'marquee', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact']
@@ -206,6 +207,27 @@ export const server = http.createServer(async (req, res) => {
       const bytes = Buffer.from(await upstream.arrayBuffer())
       res.writeHead(200, { 'content-type': upstream.headers.get('content-type'), 'content-length': bytes.length, 'cache-control': 'public, max-age=86400' })
       return res.end(bytes)
+    }
+    // how the image engine understands a prompt (its /parse): the page asks before it draws, and tries other words when nothing is understood
+    if (req.method === 'GET' && url.pathname === '/api/ai-parse') {
+      const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+      if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
+      try {
+        const upstream = await fetch(`${PIXELMATH_URL}/parse`, { method: 'POST', headers: { 'content-type': 'application/json', ...(PIXELMATH_KEY ? { 'x-api-key': PIXELMATH_KEY } : {}) }, body: JSON.stringify({ prompt }), signal: AbortSignal.timeout(10_000) })
+        if (!upstream.ok) return send(res, 502, { error: `the image engine answered ${upstream.status}` })
+        const body = await upstream.json()
+        return send(res, 200, { mode: body.mode, entities: (body.entities ?? []).map((e) => ({ name: String(e.name) })), not_in_lexicon: body.not_in_lexicon ?? [] })
+      } catch {
+        return send(res, 503, { error: 'the image engine is not running (npm run images)' })
+      }
+    }
+    // what the page decided about a picture (accepted or redrawn, and why): examples for learning which scenes work (npm run images:learn)
+    if (req.method === 'POST' && url.pathname === '/api/image-feedback') {
+      const entry = JSON.parse(await readBody(req))
+      fs.mkdirSync(DATA, { recursive: true })
+      const reasons = Array.isArray(entry.reasons) ? entry.reasons.slice(0, 5).map((r) => String(r).slice(0, 120)) : []
+      fs.appendFileSync(path.join(DATA, 'image-feedback.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), prompt: String(entry.prompt ?? '').slice(0, 200), seed: Number(entry.seed) || 0, attempt: Number(entry.attempt) || 1, accepted: entry.accepted === true, score: Number(entry.score) || 0, reasons, stage: entry.stage === 'parse' ? 'parse' : 'pixels' })}\n`)
+      return send(res, 200, { ok: true })
     }
     if (req.method === 'GET' && url.pathname === '/api/photos') {
       if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
