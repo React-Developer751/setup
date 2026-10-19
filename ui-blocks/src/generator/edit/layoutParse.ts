@@ -175,6 +175,12 @@ export function layoutOps(clause: string, context: 'single' | 'multi', quotes: s
         subject = moveSections.filter((s) => s !== reference && s.at < rel.index)[0] ?? moveSections.find((s) => s !== reference)
       }
       where = before ? 'before' : 'after'
+    } else if (moveSections.length === 1 && rel && ments.some((m) => ['header', 'hero', 'footer'].includes(m.value))) {
+      // "pricing ko hero ke neeche": just below the first screen is the top of the sections; "before the footer" is the bottom
+      subject = moveSections[0]
+      const part = ments.find((m) => ['header', 'hero', 'footer'].includes(m.value))?.value
+      const before = !!(relBeforeEn ?? relBeforeHi)
+      where = part === 'footer' ? (before ? 'bottom' : undefined) : before ? undefined : 'top'
     } else if (moveSections.length >= 1) {
       subject = moveSections[0]
       const bottom = BOTTOM_RE.test(text)

@@ -106,23 +106,32 @@ function chooseHue(prompt: string, theme: ThemeKey, rand: () => number) {
   const named = words.find((w) => w in COLOR_WORDS)
   if (named) return { hue: COLOR_WORDS[named], reason: `colour named in the prompt ("${named}")` }
 
+  // not every bakery is brown: four times in ten the business clue is dropped for one of the lively hues, so each site gets its own colours
+  const LIVELY = [345, 330, 285, 262, 245, 205, 165, 25, 5, 150]
+  if (rand() < 0.4) {
+    const hue = LIVELY[Math.floor(rand() * LIVELY.length)]
+    return { hue: wrap(hue + Math.round((rand() - 0.5) * 24)), reason: 'a lively hue chosen for this site, so no two sites look alike' }
+  }
+
   const scored = HINTS.map((hint) => ({ hint, hits: words.filter((w) => hint.words.includes(w)) })).filter((x) => x.hits.length)
   if (scored.length) {
     const best = scored.reduce((a, b) => (b.hits.length > a.hits.length ? b : a))
-    const jitter = Math.round((rand() - 0.5) * 20)
+    const jitter = Math.round((rand() - 0.5) * 70)
     return { hue: wrap(best.hint.hue + jitter), reason: `"${best.hits[0]}" suggests ${best.hint.label}` }
   }
 
   const [low, high] = MOODS[theme].range
-  return { hue: wrap(low + rand() * (high - low)), reason: `no colour clue, using the ${theme.replace('_', ' ')} theme's own hue range` }
+  return { hue: wrap(low - 20 + rand() * (high - low + 40)), reason: `no colour clue, using the ${theme.replace('_', ' ')} theme's own hue range` }
 }
 
 function buildMode(mode: ColorMode, hue: number, altHue: number, mood: Mood): PaletteMode {
+  // the page itself is tinted with the main hue (a soft peach, mint or lilac; deep plum, forest or navy in the dark), never plain white or black
   const ns = mood.neutralSaturation
   const dark = mode === 'dark'
-  const bg = dark ? hslToHex(hue, ns, 5) : hslToHex(hue, ns * 0.6, 98)
-  const surface = dark ? hslToHex(hue, ns, 9) : '#ffffff'
-  const border = dark ? hslToHex(hue, ns * 0.8, 18) : hslToHex(hue, ns * 0.5, 88)
+  const tint = Math.max(32, Math.min(60, 30 + ns * 0.8))
+  const bg = dark ? hslToHex(hue, Math.min(55, tint), 9) : hslToHex(hue, tint, 95.5)
+  const surface = dark ? hslToHex(hue, Math.min(50, tint - 4), 14) : hslToHex(hue, tint + 15, 99)
+  const border = dark ? hslToHex(hue, Math.min(45, tint - 8), 25) : hslToHex(hue, tint - 4, 84)
 
   // text colours: nudge lightness until they are comfortably readable on both background and surface
   let text = dark ? hslToHex(hue, 15, 96) : hslToHex(hue, 35, 10)

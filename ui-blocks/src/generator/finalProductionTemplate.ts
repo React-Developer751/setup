@@ -1190,6 +1190,9 @@ export function renderSections(
 export const themeCss = (tokens: Record<ColorMode, Record<string, string>>) => {
   const declarations = (values: Record<string, string>) => Object.entries(values).map(([key, value]) => `${key}:${value}`).join(';')
   return `.g-root[data-mode="light"]{${declarations(tokens.light)}}.g-root[data-mode="dark"]{${declarations(tokens.dark)}}.g-root[data-mode="dark"] .g-moon,.g-root[data-mode="light"] .g-sun{display:none}`
+    // colour on the page itself: a glow of the two main colours behind the first screen, and a soft gradient band behind every fourth part
+    + `.g-root>:nth-child(2){background-image:radial-gradient(60% 90% at 12% 0%,color-mix(in oklab,var(--g-accent) 26%,transparent),transparent 70%),radial-gradient(55% 80% at 95% 15%,color-mix(in oklab,var(--g-alt) 16%,transparent),transparent 70%)}`
+    + `.g-root>:nth-child(4n+1):not(:first-child):not(:last-child){background-image:linear-gradient(100deg,color-mix(in oklab,var(--g-accent) 13%,var(--g-bg)),color-mix(in oklab,var(--g-alt) 11%,var(--g-bg)))}`
 }
 
 /** Markup for the live preview. Both colour palettes are in a <style> block; `data-mode` picks one. */

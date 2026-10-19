@@ -28,6 +28,16 @@ export async function serverHealth(): Promise<boolean> {
   }
 }
 
+/** is the image engine (PixelMath) reachable through the server of this project? */
+export async function imageEngineUp(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/health', { signal: AbortSignal.timeout(2500) })
+    return res.ok && !!((await res.json()) as { images?: boolean }).images
+  } catch {
+    return false
+  }
+}
+
 export async function askServer(text: string, state: SiteState): Promise<ServerAnswer | undefined> {
   try {
     const res = await fetch('/api/edit', {

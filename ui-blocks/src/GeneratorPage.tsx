@@ -19,7 +19,8 @@ import EditChat, { type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp } from './generator/edit/edits'
-import { askServer, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { makePictures } from './generator/edit/imageAiClient'
 import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
@@ -198,6 +199,25 @@ function GeneratorPage() {
     say({ role: 'ai', text: reply || (ops.length === 1 ? 'Done.' : `Done: ${ops.length} changes.`), ops, via })
     if (useServer && serverReady) sendFeedback({ text, ops, accepted: true, source: via === 'server' ? 'server' : 'rules' })
   }
+
+  // A new site draws its own pictures by itself when the image engine is running (once per site and variation; "Remove the photos" is respected)
+  const drawnFor = useRef('')
+  const hasPhotosRef = useRef(false)
+  hasPhotosRef.current = history.some((h) => h.ops.some((o) => o.op === 'photos'))
+  const autoDraw = useRef<() => Promise<void>>(async () => undefined)
+  autoDraw.current = async () => {
+    const key = `${submitted}|${variation}`
+    if (drawnFor.current === key) return
+    drawnFor.current = key
+    if (!(await imageEngineUp()) || hasPhotosRef.current) return
+    say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
+    const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined)
+    if (drawnFor.current !== key || hasPhotosRef.current) return
+    if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', 'Pictures added. You can draw other ones or use your own in "Real photos".')
+  }
+  useEffect(() => {
+    void autoDraw.current()
+  }, [submitted, variation])
 
   const undo = () => {
     const last = history[history.length - 1]

@@ -493,6 +493,11 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
         if (b2) value = stripEnds(showQuotes(b2[1], quotes))
       }
     }
+    // "buttons bade karo" asks for a style (size, shape), not for the words "bade" on the button
+    if (value && !hasQuote(clause) && wordCount(value) <= 2 && /^(?:bad[ae]|badi|chh?ot[ae]|chh?oti|big(?:ger)?|small(?:er)?|large(?:r)?|round(?:ed)?|sharp|bold|thin|thick|zyada|jyada|kam|bigger|smaller|gol|moti|patli|patla)$/i.test(value.trim())) {
+      notes.push('I cannot change the size or shape of buttons yet. I can change the button text and colour.')
+      return { ops, notes }
+    }
     if (value && value.length >= 1 && !(colorMentions(value).length > 0 && wordCount(value) <= 3 && !hasQuote(clause))) {
       push({ op: 'text', field: fieldHit.field, text: value })
       return { ops, notes }

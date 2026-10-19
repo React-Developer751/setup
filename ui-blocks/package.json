@@ -34,6 +34,7 @@
     "test:business": "node scripts/test-business.mjs",
     "test:projects": "node scripts/test-projects.mjs",
     "images": "node scripts/run-pixelmath.mjs",
+    "app": "node scripts/start-all.mjs",
     "test:images": "node scripts/test-images.mjs"
   },
   "dependencies": {
