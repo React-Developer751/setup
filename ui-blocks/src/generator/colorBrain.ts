@@ -7,6 +7,7 @@
 //   4. safety   : lightness is adjusted until text, muted text, accent and button text pass WCAG contrast
 //
 // Everything is seeded, so the same prompt always gives the same palette.
+import { curatedFor } from './curatedPalettes'
 import { fromKits } from './kits'
 import { defaultMode, type ColorMode, type Palette, type PaletteMode, type ThemeKey } from './themes'
 
@@ -159,6 +160,27 @@ export type ColorPlan = { palette: Palette; hue: number; harmony: string; reason
 
 export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number): ColorPlan {
   const mood = MOODS[theme]
+  // a colour named in the prompt always wins; otherwise most sites get a hand-picked pair of colours (curatedPalettes.ts), the formula is the rest
+  const named = prompt.toLowerCase().split(/[^a-z]+/).some((w) => w in COLOR_WORDS)
+  const pool = curatedFor(theme)
+  if (!named && pool.length && rand() < 0.8) {
+    const pick = pool[Math.floor(rand() * pool.length)]
+    const a = hexToHsl(pick.accent)
+    const b = hexToHsl(pick.alt)
+    const own: Mood = { ...mood, saturation: a.s, accentLight: a.l, accentDark: Math.min(78, a.l + 24) }
+    const light = buildMode('light', a.h, b.h, own)
+    const dark = buildMode('dark', a.h, b.h, own)
+    // the hand-picked colours themselves, when they are readable on the page they are made for
+    const fits = (c: string, m: PaletteMode) => Math.min(contrast(c, m.bg), contrast(c, m.surface), contrast(bestOn(c), c)) >= 4.5
+    if (fits(pick.accent, light)) light.accent = pick.accent
+    light.alt = pick.alt
+    return {
+      hue: Math.round(a.h),
+      harmony: 'curated',
+      palette: { name: pick.name, light, dark },
+      reasons: [`hand-picked colours "${pick.name}" (${hueName(a.h)} with ${hueName(b.h)}), chosen for a ${theme.replace(/_/g, ' ')} site`, `${defaultMode(theme)} first, contrast checked (WCAG AA) in both modes`],
+    }
+  }
   const { hue, reason } = chooseHue(prompt, theme, rand)
   const harmony = HARMONIES[Math.floor(rand() * HARMONIES.length)]
   const altHue = wrap(hue + harmony.offset)
