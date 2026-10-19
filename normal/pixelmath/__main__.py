@@ -67,6 +67,9 @@ def _main(argv=None):
     print("saved %s (%dx%d, %d bytes, mode=%s) in %.1fs" % (
         args.output, width, height, nbytes, mode, time.time() - t0))
 
+    from .compose import text_warnings
+    for note in text_warnings(parsed):
+        print("note: " + note, file=sys.stderr)
     if args.explain:
         print("time:", parsed.time, "| flags:", sorted(parsed.flags))
         for e in parsed.entities:

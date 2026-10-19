@@ -98,7 +98,7 @@ npm run server      # this project's server: /api/ai-image asks the engine, /api
 npm run dev         # the page: Real photos > "Draw scenes for my site"
 ```
 
-* Engine v1.3 draws **business props** (115: food, shops, doctors, tools, vehicles, buildings, animals ...) in scenes (a desk, a cafe table, a room, a workshop,
+* Engine v1.4 draws **business props** (138: food, shops, doctors, tools, vehicles, buildings, animals ...) in scenes (a desk, a cafe table, a room, a workshop,
   a landscape) as flat illustrations, plus sunsets, skylines, galaxies and mandalas; no photographs, brands or faces with detail.
   `src/data/imageScenes.json` gives every business type and 55 niches their own scenes in words the engine understands (a bakery shop for a bakery,
   a doctor with a clinic, tools and a ladder for a plumber, solar panels for a solar installer ...). Edit that file to change what is drawn;

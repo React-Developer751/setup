@@ -41,7 +41,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
 from . import __version__
-from .compose import MAX_SIZE, MIN_SIZE, choose_mode, render
+from .compose import MAX_SIZE, MIN_SIZE, choose_mode, render, text_warnings
 from .imagefile import encode_bmp, encode_png
 from .learn import (DEFAULT_GRID, IMAGE_EXTS, UNSUPPORTED_EXTS, LearnedModel, ModelError,
                     load_dataset, train_model)
@@ -660,11 +660,12 @@ class Handler(BaseHTTPRequestHandler):
         if p["response"] == "base64":
             self._json({"image_base64": base64.b64encode(data).decode("ascii"), "mime": mime,
                         "width": p["width"], "height": p["height"], "seed": p["seed"], "mode": mode,
-                        "render_seconds": secs,
+                        "render_seconds": secs, "warnings": text_warnings(parsed),
                         "known_words": model.known_words(p["prompt"]) if model else []})
             return
+        warn = text_warnings(parsed)
         self._send(200, data, mime, {"X-PixelMath-Mode": mode, "X-PixelMath-Seed": str(p["seed"]),
-                                     "X-Render-Seconds": str(secs),
+                                     "X-Render-Seconds": str(secs), **({"X-PixelMath-Warning": warn[0]} if warn else {}),
                                      "Content-Disposition": 'inline; filename="pixelmath.%s"' % p["format"]})
 
     def post_parse(self, parts, path):

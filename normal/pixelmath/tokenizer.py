@@ -155,7 +155,7 @@ STOPWORDS.update(_N(w) for w in ("और", "का", "की", "के", "मे
 MAX_PROMPT_CHARS = 2000
 
 # business props and concepts (see props/): merge without overriding the older, hand-tuned words
-from .props import CONCEPTS as _CONCEPTS, WORDS as _PROP_WORDS  # noqa: E402
+from .props import CONCEPTS as _CONCEPTS, CONCEPT_FLAGS as _CONCEPT_FLAGS, WORDS as _PROP_WORDS  # noqa: E402
 for _w, _n in _PROP_WORDS.items():
     OBJECTS.setdefault(_w, _n)
 
@@ -169,7 +169,7 @@ PHRASES = {
     "online shopping": "ecommerce", "e-commerce": "ecommerce", "mobile app": "mobile", "customer support": "support",
     "customer service": "support", "customer review": "review", "customer reviews": "review", "hair salon": "salon",
     "beauty salon": "salon", "travel agency": "travel", "living room": "sofa",
-    "coffee beans": "coffee", "pet shop": "petshop", "house painting": "painter house", "wall painting": "painter", "home painting": "painter house", "painting service": "painter", "painting services": "painter", "painting contractor": "painter", "pet store": "petshop", "pet care": "pets", "green energy": "greenenergy", "solar panel": "solarpanel", "wind turbine": "windmill", "sewing machine": "sewingmachine", "power tools": "tools", "toolbox": "toolbox", "wedding couple": "wedding", "study abroad": "education", "student visa": "education",
+    "coffee beans": "coffee", "pet shop": "petshop", "fire truck": "firetruck", "fire engine": "firetruck", "fire safety": "extinguisher", "police car": "policecar", "patrol car": "policecar", "police patrol car": "policecar", "police van": "policecar", "dental chair": "dentalchair", "ambulance van": "ambulance", "ice skating": "iceskating", "ice rink": "rink", "skating rink": "rink", "ski resort": "skiresort", "snow board": "snowboard", "winter sports": "wintersports", "ice hockey": "icehockey", "fire station": "fire", "fire brigade": "fire", "oral health": "oralhealth", "dental clinic": "dental", "dental care": "dental", "house painting": "painter house", "wall painting": "painter", "home painting": "painter house", "painting service": "painter", "painting services": "painter", "painting contractor": "painter", "pet store": "petshop", "pet care": "pets", "green energy": "greenenergy", "solar panel": "solarpanel", "wind turbine": "windmill", "sewing machine": "sewingmachine", "power tools": "tools", "toolbox": "toolbox", "wedding couple": "wedding", "study abroad": "education", "student visa": "education",
     "graduation cap": "gradcap", "graduation hat": "gradcap", "gift shop": "shop", "book shop": "shop", "book store": "shop",
 }
 _PHRASE_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in sorted(PHRASES, key=len, reverse=True)) + r")\b")
@@ -197,6 +197,7 @@ class Entity:
     size: float = 1.0
     position: str = None
     count: int = 1
+    secondary: bool = False      # came from a concept expansion beyond its first two props: dropped first when the picture is crowded
 
 
 @dataclass
@@ -303,6 +304,7 @@ def parse(prompt):
     result = ParsedPrompt(text=prompt, tokens=tokens, texts=texts)
     pending = {"color": None, "size": 1.0, "position": None, "count": None}
     last = None
+    expanded = set()                                           # a concept written twice ("ice skating rink") expands once
 
     def reset():
         pending.update(color=None, size=1.0, position=None, count=None)
@@ -341,10 +343,16 @@ def parse(prompt):
             count = pending["count"]
             if count is None:
                 count = PLURAL_DEFAULT.get(tok.value, 3) if tok.plural else 1
+            if tok.value.startswith("@"):
+                if tok.value in expanded:
+                    reset()
+                    continue
+                expanded.add(tok.value)
+                result.flags |= _CONCEPT_FLAGS.get(tok.value[1:], set())
             names = _CONCEPTS[tok.value[1:]][1] if tok.value.startswith("@") else (tok.value,)
             for k, nm in enumerate(names):                      # a concept word expands into several props
                 ent = Entity(kind, nm, pending["color"] if k == 0 else None, pending["size"],
-                             pending["position"], count if len(names) == 1 else 1)
+                             pending["position"], count if len(names) == 1 else 1, secondary=k >= 2)
                 result.entities.append(ent)
                 last = ent
             reset()

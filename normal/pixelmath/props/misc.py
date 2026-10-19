@@ -75,7 +75,7 @@ def trophy(c, color):
     c.line(-0.18, 0.88, -0.12, 0.66, 0.025, WHITE, alpha=0.45)
 
 
-@prop("dumbbell", aspect=1.7, place="table", nominal=0.18, fill=0.5, category="wellness", words=("dumbbells", "weights", "gym", "fitness", "workout", "exercise", "training", "crossfit", "muscle", "bodybuilding", "kettlebell"))
+@prop("dumbbell", aspect=1.7, place="table", nominal=0.18, fill=0.5, category="wellness", words=("dumbbells", "weights", "gym", "fitness", "workout", "exercise", "crossfit", "muscle", "bodybuilding", "kettlebell"))
 def dumbbell(c, color):
     c.shadow(0.0, 0.1, 1.5, 0.08)
     col = c.pick(color, (0.28, 0.30, 0.38))
@@ -90,7 +90,7 @@ def dumbbell(c, color):
                    scale(col, 1.0 if off < 0.6 else 0.8), lift=0.16, angle=ang, pivot=piv)
 
 
-@prop("medicalcross", aspect=1.0, place="table", nominal=0.3, category="health", words=("medical", "health", "healthcare", "pharmacy", "medicine", "medicines", "first", "aid", "ambulance", "emergency", "wellbeing", "cross", "care", "caring", "hygiene", "treatment", "healing"))
+@prop("medicalcross", aspect=1.0, place="table", nominal=0.3, category="health", words=("medical", "health", "healthcare", "pharmacy", "medicine", "medicines", "first", "aid", "wellbeing", "cross", "care", "caring", "hygiene", "treatment", "healing"))
 def medicalcross(c, color):
     c.shadow(0.02, 0.02, 0.9, 0.07)
     col = c.pick(color, (0.88, 0.20, 0.25))

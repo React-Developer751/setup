@@ -14,13 +14,13 @@ GOOD = the main subject is recognisable and sensibly composed. PARTIAL = setting
 
 ## Still not covered (updated in v1.3, see the end of this file)
 
-Emergency services (fire fighters, ambulances), dentistry details, winter sports, specific brands or products, text in non-Latin scripts (Devanagari, Chinese: dropped), faces with detail and photo-realism. Each missing thing needs a painter (README, 'Adding your own prop') or a real image model, which this project deliberately does not use. Output is flat-illustration style, not photographic.
+Anything outside the 138 props and 37 concepts: submarines, astronauts, robots, scooters and motorbikes, specific brands or products, Chinese beyond the 103 characters (光 临 价 are examples of common ones missing), faces with detail and photo-realism. Devanagari is experimental (see README). Each missing thing needs a painter (README, 'Adding your own prop') or a real image model, which this project deliberately does not use. Output is flat-illustration style, not photographic.
 
 ## Training on your own images
 
 A model trained on 5 party-shop photos (`own_images_blend_demo.png`): row 1 your photos, row 2 the model alone (blurry look-alikes), row 3 prop scenes without the model, row 4 prop scenes with the model's learned backdrop palette (warmer orange/sand tones where those photos had them). Objects stay sharp because painters draw them; the model only supplies palette. It does not learn object shapes.
 
-Files: `props_gallery.png` (all 115 props), `sheet1_prompts_01-16.png`, `sheet2_prompts_17-32.png`, `holdout_sheet1_01-16.png`, `holdout_sheet2_17-28.png`, `images/` and `holdout_images/` (512x320). Re-run: `python3 business_check/run_business_check.py` and `python3 business_check/run_holdout_check.py`.
+Files: `props_gallery.png` (all 138 props), `sheet1_prompts_01-16.png`, `sheet2_prompts_17-32.png`, `holdout_sheet1_01-16.png`, `holdout_sheet2_17-28.png`, `images/` and `holdout_images/` (512x320). Re-run: `python3 business_check/run_business_check.py` and `python3 business_check/run_holdout_check.py`.
 
 ## Development set
 
@@ -136,3 +136,44 @@ Images: `holdout2_images/`, sheets `holdout2_sheet1_01-16.png`, `holdout2_sheet2
 | 34 | ambulance | doctor, medicalcross | **PARTIAL** | doctor + medical cross, no ambulance vehicle |
 | 35 | dentist tooth | doctor | **PARTIAL** | doctor only, no tooth |
 | 36 | ice skating rink | - | **NO** | abstract art: nothing understood |
+
+## Holdout set 3 (v1.4: emergency, dental/medical, winter, Hindi and Chinese text, crowded scenes)
+
+32 new prompts written before the v1.4 painters existed. **First run: 23 GOOD / 7 PARTIAL / 2 NO.** It exposed generic faults, fixed afterwards: `fire truck` also drew a generic truck, `police patrol car` drew an officer and a red car, `dental chair` added an extra chair, and `training` summoned a dumbbell (phrases and words fixed). After the fixes: **26 GOOD / 4 PARTIAL / 2 NO**. The four unsupported-by-design prompts (submarine, astronaut, pizza scooter, robot) gave 0 GOOD (2 PARTIAL, 2 NO). Hindi text worked on every Hindi prompt; Chinese worked for 茶 and 咖啡 but only partly for 欢迎光临 and 特价.
+
+Images: `holdout3_images/`, sheets `holdout3_sheet1_01-16.png`, `holdout3_sheet2_17-32.png`. Re-run: `python3 business_check/run_holdout3_check.py`.
+
+| # | Prompt | Understood | Grade | What was drawn |
+|---|---|---|---|---|
+| 1 | fire station with fire truck and firefighters | firetruck, firefighter, hydrant | **GOOD** | fire truck, two firefighters, hydrant (first run: an extra white truck overlapped) |
+| 2 | ambulance rushing to hospital | ambulance, hospital | **GOOD** | ambulance in front of a hospital |
+| 3 | police patrol car on the road | policecar, road | **GOOD** | police car on a road (first run: officer + red car) |
+| 4 | fire safety training extinguisher | extinguisher | **GOOD** | fire extinguisher (sparse; first run: cluttered with a dumbbell) |
+| 5 | dentist clinic with a happy tooth | dentist, hospital, tooth | **GOOD** | dentist, tooth and medical cross in a clinic |
+| 6 | dental chair and toothbrush | dentalchair, toothbrush | **GOOD** | dental chair, toothbrush, tooth, dentist (first run: an extra chair) |
+| 7 | pharmacy pills and syringe | pills, syringe, medicalcross | **GOOD** | pills, syringe, medical cross |
+| 8 | doctor with stethoscope and thermometer | doctor, stethoscope, thermometer | **GOOD** | doctor, stethoscope, thermometer |
+| 9 | ski resort with a skier on the mountain | skier, snowboard, ski, mountain, snow | **GOOD** | skier, snowboard, skis on a snowy mountain |
+| 10 | ice skating rink with a skater | skater, iceskate, snow | **GOOD** | skater and ice skate on ice |
+| 11 | snowman in winter | snowman, snow | **GOOD** | snowman in falling snow |
+| 12 | snowboard shop | snowboard, shop | **GOOD** | shop with a snowboard |
+| 13 | ice hockey match | hockey | **GOOD** | crossed hockey sticks and puck on ice |
+| 14 | sledding on a snowy hill | sled, hill, snow | **GOOD** | sled on snow |
+| 15 | tea shop sign "चाय की दुकान" | cafe | **GOOD** | sign reads the Hindi words |
+| 16 | poster "स्वागत है" welcome | - | **GOOD** | Hindi headline on a poster |
+| 17 | banner "नमस्ते" with flowers | flower | **GOOD** | Hindi headline above flowers |
+| 18 | sale poster "सेल" "50% छूट" | tag | **GOOD** | Hindi tag and headline |
+| 19 | chinese restaurant sign "欢迎光临" | restaurant | **PARTIAL** | restaurant sign shows only 欢迎 (光 and 临 are not available) |
+| 20 | tea shop "茶" sign | cafe | **GOOD** | sign shows 茶 |
+| 21 | poster "特价" red background | - | **PARTIAL** | headline shows only 特 (价 is withheld) |
+| 22 | coffee shop "咖啡 COFFEE" | cafe | **GOOD** | sign reads 咖啡 COFFEE |
+| 23 | car mechanic garage with tools | car, wrench, gear, toolbox, screwdriver, hammer, drill | **GOOD** | car with tools in a foreground row |
+| 24 | farm with tractor cows and sheep | tractor, cow, sheep | **GOOD** | tractor, cows, sheep |
+| 25 | construction workers with crane and excavator | crane, excavator, worker, hardhat, team | **GOOD** | crane, excavator, workers |
+| 26 | online shop with phone laptop and shopping cart | monitor, laptop, shop, phone, cart | **GOOD** | shop with laptop, phone, cart |
+| 27 | school with students books and playground | student, book, swing, slide, seesaw, child | **GOOD** | students, books, playground (no school building) |
+| 28 | hospital with doctor nurse and ambulance | hospital, doctor, ambulance | **GOOD** | hospital, doctor, ambulance |
+| 29 | submarine under the sea | sea | **PARTIAL** | only the sea: no submarine |
+| 30 | astronaut on the moon | moon | **NO** | plain landscape: no astronaut |
+| 31 | pizza delivery scooter | pizza, truck, bicycle | **PARTIAL** | pizza, delivery truck, bicycle: no scooter |
+| 32 | robot | - | **NO** | abstract art: nothing understood |

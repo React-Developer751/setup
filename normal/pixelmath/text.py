@@ -1,10 +1,14 @@
 """Readable text without any font file: a single-stroke vector font drawn with anti-aliased round strokes.
 
+Latin letters live here; Devanagari words are shaped by devanagari.py and a set of common Chinese characters comes from hanzi.py.
+
 Supports A-Z (lowercase is drawn as capitals), 0-9 and  . , ! ? - & % + : ' / ( ) $ and the rupee sign.
 Glyph space: x 0..width, y 0..6 (cap height 6, y up, baseline 0).
 """
 import math
+import unicodedata
 
+from . import devanagari, hanzi
 from .raster import clamp, sdf_capsule
 
 
@@ -83,19 +87,51 @@ GAP = 1.0
 
 
 def supported(ch):
-    return ch.upper() in GLYPHS
+    return ch.upper() in GLYPHS or devanagari.supports(ch) or hanzi.supports(ch)
 
 
 def clean(text, limit=40):
-    """Keep what the font can draw, collapse spaces."""
-    out = "".join(ch for ch in text.upper() if ch in GLYPHS)
+    """Keep what the fonts can draw, collapse spaces."""
+    text = unicodedata.normalize("NFC", text)
+    out = "".join(ch.upper() if ch.upper() in GLYPHS else ch for ch in text if supported(ch))
     return " ".join(out.split())[:limit]
+
+
+def _layout(text):
+    """Text -> (items, total width in glyph units). Each item is (x_offset, strokes, weight_factor), strokes in glyph units."""
+    items, pen, first = [], 0.0, True
+    for wi, word in enumerate(text.split(" ")):
+        if wi:
+            pen += GLYPHS[" "][0] + GAP
+        i = 0
+        while i < len(word):
+            ch = word[i]
+            if devanagari.supports(ch):
+                j = i
+                while j < len(word) and devanagari.supports(word[j]):
+                    j += 1
+                width, strokes = devanagari.layout_word(word[i:j])
+                items.append((pen, strokes, getattr(devanagari, "WEIGHT", 1.0)))
+                pen += width + GAP
+                i = j
+            elif hanzi.supports(ch):
+                items.append((pen, hanzi.strokes(ch), getattr(hanzi, "WEIGHT", 1.0)))
+                pen += hanzi.ADVANCE
+                i += 1
+            elif ch in GLYPHS:
+                width, strokes = GLYPHS[ch]
+                items.append((pen, strokes, 1.0))
+                pen += width + GAP
+                i += 1
+            else:
+                i += 1
+    return items, max(0.0, pen - GAP)
 
 
 def measure(text):
     """Width of the text in glyph units."""
-    ws = [GLYPHS[ch][0] for ch in text.upper() if ch in GLYPHS]
-    return sum(ws) + GAP * max(0, len(ws) - 1)
+    text = clean(text, 400)
+    return _layout(text)[1] if text else 0.0
 
 
 def draw_text(cv, text, x, y, height, color, weight=0.16, align="center", max_width=None, alpha=1.0, shadow=None):
@@ -103,7 +139,7 @@ def draw_text(cv, text, x, y, height, color, weight=0.16, align="center", max_wi
     text = clean(text)
     if not text:
         return None
-    units = measure(text)
+    items, units = _layout(text)
     scale = height / 6.0
     if max_width is not None and units * scale > max_width:
         scale = max_width / units
@@ -112,27 +148,28 @@ def draw_text(cv, text, x, y, height, color, weight=0.16, align="center", max_wi
     left = x - total / 2 if align == "center" else x if align == "left" else x - total
     base = y + height / 2.0
     r = max(0.8, weight * height / 2.0)
-    pen = left
     box = [1e9, 1e9, -1e9, -1e9]
-    for ch in text:
-        width, strokes = GLYPHS[ch]
+    for offset, strokes, wf in items:
+        r_item = max(0.7, r * wf)                                   # CJK/Devanagari can ask for thinner strokes
         segs = []
         for st in strokes:
-            pts = [(pen + gx * scale, base - gy * scale) for gx, gy in st]
+            pts = [(left + (offset + gx) * scale, base - gy * scale) for gx, gy in st]
+            if len(pts) == 1:
+                pts = [pts[0], (pts[0][0] + 0.01, pts[0][1])]
             segs += [(a[0], a[1], b[0], b[1]) for a, b in zip(pts, pts[1:])]
-        if segs:
-            xs = [s[0] for s in segs] + [s[2] for s in segs]
-            ys = [s[1] for s in segs] + [s[3] for s in segs]
-            fns = [sdf_capsule(ax, ay, bx, by, r) for ax, ay, bx, by in segs]
-            sdf = lambda px, py, fns=fns: min(f(px, py) for f in fns)            # noqa: E731
-            bb = (min(xs) - r - 2, min(ys) - r - 2, max(xs) + r + 2, max(ys) + r + 2)
-            if shadow:
-                off = max(1.0, 0.07 * height)
-                cv.shape((bb[0] + off, bb[1] + off, bb[2] + off, bb[3] + off),
-                         lambda px, py, f=sdf, o=off: f(px - o, py - o), shadow[0], shadow[1] * alpha)
-            cv.shape(bb, sdf, color, alpha)
-            box = [min(box[0], bb[0]), min(box[1], bb[1]), max(box[2], bb[2]), max(box[3], bb[3])]
-        pen += (width + GAP) * scale
+        if not segs:
+            continue
+        xs = [sg[0] for sg in segs] + [sg[2] for sg in segs]
+        ys = [sg[1] for sg in segs] + [sg[3] for sg in segs]
+        fns = [sdf_capsule(ax, ay, bx, by, r_item) for ax, ay, bx, by in segs]
+        sdf = lambda px, py, fns=fns: min(f(px, py) for f in fns)            # noqa: E731
+        bb = (min(xs) - r_item - 2, min(ys) - r_item - 2, max(xs) + r_item + 2, max(ys) + r_item + 2)
+        if shadow:
+            off = max(1.0, 0.07 * height)
+            cv.shape((bb[0] + off, bb[1] + off, bb[2] + off, bb[3] + off),
+                     lambda px, py, f=sdf, o=off: f(px - o, py - o), shadow[0], shadow[1] * alpha)
+        cv.shape(bb, sdf, color, alpha)
+        box = [min(box[0], bb[0]), min(box[1], bb[1]), max(box[2], bb[2]), max(box[3], bb[3])]
     return tuple(box)
 
 

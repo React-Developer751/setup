@@ -111,6 +111,34 @@ class PropTests(unittest.TestCase):
         self.assertEqual(mode("red square"), "shapes")
         self.assertEqual(mode("mandala"), "mandala")
 
+    def test_emergency_dental_winter_concepts_and_routing(self):
+        names = lambda text: [e.name for e in T.parse(text).entities]                        # noqa: E731
+        self.assertEqual(names("dental"), ["dentist", "tooth", "toothbrush", "dentalchair"])
+        self.assertEqual(names("pharmacy"), ["pills", "syringe", "medicalcross"])
+        self.assertEqual(names("fire"), ["firetruck", "firefighter", "hydrant"])
+        self.assertEqual(names("ice skating rink"), ["skater", "iceskate"])
+        self.assertIn("snow", T.parse("ice skating rink").flags)                              # concepts can imply a flag
+        self.assertIn("snow", T.parse("ski resort").flags)
+        self.assertEqual(names("fire station"), ["firetruck", "firefighter", "hydrant"])      # phrase -> concept
+        mode = lambda text: choose_mode(T.parse(text))                                        # noqa: E731
+        for text in ("ambulance", "fire station", "police car", "skier", "ice hockey", "snowman"):
+            self.assertEqual(mode(text), "landscape", text)                                    # rescue/winter live outdoors
+        for text in ("dentist with a tooth", "dentist clinic with a happy tooth", "pharmacy pills", "doctor"):
+            self.assertEqual(mode(text), "scene", text)
+        w, h = 96, 64
+        px = render("snowman in winter", w, h)[0].to_rgb_bytes()
+        ground = [px[(y * w + x) * 3] for y in range(int(h * 0.85), h) for x in range(w)]
+        self.assertGreater(sum(ground) / len(ground), 170)                                   # snowy ground is bright
+        self.assertGreater(len(set(ground)), 3)
+
+    def test_crowded_concepts_mark_extras_as_secondary(self):
+        flags = [e.secondary for e in T.parse("repair").entities]
+        self.assertEqual(flags, [False, False, True, True, True])                            # first two props are primary
+        self.assertEqual([e.secondary for e in T.parse("red car").entities], [False])
+        for text in ("car repair garage", "farm with tractor cows and sheep", "hospital with doctor nurse and ambulance"):
+            cv, _, _ = render(text, 160, 100)
+            self.assertEqual(len(cv.to_rgb_bytes()), 160 * 100 * 3)
+
     def test_every_prop_scene_renders_in_all_sizes(self):
         for name in sorted(REGISTRY):
             word = next((w for w, n in T.OBJECTS.items() if n == name), None)

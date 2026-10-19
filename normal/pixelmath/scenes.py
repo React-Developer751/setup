@@ -49,24 +49,28 @@ def collect(parsed):
     """Prop entities from the prompt, merged by name: [(name, color, size, count, position)]."""
     merged = {}
 
-    def add(name, color, size, count, position):
+    def add(name, color, size, count, position, secondary=False):
         cur = merged.get(name)
         if cur is None:
-            merged[name] = [name, color, size, count, position]
+            merged[name] = [name, color, size, count, position, secondary]
         else:
             cur[1] = cur[1] or color
             cur[2] = max(cur[2], size)
             cur[3] = max(cur[3], count)
+            cur[5] = cur[5] and secondary
 
     for e in parsed.entities:
         if e.name not in REGISTRY:
             continue
         if REGISTRY[e.name].category in ("buildings",) or e.name == "tent":
-            for k, nm in enumerate(VENUE_INTERIOR.get(e.name, ())):
-                add(nm, e.color if k == 0 and REGISTRY[nm].category != "people" else None, e.size, 1, e.position)
+            inside = VENUE_INTERIOR.get(e.name, ())
+            if e.name == "hospital" and any(x.name in ("dentist", "tooth", "dentalchair") for x in parsed.entities):
+                inside = ("medicalcross",)                      # the dentist is already there: no second doctor
+            for k, nm in enumerate(inside):
+                add(nm, e.color if k == 0 and REGISTRY[nm].category != "people" else None, e.size, 1, e.position, k >= 2)
             if e.name in VENUE_INTERIOR:
                 continue
-        add(e.name, e.color, e.size, e.count, e.position)
+        add(e.name, e.color, e.size, e.count, e.position, e.secondary)
     return [tuple(v) for v in merged.values()]
 
 
@@ -171,7 +175,7 @@ def _theme(items):
         return "party"
     if "yogi" in names or "lotus" in names or ("candle" in names and not cats & {"food", "tech"}):
         return "wellness"
-    if names & {"doctor", "medicalcross"}:
+    if names & {"doctor", "medicalcross", "dentist"} or cats & {"dental", "health"}:
         return "clinic"
     if "tools" in cats:
         return "workshop"
@@ -195,7 +199,7 @@ def scene(parsed, w, h, rng, noise, style, hint=None):
     if len(items) <= 2:
         for extra in AUTO_DECOR.get(names[0], ()):
             if extra not in names and len(items) < 4:
-                items.append((extra, None, 1.0, 1, None))
+                items.append((extra, None, 1.0, 1, None, True))
                 names.append(extra)
     theme = _theme(items)
     p = Painter(w, h, rng, noise, style, light=(1.0, 0.98, 0.95))
@@ -294,6 +298,9 @@ def scene(parsed, w, h, rng, noise, style, hint=None):
         its = expand(its)
         if not its:
             return []
+        while len(its) > 3 and sum(REGISTRY[a[0]].aspect * size_of(a) for a in its) > 1.3 * w and any(a[5] for a in its):
+            drop = min((a for a in its if a[5]), key=lambda a: REGISTRY[a[0]].nominal)       # crowded: drop secondary props first
+            its.remove(drop)
         its = sorted(its, key=lambda a: -REGISTRY[a[0]].nominal)
         order = []
         for k, it in enumerate(its):

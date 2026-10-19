@@ -79,8 +79,10 @@ def choose_mode(parsed):
     props = names & set(PROPS)
     if props and "mandala" not in flags:
         indoor = bool({t.word for t in parsed.tokens} & INDOOR_CUES) and not (names & OUTDOOR)
+        if "hospital" in names and names & {"tooth", "dentist", "dentalchair", "toothbrush", "pills", "syringe", "stethoscope", "thermometer"}:
+            indoor = True                                      # a clinic with a dentist or medical kit is drawn from the inside
         outdoor = (names & OUTDOOR) or parsed.time or (flags & SCENE_FLAGS) or any(
-            PROPS[n].category in ("buildings", "vehicles", "machinery", "farm", "playground", "sports") for n in props)
+            PROPS[n].category in ("buildings", "vehicles", "machinery", "farm", "playground", "sports", "winter", "rescue") for n in props)
         return "landscape" if outdoor and not indoor else "scene"
     has_object = any(e.kind == "object" for e in parsed.entities)
     has_shape = any(e.kind == "shape" for e in parsed.entities)
@@ -100,6 +102,9 @@ def landscape(parsed, w, h, rng, noise, style):
     names, flags = parsed.by_name(), parsed.flags
     if "conifer" in flags and not set(names) & {"tree", "forest"}:
         names["tree"] = [Entity("object", "tree")]
+    if any(n in PROPS and PROPS[n].category == "winter" for n in names):
+        flags = flags | {"snow"}                                    # winter props imply a snowy scene
+    ice = bool(set(names) & {"skater", "iceskate", "hockey"})
     time = parsed.time or ("night" if "cyberpunk" in flags else "day")
     space = bool(flags & {"space", "galaxy"}) or (
         "planet" in names and not set(names) & {"tree", "house", "sea", "beach", "city", "grass",
@@ -199,6 +204,8 @@ def landscape(parsed, w, h, rng, noise, style):
         p.neon_grid(neon)
     elif desert:
         p.ground((0.93, 0.78, 0.5), (0.82, 0.62, 0.35))
+    elif ice:
+        p.ground((0.84, 0.92, 0.98), (0.62, 0.80, 0.93), rough=0.6)
     elif "snow" in flags:
         p.ground((0.93, 0.95, 0.98), (0.82, 0.88, 0.95))
     elif city:
@@ -289,21 +296,34 @@ def landscape(parsed, w, h, rng, noise, style):
     for nm, ents in names.items():
         if nm in PROPS:
             for e in ents:
-                cur = merged.setdefault(nm, [e.color, e.size, e.count, e.position])
+                cur = merged.setdefault(nm, [e.color, e.size, e.count, e.position, e.secondary])
                 cur[0], cur[1], cur[2] = cur[0] or e.color, max(cur[1], e.size), max(cur[2], e.count)
+                cur[4] = cur[4] and e.secondary                 # secondary only if every mention of it was
     groups = {}
-    ground_cats = ("buildings", "vehicles", "people", "machinery", "farm", "playground")
-    for nm, (col, size, count, pos) in merged.items():
+    ground_cats = ("buildings", "vehicles", "people", "machinery", "farm", "playground", "winter", "rescue")
+    for nm, (col, size, count, pos, sec) in merged.items():
         pr = PROPS[nm]
-        n = 1 if nm in ("balloons", "team", "candle", "coins", "bouquet", "weddingcouple", "yogi", "bookshelf", "airplane", "globe", "shield", "chat", "review", "lotus", "tent") else min(count, 3)
-        groups.setdefault(pr.category if pr.category in ground_cats else pr.place, []).extend([(nm, col, size, pos)] * n)
-    shared_kinds = [k for k in groups if k not in ("buildings", "sky")]
+        n = 1 if nm in ("balloons", "team", "candle", "coins", "bouquet", "weddingcouple", "yogi", "bookshelf", "airplane", "globe", "shield", "chat", "review", "lotus", "tent") else min(count, 2 if len(merged) > 2 else 3)
+        groups.setdefault(pr.category if pr.category in ground_cats else pr.place, []).extend([(nm, col, size, pos, sec)] * n)
+    # visual budget: when the row would be wider than the picture, drop secondary props (smallest first), then shrink everything
+    def row_width():
+        return sum(PROPS[i[0]].aspect * PROPS[i[0]].nominal * h * i[2] / max(0.3, PROPS[i[0]].fill)
+                   for k, v in groups.items() if k not in ("buildings", "sky", "table") for i in v)
+    while row_width() > 1.25 * w:
+        cands = [(PROPS[i[0]].nominal, k, i) for k, v in groups.items() if k not in ("buildings", "sky", "table") for i in v if i[4]]
+        if not cands:
+            break
+        _, k, i = min(cands, key=lambda t: t[0])
+        groups[k].remove(i)
+    fit = min(1.0, 1.25 * w / max(1.0, row_width()))
+    shared_kinds = [k for k in groups if k not in ("buildings", "sky", "table")]
     shared_xs = iter(spread(sum(len(groups[k]) for k in shared_kinds), 0.18))    # one set of slots: animals, machines, people do not overlap
     slot_no = [0]
     for kind, insts in groups.items():
         xs = shared_xs if kind in shared_kinds else iter(spread(len(insts), 0.22 if kind == "buildings" else 0.2))
-        for nm, col, size, pos in insts:
+        for nm, col, size, pos, _sec in insts:
             pr = PROPS[nm]
+            size = size * (fit if kind in shared_kinds else 1.0)
             x = (ANCHOR_X[pos] if pos in ANCHOR_X else next(xs)) * w
             row_shift = 0.0
             if kind in shared_kinds:
@@ -318,7 +338,7 @@ def landscape(parsed, w, h, rng, noise, style):
                 x = (0.5 + (0.12 if on_road else 0.0) * (1 if rng.random() < 0.5 else -1)) * w if on_road and pos is None else x
             elif kind == "machinery":
                 yb, sz = ground_y(0.62 + row_shift + 0.06 * rng.random()), base
-            elif kind == "farm":
+            elif kind in ("farm", "winter", "rescue"):
                 yb, sz = ground_y(0.74 + row_shift + 0.06 * rng.random()), base * 0.95
             elif kind == "playground":
                 yb, sz = ground_y(0.58 + row_shift + 0.06 * rng.random()), base
@@ -326,8 +346,8 @@ def landscape(parsed, w, h, rng, noise, style):
                 yb, sz = ground_y(0.88), base * 0.9
             elif pr.place == "sky":
                 yb, sz = h * 0.30 + base * 0.4, base * (0.8 if nm == "airplane" else 1.0)
-            else:
-                yb, sz = ground_y(0.85), base * 0.7
+            else:                                                 # small things (tools, cups...): a foreground row of their own
+                yb, sz = ground_y(0.97), min(base * 0.75, 0.22 * h / max(0.3, pr.fill))
             if kind not in ("buildings", "sky") and pr.place != "sky":
                 half = pr.aspect * sz / 2.0
                 x = min(max(x, 0.02 * w + half), 0.98 * w - half) if half < 0.48 * w else w / 2    # keep it inside the picture
@@ -531,6 +551,17 @@ def abstract_scene(parsed, w, h, rng, noise, style, vec):
         cv.circle(rng.uniform(0, w), rng.uniform(0, h), rng.uniform(1, 3.2), WHITE,
                   alpha=rng.uniform(0.3, 0.8))
     return cv
+
+
+def text_warnings(parsed):
+    """Honest notes about text the fonts only approximate (shown by the CLI and returned by the API)."""
+    out = []
+    joined = "".join(parsed.texts)
+    if any("\u0900" <= ch <= "\u097f" for ch in joined):
+        out.append("Devanagari is drawn with an experimental stroke font: letter shapes are approximate, please proof-read the result.")
+    if any(ord(ch) > 0x2e80 for ch in joined):
+        out.append("Chinese is limited to a small set of simple characters (others are dropped); proof-read the result.")
+    return out
 
 
 def apply_text(cv, parsed, mode, w, h):

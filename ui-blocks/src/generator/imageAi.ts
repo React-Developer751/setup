@@ -1,5 +1,5 @@
 // Pictures from the PixelMath image engine (the folder `normal` next to this project: a text-to-image generator in pure Python, see its README).
-// Version 1.3 of the engine draws business props (115 of them: food, shops, doctors, tools, vehicles, buildings, animals ...) in scenes (a desk, a cafe
+// Version 1.4 of the engine draws business props (138 of them: food, shops, doctors, tools, vehicles, buildings, animals, farm and building machines, rescue, dental, winter sports ...) in scenes (a desk, a cafe
 // table, a room, a workshop, a landscape) as flat illustrations, plus sunsets, skylines, galaxies and mandalas. It does not draw photographs or brands.
 // A business gets scenes about what it does: a bakery shop for a bakery, a doctor with a clinic, tools for a plumber ...
 // This file decides WHICH scenes (a plan per business type, using only words the engine knows); the picture itself is fetched through the

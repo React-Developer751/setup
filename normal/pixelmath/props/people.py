@@ -73,7 +73,7 @@ def student(c, color):
 
 
 @prop("doctor", aspect=0.55, place="ground", nominal=0.5, category="people",
-      words=("physician", "nurse", "dentist", "surgeon", "medic", "therapist", "therapy", "counselling", "counseling", "psychologist"))
+      words=("physician", "nurse", "surgeon", "medic", "therapist", "therapy", "counselling", "counseling", "psychologist"))
 def doctor(c, color):
     c.shadow(0.0, 0.01, 0.55, 0.06)
     scrub = c.pick(color, (0.20, 0.66, 0.74))

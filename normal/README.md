@@ -16,7 +16,7 @@ python3 -m pixelmath "लाल घर और पेड़" -o hindi.png        
 python3 train.py my_data --model my_model.json
 python3 -m pixelmath "aqua mossy" --model my_model.json -o out.png
 
-python3 -m unittest discover -s tests          # 90 tests
+python3 -m unittest discover -s tests          # 99 tests
 ```
 
 ## HTTP API (Postman and other projects)
@@ -192,18 +192,19 @@ Checked in an audit of this project:
 | Speed | 512x512 ~1 s, 1024x1024 ~3 s |
 | Hostile input | 12,000 randomly corrupted PNG/BMP/JPEG files and 1,500 corrupted model files: every one either decodes or is rejected with a clear error; no crashes, no hangs, peak RAM 38 MB (a bug where a forged PNG header allocated 300 MB was found and fixed) |
 | Interrupts and bad paths | Ctrl-C leaves the model file untouched with a short message; unwritable or missing model folder is detected *before* training starts; corrupt model suggests `--fresh` |
-| Tests | 90 unit/integration tests (also run with `-W error::ResourceWarning`) |
+| Tests | 99 unit/integration tests (also run with `-W error::ResourceWarning`) |
 
 Not verified: Windows/Linux (developed on macOS), Python 3.8 or earlier (declared `>=3.9`), and building the wheel
 from `pyproject.toml` (no setuptools available offline; the metadata and entry points were validated). Packages
 nothing external, so `python3 -m pixelmath` and `python3 train.py` work straight from the folder.
 
 Your training images stay on your machine (nothing is sent anywhere). Whether you may train on a given image is
-your responsibility; no LICENSE file is included, choose your own.
+your responsibility; no LICENSE file is included for the project itself, choose your own. Third-party licence texts live in
+`LICENSES/` (currently the SIL OFL 1.1 notice for the Noto Sans Devanagari-derived skeletons).
 
 ## What it can draw (procedural path)
 
-**Business props (flat-illustration style, 115 of them, see `business_check/props_gallery.png`)**
+**Business props (flat-illustration style, 138 of them, see `business_check/props_gallery.png`)**
 
 | Area | Props |
 |---|---|
@@ -219,15 +220,18 @@ your responsibility; no LICENSE file is included, choose your own.
 | Machinery and energy | tractor, excavator, tower crane, forklift, wind turbine, solar panels, factory |
 | Tools and trades | wrench, hammer, screwdriver, drill, saw, paint roller, tap/faucet, toolbox, ladder, hard hat, scissors, sewing machine, thread spool, plug, gear, comb, broom, bucket |
 | Playground, sports, kids, workers | swing, slide, seesaw, football, cricket set, child, construction worker |
+| Emergency and rescue | ambulance, fire truck, police car, firefighter, police officer, fire hydrant, fire extinguisher |
+| Dental and medical kit | tooth, toothbrush, dental chair, dentist, pills, stethoscope, syringe, thermometer |
+| Winter sports | skier, ice skater, snowboard, skis, ice skate, snowman, sled, ice hockey |
 
 Words, plurals, Hinglish (`kitab`, `gaadi`, `dukaan`...) and phrases (`coffee shop`, `ice cream`, `gift box`) map to props, and
 **business concepts** bring a small composition: `translation` (globe + documents + chat), `assignment` (documents + pencil + book),
 `software` (monitor + laptop), `marketing` (chart + laptop), `wellness` (lotus + candles + plant), `wedding`, `party`, `travel`,
-`legal`, `education`, `healthcare`, `office`, and trades and services: `plumber`, `carpenter`, `electrician`, `painter`, `construction`, `mechanic`/`garage`, `repair`/`workshop`, `tailor`, `salon`/`barber`, `cleaning`, `pets`/`vet`, `farm`, `zoo`/`safari`, `playground`/`park`, `sports`, `energy`/`solar`. Colours bind to the next noun (`red car`, `blue sofa`).
+`legal`, `education`, `healthcare`, `office`, and trades and services: `plumber`, `carpenter`, `electrician`, `painter`, `construction`, `mechanic`/`garage`, `repair`/`workshop`, `tailor`, `salon`/`barber`, `cleaning`, `pets`/`vet`, `farm`, `zoo`/`safari`, `playground`/`park`, `sports`, `energy`/`solar`, `emergency`/`fire`/`safety`, `dental`, `pharmacy`, `healthcare`, `skiing`, `skating`, `winter sports` (snow and ice ground are added automatically). Colours bind to the next noun (`red car`, `blue sofa`).
 
 **Where things are drawn:** props go into a **scene** (a desk, a cafe table, a room, a studio, a party, a garden arch, depending on
 what you asked for) or, when the prompt has outdoor words, buildings, vehicles or a time of day, into the **landscape**
-(`car driving on a road at sunset`, `dairy farm with cows`, `construction site with a crane`). Tools go on a workbench (workshop scene), pets on a floor. Saying `interior`, `inside`, `table` or `desk` draws a venue from the inside
+(`car driving on a road at sunset`, `dairy farm with cows`, `construction site with a crane`, `ice skating rink`). When a scene is crowded the layout drops the extra props of a concept first (`secondary`), puts small things such as tools in a foreground row of their own and keeps everything inside the picture. Tools go on a workbench (workshop scene), pets on a floor. Saying `interior`, `inside`, `table` or `desk` draws a venue from the inside
 (`restaurant dining table` -> plates, glass, candle on a table).
 
 **Older renderers:** sun, moon, stars, clouds, rainbow, mountains, hills, trees, palm trees, islands, forest, house, city, sea,
@@ -238,16 +242,34 @@ e.g. `blue abstract background`).
 Words outside the lexicon are ignored (`--explain` lists them) unless a trained model knows them.
 
 ### Readable text
-Put text in quotes and it is written into the picture with a built-in vector font (no font files): capitals, digits and
-`. , ! ? - & % + : / ( ) $` and the rupee sign. Lowercase is drawn as capitals; other scripts (Devanagari, Chinese...) are dropped.
+Put text in quotes and it is written into the picture with built-in stroke fonts (no font files):
+Latin capitals and digits (`. , ! ? - & % + : / ( ) $` and the rupee sign), **Hindi/Devanagari** (consonants, vowels, matras, half forms, conjuncts,
+reph, digits) and **103 common Chinese characters**. Lowercase Latin is drawn as capitals; unsupported characters (Arabic, Thai, rare Chinese) are
+dropped and the CLI/API says so.
 
 ```bash
 python3 -m pixelmath 'coffee shop sign "BEAN & BREW"' -o shop.png        # on the shop sign (also hotel signs and sale tags)
+python3 -m pixelmath 'tea shop sign "चाय की दुकान"' -o chai.png           # Hindi on the sign
 python3 -m pixelmath 'blue circle logo "ACME" on white background' -o logo.png
 python3 -m pixelmath 'poster "SUMMER SALE" "UP TO 50% OFF" red background' -o poster.png   # headline + subtitle
+python3 -m pixelmath 'coffee shop "咖啡 COFFEE"' -o cafe.png
 ```
-The first quoted text goes on a sign/tag if the scene has one, otherwise it becomes the headline (dark or light automatically, with a
-soft plate on busy backgrounds); a logo shape carries its text in the middle. Up to 3 texts, 40 characters each.
+The first quoted text goes on a sign/tag if the scene has one, otherwise it becomes the headline (dark or light automatically, with a soft
+plate on busy backgrounds); a logo shape carries its text in the middle. Up to 3 texts, 40 characters each.
+
+**Honest limits of the non-Latin fonts.** They are hand-drawn stroke fonts, always checked by eye, not a typographer's work:
+* Devanagari reads correctly for ordinary Hindi words (all consonants, matras, half forms, a set of common conjuncts such as ज्ञ, क्ष,
+  द्य, ह्म, ष्ट, reph and rakar), but it is a **single-stroke skeleton font, not a typographic font**: every letter is drawn with one
+  pen weight, so fine details of the original design (stroke contrast, small lobes and terminals) are lost, and the rarer conjuncts and
+  combinations of several signs are approximations that were not all inspected. The glyph skeletons were derived (centre-line
+  extraction plus manual clean-up) from Noto Sans Devanagari Regular, (c) The Noto Project Authors, SIL Open Font License 1.1. No font
+  file or outline data is shipped; the licence text is in `LICENSES/OFL-NotoSansDevanagari.txt` and the derivation is described in the
+  PROVENANCE note of `pixelmath/devanagari.py` (dev tool: `tools/ttf_outlines.py`, see `tools/README.md`). Keep that notice if you
+  redistribute the module.
+* Chinese covers 103 simple/common characters. Phrases such as 咖啡, 茶, 酒, 面, 饭菜, 美食, 公司, 医院, 学校, 开业大吉 work; **欢迎光临 (光, 临
+  missing) and 特价 (价 withheld) do not**: missing characters are dropped, and ones that looked wrong (他 年 车 长 新 折 价 我 肉 光 药 热 福 冷 你 家 在)
+  are deliberately withheld.
+* Whenever such text is drawn the CLI prints a note and the API returns `warnings` (JSON) or an `X-PixelMath-Warning` header: proof-read it.
 
 ### Adding your own prop (about 20 lines)
 Create a function in `pixelmath/props/*.py` that draws in unit space (`c.rect/circle/ellipse/poly/path/arc/ring`, origin at the base,

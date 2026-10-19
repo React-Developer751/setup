@@ -1,6 +1,6 @@
 """Business props. Importing this package registers every prop in `REGISTRY` and builds `WORDS`."""
 from .core import REGISTRY, Prop, draw_prop  # noqa: F401
-from . import food, retail, tech, people, vehicles, home, misc, buildings, animals, machinery, tools, playground  # noqa: F401
+from . import food, retail, tech, people, vehicles, home, misc, buildings, animals, machinery, tools, playground, emergency, medical, winter  # noqa: F401
 
 # Words that are too generic or ambiguous to summon a prop ("business", "photo", "light", ...).
 DROP = {
@@ -53,9 +53,16 @@ CONCEPTS = {
     "playground": (("playground", "park", "kindergarten", "amusement"), ("swing", "slide", "seesaw", "child")),
     "sports": (("sports", "sport", "game", "stadium", "athletics", "tournament"), ("football", "cricket", "trophy")),
     "energy": (("energy", "power", "renewable", "greenenergy"), ("solarpanel", "windmill")),
+    "emergency": (("emergency", "rescue", "emergencies", "firstresponder"), ("ambulance", "firetruck", "policecar")),
+    "fire": (("fire", "blaze", "firefighting"), ("firetruck", "firefighter", "hydrant")),
+    "safety": (("safety", "protective"), ("extinguisher", "hardhat", "shield")),
     "office": (("office", "workplace", "corporate", "coworking", "workspace"), ("monitor", "laptop", "plant")),
-    "healthcare": (("health", "healthcare", "medical", "medicine", "pharmacy", "ambulance", "emergency", "hygiene"),
-                   ("doctor", "medicalcross")),
+    "healthcare": (("health", "healthcare", "medical", "hygiene", "checkup"), ("doctor", "medicalcross", "stethoscope")),
+    "pharmacy": (("pharmacy", "medicine", "chemist", "dawakhana", "drugstore"), ("pills", "syringe", "medicalcross")),
+    "dental": (("dental", "orthodontics", "braces", "oralhealth"), ("dentist", "tooth", "toothbrush", "dentalchair")),
+    "skiing": (("skiing", "skiresort", "slope", "snowboarding", "winterresort"), ("skier", "snowboard", "ski"), ("snow",)),
+    "skating": (("skating", "iceskating", "skatingrink", "rink", "figureskating"), ("skater", "iceskate"), ("snow",)),
+    "wintersports": (("wintersports", "wintersport"), ("skier", "skater", "snowboard"), ("snow",)),
 }
 HINGLISH = {"kitab": "book", "paisa": "coins", "khana": "plate", "kursi": "chair", "palang": "bed", "ghadi": "watch",
             "joote": "shoe", "vidyarthi": "student", "gubbare": "balloons", "dukaan": "shop", "gaadi": "car",
@@ -74,7 +81,9 @@ for _p in REGISTRY.values():
         else:
             WORDS[_w] = _p.name
 
-for _name, (_words, _props) in CONCEPTS.items():
+CONCEPT_FLAGS = {n: set(v[2]) for n, v in CONCEPTS.items() if len(v) > 2}
+for _name, _val in CONCEPTS.items():
+    _words, _props = _val[0], _val[1]
     for _w in _words:
         for _p in REGISTRY.values():                     # a concept word replaces the same word on a single prop
             if _w in _p.words:

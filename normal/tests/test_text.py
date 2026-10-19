@@ -38,7 +38,7 @@ class FontTests(unittest.TestCase):
     def test_clean_measure_and_shrink_to_fit(self):
         self.assertEqual(clean("bean & brew"), "BEAN & BREW")
         self.assertEqual(clean("  a   b  "), "A B")
-        self.assertEqual(clean("namaste नमस्ते 你好"), "NAMASTE")      # unsupported scripts are dropped
+        self.assertEqual(clean("namaste مرحبا สวัสดี"), "NAMASTE")      # unsupported scripts (Arabic, Thai) are dropped
         self.assertEqual(clean("x" * 100), "X" * 40)
         self.assertGreater(measure("WIDE"), measure("I"))
         cv = Canvas(300, 80, (1, 1, 1))
@@ -62,7 +62,7 @@ class QuotedTextTests(unittest.TestCase):
         self.assertEqual(extract_texts("kids' park and dog's bowl")[1], [])                # apostrophes are not quotes
         self.assertEqual(extract_texts('poster "SUMMER SALE" "50% OFF"')[1], ["SUMMER SALE", "50% OFF"])
         self.assertEqual(extract_texts('“CURLY QUOTES”')[1], ["CURLY QUOTES"])
-        self.assertEqual(extract_texts('"你好"')[1], [])
+        self.assertEqual(extract_texts('"مرحبا"')[1], [])
         p = parse('red car "FAST CARS"')
         self.assertEqual([e.name for e in p.entities], ["car"])                           # words inside quotes never summon props
         self.assertEqual(p.texts, ["FAST CARS"])
