@@ -21,6 +21,7 @@ import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp } from './generator/edit/edits'
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { makePictures } from './generator/edit/imageAiClient'
+import { planColors } from './generator/colorPlanner'
 import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
@@ -136,8 +137,11 @@ function GeneratorPage() {
     setSubmitted(text)
     setHistory([])
     setUndone([])
-    setMessages([])
-    setVariation(0)
+    // the colours are thought out first: a new idea that does not look like the last sites
+    const idea = planColors(text)
+    messageId.current += 1
+    setMessages([{ id: messageId.current, role: 'ai', text: `Colour idea: ${idea.name}. ${idea.reasons[0] ?? ''}` }])
+    setVariation(idea.variation)
     setRuns((n) => n + 1)
     autoMade.current = false
     setRoute('/')
@@ -399,7 +403,11 @@ function GeneratorPage() {
             <button
               type="button"
               onClick={() => {
-                setVariation((v) => v + 1)
+                {
+                  const idea = planColors(submitted)
+                  setVariation(idea.variation)
+                  say({ role: 'ai', text: `Colour idea: ${idea.name}. ${idea.reasons[0] ?? ''}` })
+                }
                 setRuns((n) => n + 1)
                 setView('preview')
               }}
