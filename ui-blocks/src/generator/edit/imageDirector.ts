@@ -77,3 +77,33 @@ export async function directPlan(prompt: string, plan: ScenePlan, parse: Parse, 
   }
   return { plan: { hero, about, gallery, ...(plan.fromNiche ? { fromNiche: true } : {}) }, props, replaced, notes }
 }
+
+// ───────────── new scenes by mixing (mutation and crossover) ─────────────
+/** the settings a scene can be put in (the engine knows the time of day and the weather of a landscape) */
+export const SETTINGS = ['at sunset', 'at dawn', 'at night', 'on a sunny day', 'in the snow', 'in the mountains', 'by the sea']
+
+const pick = <T,>(list: T[], rand: () => number) => list[Math.floor(rand() * list.length)]
+
+/**
+ * New scene prompts for a business: its props in another setting (mutation) and mixed with a prop of a scene the person liked (crossover).
+ * Every candidate must pass the engine's own reading (/parse): it must draw one of the business props and know every word.
+ */
+export async function mashups(props: string[], parse: Parse, rand: () => number, likedProps: string[] = [], count = 5): Promise<string[]> {
+  if (!props.length) return []
+  const [a, b] = props
+  const raw: string[] = []
+  const settings = [...SETTINGS].sort(() => rand() - 0.5)
+  raw.push(`${a} ${settings[0]}`)
+  for (const liked of likedProps.filter((l) => !props.includes(l)).slice(0, 2)) raw.push(`${pick([a, b ?? a], rand)} and ${liked}`)
+  raw.push(`${a} ${settings[1]}`)
+  if (b) raw.push(`${a} and ${b} ${settings[2]}`, `${b} ${settings[3]}`)
+  const ok: string[] = []
+  for (const candidate of raw) {
+    const answer = await parse(candidate)
+    if (!answer || (answer.not_in_lexicon?.length ?? 0) > 0) continue
+    if (!namesOf(answer).some((e) => props.includes(e))) continue
+    if (!ok.includes(candidate)) ok.push(candidate)
+    if (ok.length >= count) break
+  }
+  return ok
+}

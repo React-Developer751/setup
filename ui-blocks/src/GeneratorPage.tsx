@@ -24,6 +24,7 @@ import { makePictures, redrawScene, type UsedScene } from './generator/edit/imag
 import { rateScene } from './generator/edit/imageRatings'
 import RatePictures from './RatePictures'
 import { planColors } from './generator/colorPlanner'
+import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, type CreativityLevel } from './generator/creativity'
 import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
@@ -60,6 +61,9 @@ function GeneratorPage() {
   const [level, setLevel] = useState<'auto' | Tier>('auto')
   const [creative, setCreative] = useState(true)
   const [motionSetting, setMotionSetting] = useState<MotionSetting>('auto')
+  // how adventurous the generators are (colours, headlines, picture scenes); every generator reads it
+  const [creativityLevel, setCreativityLevel] = useState<CreativityLevel>(loadCreativity)
+  setCreativity(creativityLevel)
   const [engine, setEngine] = useState<'templates' | 'library'>('library')
   const [view, setView] = useState<'preview' | 'code'>('preview')
   const [copied, setCopied] = useState(false)
@@ -89,17 +93,18 @@ function GeneratorPage() {
   // ... or what the models know changes (a correction, the smart model finishing a prompt)
   const poolVersion =
     useSyncExternalStore(subscribePool, getPoolVersion) + useSyncExternalStore(subscribeLearning, getLearningVersion) + useSyncExternalStore(subscribeSmart, smartVersion)
-  const site = useMemo(() => generateWebsite(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits])
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- the creativity level is read inside the generators (creativity.ts)
+  const site = useMemo(() => generateWebsite(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits, creativityLevel])
   const scores = useMemo(() => scoreThemes(submitted), [submitted])
-  // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool is read inside the generators
-  const library = useMemo(() => generateLibraryPage(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits, poolVersion])
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool and the creativity level are read inside the generators
+  const library = useMemo(() => generateLibraryPage(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel])
   // the multi-page site is made with the built-in templates (the 92-components engine is single-page for now)
   const isMulti = pages === 'multi'
   const shownEngine = isMulti ? 'templates' : engine
   const multi = useMemo(
     () => generateSite(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits),
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool is read inside the generators
-    [submitted, variation, level, creative, motionSetting, edits, poolVersion],
+    [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel],
   )
   const active = isMulti ? multi : shownEngine === 'library' ? library : site
   const { themeKey, tier, motion, brain, brainsForced, palette, colorReasons, niche } = active
@@ -236,7 +241,7 @@ function GeneratorPage() {
       setDrawn(answer.used)
       setRated({})
     }
-    if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', `Pictures added${answer.report && (answer.report.redrawn || answer.report.otherScene || answer.report.directed) ? ` (checked: ${answer.report.directed} scenes changed to show your business, ${answer.report.redrawn} drawn again because they looked empty)` : ' (all checked)'}. You can draw other ones or use your own in "Real photos".`)
+    if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', `Pictures added${answer.report && (answer.report.redrawn || answer.report.otherScene || answer.report.directed) ? ` (checked: ${answer.report.directed} scenes changed to show your business, ${answer.report.redrawn} drawn again because they looked empty)` : ' (all checked)'}${answer.report?.notes.find((n) => /new mixes/.test(n)) ? ` ${answer.report.notes.find((n) => /new mixes/.test(n))}.` : ''} You can draw other ones or use your own in "Real photos".`)
   }
   useEffect(() => {
     void autoDraw.current()
@@ -604,6 +609,16 @@ function GeneratorPage() {
             </Setting>
             <Setting label="Design level">
               <Segmented value={level} options={[['auto', 'Auto'], ['normal', 'Normal'], ['better', 'Better'], ['premium', 'Premium']]} onChange={setLevel} />
+            </Setting>
+            <Setting label="Creativity">
+              <Segmented
+                value={creativityLevel}
+                options={CREATIVITY_LEVELS}
+                onChange={(next) => {
+                  saveCreativity(next)
+                  setCreativityLevel(next)
+                }}
+              />
             </Setting>
             <Setting label="Motion">
               <Segmented value={motionSetting} options={[['auto', 'Auto'], ['off', 'Off'], ['subtle', 'Subtle'], ['rich', 'Rich']]} onChange={setMotionSetting} />

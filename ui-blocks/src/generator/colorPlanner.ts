@@ -2,6 +2,7 @@
 // and the one that looks least like the last sites is taken, so no two sites in a row come out in the same colours.
 // A colour named in the prompt ("red", "gold") always wins: then every idea has that hue and the first one is used.
 import { hexToHsl } from './colorBrain'
+import { sampleTopK, temperature } from './creativity'
 import { generateWebsite } from './generateWebsite'
 
 const KEY = 'ui-blocks:recent-hues'
@@ -32,19 +33,16 @@ export type ColorIdea = { variation: number; hue: number; name: string; reasons:
 
 /** the variation number (a seed of the whole site) whose colours are new, with the reason for them */
 export function planColors(prompt: string, avoid: number[] = readRecent()): ColorIdea {
-  let best: ColorIdea | undefined
-  let bestGap = -1
+  const ideas: { item: ColorIdea; score: number }[] = []
   for (let i = 0; i < IDEAS; i += 1) {
     const variation = 1 + Math.floor(Math.random() * 9000)
     const site = generateWebsite(prompt, variation)
     const hue = Math.round(hexToHsl(site.palette.light.accent).h)
     const far = avoid.length ? Math.min(...avoid.map((h) => gap(h, hue))) : 180
-    if (far > bestGap) {
-      bestGap = far
-      best = { variation, hue, name: site.palette.name, reasons: site.colorReasons }
-    }
+    ideas.push({ item: { variation, hue, name: site.palette.name, reasons: site.colorReasons }, score: far / 180 })
   }
-  const idea = best as ColorIdea
+  // the least familiar idea at a low creativity; one of the best few at a high one
+  const idea = sampleTopK(ideas, temperature(), Math.random)
   remember(idea.hue)
   return idea
 }

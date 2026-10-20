@@ -11,7 +11,11 @@
 //                      so the text is polished but never the same twice.
 //   5. Seeded        : everything comes from a seeded random generator: the same prompt always gives the same
 //                      page, a new variation number gives a new one.
+import { contentTemplates } from './contentTemplates'
+import { temperature } from './creativity'
 import { LEXICONS } from './lexicon'
+import { Markov, newLine } from './markovCopy'
+import { seededRandom } from './random'
 import type { Plan } from './extraContent'
 import type { Kind, Lexicon } from './lexiconTypes'
 import type { ThemeKey } from './themes'
@@ -107,7 +111,41 @@ export function repeatsAWord(text: string) {
   return false
 }
 
-export function writeContent(theme: ThemeKey, brand: string, rand: () => number): CreativeContent {
+/** the two halves of a sentence frame must go together ("Ready To ...?", "Your Next Chapter Of ... Starts Here.", "Where ... Come Together"): a chain that took the start of one and the end of another is not used */
+const coherent = (text: string) => {
+  const q = /^Ready To\b/i.test(text)
+  if (q !== text.endsWith('?')) return false
+  const chapter = /Chapter Of/i.test(text)
+  if (chapter !== /Starts Here\.$/.test(text)) return false
+  if (chapter && !/^Your Next Chapter/i.test(text)) return false
+  if (/\bToday\.$/.test(text) && !/^Start\b/i.test(text)) return false
+  if (/^Start\b/i.test(text) && !/\bToday\.$/.test(text)) return false
+  if (/^Let's/i.test(text) !== /\bTogether\.$/.test(text) && !/Come Together$/.test(text)) return false
+  if (/^Where\b/i.test(text) !== /Come Together$/.test(text)) return false
+  return true
+}
+
+/** the headlines of a business type that the Markov chain learns from: the hand-written ones, and the ones the pattern writer makes without it */
+const corpora = new Map<ThemeKey, { hero: Markov; feature: Markov; cta: Markov }>()
+function corpusFor(theme: ThemeKey) {
+  const cached = corpora.get(theme)
+  if (cached) return cached
+  // only the hand-written headlines of THIS business type (another type's would leak its words into the chain)
+  const hand = contentTemplates[theme]
+  const sets = hand ? [hand, ...hand.alternatives] : []
+  const hero = sets.map((h) => h.heroTitle)
+  const feature = sets.map((h) => h.featureTitle)
+  const cta = sets.map((h) => h.ctaTitle)
+  for (let i = 0; i < 60; i += 1) {
+    const written = writeContent(theme, 'Brand', seededRandom(1000 + i * 7919), true)
+    for (const [list, line] of [[hero, written.heroTitle], [feature, written.featureTitle], [cta, written.ctaTitle]] as const) if (!/Brand/.test(line)) list.push(line)
+  }
+  const made = { hero: new Markov(hero), feature: new Markov(feature), cta: new Markov(cta) }
+  corpora.set(theme, made)
+  return made
+}
+
+export function writeContent(theme: ThemeKey, brand: string, rand: () => number, plain = false): CreativeContent {
   const lex: Lexicon = LEXICONS[theme] ?? LEXICONS.general_business
 
   // ── typed word drawers
@@ -155,7 +193,7 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number)
   }
 
   // ── headlines
-  const heroTitle = write([
+  const heroPlain = write([
     () => { const p = phrase(pickKind(true)); return `${p.verb} Your ${p.adj} ${p.noun} ${benefitAfter(p.kind)}` },
     () => { const p = phrase(pickKind(true)); return `${gerund(p.verb)} ${p.adj} ${p.noun} ${benefitAfter(p.kind)}` },
     () => { const p = phrase(); return `${brand}: ${p.adj} ${p.noun}, ${benefit()}` },
@@ -163,6 +201,16 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number)
     () => { const a = phrase(); const b = phrase(); return `Where ${a.adj} ${a.noun} And ${b.adj} ${b.noun} Come Together` },
     () => { const p = phrase(); return `${p.adj} ${p.noun} For ${titleCase(audience())}` },
   ])
+
+  // a new headline in the voice of this business type (Markov chain over its headlines), most often when the creativity is high; the pattern headline is the fallback
+  const temp = temperature()
+  const markov = !plain && temp >= 0.3 ? corpusFor(theme) : undefined
+  const mixRand = markov ? seededRandom(Math.floor(rand() * 2 ** 31)) : rand
+  const fresh = (model: Markov | undefined, plainTitle: string) => {
+    if (!model || mixRand() >= 0.75 * temp) return plainTitle
+    return newLine(model, temp, mixRand, { maxLength: MAX_TITLE, repeats: (t) => repeatsAWord(t.split(brand).join('')), coherent }) ?? plainTitle
+  }
+  const heroTitle = fresh(markov?.hero, heroPlain)
 
   const heroSubtitle = write(
     [
@@ -174,19 +222,22 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number)
     140,
   )
 
-  const featureTitle = write([
+  const featurePlain = write([
     () => `Why ${titleCase(audience())} Choose ${brand}`,
     () => { const p = phrase(); return `${p.adj} ${p.noun}, Done Right` },
     () => { const p = phrase(); return `Everything You Need For ${p.adj} ${p.noun}` },
     () => { const p = phrase(); return `Built Around ${p.adj} ${p.noun}` },
   ])
 
-  const ctaTitle = write([
+  const ctaPlain = write([
     () => { const p = phrase(pickKind(true)); return `Ready To ${p.verb} Your ${p.noun}?` },
     () => { const p = phrase('thing'); return `Let's ${p.verb} ${p.adj} ${p.noun} Together.` },
     () => { const p = phrase(); return `Start ${gerund(p.verb)} ${p.adj} ${p.noun} Today.` },
     () => { const p = phrase(); return `Your Next Chapter Of ${p.adj} ${p.noun} Starts Here.` },
   ])
+
+  const featureTitle = fresh(markov?.feature, featurePlain)
+  const ctaTitle = fresh(markov?.cta, ctaPlain)
 
   const aboutTitle = write([
     () => `The Story Behind ${brand}`,

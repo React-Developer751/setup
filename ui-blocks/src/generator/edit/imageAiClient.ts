@@ -8,7 +8,8 @@
 import { sceneUrl, type Scene, type ScenePlan } from '../imageAi'
 import type { EditOp } from './edits'
 import { assessPixels, cleanPrompt, promptUnderstood, type ParseAnswer, type PixelReport } from './imageCheck'
-import { directPlan } from './imageDirector'
+import { sampleTopK, temperature } from '../creativity'
+import { directPlan, mashups } from './imageDirector'
 import { applyRatings, blockedByRatings, businessKey, loadRatings } from './imageRatings'
 import { readPicture } from './imageFile'
 
@@ -174,6 +175,34 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
       plan = answer.plan
       directed = answer.replaced
       directNotes.push(...directNotes0, ...answer.notes)
+      // creative: the first screen is chosen out of new mixes of the business props, by how well each one is drawn
+      const temp = temperature()
+      if (temp >= 0.3 && !basePlan.fromNiche && answer.props.length && !trusted.has(plan.hero.prompt)) {
+        const rand = Math.random
+        const likedPrompts = (loadRatings().liked[businessKey(options.prompt)] ?? []).slice(0, 3).map((l) => l.prompt)
+        const likedEntities = [...new Set((await Promise.all(likedPrompts.map((p) => askParse(p)))).flatMap((a) => (a?.entities ?? []).map((e) => e.name)))]
+        const candidates = [plan.hero.prompt, ...(await mashups(answer.props, askParse, rand, likedEntities))]
+        if (candidates.length > 1) {
+          const scored: { item: string; score: number }[] = []
+          for (const prompt of candidates) {
+            try {
+              const blob = await fetchBlob({ ...plan.hero, width: 320, height: 200 }, prompt, plan.hero.seed)
+              const report = await pixelsOf(blob, options.accent)
+              scored.push({ item: prompt, score: report.ok ? report.score : 0 })
+            } catch {
+              // a candidate that cannot be drawn is left out
+            }
+          }
+          if (scored.length > 1) {
+            const winner = sampleTopK(scored, temp, rand)
+            if (winner !== plan.hero.prompt) {
+              directNotes.push(`first screen: "${winner}", the best of ${scored.length} new mixes`)
+              directed += 1
+              plan = { ...plan, hero: { ...plan.hero, prompt: winner, alt: [plan.hero.prompt, ...(plan.hero.alt ?? [])].slice(0, 3) } }
+            }
+          }
+        }
+      }
       for (const note of answer.notes) log({ prompt: note.slice(0, 190), seed: 0, attempt: 0, accepted: false, score: 0, reasons: [note.slice(0, 110)], stage: 'plan' })
     } catch {
       // the direction is an extra: the plan of the business type is used as it is

@@ -7,7 +7,8 @@
 //   4. safety   : lightness is adjusted until text, muted text, accent and button text pass WCAG contrast
 //
 // Everything is seeded, so the same prompt always gives the same palette.
-import { curatedFor } from './curatedPalettes'
+import { CURATED, curatedFor } from './curatedPalettes'
+import { sampleTopK, temperature } from './creativity'
 import { fromKits } from './kits'
 import { defaultMode, type ColorMode, type Palette, type PaletteMode, type ThemeKey } from './themes'
 
@@ -156,12 +157,106 @@ function buildMode(mode: ColorMode, hue: number, altHue: number, mood: Mood): Pa
   return { bg, surface, border, text, muted: mutedHex, accent, alt: hslToHex(altHue, mood.saturation, dark ? 58 : 52) }
 }
 
+// ───────────── evolved palettes (a genetic algorithm) ─────────────
+// A genome is a main hue, a second hue, a saturation and a lightness. A population starts from the hand-picked palettes of the business type and
+// some random ones; every generation the best are kept, mixed (crossover: the main hue of one with the second hue of another) and nudged
+// (mutation); the fitness is: readable in both modes, a pleasing gap between the two hues, near the mood of the business type and unlike
+// any hand-picked palette (so what comes out is new). The temperature decides how far down the final ranking the choice may go.
+type Genome = { hue: number; altHue: number; sat: number; light: number }
+const clamp = (n: number, low: number, high: number) => Math.max(low, Math.min(high, n))
+const hueGap = (a: number, b: number) => {
+  const d = Math.abs(wrap(a) - wrap(b))
+  return d > 180 ? 360 - d : d
+}
+
+const genomeOfCurated = (accent: string, alt: string): Genome => {
+  const a = hexToHsl(accent)
+  const b = hexToHsl(alt)
+  return { hue: a.h, altHue: b.h, sat: a.s, light: a.l }
+}
+
+function express(g: Genome, mood: Mood) {
+  const own: Mood = { ...mood, saturation: clamp(g.sat, 40, 92), accentLight: clamp(g.light, 28, 50), accentDark: Math.min(78, clamp(g.light, 28, 50) + 24) }
+  const light = buildMode('light', g.hue, g.altHue, own)
+  const dark = buildMode('dark', g.hue, g.altHue, own)
+  const readable = (m: PaletteMode) => Math.min(contrast(m.text, m.bg), contrast(m.muted, m.bg), contrast(m.accent, m.bg), contrast(m.accent, m.surface), contrast(bestOn(m.accent), m.accent)) >= 4.5
+  return { light, dark, valid: readable(light) && readable(dark) }
+}
+
+const CURATED_GENOMES = CURATED.map((p) => genomeOfCurated(p.accent, p.alt))
+
+function fitness(g: Genome, mood: Mood): number {
+  const { valid } = express(g, mood)
+  const gap = hueGap(g.hue, g.altHue)
+  // the gap: close neighbours (about 40) or far apart (about 150), not the dull middle
+  const gapScore = Math.max(1 - Math.abs(gap - 150) / 150, 0.8 * (1 - Math.abs(gap - 40) / 40), 0)
+  const moodScore = 1 - Math.min(1, Math.abs(g.sat - mood.saturation) / 50)
+  const novelty = Math.min(1, Math.min(...CURATED_GENOMES.map((c) => hueGap(c.hue, g.hue) / 40 + Math.abs(c.sat - g.sat) / 30 + hueGap(c.altHue, g.altHue) / 60)))
+  // dark yellow turns into a muddy olive: avoid it, and a second colour that is neon
+  const muddy = (hue: number) => (hue >= 50 && hue <= 85 ? 0.12 : 0)
+  const neon = g.altHue >= 90 && g.altHue <= 150 && g.sat > 75 ? 0.08 : 0
+  return (valid ? 0.4 : 0) + 0.2 * gapScore + 0.15 * moodScore + 0.25 * novelty - muddy(g.hue) - muddy(g.altHue) * 0.5 - neon
+}
+
+export function evolvePalette(theme: ThemeKey, rand: () => number, temp: number, generations = 5): ColorPlan {
+  const mood = MOODS[theme]
+  const [low, high] = mood.range
+  const randomGenome = (): Genome => {
+    const hue = wrap(low - 40 + rand() * (high - low + 80))
+    return { hue, altHue: wrap(hue + (rand() < 0.5 ? 25 + rand() * 30 : 120 + rand() * 60) * (rand() < 0.5 ? 1 : -1)), sat: mood.saturation - 12 + rand() * 24, light: mood.accentLight - 6 + rand() * 12 }
+  }
+  const pool = curatedFor(theme)
+  let population: Genome[] = [
+    ...pool.slice(0, 6).map((p) => genomeOfCurated(p.accent, p.alt)),
+    ...Array.from({ length: 12 }, randomGenome),
+  ].slice(0, 12)
+  const mutate = (g: Genome): Genome => ({
+    hue: wrap(g.hue + (rand() - 0.5) * 70),
+    altHue: wrap(g.altHue + (rand() - 0.5) * 50),
+    sat: clamp(g.sat + (rand() - 0.5) * 20, 40, 92),
+    light: clamp(g.light + (rand() - 0.5) * 10, 28, 50),
+  })
+  const cross = (a: Genome, b: Genome): Genome => ({ hue: rand() < 0.5 ? a.hue : b.hue, altHue: rand() < 0.5 ? a.altHue : b.altHue, sat: (a.sat + b.sat) / 2, light: rand() < 0.5 ? a.light : b.light })
+  const ranked = (list: Genome[]) => list.map((g) => ({ item: g, score: fitness(g, mood) })).sort((x, y) => y.score - x.score)
+  for (let gen = 0; gen < generations; gen += 1) {
+    const best = ranked(population)
+    const elite = best.slice(0, 3).map((e) => e.item)
+    const next = [...elite]
+    while (next.length < 12) {
+      // a tournament of three picks each parent
+      const parent = () => ranked([0, 1, 2].map(() => population[Math.floor(rand() * population.length)]))[0].item
+      next.push(mutate(cross(parent(), parent())))
+    }
+    population = next
+  }
+  const finalists = ranked(population).slice(0, 4)
+  const chosen = sampleTopK(finalists, temp, rand)
+  const { light, dark } = express(chosen, mood)
+  // the evolved colours themselves, as far as they are readable on the page
+  const exact = hslToHex(chosen.hue, chosen.sat, chosen.light)
+  const fits = (c: string, m: PaletteMode) => Math.min(contrast(c, m.bg), contrast(c, m.surface), contrast(bestOn(c), c)) >= 4.5
+  if (fits(exact, light)) light.accent = exact
+  // a second colour that does not shout
+  light.alt = hslToHex(chosen.altHue, Math.min(chosen.sat, 66), 47)
+  dark.alt = hslToHex(chosen.altHue, Math.min(chosen.sat, 66), 62)
+  const name = `${hueName(chosen.hue)} + ${hueName(chosen.altHue)} (evolved)`
+  return {
+    hue: Math.round(chosen.hue),
+    harmony: 'evolved',
+    palette: { name, light, dark },
+    reasons: [`evolved colours: ${hueName(chosen.hue)} with ${hueName(chosen.altHue)} (${generations} generations of mixing and mutating, a palette that is on no list)`, `${defaultMode(theme)} first, contrast checked (WCAG AA) in both modes`],
+  }
+}
+
 export type ColorPlan = { palette: Palette; hue: number; harmony: string; reasons: string[] }
 
 export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number): ColorPlan {
   const mood = MOODS[theme]
   // a colour named in the prompt always wins; otherwise most sites get a hand-picked pair of colours (curatedPalettes.ts), the formula is the rest
   const named = prompt.toLowerCase().split(/[^a-z]+/).some((w) => w in COLOR_WORDS)
+  const temp = temperature()
+  // the higher the creativity, the more often the colours are evolved instead of taken from the hand-picked list
+  if (!named && rand() < 0.65 * temp) return evolvePalette(theme, rand, temp)
   const pool = curatedFor(theme)
   if (!named && pool.length && rand() < 0.8) {
     const pick = pool[Math.floor(rand() * pool.length)]
