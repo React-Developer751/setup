@@ -170,3 +170,7 @@ def _catmull(pts, n, closed):
 def draw_prop(painter, name, x, y, s, color=None):
     """Draw prop `name` with its base centre at pixel (x, y) and nominal height s pixels."""
     REGISTRY[name].fn(Ctx(painter, x, y, s), color)
+    drawn = getattr(painter.cv, "drawn", None)                 # lets the creative critic check that requested props really appear
+    if drawn is None:
+        drawn = painter.cv.drawn = []
+    drawn.append(name)

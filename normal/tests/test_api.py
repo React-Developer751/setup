@@ -485,7 +485,7 @@ class DocsTests(unittest.TestCase):
     def test_every_collection_request_works_against_a_live_server(self):
         """Replay the Postman collection the way Postman would (variables substituted)."""
         with tempfile.TemporaryDirectory() as tmp:
-            live = Live(model_path=os.path.join(tmp, "m.json"))
+            live = Live(model_path=os.path.join(tmp, "m.json"), db_path=os.path.join(tmp, "m.db"))
             try:
                 zbytes = dataset_zip(tmp, combos=[("aqua", "mossy"), ("coral", "sandy")], variants=4)
                 variables = {v["key"]: v["value"] for v in apidocs.postman_collection()["variable"]}
@@ -504,6 +504,11 @@ class DocsTests(unittest.TestCase):
                                                                   {"data": ("d.zip", zbytes)})
                     elif body and body["mode"] == "file":
                         data = zbytes
+                    if "PUT_ID" in url or (data and b"PUT_ID" in data):                  # dataset requests: use real image ids
+                        ids = [i["id"] for i in live.json("GET", "/dataset")[2]["items"]]
+                        pick = ids[1] if "caption" in url else ids[0]
+                        url = url.replace("PUT_ID", pick)
+                        data = data and data.replace(b"PUT_IDS_FROM_GET_DATASET", pick.encode()).replace(b"PUT_ID", pick.encode())
                     s, h, out = live.request(req["method"], url, data, headers)
                     self.assertIn(s, (200, 202), (item["name"], s, out[:200]))
                     seen.append(item["name"])

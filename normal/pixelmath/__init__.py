@@ -2,7 +2,7 @@
 from .compose import MAX_SIZE, MIN_SIZE, render
 from .imagefile import encode_bmp, encode_png, save
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 __all__ = ["render", "generate", "encode_png", "encode_bmp", "save", "MIN_SIZE", "MAX_SIZE",
            "__version__"]
 

@@ -31,7 +31,7 @@ import re
 import shutil
 from dataclasses import dataclass
 
-from .imageread import load_thumbnail
+from .imageread import load_thumbnail, load_thumbnails
 from .raster import Canvas, Noise
 from .tokenizer import STOPWORDS, _words
 
@@ -355,12 +355,13 @@ def _filename_caption(rel):
     return " ".join(re.sub(r"[_\-.]+", " ", f) for f in folders) + " " + " ".join(words)
 
 
-def load_dataset(data_dir, grid=DEFAULT_GRID):
+def load_dataset(data_dir, grid=DEFAULT_GRID, extras=None):
     """Scan a folder for images + captions. Returns (samples, skipped, source_counts).
 
     Caption priority: captions.csv / captions.json (in the image's own folder, or the data root
     using the relative path)  >  sidecar <image>.txt  >  folder + file name.
     Image formats the readers cannot decode (webp, heic, ...) are reported in `skipped`.
+    `extras`, if a dict, receives sample id -> (relative file name, 64x64 preview as RGB bytes) for the dataset manager.
     """
     root = os.path.abspath(data_dir)
     if not os.path.isdir(root):
@@ -393,11 +394,16 @@ def load_dataset(data_dir, grid=DEFAULT_GRID):
                 skipped.append((rel, "no usable caption words"))
                 continue
             try:
-                thumb = load_thumbnail(path, grid)
+                if extras is None:
+                    thumb = load_thumbnail(path, grid)
+                else:
+                    thumb, prev = load_thumbnails(path, (grid, 64))
             except Exception as exc:                       # one bad file must not stop a run
                 skipped.append((rel, "%s: %s" % (type(exc).__name__, exc)))
                 continue
             samples.append(make_sample(caption, thumb))
+            if extras is not None:
+                extras[samples[-1].id] = (rel.replace("\\", "/"), bytes(min(255, max(0, int(round(v * 255)))) for v in prev))
             sources[source] += 1
     return samples, skipped, sources
 

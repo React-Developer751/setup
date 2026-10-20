@@ -20,6 +20,7 @@ limits; zip-slip / zip-bomb / symlink protection; no tracebacks in responses.
 import argparse
 import base64
 import copy
+import hashlib
 import hmac
 import json
 import mmap
@@ -43,8 +44,9 @@ from urllib.parse import parse_qs, urlsplit
 from . import __version__
 from .compose import MAX_SIZE, MIN_SIZE, choose_mode, render, text_warnings
 from .imagefile import encode_bmp, encode_png
-from .learn import (DEFAULT_GRID, IMAGE_EXTS, UNSUPPORTED_EXTS, LearnedModel, ModelError,
-                    load_dataset, train_model)
+from .learn import (DEFAULT_GRID, IMAGE_EXTS, UNSUPPORTED_EXTS, LearnedModel, ModelError, Sample,
+                    caption_words, load_dataset, train_model)
+from .store import Store, grid_png, thumb_png
 from .tokenizer import MAX_PROMPT_CHARS, parse
 
 MB = 1024 * 1024
@@ -73,6 +75,8 @@ class Config:
     max_files: int = 20000
     cors_origin: str = None
     quiet: bool = False
+    db_path: str = None               # SQLite file for gallery / job history / dataset previews (None = off)
+    gallery_max: int = 300            # pictures kept in the gallery (favourites are never dropped)
 
 
 def is_loopback(host):
@@ -80,7 +84,9 @@ def is_loopback(host):
 
 
 # ------------------------------------------------------------------ parameters
-GEN_FIELDS = {"prompt", "size", "width", "height", "seed", "format", "learned", "response"}
+GEN_FIELDS = {"prompt", "size", "width", "height", "seed", "format", "learned", "response", "save"}
+CREATE_FIELDS = GEN_FIELDS | {"temperature", "population", "generations", "alternatives", "max_seconds", "explore"}
+IMAGINE_FIELDS = (GEN_FIELDS - {"prompt"}) | {"anchor", "temperature", "attempts", "population", "generations", "max_seconds"}
 TRAIN_FIELDS = {"epochs", "lr", "l2", "val_frac", "seed", "fresh", "grid", "refit"}
 
 
@@ -147,11 +153,40 @@ def parse_gen_params(src, cfg, from_text):
         "format": str(src.get("format", "png")).lower(),
         "learned": str(src.get("learned", "auto")).lower(),
         "response": str(src.get("response", "binary")).lower(),
+        "save": _bool(src, "save", False),
     }
     for key, allowed in (("format", ("png", "bmp")), ("learned", ("auto", "always", "blend", "off")),
                          ("response", ("binary", "base64"))):
         if out[key] not in allowed:
             raise ApiError(400, "bad_parameter", "%s must be one of: %s" % (key, ", ".join(allowed)))
+    return out
+
+
+def parse_creative_params(src, cfg, from_text, imagine):
+    """Fields of POST /create (a prompt to improve) and POST /imagine (random mash-up, optional `anchor`)."""
+    fields = IMAGINE_FIELDS if imagine else CREATE_FIELDS
+    unknown = sorted(set(src) - fields)
+    if unknown:
+        raise ApiError(400, "unknown_field", "unknown field(s): %s (allowed: %s)" % (", ".join(unknown), ", ".join(sorted(fields))))
+    base = dict(src)
+    anchor = base.pop("anchor", None)
+    if imagine:
+        if anchor is not None and (not isinstance(anchor, str) or len(anchor) > 200):
+            raise ApiError(400, "bad_parameter", "anchor must be a short string (max 200 characters)")
+        base["prompt"] = (anchor or "").strip() or "x"          # validated by parse_gen_params, replaced below
+    keys = {k: base.pop(k) for k in ("temperature", "population", "generations", "alternatives", "max_seconds", "attempts", "explore") if k in base}
+    out = parse_gen_params(base, cfg, from_text)
+    out.update(
+        temperature=_float(keys, "temperature", 0.8 if imagine else 0.7, 0.0, 1.0),
+        population=_int(keys, "population", 8 if not imagine else 6, 2, 16, from_text),
+        generations=_int(keys, "generations", 3 if not imagine else 2, 0, 6, from_text),
+        max_seconds=_float(keys, "max_seconds", 20.0, 0.5, 60.0))
+    if imagine:
+        out["anchor"] = (anchor or "").strip() or None
+        out["attempts"] = _int(keys, "attempts", 12, 1, 30, from_text)
+    else:
+        out["alternatives"] = _int(keys, "alternatives", 3, 0, 5, from_text)
+        out["explore"] = _int(keys, "explore", 0, 0, 500, from_text)
     return out
 
 
@@ -285,6 +320,17 @@ def safe_extract(zip_path, dest, cfg):
     return dest
 
 
+def _metrics(model, m):
+    gain = None
+    if m["val_mse"] is not None and m["baseline_val"]:
+        gain = round(100.0 * (1 - m["val_mse"] / m["baseline_val"]), 1)
+    return {"samples": m["samples"], "added": m["added"], "vocabulary": len(model.rows),
+            "val_samples": m["val_samples"], "best_epoch": m["best_epoch"],
+            "val_rmse": None if m["val_mse"] is None else round(m["val_mse"] ** 0.5 * 255, 2),
+            "baseline_rmse": None if m["baseline_val"] is None else round(m["baseline_val"] ** 0.5 * 255, 2),
+            "improvement_percent": gain}
+
+
 # ------------------------------------------------------------------ training jobs
 class Job:
     def __init__(self, params):
@@ -316,6 +362,7 @@ class App:
         self.host_check = is_loopback(cfg.host) and not cfg.api_key
         if cfg.model_path and os.path.exists(cfg.model_path):
             self.model = LearnedModel.load(cfg.model_path)
+        self.store = Store(cfg.db_path, cfg.gallery_max) if cfg.db_path else None
 
     def log(self, msg):
         if not self.cfg.quiet:
@@ -329,13 +376,24 @@ class App:
         with self.lock:
             self.model = model
 
-    def new_job(self, params):
+    def new_job(self, params, kind="train"):
         job = Job(params)
+        job.kind, job.params = kind, {k: v for k, v in params.items() if k in TRAIN_FIELDS}
         with self.lock:
             self.jobs[job.id] = job
             while len(self.jobs) > 20:
                 self.jobs.popitem(last=False)
+        self.persist(job)
         return job
+
+    def persist(self, job):
+        """Remember a job in the database (never lets a database problem break training)."""
+        if self.store is None:
+            return
+        try:
+            self.store.save_job(job.snapshot(), job.kind, job.params)
+        except Exception:
+            self.log("could not save job %s to the database:\n%s" % (job.id, traceback.format_exc()))
 
     def start_training(self, tmpdir, zip_path, params):
         if not self.train_lock.acquire(blocking=False):
@@ -357,7 +415,8 @@ class App:
             job.update(status="reading", message="reading images")
             current = self.get_model()
             model = LearnedModel(p["grid"]) if (p["fresh"] or current is None) else copy.deepcopy(current)
-            samples, skipped, _sources = load_dataset(data_dir, model.grid)
+            extras = {} if self.store is not None else None
+            samples, skipped, _sources = load_dataset(data_dir, model.grid, extras)
             job.update(images_read=len(samples), skipped_count=len(skipped),
                        skipped=[{"file": r, "reason": w} for r, w in skipped[:100]])
             if not samples and not (model.samples and not p["fresh"]):
@@ -375,15 +434,9 @@ class App:
                             p["refit"], log)
             model.save(self.cfg.model_path)
             self.set_model(model)
-            gain = None
-            if m["val_mse"] is not None and m["baseline_val"]:
-                gain = round(100.0 * (1 - m["val_mse"] / m["baseline_val"]), 1)
-            job.update(status="done", message="finished", finished=time.time(), metrics={
-                "samples": m["samples"], "added": m["added"], "vocabulary": len(model.rows),
-                "val_samples": m["val_samples"], "best_epoch": m["best_epoch"],
-                "val_rmse": None if m["val_mse"] is None else round(m["val_mse"] ** 0.5 * 255, 2),
-                "baseline_rmse": None if m["baseline_val"] is None else round(m["baseline_val"] ** 0.5 * 255, 2),
-                "improvement_percent": gain})
+            job.update(status="done", message="finished", finished=time.time(), metrics=_metrics(model, m))
+            if extras is not None:
+                self._remember_samples(job.id, model, extras)
         except ApiError as exc:
             fail(exc.code, exc.message)
         except (ModelError, OSError, ValueError) as exc:
@@ -393,21 +446,107 @@ class App:
             fail("internal_error", "internal error while training (see server log)")
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
+            self.persist(job)
+            self.train_lock.release()
+
+    def _remember_samples(self, job_id, model, extras):
+        keep = {s.id for s in model.samples}
+        try:
+            for sid, (name, prev) in extras.items():
+                if sid in keep:
+                    caption = next(s.caption for s in model.samples if s.id == sid)
+                    self.store.add_dataset(sid, caption, job_id, name, encode_png(64, 64, prev))
+        except Exception:
+            self.log("could not save dataset previews:\n%s" % traceback.format_exc())
+
+    # ---- dataset edits (delete images / change captions) = retrain on what is left
+    def start_rebuild(self, remove, edits):
+        if not self.train_lock.acquire(blocking=False):
+            raise ApiError(409, "training_busy", "a training job is already running; wait for it to finish")
+        params = parse_train_params({})
+        job = self.new_job(params, "rebuild")
+        threading.Thread(target=self._run_rebuild, args=(job, params, set(remove), dict(edits)), daemon=True).start()
+        return job
+
+    def _run_rebuild(self, job, p, remove, edits):
+        try:
+            current = self.get_model()
+            if current is None:
+                raise ModelError("there is no trained model to change")
+            job.update(status="training", message="retraining on the remaining images")
+            model = copy.deepcopy(current)
+            kept, renamed, seen = [], {}, set()
+            for smp in model.samples:
+                if smp.id in remove:
+                    continue
+                if smp.id in edits:
+                    new = Sample(hashlib.md5(edits[smp.id].encode("utf-8") + smp.thumb).hexdigest()[:12], edits[smp.id], smp.thumb)
+                    renamed[smp.id] = new
+                    smp = new
+                if smp.id not in seen:
+                    seen.add(smp.id)
+                    kept.append(smp)
+            if not kept:                                              # everything removed: the model is empty again
+                self.set_model(None)
+                if self.cfg.model_path and os.path.exists(self.cfg.model_path):
+                    os.replace(self.cfg.model_path, self.cfg.model_path + ".bak")
+                job.update(status="done", message="all images removed; the model was reset (old file kept as .bak)",
+                           finished=time.time(), metrics={"samples": 0, "added": 0, "vocabulary": 0})
+            else:
+                model.samples = kept
+
+                def log(ep, tr, va):
+                    if ep:
+                        job.update(epoch=ep, train_rmse=round(tr ** 0.5 * 255, 2), val_rmse=None if va is None else round(va ** 0.5 * 255, 2))
+                m = train_model(model, [], p["epochs"], p["lr"], p["l2"], p["val_frac"], p["seed"], 8, p["refit"], log)
+                model.save(self.cfg.model_path)
+                self.set_model(model)
+                job.update(status="done", message="finished", finished=time.time(), metrics=_metrics(model, m))
+            if self.store is not None:
+                self.store.remove_dataset(remove)
+                for old, new in renamed.items():
+                    self.store.rename_dataset(old, new.id, new.caption)
+        except (ModelError, OSError, ValueError) as exc:
+            job.update(status="error", message=str(exc), error={"code": "rebuild_failed", "message": str(exc)}, finished=time.time())
+        except Exception:
+            self.log("rebuild job %s crashed:\n%s" % (job.id, traceback.format_exc()))
+            job.update(status="error", message="internal error (see server log)", finished=time.time(),
+                       error={"code": "internal_error", "message": "internal error while retraining"})
+        finally:
+            self.persist(job)
             self.train_lock.release()
 
 
 # ------------------------------------------------------------------ HTTP handler
 ROUTES = {
     "/": {"GET": "get_index"},
+    "/ui": {"GET": "get_ui"},
+    "/ui/app.js": {"GET": "get_ui"},
+    "/ui/style.css": {"GET": "get_ui"},
     "/health": {"GET": "get_health"},
     "/openapi.json": {"GET": "get_openapi"},
     "/generate": {"GET": "get_generate", "POST": "post_generate"},
+    "/create": {"POST": "post_create"},
+    "/imagine": {"POST": "post_imagine"},
     "/parse": {"POST": "post_parse"},
     "/model": {"GET": "get_model_info"},
     "/train": {"POST": "post_train"},
     "/jobs": {"GET": "get_jobs"},
+    "/gallery": {"GET": "get_gallery", "DELETE": "delete_gallery"},
+    "/dataset": {"GET": "get_dataset"},
+    "/dataset/delete": {"POST": "post_dataset_delete"},
 }
-OPEN_ROUTES = {"/health", "/openapi.json", "/"}
+# paths with an id in them: (regex, {method: handler}, name used for the auth check)
+DYNAMIC = (
+    (re.compile(r"^/jobs/([A-Za-z0-9]{1,32})$"), {"GET": "get_job"}, "/jobs/<id>"),
+    (re.compile(r"^/gallery/(\d{1,12})$"), {"GET": "get_gallery_item", "DELETE": "delete_gallery_item"}, "/gallery/<id>"),
+    (re.compile(r"^/gallery/(\d{1,12})/(image|thumb)$"), {"GET": "get_gallery_blob"}, "/gallery/<id>/image"),
+    (re.compile(r"^/gallery/(\d{1,12})/favourite$"), {"POST": "post_gallery_favourite"}, "/gallery/<id>/favourite"),
+    (re.compile(r"^/dataset/([0-9a-f]{12})$"), {"DELETE": "delete_dataset_item"}, "/dataset/<id>"),
+    (re.compile(r"^/dataset/([0-9a-f]{12})/image$"), {"GET": "get_dataset_image"}, "/dataset/<id>/image"),
+    (re.compile(r"^/dataset/([0-9a-f]{12})/caption$"), {"POST": "post_dataset_caption"}, "/dataset/<id>/caption"),
+)
+OPEN_ROUTES = {"/health", "/openapi.json", "/", "/ui", "/ui/app.js", "/ui/style.css"}
 IMAGE_MIME = {"png": "image/png", "bmp": "image/bmp"}
 
 
@@ -566,10 +705,14 @@ class Handler(BaseHTTPRequestHandler):
         path = parts.path.rstrip("/") or "/"
         try:
             self._check_host()
-            if path.startswith("/jobs/") and len(path) > 6:
-                routes, handler_path = {"GET": "get_job"}, "/jobs/<id>"
-            else:
-                routes, handler_path = ROUTES.get(path), path
+            routes, handler_path = ROUTES.get(path), path
+            self._args = ()
+            if routes is None:
+                for rx, table, name in DYNAMIC:
+                    m = rx.match(path)
+                    if m:
+                        routes, handler_path, self._args = table, name, m.groups()
+                        break
             if routes is None:
                 raise ApiError(404, "not_found", "no such endpoint: %s" % path[:80])
             if method == "OPTIONS":
@@ -617,16 +760,36 @@ class Handler(BaseHTTPRequestHandler):
         self._dispatch("HEAD")
 
     # ---- endpoints
+    UI_FILES = {"/ui": ("index.html", "text/html; charset=utf-8"), "/ui/app.js": ("app.js", "text/javascript; charset=utf-8"),
+                "/ui/style.css": ("style.css", "text/css; charset=utf-8")}
+    UI_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; "
+              "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+
+    def get_ui(self, parts, path):
+        """The bundled web interface (pixelmath/web). Static files only, no secrets: the API itself still checks the key."""
+        name, ctype = self.UI_FILES[path]
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", name), "rb") as fh:
+                body = fh.read()
+        except OSError:
+            raise ApiError(404, "not_found", "the web interface files are missing from this installation")
+        self._send(200, body, ctype, {"Content-Security-Policy": self.UI_CSP, "Referrer-Policy": "no-referrer"})
+
     def get_index(self, parts, path):
+        if "text/html" in (self.headers.get("Accept") or ""):          # a browser: show the interface
+            self._send(302, b"", "text/plain", {"Location": "/ui"})
+            return
         self._json({"name": "PixelMath", "version": __version__, "docs": "/openapi.json", "endpoints": {
-            "GET /health": "liveness", "GET|POST /generate": "make an image", "POST /parse": "explain a prompt",
+            "GET /health": "liveness", "GET|POST /generate": "make an image", "POST /create": "creative mode (variations + critic + genetic search)",
+            "POST /imagine": "random concept mash-up judged by the critic", "POST /parse": "explain a prompt",
             "GET /model": "trained model info", "POST /train": "upload zip to train (needs --model)",
             "GET /jobs/<id>": "training progress"}})
 
     def get_health(self, parts, path):
         m = self.app.get_model()
         self._json({"status": "ok", "version": __version__, "model_loaded": m is not None,
-                    "training_enabled": bool(self.app.cfg.model_path), "auth_required": bool(self.app.cfg.api_key)})
+                    "training_enabled": bool(self.app.cfg.model_path), "auth_required": bool(self.app.cfg.api_key),
+                    "database": self.app.store is not None})
 
     def get_openapi(self, parts, path):
         from .apidocs import openapi
@@ -651,22 +814,76 @@ class Handler(BaseHTTPRequestHandler):
                 canvas, parsed, mode = render(p["prompt"], p["width"], p["height"], p["seed"], model, p["learned"])
             except ValueError as exc:
                 raise ApiError(400, "bad_parameter", str(exc))
-            rgb = canvas.to_rgb_bytes()
-            data = (encode_png if p["format"] == "png" else encode_bmp)(p["width"], p["height"], rgb)
             secs = round(time.time() - t0, 3)
         finally:
             app.render_slots.release()
+        self._deliver(canvas, p, mode, secs, text_warnings(parsed),
+                      {"known_words": model.known_words(p["prompt"]) if model else []},
+                      record={"kind": "plain", "prompt": p["prompt"], "prompt_used": None})
+
+    def _deliver(self, canvas, p, mode, secs, warn, extra_json, extra_headers=None, seed=None, record=None):
+        rgb = canvas.to_rgb_bytes()
+        data = (encode_png if p["format"] == "png" else encode_bmp)(p["width"], p["height"], rgb)
         mime = IMAGE_MIME[p["format"]]
+        seed = p["seed"] if seed is None else seed
+        gallery_id = None
+        if p.get("save") and self.app.store is not None and record is not None:
+            try:
+                params = {k: p[k] for k in ("size", "width", "height", "learned", "temperature", "population", "generations", "explore",
+                                           "attempts", "anchor") if k in p}
+                creation = extra_json.get("creation")
+                gallery_id = self.app.store.add_image(record["kind"], record["prompt"], record.get("prompt_used"), seed, mode,
+                                                      p["width"], p["height"], params, creation, mime, data,
+                                                      thumb_png(p["width"], p["height"], rgb))
+            except Exception:
+                self.app.log("could not save to the gallery:\n%s" % traceback.format_exc())
         if p["response"] == "base64":
             self._json({"image_base64": base64.b64encode(data).decode("ascii"), "mime": mime,
-                        "width": p["width"], "height": p["height"], "seed": p["seed"], "mode": mode,
-                        "render_seconds": secs, "warnings": text_warnings(parsed),
-                        "known_words": model.known_words(p["prompt"]) if model else []})
+                        "width": p["width"], "height": p["height"], "seed": seed, "mode": mode,
+                        "render_seconds": secs, "warnings": warn, **({"gallery_id": gallery_id} if gallery_id else {}), **extra_json})
             return
-        warn = text_warnings(parsed)
-        self._send(200, data, mime, {"X-PixelMath-Mode": mode, "X-PixelMath-Seed": str(p["seed"]),
+        self._send(200, data, mime, {"X-PixelMath-Mode": mode, "X-PixelMath-Seed": str(seed),
                                      "X-Render-Seconds": str(secs), **({"X-PixelMath-Warning": warn[0]} if warn else {}),
+                                     **({"X-PixelMath-Gallery-Id": str(gallery_id)} if gallery_id else {}),
+                                     **(extra_headers or {}),
                                      "Content-Disposition": 'inline; filename="pixelmath.%s"' % p["format"]})
+
+    def post_create(self, parts, path):
+        self._creative(parse_creative_params(self._json_body(), self.app.cfg, False, False), False)
+
+    def post_imagine(self, parts, path):
+        self._creative(parse_creative_params(self._json_body(), self.app.cfg, True, True), True)
+
+    def _creative(self, p, imagine):
+        """Several renders plus a critic and a genetic search: one request holds one render slot for up to max_seconds."""
+        from urllib.parse import quote
+        from . import creative
+        app = self.app
+        if not app.render_slots.acquire(timeout=app.cfg.queue_wait):
+            raise ApiError(503, "busy", "the server is still busy after waiting %g s, retry shortly" % app.cfg.queue_wait,
+                           {"Retry-After": "2"})
+        try:
+            model = app.get_model()
+            t0 = time.time()
+            small = min(160, max(32, min(p["width"], p["height"]) // 2))
+            try:
+                if imagine:
+                    made, _ = creative.imagine(p["temperature"], p["seed"], p["attempts"], small, p["width"], p["anchor"], True, model,
+                                               p["learned"], p["population"], p["generations"], max_seconds=p["max_seconds"],
+                                               final_height=p["height"])
+                else:
+                    made = creative.evolve(p["prompt"], p["temperature"], p["population"], p["generations"], p["seed"], small,
+                                           p["width"], model, p["learned"], max_seconds=p["max_seconds"],
+                                           alternatives=p["alternatives"], final_height=p["height"], explore=p["explore"])
+            except ValueError as exc:
+                raise ApiError(400, "bad_parameter", str(exc))
+            secs = round(time.time() - t0, 3)
+        finally:
+            app.render_slots.release()
+        self._deliver(made.canvas, p, made.mode, secs, text_warnings(made.parsed), {"creation": made.to_dict()},
+                      {"X-PixelMath-Prompt": quote(made.prompt, safe=" ,")[:400], "X-PixelMath-Score": "%.3f" % made.score},
+                      seed=made.seed, record={"kind": "imagine" if imagine else "creative",
+                                              "prompt": p.get("anchor") or "" if imagine else p["prompt"], "prompt_used": made.prompt})
 
     def post_parse(self, parts, path):
         body = self._json_body()
@@ -736,16 +953,138 @@ class Handler(BaseHTTPRequestHandler):
         self._json({"job_id": job.id, "status": "queued", "status_url": "/jobs/%s" % job.id}, 202,
                    {"Location": "/jobs/%s" % job.id})
 
+    # ---- jobs (live ones from memory, older ones from the database)
     def get_job(self, parts, path):
-        job = self.app.jobs.get(path[len("/jobs/"):])
-        if job is None:
-            raise ApiError(404, "not_found", "no such job (the server keeps the last 20)")
-        self._json(job.snapshot())
+        jid = self._args[0]
+        job = self.app.jobs.get(jid)
+        if job is not None:
+            self._json(job.snapshot())
+            return
+        old = self.app.store.get_job(jid) if self.app.store else None
+        if old is None:
+            raise ApiError(404, "not_found", "no such job (without a database the server only keeps the last 20)")
+        self._json(old)
 
     def get_jobs(self, parts, path):
         with self.app.lock:
-            jobs = list(self.app.jobs.values())
-        self._json({"jobs": [{"id": j.id, "status": j.snapshot()["status"]} for j in reversed(jobs)]})
+            live = {j.id: j.snapshot() for j in self.app.jobs.values()}
+        rows = []
+        if self.app.store:
+            rows = [r for r in self.app.store.list_jobs(30) if r["id"] not in live]
+        mem = [dict(v, kind=self.app.jobs[k].kind) for k, v in live.items()]
+        jobs = sorted(mem + rows, key=lambda j: -(j.get("created") or 0))
+        for j in jobs:
+            j["skipped"] = (j.get("skipped") or [])[:20]
+        self._json({"jobs": jobs})
+
+    # ---- gallery
+    def _need_store(self):
+        if self.app.store is None:
+            raise ApiError(404, "no_database", "this server was started without a database (use --db PATH, or python3 app.py)")
+        return self.app.store
+
+    def _query(self, parts):
+        return {k: v[0] for k, v in parse_qs(parts.query, keep_blank_values=True, max_num_fields=20).items()}
+
+    def get_gallery(self, parts, path):
+        store, q = self._need_store(), self._query(parts)
+        text = q.get("q", "").strip()
+        if len(text) > 100:
+            raise ApiError(400, "bad_parameter", "q is too long")
+        items, total = store.list_images(_int(q, "limit", 48, 1, 200, True), _int(q, "offset", 0, 0, 10 ** 9, True),
+                                         _bool(q, "favourites", False), text or None)
+        self._json({"items": items, "total": total})
+
+    def get_gallery_item(self, parts, path):
+        item = self._need_store().get_image(int(self._args[0]))
+        if item is None:
+            raise ApiError(404, "not_found", "no such picture")
+        self._json(item)
+
+    def get_gallery_blob(self, parts, path):
+        got = self._need_store().get_blob(int(self._args[0]), "image" if self._args[1] == "image" else "thumb")
+        if got is None:
+            raise ApiError(404, "not_found", "no such picture")
+        self._send(200, got[1], got[0])
+
+    def post_gallery_favourite(self, parts, path):
+        body = self._json_body()
+        if set(body) - {"favourite"} or not isinstance(body.get("favourite"), bool):
+            raise ApiError(400, "bad_parameter", 'send {"favourite": true or false}')
+        if not self._need_store().set_favourite(int(self._args[0]), body["favourite"]):
+            raise ApiError(404, "not_found", "no such picture")
+        self._json({"id": int(self._args[0]), "favourite": body["favourite"]})
+
+    def delete_gallery_item(self, parts, path):
+        if not self._need_store().delete_image(int(self._args[0])):
+            raise ApiError(404, "not_found", "no such picture")
+        self._json({"deleted": 1})
+
+    def delete_gallery(self, parts, path):
+        q = self._query(parts)
+        n = self._need_store().clear_gallery(_bool(q, "keep_favourites", True))
+        self._json({"deleted": n})
+
+    # ---- dataset manager: what the model was trained on
+    def get_dataset(self, parts, path):
+        q = self._query(parts)
+        text = q.get("q", "").strip().lower()
+        limit, offset = _int(q, "limit", 60, 1, 200, True), _int(q, "offset", 0, 0, 10 ** 9, True)
+        model = self.app.get_model()
+        if model is None:
+            self._json({"total": 0, "items": [], "grid": None})
+            return
+        rows = self.app.store.dataset_rows() if self.app.store else {}
+        items = []
+        for smp in model.samples:
+            r = rows.get(smp.id) or {}
+            if text and text not in smp.caption.lower() and text not in (r.get("source_name") or "").lower():
+                continue
+            items.append({"id": smp.id, "caption": smp.caption, "added": r.get("added"), "file": r.get("source_name"),
+                          "job_id": r.get("job_id"), "original_preview": bool(r.get("has_preview"))})
+        items.sort(key=lambda i: (-(i["added"] or 0), i["caption"], i["id"]))
+        self._json({"total": len(items), "items": items[offset:offset + limit], "grid": model.grid})
+
+    def get_dataset_image(self, parts, path):
+        sid = self._args[0]
+        png = self.app.store.dataset_preview(sid) if self.app.store else None
+        if png is None:
+            model = self.app.get_model()
+            smp = next((x for x in model.samples if x.id == sid), None) if model else None
+            if smp is None:
+                raise ApiError(404, "not_found", "no such trained image")
+            png = grid_png(smp.thumb, model.grid, 8)            # only the model's own coarse colour grid is known
+        self._send(200, png, "image/png")
+
+    def _rebuild(self, remove, edits):
+        model = self.app.get_model()
+        if model is None:
+            raise ApiError(404, "no_model", "there is no trained model")
+        have = {smp.id for smp in model.samples}
+        remove, edits = {i for i in remove if i in have}, {i: c for i, c in edits.items() if i in have}
+        if not remove and not edits:
+            raise ApiError(404, "not_found", "none of those images are in the trained model")
+        job = self.app.start_rebuild(remove, edits)
+        self._json({"job_id": job.id, "status": "queued", "status_url": "/jobs/%s" % job.id, "removed": len(remove),
+                    "edited": len(edits), "remaining": len(have) - len(remove)}, 202, {"Location": "/jobs/%s" % job.id})
+
+    def delete_dataset_item(self, parts, path):
+        self._rebuild({self._args[0]}, {})
+
+    def post_dataset_delete(self, parts, path):
+        body = self._json_body()
+        ids = body.get("ids")
+        if set(body) - {"ids"} or not isinstance(ids, list) or not ids or len(ids) > 20000 or not all(
+                isinstance(i, str) and re.fullmatch(r"[0-9a-f]{12}", i) for i in ids):
+            raise ApiError(400, "bad_parameter", '"ids" must be a non-empty list of image ids (from GET /dataset)')
+        self._rebuild(set(ids), {})
+
+    def post_dataset_caption(self, parts, path):
+        body = self._json_body()
+        cap = body.get("caption")
+        if set(body) - {"caption"} or not isinstance(cap, str) or not caption_words(cap) or len(cap) > 200:
+            raise ApiError(400, "bad_parameter", '"caption" must be 1-200 characters with at least one real word')
+        self._rebuild(set(), {self._args[0]: cap.strip()})
 
 
 class _Server(ThreadingHTTPServer):
@@ -755,6 +1094,12 @@ class _Server(ThreadingHTTPServer):
 
     def handle_error(self, request, client_address):      # drop noisy socket tracebacks
         pass
+
+    def server_close(self):
+        super().server_close()
+        store = getattr(getattr(self, "app", None), "store", None)
+        if store is not None:
+            store.close()
 
 
 class _Server6(_Server):
@@ -786,13 +1131,15 @@ def main(argv=None):
     ap.add_argument("--queue-wait", type=float, default=10.0, help="seconds a request waits for a free slot before 503")
     ap.add_argument("--max-upload-mb", type=int, default=100)
     ap.add_argument("--max-unzipped-mb", type=int, default=300)
+    ap.add_argument("--db", help="SQLite file for the gallery, training history and dataset previews (default: off)")
+    ap.add_argument("--gallery-max", type=int, default=300, help="pictures kept in the gallery (favourites are kept)")
     ap.add_argument("--cors-origin", help="allow browser calls from this origin (or *)")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
     cfg = Config(host=args.host, port=args.port, model_path=args.model, api_key=args.api_key or None,
                  max_size=args.max_size, max_concurrent=max(1, args.max_concurrent), queue_wait=max(0.0, args.queue_wait),
                  max_upload_bytes=args.max_upload_mb * MB, max_unzipped_bytes=args.max_unzipped_mb * MB,
-                 cors_origin=args.cors_origin, quiet=args.quiet)
+                 cors_origin=args.cors_origin, quiet=args.quiet, db_path=args.db, gallery_max=args.gallery_max)
     try:
         httpd = create_server(cfg)
     except (ValueError, ModelError) as exc:
@@ -810,6 +1157,7 @@ def main(argv=None):
     print("  training: %s" % ("enabled (POST /train)" if cfg.model_path else "disabled (start with --model PATH)"))
     print("  limits:   image <= %d px, %d concurrent renders (others queue up to %g s), upload <= %d MB" % (
         cfg.max_size, cfg.max_concurrent, cfg.queue_wait, cfg.max_upload_bytes // MB))
+    print("  database: %s" % (cfg.db_path or "none (gallery and job history are off)"))
     print("  docs:     http://%s:%d/openapi.json   (Ctrl-C to stop)" % (host, port), flush=True)
     try:
         httpd.serve_forever()

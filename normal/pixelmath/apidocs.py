@@ -59,6 +59,84 @@ def openapi(cfg=None):
                         "responses": {"200": {"description": "Image bytes", "content": image},
                                       "400": _err("Invalid parameter"), "401": _err("Missing or invalid API key"),
                                       "503": _err("Server busy")}}},
+            "/create": {"post": {
+                "summary": "Creative mode: propose variations, let a critic judge them, breed the best",
+                "description": "temperature 0 = the plain render (no search). Above 0 the engine adds related props, time/weather/"
+                               "background/palette ideas and new layouts, throws away any variation that drops or alters what the "
+                               "prompt asked for, and keeps improving the survivors with a small genetic search. The response says "
+                               "what it thought (header X-PixelMath-Prompt = the prompt it finally rendered; the same prompt + seed "
+                               "reproduces the image through /generate). With response=base64 the JSON also holds `creation` "
+                               "(thinking notes, scores, generations, rejected-by-critic counts, alternatives).",
+                "operationId": "create",
+                "requestBody": {"required": True, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/CreateRequest"}}}},
+                "responses": {"200": {"description": "PNG/BMP bytes or JSON with base64 + creation report",
+                                      "content": {**image, "application/json": {"schema": {"$ref": "#/components/schemas/GenerateJson"}}}},
+                              "400": _err("Invalid parameter"), "401": _err("Missing or invalid API key"),
+                              "503": _err("Server busy")}}},
+            "/imagine": {"post": {
+                "summary": "Mash two random ideas together; the critic rejects the ones that do not work",
+                "description": "Like /create, but the idea itself is random (e.g. 'excavator and sofa'). Optional `anchor` keeps "
+                               "one idea of yours (e.g. 'cat') and mashes it with something random.",
+                "operationId": "imagine",
+                "requestBody": {"required": True, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/ImagineRequest"}}}},
+                "responses": {"200": {"description": "PNG/BMP bytes or JSON with base64 + creation report",
+                                      "content": {**image, "application/json": {"schema": {"$ref": "#/components/schemas/GenerateJson"}}}},
+                              "400": _err("Invalid parameter"), "401": _err("Missing or invalid API key"),
+                              "503": _err("Server busy")}}},
+            "/gallery": {
+                "get": {"summary": "List saved pictures (newest first)", "operationId": "gallery",
+                        "description": "Needs a database (python3 app.py has one; serve.py needs --db). Pictures are saved when a "
+                                       "request to /generate, /create or /imagine contains \"save\": true.",
+                        "parameters": [{"name": "limit", "in": "query", "schema": {"type": "integer", "default": 48, "maximum": 200}},
+                                       {"name": "offset", "in": "query", "schema": {"type": "integer", "default": 0}},
+                                       {"name": "favourites", "in": "query", "schema": {"type": "boolean", "default": False}},
+                                       {"name": "q", "in": "query", "schema": {"type": "string", "maxLength": 100}}],
+                        "responses": {"200": {"description": "{items:[...], total}"}, "404": _err("No database")}},
+                "delete": {"summary": "Delete saved pictures", "operationId": "galleryClear",
+                           "parameters": [{"name": "keep_favourites", "in": "query", "schema": {"type": "boolean", "default": True}}],
+                           "responses": {"200": {"description": "{deleted: n}"}}}},
+            "/gallery/{id}": {
+                "get": {"summary": "One saved picture: prompt, seed, parameters and the creative report", "operationId": "galleryItem",
+                        "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}],
+                        "responses": {"200": {"description": "Details"}, "404": _err("Unknown id")}},
+                "delete": {"summary": "Delete one saved picture", "operationId": "galleryDelete",
+                           "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}],
+                           "responses": {"200": {"description": "{deleted: 1}"}, "404": _err("Unknown id")}}},
+            "/gallery/{id}/image": {"get": {"summary": "The saved picture (PNG/BMP bytes)", "operationId": "galleryImage",
+                                            "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}],
+                                            "responses": {"200": {"description": "Image", "content": image}}}},
+            "/gallery/{id}/thumb": {"get": {"summary": "A small PNG preview (max 160 px)", "operationId": "galleryThumb",
+                                            "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}],
+                                            "responses": {"200": {"description": "PNG", "content": image}}}},
+            "/gallery/{id}/favourite": {"post": {"summary": "Mark or unmark a favourite (favourites are never dropped)", "operationId": "galleryFavourite",
+                                                 "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}}],
+                                                 "requestBody": {"required": True, "content": {"application/json": {"schema": {
+                                                     "type": "object", "required": ["favourite"], "properties": {"favourite": {"type": "boolean"}}}}}},
+                                                 "responses": {"200": {"description": "{id, favourite}"}}}},
+            "/dataset": {"get": {"summary": "The images the model was trained on (dataset manager)", "operationId": "dataset",
+                                 "description": "Works without a database too (then only the coarse colour preview exists).",
+                                 "parameters": [{"name": "limit", "in": "query", "schema": {"type": "integer", "default": 60, "maximum": 200}},
+                                                {"name": "offset", "in": "query", "schema": {"type": "integer", "default": 0}},
+                                                {"name": "q", "in": "query", "schema": {"type": "string"}}],
+                                 "responses": {"200": {"description": "{total, items:[{id, caption, file, added, job_id, original_preview}], grid}"}}}},
+            "/dataset/delete": {"post": {"summary": "Remove trained images and retrain on the rest (asynchronous)", "operationId": "datasetDelete",
+                                         "requestBody": {"required": True, "content": {"application/json": {"schema": {
+                                             "type": "object", "required": ["ids"], "properties": {"ids": {"type": "array", "items": {"type": "string"}}}}}}},
+                                         "responses": {"202": {"description": "{job_id, removed, remaining}: poll /jobs/{id}"},
+                                                       "404": _err("None of the ids are in the model"), "409": _err("Training busy")}}},
+            "/dataset/{id}": {"delete": {"summary": "Remove one trained image and retrain", "operationId": "datasetDeleteOne",
+                                         "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}],
+                                         "responses": {"202": {"description": "Job accepted"}, "404": _err("Unknown id"), "409": _err("Training busy")}}},
+            "/dataset/{id}/image": {"get": {"summary": "Preview of a trained image (PNG)", "operationId": "datasetImage",
+                                            "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}],
+                                            "responses": {"200": {"description": "PNG", "content": image}}}},
+            "/dataset/{id}/caption": {"post": {"summary": "Change a trained image's caption and retrain", "operationId": "datasetCaption",
+                                               "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}],
+                                               "requestBody": {"required": True, "content": {"application/json": {"schema": {
+                                                   "type": "object", "required": ["caption"], "properties": {"caption": {"type": "string", "maxLength": 200}}}}}},
+                                               "responses": {"202": {"description": "Job accepted"}, "400": _err("Bad caption"), "404": _err("Unknown id")}}},
             "/parse": {"post": {"summary": "Show how a prompt is understood", "operationId": "parse",
                                 "requestBody": {"required": True, "content": {"application/json": {"schema": {
                                     "type": "object", "required": ["prompt"], "additionalProperties": False,
@@ -115,11 +193,40 @@ def openapi(cfg=None):
                     "seed": {"type": "integer", "default": 0, "description": "same prompt + seed = same image"},
                     "format": {"type": "string", "enum": ["png", "bmp"], "default": "png"},
                     "learned": {"type": "string", "enum": ["auto", "always", "blend", "off"], "default": "auto"},
-                    "response": {"type": "string", "enum": ["binary", "base64"], "default": "binary"}}},
+                    "response": {"type": "string", "enum": ["binary", "base64"], "default": "binary"},
+                    "save": {"type": "boolean", "default": False, "description": "keep the picture in the gallery (needs a database); "
+                                                                               "the answer then has gallery_id / header X-PixelMath-Gallery-Id"}}},
                 "GenerateJson": {"type": "object", "properties": {
                     "image_base64": {"type": "string"}, "mime": {"type": "string"}, "width": {"type": "integer"},
                     "height": {"type": "integer"}, "seed": {"type": "integer"}, "mode": {"type": "string"},
-                    "render_seconds": {"type": "number"}, "known_words": {"type": "array", "items": {"type": "string"}}}},
+                    "render_seconds": {"type": "number"}, "gallery_id": {"type": "integer"}, "known_words": {"type": "array", "items": {"type": "string"}}}},
+                "CreateRequest": {"type": "object", "required": ["prompt"], "additionalProperties": False, "properties": {
+                    "prompt": {"type": "string", "maxLength": 2000, "example": "laptop and coffee cup"},
+                    "temperature": {"type": "number", "default": 0.7, "minimum": 0, "maximum": 1,
+                                    "description": "0 = safest/plain, 1 = boldest"},
+                    "population": {"type": "integer", "default": 8, "minimum": 2, "maximum": 16},
+                    "generations": {"type": "integer", "default": 3, "minimum": 0, "maximum": 6},
+                    "alternatives": {"type": "integer", "default": 3, "minimum": 0, "maximum": 5},
+                    "explore": {"type": "integer", "default": 0, "minimum": 0, "maximum": 500,
+                                "description": "judge this many extra random ideas at thumbnail size first, breed from the best"},
+                    "max_seconds": {"type": "number", "default": 20, "description": "time budget for the search"},
+                    "size": {"type": "integer", "default": 512}, "width": {"type": "integer"}, "height": {"type": "integer"},
+                    "seed": {"type": "integer", "default": 0}, "format": {"type": "string", "enum": ["png", "bmp"]},
+                    "learned": {"type": "string", "enum": ["auto", "always", "blend", "off"]},
+                    "response": {"type": "string", "enum": ["binary", "base64"], "default": "binary"},
+                    "save": {"type": "boolean", "default": False}}},
+                "ImagineRequest": {"type": "object", "additionalProperties": False, "properties": {
+                    "anchor": {"type": "string", "maxLength": 200, "example": "cat", "description": "optional idea to keep"},
+                    "temperature": {"type": "number", "default": 0.8, "minimum": 0, "maximum": 1,
+                                    "description": "higher = more unrelated pairs"},
+                    "attempts": {"type": "integer", "default": 12, "minimum": 1, "maximum": 30},
+                    "population": {"type": "integer", "default": 6}, "generations": {"type": "integer", "default": 2},
+                    "max_seconds": {"type": "number", "default": 20},
+                    "size": {"type": "integer", "default": 512}, "width": {"type": "integer"}, "height": {"type": "integer"},
+                    "seed": {"type": "integer", "default": 0}, "format": {"type": "string", "enum": ["png", "bmp"]},
+                    "learned": {"type": "string", "enum": ["auto", "always", "blend", "off"]},
+                    "response": {"type": "string", "enum": ["binary", "base64"], "default": "binary"},
+                    "save": {"type": "boolean", "default": False}}},
                 "ParseResult": {"type": "object", "properties": {
                     "mode": {"type": "string"}, "time": {"type": "string", "nullable": True},
                     "flags": {"type": "array", "items": {"type": "string"}},
@@ -199,6 +306,21 @@ def postman_collection():
             req("Generate with trained model", "POST", "generate", _json_body(
                 {"prompt": "aqua mossy", "size": 256, "learned": "always"}),
                 desc="Uses the trained model for words the built-in lexicon does not know."),
+            req("Create (creative mode)", "POST", "create", _json_body(
+                {"prompt": "laptop and coffee cup", "temperature": 0.8, "population": 8, "generations": 3, "size": 512,
+                 "response": "base64"}),
+                desc="Variations + critic + genetic search. With response=base64 the JSON has `creation.thinking` and scores. "
+                     "Use response=binary for the PNG itself (headers X-PixelMath-Prompt / -Seed / -Score)."),
+            req("Imagine (random mash-up)", "POST", "imagine", _json_body(
+                {"anchor": "cat", "temperature": 0.9, "attempts": 12, "size": 512, "response": "base64"}),
+                desc="Two ideas mashed together; the critic rejects mash-ups that do not work. Leave anchor out for fully random."),
+            req("Generate and save to gallery", "POST", "generate", _json_body(
+                {"prompt": "laptop and coffee cup", "size": 384, "save": True, "response": "base64"}),
+                desc="Needs a database (python3 app.py has one). The answer contains gallery_id."),
+            req("Gallery: list", "GET", "gallery", query=[("limit", "24"), ("favourites", "false")]),
+            req("Gallery: one picture (details)", "GET", "gallery/1"),
+            req("Gallery: image", "GET", "gallery/1/image"),
+            req("Gallery: favourite", "POST", "gallery/1/favourite", _json_body({"favourite": True})),
             req("Parse prompt", "POST", "parse", _json_body({"prompt": "ek laal ghar aur do ped, raat"}),
                 desc="Shows entities, colours, time of day and which words were not understood."),
             req("Model info", "GET", "model"),
@@ -207,6 +329,10 @@ def postman_collection():
             zip_item,
             req("Training job status", "GET", "jobs/{{jobId}}", desc="Poll until status is done or error."),
             req("Recent jobs", "GET", "jobs"),
+            req("Dataset: list trained images", "GET", "dataset", query=[("limit", "60"), ("q", "")]),
+            req("Dataset: delete images and retrain", "POST", "dataset/delete", _json_body({"ids": ["PUT_IDS_FROM_GET_DATASET"]}),
+                events=save_job, desc="Returns a job; poll Training job status."),
+            req("Dataset: change a caption", "POST", "dataset/PUT_ID/caption", _json_body({"caption": "red sunset sky"}), events=save_job),
         ]}
 
 

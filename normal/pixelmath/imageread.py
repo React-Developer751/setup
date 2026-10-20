@@ -498,3 +498,13 @@ def load_thumbnail(path, n):
         raise ImageError("file too large")
     w, h, rgb = decode_image(data)
     return to_thumbnail(w, h, rgb, n)
+
+
+def load_thumbnails(path, sizes):
+    """Decode once, return one thumbnail per requested size (e.g. the model grid and a preview)."""
+    with open(path, "rb") as fh:
+        data = fh.read(MAX_FILE_BYTES + 1)
+    if len(data) > MAX_FILE_BYTES:
+        raise ImageError("file too large")
+    w, h, rgb = decode_image(data)
+    return [to_thumbnail(w, h, rgb, n) for n in sizes]

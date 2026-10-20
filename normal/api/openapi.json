@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "PixelMath API",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "Text-to-image engine written from scratch (no external model). Generate images, inspect how prompts are parsed, and train the engine on your own images."
   },
   "servers": [
@@ -241,6 +241,619 @@
           },
           "503": {
             "description": "Server busy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create": {
+      "post": {
+        "summary": "Creative mode: propose variations, let a critic judge them, breed the best",
+        "description": "temperature 0 = the plain render (no search). Above 0 the engine adds related props, time/weather/background/palette ideas and new layouts, throws away any variation that drops or alters what the prompt asked for, and keeps improving the survivors with a small genetic search. The response says what it thought (header X-PixelMath-Prompt = the prompt it finally rendered; the same prompt + seed reproduces the image through /generate). With response=base64 the JSON also holds `creation` (thinking notes, scores, generations, rejected-by-critic counts, alternatives).",
+        "operationId": "create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PNG/BMP bytes or JSON with base64 + creation report",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/bmp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateJson"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Server busy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/imagine": {
+      "post": {
+        "summary": "Mash two random ideas together; the critic rejects the ones that do not work",
+        "description": "Like /create, but the idea itself is random (e.g. 'excavator and sofa'). Optional `anchor` keeps one idea of yours (e.g. 'cat') and mashes it with something random.",
+        "operationId": "imagine",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImagineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PNG/BMP bytes or JSON with base64 + creation report",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/bmp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateJson"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Server busy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gallery": {
+      "get": {
+        "summary": "List saved pictures (newest first)",
+        "operationId": "gallery",
+        "description": "Needs a database (python3 app.py has one; serve.py needs --db). Pictures are saved when a request to /generate, /create or /imagine contains \"save\": true.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 48,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "favourites",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{items:[...], total}"
+          },
+          "404": {
+            "description": "No database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete saved pictures",
+        "operationId": "galleryClear",
+        "parameters": [
+          {
+            "name": "keep_favourites",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{deleted: n}"
+          }
+        }
+      }
+    },
+    "/gallery/{id}": {
+      "get": {
+        "summary": "One saved picture: prompt, seed, parameters and the creative report",
+        "operationId": "galleryItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Details"
+          },
+          "404": {
+            "description": "Unknown id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete one saved picture",
+        "operationId": "galleryDelete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{deleted: 1}"
+          },
+          "404": {
+            "description": "Unknown id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gallery/{id}/image": {
+      "get": {
+        "summary": "The saved picture (PNG/BMP bytes)",
+        "operationId": "galleryImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/bmp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gallery/{id}/thumb": {
+      "get": {
+        "summary": "A small PNG preview (max 160 px)",
+        "operationId": "galleryThumb",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/bmp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gallery/{id}/favourite": {
+      "post": {
+        "summary": "Mark or unmark a favourite (favourites are never dropped)",
+        "operationId": "galleryFavourite",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "favourite"
+                ],
+                "properties": {
+                  "favourite": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{id, favourite}"
+          }
+        }
+      }
+    },
+    "/dataset": {
+      "get": {
+        "summary": "The images the model was trained on (dataset manager)",
+        "operationId": "dataset",
+        "description": "Works without a database too (then only the coarse colour preview exists).",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 60,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{total, items:[{id, caption, file, added, job_id, original_preview}], grid}"
+          }
+        }
+      }
+    },
+    "/dataset/delete": {
+      "post": {
+        "summary": "Remove trained images and retrain on the rest (asynchronous)",
+        "operationId": "datasetDelete",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ids"
+                ],
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "{job_id, removed, remaining}: poll /jobs/{id}"
+          },
+          "404": {
+            "description": "None of the ids are in the model",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Training busy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset/{id}": {
+      "delete": {
+        "summary": "Remove one trained image and retrain",
+        "operationId": "datasetDeleteOne",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Job accepted"
+          },
+          "404": {
+            "description": "Unknown id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Training busy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset/{id}/image": {
+      "get": {
+        "summary": "Preview of a trained image (PNG)",
+        "operationId": "datasetImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/bmp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset/{id}/caption": {
+      "post": {
+        "summary": "Change a trained image's caption and retrain",
+        "operationId": "datasetCaption",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "caption"
+                ],
+                "properties": {
+                  "caption": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Job accepted"
+          },
+          "400": {
+            "description": "Bad caption",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown id",
             "content": {
               "application/json": {
                 "schema": {
@@ -652,6 +1265,11 @@
               "base64"
             ],
             "default": "binary"
+          },
+          "save": {
+            "type": "boolean",
+            "default": false,
+            "description": "keep the picture in the gallery (needs a database); the answer then has gallery_id / header X-PixelMath-Gallery-Id"
           }
         }
       },
@@ -679,11 +1297,186 @@
           "render_seconds": {
             "type": "number"
           },
+          "gallery_id": {
+            "type": "integer"
+          },
           "known_words": {
             "type": "array",
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "CreateRequest": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 2000,
+            "example": "laptop and coffee cup"
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.7,
+            "minimum": 0,
+            "maximum": 1,
+            "description": "0 = safest/plain, 1 = boldest"
+          },
+          "population": {
+            "type": "integer",
+            "default": 8,
+            "minimum": 2,
+            "maximum": 16
+          },
+          "generations": {
+            "type": "integer",
+            "default": 3,
+            "minimum": 0,
+            "maximum": 6
+          },
+          "alternatives": {
+            "type": "integer",
+            "default": 3,
+            "minimum": 0,
+            "maximum": 5
+          },
+          "explore": {
+            "type": "integer",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 500,
+            "description": "judge this many extra random ideas at thumbnail size first, breed from the best"
+          },
+          "max_seconds": {
+            "type": "number",
+            "default": 20,
+            "description": "time budget for the search"
+          },
+          "size": {
+            "type": "integer",
+            "default": 512
+          },
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "seed": {
+            "type": "integer",
+            "default": 0
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "png",
+              "bmp"
+            ]
+          },
+          "learned": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "always",
+              "blend",
+              "off"
+            ]
+          },
+          "response": {
+            "type": "string",
+            "enum": [
+              "binary",
+              "base64"
+            ],
+            "default": "binary"
+          },
+          "save": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "ImagineRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "maxLength": 200,
+            "example": "cat",
+            "description": "optional idea to keep"
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.8,
+            "minimum": 0,
+            "maximum": 1,
+            "description": "higher = more unrelated pairs"
+          },
+          "attempts": {
+            "type": "integer",
+            "default": 12,
+            "minimum": 1,
+            "maximum": 30
+          },
+          "population": {
+            "type": "integer",
+            "default": 6
+          },
+          "generations": {
+            "type": "integer",
+            "default": 2
+          },
+          "max_seconds": {
+            "type": "number",
+            "default": 20
+          },
+          "size": {
+            "type": "integer",
+            "default": 512
+          },
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "seed": {
+            "type": "integer",
+            "default": 0
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "png",
+              "bmp"
+            ]
+          },
+          "learned": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "always",
+              "blend",
+              "off"
+            ]
+          },
+          "response": {
+            "type": "string",
+            "enum": [
+              "binary",
+              "base64"
+            ],
+            "default": "binary"
+          },
+          "save": {
+            "type": "boolean",
+            "default": false
           }
         }
       },

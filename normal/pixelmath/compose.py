@@ -15,6 +15,8 @@ from .raster import (Canvas, Noise, clamp, heart_points, mix, regular_polygon, s
 from .props import REGISTRY as PROPS, draw_prop
 from .text import draw_headline
 from .scenes import scene
+from .generative import MODES as GENERATIVE_MODES, render_generative
+from .palette import SCHEME_NAMES, harmonic_palette, scheme_palette
 from .tokenizer import MAX_PROMPT_CHARS, Entity, fnv1a, parse, vectorize
 
 _NET = ParamNet()
@@ -45,7 +47,10 @@ def user_colors(parsed):
     if not cols:
         return cols
     out = list(dict.fromkeys(cols))
-    if len(out) < 4:                      # one brand colour -> light, dark and neighbouring-hue variants
+    scheme = next((f[7:] for f in sorted(parsed.flags) if f.startswith("scheme_")), None)
+    if scheme:                            # "complementary" / "triadic" ...: widen the first colour by that rule
+        out += scheme_palette(colorsys.rgb_to_hsv(*out[0])[0], scheme, 4)
+    elif len(out) < 4:                    # one brand colour -> light, dark and neighbouring-hue variants
         for c in list(out):
             h, s, v = colorsys.rgb_to_hsv(*c)
             out += [mix(c, WHITE, 0.4), scale(c, 0.6), colorsys.hsv_to_rgb((h + 0.07) % 1.0, s, v),
@@ -75,6 +80,17 @@ INDOOR_CUES = {"interior", "inside", "indoor", "indoors", "dining", "table", "de
 
 def choose_mode(parsed):
     flags = parsed.flags
+    if "mandala" not in flags:
+        if flags & {"mandelbrot", "julia"}:
+            return "fractal"
+        if flags & {"lsystem", "koch", "fern", "dragon", "sierpinski"} or ("fractal" in flags and any(e.name == "tree" for e in parsed.entities)):
+            return "lsystem"
+        if "fractal" in flags:
+            return "fractal"
+        if "flow" in flags:
+            return "flow"
+        if flags & {"texture", "marble"}:
+            return "texture"
     names = {e.name for e in parsed.entities if e.kind == "object"}
     props = names & set(PROPS)
     if props and "mandala" not in flags:
@@ -383,18 +399,28 @@ def space_scene(parsed, w, h, rng, noise, style):
     planets = names.get("planet", [])
     if not planets and "galaxy" not in flags:
         planets = [Entity("object", "planet")]
+    floaters = [e for e in parsed.entities if e.name in PROPS][:4]       # props float in space ("cat in space")
     free = sum(e.count for e in planets)
     xs = iter(x * (0.6 if "galaxy" in flags else 1.0) for x in spread(free, 0.3))
     for ent in planets:
         for _ in range(ent.count):
             cx = ANCHOR_X.get(ent.position, next(xs)) * w if ent.position else next(xs) * w
             col = ent.color or (0.85, 0.55, 0.35)
-            p.planet(cx, h * (0.5 if free == 1 else rng.uniform(0.35, 0.65)),
-                     0.16 * s * ent.size, col, ring=rng.random() < 0.6)
+            if len(floaters) == 1 and free == 1 and not ent.position:
+                cx = 0.80 * w                                   # a single floating prop keeps the centre
+            cy = 0.26 * h if floaters else h * (0.5 if free == 1 else rng.uniform(0.35, 0.65))
+            p.planet(cx, cy, (0.11 if floaters else 0.16) * s * ent.size, col, ring=rng.random() < 0.6)
     if "moon" in names:
         p.moon(w * 0.8, h * 0.2, 0.05 * s, (0.93, 0.93, 0.85))
     if "sun" in names:
         p.sun(w * 0.15, h * 0.18, 0.06 * s, (1.0, 0.9, 0.5))
+    for k, (ent, x) in enumerate(zip(floaters, spread(len(floaters), 0.25))):
+        pr = PROPS[ent.name]
+        size = min(pr.nominal * h * ent.size * (1.5 if len(floaters) == 1 else 1.1) / max(0.3, pr.fill),
+                   0.55 * h / max(0.3, pr.fill), 0.8 * w / (len(floaters) * max(0.5, pr.aspect)))
+        cx, base = x * w, h * (0.80 if len(floaters) > 1 else 0.78) + (0.04 * h if k % 2 else 0)
+        p.cv.glow(cx, base - size * 0.5, size * 0.9, (0.5, 0.45, 0.9), 0.25, 2.0)
+        draw_prop(p, ent.name, cx, base, size, ent.color)
     return p.cv
 
 
@@ -441,7 +467,7 @@ def shapes_scene(parsed, w, h, rng, noise, style, vec):
     for e in parsed.entities:
         if e.kind == "shape":
             instances += [e] * e.count
-    pal = palette_from_vec(vec, 6)
+    pal = harmonic_palette(parsed, vec, 6)
     s = min(w, h)
     free = [e for e in instances if e.position is None]
     n = len(free)
@@ -473,7 +499,7 @@ def mandala_scene(parsed, w, h, rng, noise, style, vec):
     cv = Canvas(w, h)
     bg = parsed.background or (0.05, 0.04, 0.12)
     cv.gradient_v([(0, scale(bg, 1.2)), (1, scale(bg, 0.7))])
-    cols = user_colors(parsed) or palette_from_vec(vec, 5)
+    cols = user_colors(parsed) or harmonic_palette(parsed, vec, 5)
     s, cx, cy = min(w, h), w / 2, h / 2
     cv.glow(cx, cy, s * 0.55, cols[0], 0.35, 2.0)
     rings = 6
@@ -497,7 +523,7 @@ def mandala_scene(parsed, w, h, rng, noise, style, vec):
 
 def tiles_scene(parsed, w, h, rng, noise, style, vec):
     cv = Canvas(w, h)
-    cols = user_colors(parsed) or palette_from_vec(vec, 4)
+    cols = user_colors(parsed) or harmonic_palette(parsed, vec, 4)
     dark = parsed.background or (0.07, 0.08, 0.13)
     cols = cols + [dark]
     n = rng.choice([6, 8, 10])
@@ -532,7 +558,7 @@ def tiles_scene(parsed, w, h, rng, noise, style, vec):
 
 def abstract_scene(parsed, w, h, rng, noise, style, vec):
     cv = Canvas(w, h)
-    cols = user_colors(parsed) or palette_from_vec(vec, 5)
+    cols = user_colors(parsed) or harmonic_palette(parsed, vec, 5)
     bg = parsed.background or scale(cols[0], 0.22)
     cv.gradient_v([(0, scale(mix(bg, cols[1 % len(cols)], 0.25), 1.0)), (1, scale(bg, 0.6))])
     s = min(w, h)
@@ -623,6 +649,8 @@ def render(prompt, width=512, height=512, seed=0, model=None, learned="auto"):
             mode = "scene+style"
     elif mode == "shapes":
         cv = shapes_scene(parsed, width, height, rng, noise, style, vec)
+    elif mode in GENERATIVE_MODES:
+        cv = render_generative(mode, parsed, width, height, rng, noise, vec)
     elif mode == "mandala":
         cv = mandala_scene(parsed, width, height, rng, noise, style, vec)
     elif mode == "tiles":

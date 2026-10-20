@@ -51,6 +51,31 @@ class Noise:
         bot = self._h(i, j + 1) * (1 - fx) + self._h(i + 1, j + 1) * fx
         return top * (1 - fy) + bot * fy
 
+    def perlin2(self, x, y):
+        """Gradient (Perlin) noise, about -0.7..0.7: smooth, no grid-aligned blockiness like value noise."""
+        i, j = math.floor(x), math.floor(y)
+        fx, fy = x - i, y - j
+        u, v = fx * fx * fx * (fx * (fx * 6 - 15) + 10), fy * fy * fy * (fy * (fy * 6 - 15) + 10)
+
+        def g(ix, iy, dx, dy):
+            a = self._h(ix, iy + 7919) * 6.283185307179586
+            return math.cos(a) * dx + math.sin(a) * dy
+        n00, n10 = g(i, j, fx, fy), g(i + 1, j, fx - 1, fy)
+        n01, n11 = g(i, j + 1, fx, fy - 1), g(i + 1, j + 1, fx - 1, fy - 1)
+        top, bot = n00 + (n10 - n00) * u, n01 + (n11 - n01) * u
+        return top + (bot - top) * v
+
+    def fbm2(self, x, y, octaves=4):
+        """Layered Perlin noise normalised to roughly 0..1 (clouds, terrain, flow directions)."""
+        total = norm = 0.0
+        amp, freq = 0.5, 1.0
+        for o in range(octaves):
+            total += amp * self.perlin2(x * freq + o * 31.7, y * freq - o * 17.3)
+            norm += amp
+            amp *= 0.5
+            freq *= 2.0
+        return 0.5 + 0.7 * total / norm
+
     def fbm1(self, x, octaves=4):
         total = norm = 0.0
         amp = 0.5

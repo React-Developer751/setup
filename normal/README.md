@@ -5,6 +5,14 @@ model, no API, no third-party package: Python standard library only (`math`, `ra
 `zlib`, `json`, `csv`, `re`, `argparse`). Tested on Python 3.9, 3.13 and 3.14 with identical output
 on all three.
 
+**Quickest way (web interface for generating and training, backend included, one command):**
+
+```bash
+python3 app.py            # backend + web interface + database; opens http://127.0.0.1:8000/ui in your browser (next free port if 8000 is busy)
+```
+
+Details are in [PixelMath Studio](#pixelmath-studio-web-interface). The commands below are the same engine from the terminal.
+
 ```bash
 # generate
 python3 -m pixelmath "red house with a tree under a sunset sky" -o scene.png
@@ -16,8 +24,54 @@ python3 -m pixelmath "लाल घर और पेड़" -o hindi.png        
 python3 train.py my_data --model my_model.json
 python3 -m pixelmath "aqua mossy" --model my_model.json -o out.png
 
-python3 -m unittest discover -s tests          # 99 tests
+# creative mode: propose, judge, evolve (see "Creative mode")
+python3 -m pixelmath "laptop and coffee cup" --temperature 0.8 -o creative.png
+python3 -m pixelmath --imagine --temperature 0.9 -o mashup.png
+python3 -m pixelmath "mandelbrot complementary" --temperature 0.8 --explore 300 -o fractal.png   # screen 300 ideas, keep the best
+python3 -m pixelmath "fractal tree" -o tree.png          # also: fern, snowflake, dragon curve, sierpinski, flow field, marble
+
+python3 -m unittest discover -s tests          # 144 tests
 ```
+
+## PixelMath Studio (web interface)
+
+```bash
+python3 app.py                                   # backend + web interface together, opens your browser
+python3 app.py --port 9000 --model my_model.json --no-browser
+python3 -m pixelmath.app                         # same thing; after `pip install .` the command is `pixelmath-app`
+```
+
+It starts the HTTP API and serves the interface from the same process (no Node, no build step, no internet: plain HTML, CSS and
+JavaScript in `pixelmath/web/`). Your trained model is kept in `./pixelmath_model.json` (created on the first training; `--model`
+changes it). Everything stays on your machine unless you pass `--host 0.0.0.0`, which requires `--api-key`.
+
+| Tab | What you do |
+|---|---|
+| **Create** | Type a prompt, pick **Plain**, **Creative** (temperature, population, generations, explore) or **Mash-up**, size and seed, press Generate. You see the picture, how the prompt was understood, and in creative modes what the engine thought: critic scores, per-generation progress and "other good ones" you can click to draw. *Save pictures to the gallery* is on by default. *Download PNG*, *Use this prompt & seed* and *Copy API call* (a ready `curl` command for other projects) sit under the picture. |
+| **Gallery** | Every saved picture (newest first) with search, a favourites filter and "load more". Click one for the big image, its prompt, seed and, for creative pictures, what the engine thought. *Favourite* (kept forever), *Download*, *Use prompt & seed* (jumps to Create and redraws the same picture), *Delete*, or *Clear (keep favourites)*. |
+| **Train** | *Pick images*, *Pick a folder* (captions are read from `captions.csv` or `.txt` files next to the images if there are any) or *Use a ready zip*. Each image gets a caption box prefilled from its file name; edit it. Press **Train**: the browser packs a zip, uploads it, and a progress bar follows the job (epochs, error, skipped files). Below it, the **training history** lists every earlier run, also after a restart. Identical image + caption pairs count once. |
+| **Dataset** | Everything the model currently learns from, with a preview, caption and file name per image. Search, select (one or many) and **Delete selected**, or click *edit caption*: the model is retrained on what is left (a few seconds, with a progress bar). Removing everything resets the model (the old file is kept as `.bak`). |
+| **Model** | What it learned: images, words, how much better than knowing nothing it is on unseen images, the most common words with their colours, and a box to check whether a prompt's words are known. |
+
+### Database (SQLite)
+
+`python3 app.py` keeps a SQLite file next to the model (`pixelmath_model.db`; `--db FILE` moves it, `--no-db` switches it off,
+`--gallery-max N` caps the gallery, default 300 pictures, favourites are never dropped). Standard library only, nothing to install.
+
+| Table | Holds | Why |
+|---|---|---|
+| `gallery` | the picture (PNG), a 160 px thumbnail, prompt, the prompt actually drawn, seed, mode, size, settings, the creative report, favourite flag | Gallery tab, reproducing a picture |
+| `jobs` | every training / dataset-edit job with parameters, result, skipped files, error (a job that was running when the server stopped shows as `interrupted`) | training history that survives restarts |
+| `dataset` | for each trained image: caption, file name, 64 px preview, which job added it | Dataset tab previews |
+
+The trained model stays in its own JSON file and remains the single source of truth for what it knows, so deleting the `.db`
+never breaks generating or training (you lose only the gallery, history and previews; the Dataset tab then shows colour-grid previews).
+To back everything up copy `pixelmath_model.json` and `pixelmath_model.db` together (stop the server first). Plain API calls are
+**not** saved unless they send `"save": true`, so other projects do not fill your gallery by accident.
+
+Notes: the pictures it makes from training are colour and layout impressions of your captions (see "What training means" below), not new
+drawings. With an API key set, the page asks for it once (kept in this browser only). Training uploads are limited to 200 MB here
+(`--max-upload-mb`). Progressive JPEGs are not readable; the Train tab lists skipped files with the reason.
 
 ## HTTP API (Postman and other projects)
 
@@ -35,10 +89,14 @@ Send "Generate image (JSON -> PNG)": Postman shows the picture in the response b
 | `GET /health` | liveness (no key needed) |
 | `POST /generate` | JSON `{"prompt","size","width","height","seed","format":"png\|bmp","learned":"auto\|always\|off","response":"binary\|base64"}` -> image bytes, or JSON with `image_base64` |
 | `GET /generate?prompt=...&size=512` | same, handy in a browser |
+| `POST /create` | creative mode: `{"prompt","temperature":0..1,"population","generations","alternatives","max_seconds", ...image fields}` -> image (headers `X-PixelMath-Prompt/-Seed/-Score`) or, with `response=base64`, JSON incl. `creation` (what it thought, scores, rejected variations, alternatives) |
+| `POST /imagine` | random concept mash-up judged by the critic: `{"anchor":"cat" (optional),"temperature","attempts", ...}` |
+| `GET /gallery`, `GET /gallery/<id>`, `GET /gallery/<id>/image\|thumb`, `POST /gallery/<id>/favourite`, `DELETE /gallery[/<id>]` | saved pictures (needs a database; save with `"save": true` on `/generate`, `/create`, `/imagine`) |
+| `GET /dataset`, `GET /dataset/<id>/image`, `POST /dataset/delete`, `DELETE /dataset/<id>`, `POST /dataset/<id>/caption` | list, preview, remove and re-caption trained images (removing or editing retrains the model as a job) |
 | `POST /parse` | how a prompt is understood (entities, colours, time, unknown words, words the model knows) |
 | `GET /model` | trained model info |
 | `POST /train` | multipart field `data` = zip (images + `captions.csv` / `.txt` / `captions.json`), optional `epochs`, `lr`, `l2`, `val_frac`, `fresh`, `grid`, `seed`, `refit`; or a raw `application/zip` body. Returns `202` + `job_id` |
-| `GET /jobs/<id>`, `GET /jobs` | training progress (`queued/extracting/reading/training/done/error`), metrics, skipped files |
+| `GET /jobs/<id>`, `GET /jobs` | training progress (`queued/extracting/reading/training/done/error`, plus `interrupted` after a restart), metrics, skipped files; with a database also old jobs |
 | `GET /openapi.json` | OpenAPI 3 spec |
 
 From another project:
@@ -74,6 +132,63 @@ up to `--queue-wait` (10 s) then get 503; JSON bodies <= 64 KB; uploads <= 100 M
 only images/captions are extracted; one training job at a time (409); a failed job never touches the existing model;
 tracebacks never reach clients. It is a plain HTTP server on Python's standard library, so for use over the internet put it behind
 a TLS reverse proxy (the API key is otherwise sent in clear text) and add rate limiting there.
+
+## Creative mode (it thinks before it draws)
+
+A plain render is deterministic: one prompt, one picture, and a fixed checker could only say yes or no. Creative mode wraps
+the renderer in a loop that **proposes, judges and improves** (`pixelmath/creative.py`, still standard library only):
+
+| Idea | What it does here |
+|---|---|
+| **Temperature** (`--temperature 0..1`, API `temperature`) | At 0 the engine always takes the single safest choice, so you get exactly the plain render. Above 0 it picks among the *top three* candidates for each decision (extra prop, setting, final winner), the best one still most likely. Higher = bolder. |
+| **Markov chain of props** | A table of "which prop follows which" (built in from the concepts, venue interiors and decor rules; `Chain.learn_captions()` and a loaded `--model` add what *your* captions pair together). New props are sampled from it, so a laptop gets a coffee cup or a plant, a tractor gets a cow, not a toothbrush. |
+| **Genetic search** (`--population`, `--generations`) | Each candidate is a small *genome*: extra props, time of day / weather / sky colour / background colour / palette words, layout seed. The critic ranks a population, the best survive, children mix the genes of two parents (crossover) and get random changes (mutation), with one fresh immigrant per generation. |
+| **Critic** (replaces the fixed validation) | Hard gates, never negotiable: nothing the prompt asked for may be dropped, recoloured or shrunk, the quoted text and the picture type must stay, every requested prop must really be drawn, the image must not be blank. Soft scores: clarity, colour richness and harmony, balance, how well the props go together (the chain), and novelty against the other candidates (weighted more as temperature rises). |
+| **Mash-ups** (`--imagine`, `/imagine`) | Two ideas that rarely meet (or your `anchor` plus a random one), judged by the same critic; about a quarter of random pairs are thrown away (for example, a prop that the scene cannot draw), the first good one is polished by the search. |
+
+```bash
+python3 -m pixelmath "laptop and coffee cup" --temperature 0.8 --seed 3 -o out.png
+#   thinking: tried 26 candidates ... chosen genome -> extras: monitor; bg: on a violet background ... score 0.825 vs plain render 0.701
+python3 -m pixelmath cat --imagine -o mashup.png          # "cat" is kept, the other idea is random
+python3 examples/creative_gallery.py gallery.png          # plain vs creative, side by side
+curl -s localhost:8000/create -H 'Content-Type: application/json' \
+     -d '{"prompt":"tractor","temperature":0.8,"response":"base64","size":256}'
+```
+
+Every result is reproducible: the printed prompt plus `--seed` through the plain renderer gives the same picture, and the
+same arguments give the same creative result (unless a `max_seconds` budget cuts the search short). A creative result never scores
+below the plain render of the same prompt. Cost: roughly 25 small renders, about 1 to 3 seconds.
+
+**Honest limits:** this recombines the props, scenes and colours the engine already has; it can find combinations you
+would not have written, but it cannot invent a new drawing or a new object, and the critic measures structure and colour, not
+taste, so some mash-ups are strange (an excavator next to a sofa). Pictures made only of shapes with explicit colours vary just
+their layout seed. Photo-realism is still out of reach.
+
+## Generative maths pictures and colour theory
+
+Four ideas for more creativity were checked against what the engine already had:
+
+| Idea | Verdict |
+|---|---|
+| Smooth noise instead of `random()` pixels | The engine already used smooth (value) noise for skies and terrain. Added true 2D **Perlin gradient noise** (`Noise.perlin2/fbm2`) for the new pictures; the existing scenes were left alone so their output does not change. |
+| Fractals, L-systems, flow fields | **New** (`pixelmath/generative.py`), see below. |
+| Colour-theory palettes | **New** (`pixelmath/palette.py`). Abstract, tile, mandala and shape pictures used golden-ratio hue stepping; they now use a harmony rule anchored on your colour. |
+| Validation as a filter over many variations | Already the creative critic; added `--explore N` / API `explore` to screen hundreds of ideas cheaply first. |
+
+| Say | Draws (mode) |
+|---|---|
+| `mandelbrot`, `julia`, `fractal` | escape-time Mandelbrot / Julia sets with smooth colouring, from a list of known-rich regions with random zoom (`fractal`) |
+| `fractal tree`, `lsystem`, `fern`, `snowflake` / `koch`, `dragon`, `sierpinski` | recursive tree, Barnsley fern (IFS), Koch snowflake, dragon curve, Sierpinski triangle (`lsystem`) |
+| `flow field`, `swirl` | about a thousand strokes following a Perlin vector field (`flow`) |
+| `plasma`, `perlin noise`, `texture`, `marble` | domain-warped Perlin noise, marble veins (`texture`) |
+| `analogous`, `complementary`, `triadic`, `tetradic`, `monochrome`, `split complementary` | the colour rule for any of the above, and for abstract / tiles / mandala / shapes. Your own colour is the base hue (`red mandelbrot complementary`), otherwise the base hue comes from the prompt, so the same prompt always gets the same palette |
+
+Every seed is a different picture (a different region, branching, field). In creative mode the colour rule, the base hue and the
+seed are genes, so the critic can throw away empty or muddy variations. `--explore 300` first judges 300 random ideas at thumbnail
+size (about 10 ms each) and breeds from the best few; `python3 examples/generative_gallery.py out.png` draws a sheet of all kinds
+([business_check/generative_gallery.png](business_check/generative_gallery.png)). Fractals are computed on at most 320 px and textures on
+160 px, then smoothly enlarged (a full-size Mandelbrot in pure Python would take minutes); L-systems and flow fields are drawn at the
+real size. A flow field takes about 2 s at 384 px.
 
 ## How it works
 

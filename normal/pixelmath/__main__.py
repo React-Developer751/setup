@@ -31,14 +31,29 @@ def _main(argv=None):
     ap.add_argument("--learned", choices=("auto", "always", "blend", "off"), default="auto",
                     help="auto: use the model only for prompts the built-in lexicon cannot understand")
     ap.add_argument("--explain", action="store_true", help="show how the prompt was understood")
+    ap.add_argument("--temperature", type=float, default=0.0,
+                    help="0..1. 0 = plain render. Above 0 the engine proposes variations, a critic judges them and a "
+                         "genetic search keeps the best (higher = bolder)")
+    ap.add_argument("--population", type=int, default=8, help="candidates per generation in creative mode (default 8)")
+    ap.add_argument("--generations", type=int, default=3, help="breeding rounds in creative mode (default 3)")
+    ap.add_argument("--explore", type=int, default=0,
+                    help="creative mode: judge this many extra random ideas at thumbnail size first and breed from the best "
+                         "(for example 300; costs about 10 ms each)")
+    ap.add_argument("--imagine", action="store_true",
+                    help="mash two random ideas together (the prompt, if given, is kept as one of them)")
+    ap.add_argument("--attempts", type=int, default=12, help="mash-up tries before giving up (default 12)")
     ap.add_argument("--version", action="version", version="pixelmath " + __version__)
     args = ap.parse_args(argv)
 
+    if not 0.0 <= args.temperature <= 1.0:
+        ap.error("--temperature must be between 0.0 and 1.0")
     try:
-        prompt = " ".join(args.prompt).strip() or input("Prompt: ").strip()
+        prompt = " ".join(args.prompt).strip()
+        if not prompt and not args.imagine:
+            prompt = input("Prompt: ").strip()
     except EOFError:
         prompt = ""
-    if not prompt:
+    if not prompt and not args.imagine:
         ap.error("empty prompt")
     if len(prompt) > MAX_PROMPT_CHARS:
         ap.error("prompt too long (max %d characters)" % MAX_PROMPT_CHARS)
@@ -58,7 +73,29 @@ def _main(argv=None):
             return 1
 
     t0 = time.time()
-    canvas, parsed, mode = render(prompt, width, height, args.seed, model, args.learned)
+    if args.imagine or args.temperature > 0:
+        from . import creative
+        try:
+            if args.imagine:
+                made, _ = creative.imagine(args.temperature or 0.8, args.seed, args.attempts, final_size=width, final_height=height,
+                                           anchor=prompt or None, model=model, learned=args.learned,
+                                           population=args.population, generations=args.generations)
+            else:
+                made = creative.evolve(prompt, args.temperature, args.population, args.generations, args.seed, final_size=width,
+                                       final_height=height, model=model, learned=args.learned, explore=max(0, args.explore))
+        except ValueError as exc:
+            print("pixelmath: error: %s" % exc, file=sys.stderr)
+            return 1
+        canvas, parsed, mode = made.canvas, made.parsed, made.mode
+        print("thinking:")
+        for line in made.notes:
+            print("  " + line)
+        print("rendered prompt: %r  seed=%d  (reproduce: pixelmath %r --seed %d)" % (made.prompt, made.seed, made.prompt, made.seed))
+        for alt in made.alternatives:
+            print("  also good (%.3f): %r --seed %d" % (alt["score"], alt["prompt"], alt["seed"]))
+        prompt = made.prompt
+    else:
+        canvas, parsed, mode = render(prompt, width, height, args.seed, model, args.learned)
     try:
         nbytes = save(args.output, width, height, canvas.to_rgb_bytes())
     except OSError as exc:

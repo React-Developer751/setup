@@ -177,6 +177,196 @@
       }
     },
     {
+      "name": "Create (creative mode)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/create",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "create"
+          ]
+        },
+        "description": "Variations + critic + genetic search. With response=base64 the JSON has `creation.thinking` and scores. Use response=binary for the PNG itself (headers X-PixelMath-Prompt / -Seed / -Score).",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"laptop and coffee cup\",\n  \"temperature\": 0.8,\n  \"population\": 8,\n  \"generations\": 3,\n  \"size\": 512,\n  \"response\": \"base64\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Imagine (random mash-up)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/imagine",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "imagine"
+          ]
+        },
+        "description": "Two ideas mashed together; the critic rejects mash-ups that do not work. Leave anchor out for fully random.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"anchor\": \"cat\",\n  \"temperature\": 0.9,\n  \"attempts\": 12,\n  \"size\": 512,\n  \"response\": \"base64\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Generate and save to gallery",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/generate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        },
+        "description": "Needs a database (python3 app.py has one). The answer contains gallery_id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"laptop and coffee cup\",\n  \"size\": 384,\n  \"save\": true,\n  \"response\": \"base64\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Gallery: list",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/gallery?limit=24&favourites=false",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "gallery"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "24"
+            },
+            {
+              "key": "favourites",
+              "value": "false"
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Gallery: one picture (details)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/gallery/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "gallery",
+            "1"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Gallery: image",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/gallery/1/image",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "gallery",
+            "1",
+            "image"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Gallery: favourite",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/gallery/1/favourite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "gallery",
+            "1",
+            "favourite"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"favourite\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "Parse prompt",
       "request": {
         "method": "POST",
@@ -352,6 +542,122 @@
         },
         "description": ""
       }
+    },
+    {
+      "name": "Dataset: list trained images",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/dataset?limit=60&q=",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dataset"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "60"
+            },
+            {
+              "key": "q",
+              "value": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Dataset: delete images and retrain",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/dataset/delete",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dataset",
+            "delete"
+          ]
+        },
+        "description": "Returns a job; poll Training job status.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ids\": [\n    \"PUT_IDS_FROM_GET_DATASET\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "if (j.job_id) { pm.collectionVariables.set('jobId', j.job_id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dataset: change a caption",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/dataset/PUT_ID/caption",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dataset",
+            "PUT_ID",
+            "caption"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"caption\": \"red sunset sky\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "if (j.job_id) { pm.collectionVariables.set('jobId', j.job_id); }"
+            ]
+          }
+        }
+      ]
     }
   ]
 }

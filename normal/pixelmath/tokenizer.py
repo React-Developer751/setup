@@ -98,6 +98,15 @@ FLAGS = {
     "tiles": "tiles", "bauhaus": "tiles",
     "abstract": "abstract", "art": "abstract",
     "pine": "conifer", "conifer": "conifer", "fir": "conifer",
+    # generative maths pictures (generative.py)
+    "fractal": "fractal", "fractals": "fractal", "mandelbrot": "mandelbrot", "julia": "julia",
+    "lsystem": "lsystem", "koch": "koch", "snowflake": "koch", "fern": "fern", "dragon": "dragon",
+    "sierpinski": "sierpinski", "flow": "flow", "flowfield": "flow", "swirl": "flow", "turbulence": "flow",
+    "plasma": "texture", "perlin": "texture", "noise": "texture", "texture": "texture", "marble": "marble",
+    # colour-theory palette rules (palette.py)
+    "analogous": "scheme_analogous", "complementary": "scheme_complementary", "triadic": "scheme_triadic",
+    "tetradic": "scheme_tetradic", "monochrome": "scheme_monochrome", "monochromatic": "scheme_monochrome",
+    "splitcomplementary": "scheme_split",
 }
 SIZES = {
     "big": 1.45, "large": 1.45, "huge": 1.8, "giant": 1.8, "bada": 1.45,
@@ -170,6 +179,7 @@ PHRASES = {
     "customer service": "support", "customer review": "review", "customer reviews": "review", "hair salon": "salon",
     "beauty salon": "salon", "travel agency": "travel", "living room": "sofa",
     "coffee beans": "coffee", "pet shop": "petshop", "fire truck": "firetruck", "fire engine": "firetruck", "fire safety": "extinguisher", "police car": "policecar", "patrol car": "policecar", "police patrol car": "policecar", "police van": "policecar", "dental chair": "dentalchair", "ambulance van": "ambulance", "ice skating": "iceskating", "ice rink": "rink", "skating rink": "rink", "ski resort": "skiresort", "snow board": "snowboard", "winter sports": "wintersports", "ice hockey": "icehockey", "fire station": "fire", "fire brigade": "fire", "oral health": "oralhealth", "dental clinic": "dental", "dental care": "dental", "house painting": "painter house", "wall painting": "painter", "home painting": "painter house", "painting service": "painter", "painting services": "painter", "painting contractor": "painter", "pet store": "petshop", "pet care": "pets", "green energy": "greenenergy", "solar panel": "solarpanel", "wind turbine": "windmill", "sewing machine": "sewingmachine", "power tools": "tools", "toolbox": "toolbox", "wedding couple": "wedding", "study abroad": "education", "student visa": "education",
+    "l-system": "lsystem", "l system": "lsystem", "flow field": "flowfield", "split complementary": "splitcomplementary",
     "graduation cap": "gradcap", "graduation hat": "gradcap", "gift shop": "shop", "book shop": "shop", "book store": "shop",
 }
 _PHRASE_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in sorted(PHRASES, key=len, reverse=True)) + r")\b")
