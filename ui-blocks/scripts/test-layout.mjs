@@ -129,7 +129,7 @@ const baseLib = library([])
 {
   const lib = library([])
   ok(lib.sections.some((x) => x.band), 'library: some parts have a band of the main colour')
-  ok(lib.sections.find((x) => x.role === 'cta')?.paint === lib.palette.light.accent, 'library: the call-to-action has the main colour')
+  ok(!!lib.sections.find((x) => x.role === 'cta')?.paint, 'library: the call-to-action has a colour of its own')
   ok(/ band/.test(lib.code), 'library: the exported code keeps the bands')
   const photo = 'data:image/jpeg;base64,AAAA'
   const withPhotos = library([{ op: 'photos', hero: photo, about: photo, gallery: [photo] }])

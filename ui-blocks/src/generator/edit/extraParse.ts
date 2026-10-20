@@ -2,6 +2,7 @@
 // and the things this editor cannot do (fonts, text size, logo ...), which are answered honestly instead of silently doing something else.
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
+import { AMBIGUOUS_MOOD_WORDS, moodFromText } from '../moods'
 import type { EditOp } from './edits'
 
 export type ExtraResult = { ops: EditOp[]; notes: string[] } | undefined
@@ -10,7 +11,6 @@ const L = (re: string) => new RegExp(`(?<![\\p{L}\\p{M}])(?:${re})(?![\\p{L}\\p{
 const SIZE_WORDS = 'bada|badi|bade|chhota|chhoti|chhote|bigger|larger|smaller|big|small|badha|badhao|ghatao|increase|decrease|zyada|kam'
 
 const UNSUPPORTED: { when: RegExp; note: string }[] = [
-  { when: L('fonts?|typeface|font\\s*style|फॉन्ट'), note: 'I cannot change the font yet: each kind of business already gets a font that fits it.' },
   { when: new RegExp(`(?<![\\p{L}])(?:text|writing|likhai|akshar|letters|font)\\s*(?:size|ka size)?\\s*(?:ko\\s+)?(?:${SIZE_WORDS})`, 'iu'), note: 'I cannot change the size of the text yet. I can change its words, its colours and the height and width of a section.' },
   { when: L('logo|लोगो'), note: 'I cannot upload a logo yet. The name of the business is shown as the logo: say "rename it to ...".' },
   { when: L('sticky|fixed\\s+(?:header|navbar|menu)'), note: 'The menu bar of the page is already fixed at the top while scrolling where the layout allows it; I cannot switch that on or off.' },
@@ -36,9 +36,37 @@ const randomHex = () => {
   return `#${f(0)}${f(8)}${f(4)}`
 }
 
+const STYLE_WORD = /(?<![\p{L}\p{M}])(?:style|look|theme|mood|vibe|design|feel|aesthetic|स्टाइल|लुक|थीम)(?![\p{L}\p{M}])/iu
+const MAKE_WORD = /(?<![\p{L}\p{M}])(?:make|set|change|switch|use|give|apply|want|need|try|turn|go|banao|bana|karo|kar|rakho|chahiye|lagao|do|dikhao|चाहिए|करो|कर)(?![\p{L}\p{M}])/iu
+
+/** "make it cyberpunk", "retro look do", "neumorphism style", "back to the normal look" */
+function moodEdit(text: string): EditOp | undefined {
+  if (/(?<![\p{L}])(?:default|original|normal|usual|pehle\s+jaisa|pehle\s+wala|business)\s+(?:style|look|design|mood|theme)\b|(?:style|look|mood)\s+(?:reset|hata|hatao|remove)/iu.test(text) && !/colou?r|rang/i.test(text)) return { op: 'mood', mood: 'none' }
+  const mood = moodFromText(text)
+  if (!mood) return undefined
+  const styled = STYLE_WORD.test(text)
+  const hit = mood.keywords.find((k) => new RegExp(`(?<![\\p{L}])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}])`, 'iu').test(text)) ?? ''
+  const ambiguous = AMBIGUOUS_MOOD_WORDS.has(hit.toLowerCase())
+  // a distinctive word with a request is enough; a word that means other things needs "style" / "look" / "mood" with it
+  // "luxury" alone is a request for the premium design level (the older rule); "luxe", "dark luxury" or "high-end" ask for the mood
+  if (mood.id === 'luxe-dark' && hit.toLowerCase() === 'luxury' && !/dark|luxe/i.test(text)) return undefined
+  const words = text.split(/\s+/).length
+  // a part of the page is not a whole look ("make the buttons glass")
+  if (/(?<![\p{L}])(?:buttons?|headings?|text|navbar|header|footer|logo|images?|cards?|section|colou?rs?)(?![\p{L}])/iu.test(text)) return undefined
+  if (ambiguous ? styled && (MAKE_WORD.test(text) || words <= 4) : styled || MAKE_WORD.test(text) || words <= 3) {
+    // a whole new site or a business description is not a change of look
+    if (text.split(/\s+/).length > 9) return undefined
+    return { op: 'mood', mood: mood.id }
+  }
+  return undefined
+}
+
 export function extraOps(clause: string): ExtraResult {
   const text = clause.trim().normalize('NFC')
   if (!text) return undefined
+
+  const moodOp = moodEdit(text)
+  if (moodOp) return { ops: [moodOp], notes: [] }
 
   // "subtitle badlo: Fresh sweets daily"
   const sub = text.match(/^(?:hero\s+)?(?:sub\s*title|sub\s*heading|tagline)\s+(?:ko\s+|ka\s+)?(?:badlo|badal\s+do|change|set|likho|update)\s*[:=-]\s*(.+)$/i)
@@ -49,10 +77,6 @@ export function extraOps(clause: string): ExtraResult {
     const less = /(?:chhot|small|ghata|decrease|kam)/i.test(text)
     return { ops: [{ op: 'size', target: 'hero', axis: 'height', factor: less ? 0.7 : 1.3 }], notes: [] }
   }
-
-  // heading / text colour alone
-  if (/(?<![\p{L}])(?:heading|headings|title|text|font|writing|likhai)s?\s+(?:ka\s+|ki\s+|ke\s+)?(?:rang|colou?r)\b/iu.test(text) || /(?<![\p{L}])(?:heading|headings|text)\s+.*(?:white|black|red|blue|green|yellow|orange|pink|purple)\b.*(?:karo|kar do|make|set)/iu.test(text))
-    return { ops: [], notes: ['I cannot colour the text alone. I can colour the buttons and links ("buttons blue"), the whole site ("make it green") or the background of a part ("footer black").'] }
 
   // "services ke naam change karo" with no new name
   if (/(?<![\p{L}])(?:naam|name|heading|title)\s+(?:change|badlo|badal)\s*(?:karo|kar\s+do|do)?\s*$/iu.test(text) && !/(?:\bto\b|:|§)/.test(text) && !/(?:business|brand|website|site)/i.test(text))

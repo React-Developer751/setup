@@ -7,7 +7,8 @@ import type { MotionSetting } from './motionBrain'
 import { applyContentEdits, orderLayout } from './edit/applyEdits'
 import { fitsFrom, reorderPages } from './edit/fit'
 import { paintsFrom } from './edit/sectionColors'
-import { TARGETS, type NavPage, type SiteEdits } from './edit/edits'
+import { panelColors } from './moods'
+import { TARGETS, type NavPage, type SiteEdits, type Target } from './edit/edits'
 import { writeSiteData } from './siteData'
 import { planSite } from './siteBrain'
 
@@ -51,7 +52,8 @@ export function generateSite(
     navId: plan.choice.nav,
     headerStyle: sitePlan.headerStyle,
     visuals: plan.visuals,
-    paints: paintsFrom(edits, plan.palette),
+    // a multi-page site paints its parts in the canonical order of the sections (every page shows some of them)
+    paints: paintsFrom(edits, plan.palette, plan.mood ? panelColors(plan.mood, ['hero', 'stats', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact', 'footer'], plan.palette, plan.initialMode, (id) => id as Target) : undefined),
     fits: fitsFrom(edits, TARGETS),
   }
 

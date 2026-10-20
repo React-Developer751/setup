@@ -5,7 +5,7 @@
 // It is built from the same pages as the live preview (see exportSite.ts), with the "#/about" links turned into "about.html".
 import { buildPageCss, escapeHtml, favicon, projectName, type ExportSource } from './exportSite'
 import { deployFiles } from './deploy'
-import { fontLinks } from './fonts'
+import { fontLinksFor } from './fonts'
 import { MOTION_RUNTIME_JS } from './motionRuntimeJs'
 import { createZip, type ZipEntry } from './zip'
 
@@ -64,7 +64,7 @@ ${noindex ? '<meta name="robots" content="noindex" />\n' : `<link rel="canonical
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="${source.tokens[source.initialMode]['--g-bg']}" />
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-${fontLinks(source.themeKey)}
+${fontLinksFor(source.themeKey, source.tokens.light)}
 <link rel="stylesheet" href="assets/style.css" />
 ${style}
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>\n` : ''}</head>

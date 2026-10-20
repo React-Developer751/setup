@@ -23,6 +23,17 @@ export type TextField = (typeof TEXT_FIELDS)[number]
 export const TARGETS = ['header', 'hero', 'footer', ...SECTIONS] as const
 export type Target = (typeof TARGETS)[number]
 
+/** design moods (moods.ts): a whole look, none (the look of the business type) or auto (the generator chooses) */
+export const MOOD_CHOICES = ['minimal-light', 'minimal-dark', 'soft-neo', 'retro', 'cyberpunk', 'glass', 'bold-contrast', 'editorial', 'playful-pop', 'luxe-dark', 'none', 'auto'] as const
+export type MoodChoice = (typeof MOOD_CHOICES)[number]
+
+/** the look of one kind of thing on a part of the page (or the whole page): the colour of the buttons, of the headings, of the text, the roundness of corners, the typeface */
+export const STYLE_PROPS = ['buttonColor', 'headingColor', 'textColor', 'radius', 'font'] as const
+export type StyleProp = (typeof STYLE_PROPS)[number]
+export const RADIUS_CHOICES = ['square', 'rounded', 'pill'] as const
+export const FONT_KEYS = ['serif', 'sans', 'mono', 'elegant', 'rounded', 'display'] as const
+export type StyleSet = Partial<Record<StyleProp, string>>
+
 /** a colour that goes with the main colour */
 export const HARMONIES = ['complementary', 'analogous', 'triadic', 'split'] as const
 export type Harmony = (typeof HARMONIES)[number]
@@ -63,6 +74,8 @@ export type EditOp =
   | { op: 'harmony'; kind: Harmony }
   | { op: 'alt'; hex: string }
   | { op: 'sectionColor'; target: Target; hex: string }
+  | { op: 'mood'; mood: MoodChoice }
+  | { op: 'style'; target: FitTarget; prop: StyleProp; /** a colour (#rrggbb), a radius, a font key, or 'default' */ value: string }
   | { op: 'clearSectionColor'; target: Target }
   | { op: 'mode'; mode: 'light' | 'dark' }
   | { op: 'remove'; section: SectionKey }
@@ -100,6 +113,10 @@ export type SiteEdits = {
   /** background colour of single parts: the text on top follows automatically */
   sectionColors: Partial<Record<Target, string>>
   mode?: 'light' | 'dark'
+  /** the design mood the person chose (or 'none') */
+  mood?: MoodChoice
+  /** the look of buttons, headings, text, corners and the typeface, per part (or 'page') */
+  styles: Partial<Record<FitTarget, StyleSet>>
   hidden: SectionKey[]
   added: SectionKey[]
   hiddenPages: PageKey[]
@@ -126,7 +143,7 @@ export type SiteEdits = {
   theme?: ThemeKey
 }
 
-export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
+export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
 
 const HEX = /^#[0-9a-f]{6}$/i
 const clean = (text: unknown, max: number) => (typeof text === 'string' ? text.replace(/\p{Cc}+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '')
@@ -158,6 +175,15 @@ export function cleanOp(raw: unknown): EditOp | undefined {
     }
     case 'clearSectionColor':
       return (TARGETS as readonly unknown[]).includes(o.target) ? { op: 'clearSectionColor', target: o.target as Target } : undefined
+    case 'style': {
+      if (!(FIT_TARGETS as readonly unknown[]).includes(o.target) || !(STYLE_PROPS as readonly unknown[]).includes(o.prop)) return undefined
+      const prop = o.prop as StyleProp
+      const value = typeof o.value === 'string' ? o.value.trim().toLowerCase() : ''
+      const ok = value === 'default' || (prop === 'radius' ? (RADIUS_CHOICES as readonly string[]).includes(value) : prop === 'font' ? (FONT_KEYS as readonly string[]).includes(value) : HEX.test(value))
+      return ok ? { op: 'style', target: o.target as FitTarget, prop, value } : undefined
+    }
+    case 'mood':
+      return (MOOD_CHOICES as readonly unknown[]).includes(o.mood) ? { op: 'mood', mood: o.mood as MoodChoice } : undefined
     case 'mode':
       return o.mode === 'light' || o.mode === 'dark' ? { op: 'mode', mode: o.mode } : undefined
     case 'remove':
@@ -268,9 +294,18 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'sectionColor':
         e.sectionColors = { ...e.sectionColors, [op.target]: op.hex }
         break
-      case 'clearSectionColor': {
-        const { [op.target]: _gone, ...rest } = e.sectionColors
-        e.sectionColors = rest
+      // '' = no colour of its own, not even the one the mood gives the part
+      case 'clearSectionColor':
+        e.sectionColors = { ...e.sectionColors, [op.target]: '' }
+        break
+      case 'mood':
+        e.mood = op.mood === 'auto' ? undefined : op.mood
+        break
+      case 'style': {
+        const current = { ...(e.styles[op.target] ?? {}) }
+        if (op.value === 'default') delete current[op.prop]
+        else current[op.prop] = op.value
+        e.styles = { ...e.styles, [op.target]: current }
         break
       }
       case 'mode':
@@ -332,12 +367,15 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
           e.sizes = {}
           e.aligns = {}
           e.buttonAligns = {}
+          e.styles = {}
           e.moves = []
           e.pageMoves = []
         } else {
           const { [op.target]: _s, ...sizes } = e.sizes
           const { [op.target]: _a, ...aligns } = e.aligns
           const { [op.target]: _b, ...buttonAligns } = e.buttonAligns
+          const { [op.target]: _st, ...styles } = e.styles
+          e.styles = styles
           e.sizes = sizes
           e.aligns = aligns
           e.buttonAligns = buttonAligns
@@ -385,6 +423,12 @@ export function describeOp(op: EditOp): string {
       return `Made the ${op.target} ${op.hex}`
     case 'clearSectionColor':
       return `The ${op.target} has the normal colours again`
+    case 'style': {
+      const what = { buttonColor: 'buttons', headingColor: 'headings', textColor: 'text', radius: 'corners', font: 'typeface' }[op.prop]
+      return op.value === 'default' ? `The ${what} of ${op.target === 'page' ? 'the page' : `the ${op.target}`} are back to normal` : `${op.target === 'page' ? 'All' : `The ${op.target}`} ${what}: ${op.value}`
+    }
+    case 'mood':
+      return op.mood === 'none' ? 'Back to the look of the business type' : op.mood === 'auto' ? 'The design mood is chosen by the generator again' : `Design mood: ${op.mood}`
     case 'mode':
       return `Started in ${op.mode} mode`
     case 'remove':

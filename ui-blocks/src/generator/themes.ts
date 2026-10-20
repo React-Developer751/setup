@@ -61,7 +61,8 @@ const classes = (heading: string, radius: string, font: string): Theme => ({
   text_muted: 'text-(--g-muted)',
   accent: 'text-(--g-accent)',
   hover_accent: 'hover:text-(--g-accent)',
-  primary_btn: 'bg-(--g-accent) text-(--g-on-accent) whitespace-nowrap hover:brightness-110',
+  // --g-btn / --g-on-btn: a colour of the buttons alone ("hero button green"); without them the buttons take the accent
+  primary_btn: 'bg-[var(--g-btn,var(--g-accent))] text-[var(--g-on-btn,var(--g-on-accent))] whitespace-nowrap hover:brightness-110',
   secondary_btn: 'border border-(--g-border) text-(--g-text) whitespace-nowrap hover:bg-(--g-surface)',
   gradient: 'bg-linear-to-br from-(--g-grad-a) via-(--g-grad-b) to-(--g-grad-c)',
   badge: 'bg-(--g-badge) text-(--g-accent)',

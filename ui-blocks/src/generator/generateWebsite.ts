@@ -15,9 +15,15 @@ import { hash, seededRandom } from './random'
 import { paintsFrom } from './edit/sectionColors'
 import { applyChoiceEdits, applyColorEdits, applyContentEdits, filterLayout, needsLongPage, orderLayout } from './edit/applyEdits'
 import { fitsFrom } from './edit/fit'
-import { TARGETS, type SiteEdits } from './edit/edits'
+import { TARGETS, type SiteEdits, type Target } from './edit/edits'
 import { decideTheme } from './themeClassifier'
-import { withFont } from './fonts'
+import { fontChoiceTokens, withFont } from './fonts'
+import { onColor } from './themes'
+import { chooseMood, moodById, moodFontVars, moodPalette, moodTheme, panelColors, type Mood } from './moods'
+import { temperature } from './creativity'
+import { hexToRgb, rgbToHsl } from './art/color'
+import { sectionOfLayout } from './edit/applyEdits'
+import { targetOfLayout } from './edit/sectionColors'
 import { detectNiche } from './niche/applyNiche'
 import { NICHES } from './niche/niches'
 import { detectLocale } from './siteData'
@@ -95,7 +101,11 @@ export function planWebsite(
   const useBrains = creative || !hasTemplates(themeKey)
   const copy = useBrains ? writeContent(themeKey, brand, seededRandom(hash(`${prompt.toLowerCase()}|copy|${variation}`)), false, niche ? undefined : prompt) : undefined
   const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}`))) : undefined
-  const palette = applyColorEdits(colors?.palette ?? presetPalette(themeKey, paletteIndex), themeKey, edits)
+  // the design mood (moods.ts): a whole look made of rules; its colours grow from the hue the colour brain chose, so they stay unique
+  const mood: Mood | undefined = !useBrains && !edits?.mood ? undefined : edits?.mood === 'none' ? undefined : edits?.mood ? moodById(edits.mood) : chooseMood(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|mood|${variation}`)), temperature())
+  const basePalette = colors?.palette ?? presetPalette(themeKey, paletteIndex)
+  const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name) : undefined
+  const palette = applyColorEdits(moodMade?.palette ?? basePalette, themeKey, edits)
 
   // the motion brain has its own seeded stream too; some motion needs its own sections
   const motion = thinkMotion(themeKey, tier, edits?.motion ?? motionSetting, seededRandom(hash(`${prompt.toLowerCase()}|motion|${variation}`)))
@@ -104,9 +114,17 @@ export function planWebsite(
     if (motion.features.carousel && choice.testimonials !== 'none') choice.testimonials = 'carousel'
   }
 
-  const theme = themes[themeKey]
-  const tokens = withFont(paletteTokensByMode(palette), themeKey)
-  const initialMode = edits?.mode ?? defaultMode(themeKey)
+  const theme = mood ? moodTheme(themes[themeKey], mood) : themes[themeKey]
+  const fonted = withFont(paletteTokensByMode(palette), themeKey)
+  // the typeface and the extra tokens (soft shadows ...) of the mood
+  const tokens = mood && moodMade ? (['light', 'dark'] as const).reduce((acc, m) => ({ ...acc, [m]: { ...fonted[m], ...moodFontVars(mood), '--g-font': mood.font.family, '--g-font-weights': mood.font.weights, ...moodMade.tokens[m] } }), {} as typeof fonted) : fonted
+  // the colour of all buttons and the typeface the person asked for ("buttons green", "serif font")
+  const page = edits?.styles?.page
+  const chosenFont = page?.font ? fontChoiceTokens(page.font) : undefined
+  const styled = page?.buttonColor || chosenFont
+    ? (['light', 'dark'] as const).reduce((acc, m) => ({ ...acc, [m]: { ...tokens[m], ...(page?.buttonColor ? { '--g-btn': page.buttonColor, '--g-on-btn': onColor(page.buttonColor) } : {}), ...chosenFont } }), {} as typeof tokens)
+    : tokens
+  const initialMode = edits?.mode ?? (mood ? mood.mode : defaultMode(themeKey))
   const content = applyContentEdits(generateWebsiteContent(prompt, themeKey, headlineVariant, size, copy, edits?.brand, { niche, rand: seededRandom(hash(`${prompt.toLowerCase()}|niche|${variation}`)), locale: detectLocale(prompt) }), edits, detectLocale(prompt).currency)
 
   return {
@@ -120,12 +138,13 @@ export function planWebsite(
     choice,
     theme,
     content,
-    tokens,
+    tokens: styled,
     initialMode,
     brain,
     tier,
     motion,
     palette,
+    mood,
     copy,
     brand,
     brainsForced: !creative && useBrains,
@@ -151,7 +170,11 @@ export function generateWebsite(
   // sizes and alignments of single parts ("make the pricing section shorter")
   const fits = fitsFrom(edits, TARGETS)
   // parts with a colour of their own ("footer green")
-  const paints = paintsFrom(edits, plan.palette)
+  // the colour of each panel: the mood's rules, then what the person asked for
+  const auto = plan.mood ? panelColors(plan.mood, layoutIds, plan.palette, initialMode, (id) => targetOfLayout(id, sectionOfLayout as (id: string) => Target | undefined)) : undefined
+  const paints = paintsFrom(edits, plan.palette, auto)
+  // the background hex of every painted part (for the JSON view of the site)
+  const paintHex: Partial<Record<Target, string>> = Object.fromEntries(Object.entries({ ...auto, ...edits?.sectionColors }).filter(([, hex]) => !!hex))
 
   return {
     themeKey: plan.themeKey,
@@ -169,6 +192,8 @@ export function generateWebsite(
     tier,
     motion,
     palette: plan.palette,
+    mood: plan.mood,
+    paintHex,
     copy: plan.copy,
     brainsForced: plan.brainsForced,
     colorReasons: plan.colorReasons,

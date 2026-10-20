@@ -18,12 +18,15 @@ import { deleteProject, forgetSession, lastSession, listProjects, rememberSessio
 import EditChat, { type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
 import { guessIntent } from './generator/edit/intent'
-import { describeOp, editsFrom, type EditOp } from './generator/edit/edits'
+import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
 import { rateScene } from './generator/edit/imageRatings'
 import RatePictures from './RatePictures'
 import DesignHistory from './DesignHistory'
+import JsonEditor from './JsonEditor'
+import { blueprintOf } from './generator/edit/blueprint'
+import { MOODS } from './generator/moods'
 import { analyse, type Insights } from './generator/memory/designMemory'
 import { planDesign } from './generator/memory/designPlanner'
 import { newId, openStore, type DesignRecord, type DesignStore } from './generator/memory/designStore'
@@ -76,7 +79,7 @@ function GeneratorPage() {
   const [creativityLevel, setCreativityLevel] = useState<CreativityLevel>(loadCreativity)
   setCreativity(creativityLevel)
   const [engine, setEngine] = useState<'templates' | 'library'>('library')
-  const [view, setView] = useState<'preview' | 'code'>('preview')
+  const [view, setView] = useState<'preview' | 'code' | 'json'>('preview')
   const [copied, setCopied] = useState(false)
   const [pages, setPages] = useState<'multi' | 'single'>('multi')
   const [route, setRoute] = useState('/')
@@ -118,6 +121,8 @@ function GeneratorPage() {
     [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel],
   )
   const active = isMulti ? multi : shownEngine === 'library' ? library : site
+  // the site as a JSON document (the page version of the site)
+  const blueprint = useMemo(() => blueprintOf(site, edits), [site, edits])
   const { themeKey, tier, motion, brain, brainsForced, palette, colorReasons, niche } = active
   const brandName = active.content.brandName
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool is read inside the generators
@@ -672,6 +677,26 @@ function GeneratorPage() {
             <Setting label="Design level">
               <Segmented value={level} options={[['auto', 'Auto'], ['normal', 'Normal'], ['better', 'Better'], ['premium', 'Premium']]} onChange={setLevel} />
             </Setting>
+            <Setting label="Mood">
+              <select
+                aria-label="Design mood"
+                value={edits.mood ?? 'auto'}
+                onChange={(e) => {
+                  const mood = e.target.value as MoodChoice
+                  say({ role: 'user', text: `Design mood: ${mood}` })
+                  applyOps(`Design mood: ${mood}`, [{ op: 'mood', mood }], 'rules', mood === 'none' ? 'Back to the look of the business type.' : mood === 'auto' ? 'The mood is chosen by the generator.' : `The ${MOODS.find((m) => m.id === mood)?.label ?? mood} look: its colours, typeface, shapes and the colour of each panel.`)
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm"
+              >
+                <option value="auto">Auto (chosen for you)</option>
+                <option value="none">None (business look)</option>
+                {MOODS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </Setting>
             <Setting label="Creativity">
               <Segmented
                 value={creativityLevel}
@@ -757,7 +782,7 @@ function GeneratorPage() {
       <section className="flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
         <header className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-3 py-2">
           <div role="tablist" aria-label="What to show" className="flex rounded-lg bg-gray-100 p-0.5">
-            {(['preview', 'code'] as const).map((v) => (
+            {(['preview', 'code', 'json'] as const).map((v) => (
               <button
                 key={v}
                 type="button"
@@ -819,6 +844,14 @@ function GeneratorPage() {
           <div className="min-h-0 flex-1">
             <DeviceFrame device={device} html={previewHtml} title={brandName} route={route} onRoute={onRoute} />
           </div>
+        ) : view === 'json' ? (
+          <JsonEditor
+            blueprint={blueprint}
+            onApply={(ops) => {
+              say({ role: 'user', text: 'Changed the JSON of the site' })
+              applyOps('Changed the JSON of the site', ops, 'rules', ops.length === 1 ? 'Done: one change.' : `Done: ${ops.length} changes.`)
+            }}
+          />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col bg-gray-900">
             <div className="flex flex-wrap items-center gap-2 border-b border-gray-800 bg-gray-950 px-3 py-2 text-xs">

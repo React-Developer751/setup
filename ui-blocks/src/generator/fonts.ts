@@ -58,3 +58,32 @@ export const withFont = <T extends Record<string, string>>(tokens: Record<'light
   light: { ...tokens.light, ...fontVars(theme) },
   dark: { ...tokens.dark, ...fontVars(theme) },
 })
+
+
+/** the families the pages of a site use: the typeface of the business type, or the one a design mood put in the tokens (`--g-font`) */
+export const fontLinksFor = (theme: ThemeKey, tokens: Record<string, string> | undefined): string => {
+  const family = tokens?.['--g-font']
+  const weights = tokens?.['--g-font-weights']
+  if (!family || !weights) return fontLinks(theme)
+  const href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@${weights}&display=swap`
+  return `<link rel="preconnect" href="https://fonts.googleapis.com" />\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />\n<link rel="stylesheet" href="${href}" />`
+}
+
+/** the typefaces a person can ask for by kind ("serif font", "friendly font") */
+export const FONT_CHOICES: Record<string, { family: string; weights: string; fallback: 'sans' | 'serif' | 'mono'; label: string }> = {
+  serif: { family: 'Playfair Display', weights: '400;500;600;700', fallback: 'serif', label: 'classic serif' },
+  sans: { family: 'Inter', weights: '400;500;600;700', fallback: 'sans', label: 'clean sans-serif' },
+  mono: { family: 'Space Mono', weights: '400;700', fallback: 'mono', label: 'typewriter' },
+  elegant: { family: 'Cormorant Garamond', weights: '400;500;600;700', fallback: 'serif', label: 'elegant serif' },
+  rounded: { family: 'Nunito', weights: '400;600;700;800', fallback: 'sans', label: 'friendly rounded' },
+  display: { family: 'Orbitron', weights: '500;600;700', fallback: 'sans', label: 'futuristic display' },
+}
+
+/** the CSS variables of a chosen typeface: every font class of the page (sans, serif, mono) reads the same family */
+export function fontChoiceTokens(key: string): Record<string, string> | undefined {
+  const f = FONT_CHOICES[key]
+  if (!f) return undefined
+  const stack = f.fallback === 'serif' ? STACK.serif : f.fallback === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' : STACK.sans
+  const value = `"${f.family}", ${stack}`
+  return { '--font-sans': value, '--font-serif': value, '--font-mono': value, '--g-font': f.family, '--g-font-weights': f.weights }
+}

@@ -7,6 +7,7 @@ import type { MotionSetting } from '../motionBrain'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
 import { rolePools, tierPools, type Role } from './libraryRoles'
+import { panelColors } from '../moods'
 
 /** the part of a page that a library component fills, for each section a person can ask to remove or add */
 const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
@@ -87,12 +88,15 @@ export function generateLibraryPage(
     return { ...(f.buttons ? { buttons: f.buttons } : {}), ...(f.height?.px ? { minHeight: f.height.px } : f.height?.factor && f.height.factor !== 1 ? { heightFactor: f.height.factor } : {}), ...(maxWidth ? { maxWidth } : {}), ...(f.align ? { align: f.align } : {}) }
   }
   // every other body part gets a band of the main colour; the call-to-action gets the main colour itself
+  // the colour of each part: the mood's rules for the panels, then what the person asked for ('' = none)
+  const auto = generated.mood ? panelColors(generated.mood, order.map((r) => r as string), base.palette, generated.initialMode, (id) => targetOfRole(id as Role)) : undefined
   let bodyIndex = 0
   const sections: LibrarySection[] = order.map((role) => {
     const body = role !== 'nav' && role !== 'hero' && role !== 'footer'
     const band = body && bodyIndex++ % 2 === 1 && role !== 'cta'
-    const own = edits?.sectionColors[targetOfRole(role) as Target]
-    return { role, componentId: chosen[role], paint: own ?? (role === 'cta' ? base.palette.light.accent : undefined), band: band || undefined, fit: fitOf(role) }
+    const t = targetOfRole(role) as Target
+    const own = edits?.sectionColors[t] ?? auto?.[t]
+    return { role, componentId: chosen[role], paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
   const imports = sections

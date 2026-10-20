@@ -1,6 +1,6 @@
 // A colour for one part of the page ("header red, footer green"): the part gets that background, and the text, borders, cards and the
 // accent on top of it are worked out so that everything stays readable. The same tokens are used by all engines.
-import type { Palette } from '../themes'
+import { onColor, type Palette } from '../themes'
 import type { SiteEdits, Target } from './edits'
 
 const channel = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16)
@@ -51,9 +51,16 @@ export function targetOfLayout(id: string, sectionOf: (id: string) => Target | u
 export type Paints = Partial<Record<Target, Record<string, string>>>
 
 /** the tokens of every part that has its own colour */
-export function paintsFrom(edits: SiteEdits | undefined, palette: Palette): Paints | undefined {
-  const entries = Object.entries(edits?.sectionColors ?? {}) as [Target, string][]
-  return entries.length ? Object.fromEntries(entries.map(([target, hex]) => [target, sectionTokens(hex, palette)])) : undefined
+export function paintsFrom(edits: SiteEdits | undefined, palette: Palette, auto?: Partial<Record<Target, string>>): Paints | undefined {
+  // the colours of the mood first; what the person asked for wins ('' = no colour of its own)
+  const entries = Object.entries({ ...auto, ...edits?.sectionColors }).filter(([, hex]) => !!hex) as [Target, string][]
+  const paints: Paints = Object.fromEntries(entries.map(([target, hex]) => [target, sectionTokens(hex, palette)]))
+  // the colour of the buttons of one part ("hero button green"): two more tokens on the part
+  for (const [target, style] of Object.entries(edits?.styles ?? {}) as [string, { buttonColor?: string }][]) {
+    if (target === 'page' || !style?.buttonColor) continue
+    paints[target as Target] = { ...paints[target as Target], '--g-btn': style.buttonColor, '--g-on-btn': onColor(style.buttonColor) }
+  }
+  return Object.keys(paints).length ? paints : undefined
 }
 
 /** puts the tokens on the first element of a block: inline style for HTML, Tailwind property classes for JSX */

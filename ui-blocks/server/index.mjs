@@ -40,6 +40,8 @@ const TITLE_SECTIONS = ['features', 'about', 'steps', 'pricing', 'gallery', 'tea
 const NAV_PAGES = ['home', 'about', 'services', 'pricing', 'team', 'gallery', 'blog', 'faq', 'contact']
 const MOVES = ['top', 'bottom', 'up', 'down', 'before', 'after']
 const FIT_TARGETS = ['page', 'header', 'hero', 'footer', ...SECTIONS]
+const MOOD_CHOICES = ['minimal-light', 'minimal-dark', 'soft-neo', 'retro', 'cyberpunk', 'glass', 'bold-contrast', 'editorial', 'playful-pop', 'luxe-dark', 'none', 'auto']
+const STYLE_PROPS = ['buttonColor', 'headingColor', 'textColor', 'radius', 'font']
 const HARMONIES = ['complementary', 'analogous', 'triadic', 'split']
 const TONES = ['warmer', 'cooler', 'vibrant', 'muted', 'darker', 'lighter']
 const THEMES = ['modern_tech', 'organic_nature', 'luxury_minimal', 'playful_vibrant', 'bold_fitness', 'professional_services', 'healthcare', 'food_dining', 'education', 'creative_studio', 'general_business', 'real_estate', 'travel_tourism', 'automotive', 'beauty_wellness', 'events_wedding', 'pets_animals', 'fashion_retail', 'home_services', 'nonprofit']
@@ -82,6 +84,8 @@ export const TOOL = {
             op('size', { target: { enum: FIT_TARGETS }, axis: { enum: ['height', 'width'] }, factor: { type: 'number', minimum: 0.3, maximum: 2.5 }, px: { type: 'number', minimum: 60, maximum: 2400 } }, ['target', 'axis']),
             op('align', { target: { enum: FIT_TARGETS }, align: { enum: ['left', 'center', 'right'] }, part: { enum: ['buttons'] } }, ['target', 'align']),
             op('resetLayout', { target: { enum: FIT_TARGETS } }, []),
+            op('mood', { mood: { enum: MOOD_CHOICES } }),
+            op('style', { target: { enum: FIT_TARGETS }, prop: { enum: STYLE_PROPS }, value: { type: 'string', description: 'a colour #rrggbb for buttonColor/headingColor/textColor; square|rounded|pill for radius; serif|sans|mono|elegant|rounded|display for font; or default to take it back' } }),
           ],
         },
       },
@@ -103,6 +107,7 @@ Rules
 - For ANY colour name, mood or thing ("marigold", "mint", "colour of the sea", "calm and trustworthy", "like Coca-Cola") choose the one fitting hex yourself and answer with an accent operation; add a tone operation only when they ask for warmer/cooler/brighter/softer/darker/lighter.
 - "accent" colours the buttons, links and highlights of the whole site; "alt" is the second colour; "sectionColor" gives ONE part (header, hero, footer or a section) its own BACKGROUND colour (text on top adapts by itself); "harmony" turns the main colour to a complementary / analogous / triadic / split colour of the one it has now.
 - Layout: "title" renames the heading of a section (target ${TITLE_SECTIONS.join(', ')}); "navLabel" renames a page link in the menu (target ${NAV_PAGES.join(', ')}); "move" puts a section at top/bottom, one step up/down, or before/after another section (give target for before/after only); "movePage" does the same for pages in the menu (Home always stays first). "size" changes the height (spacing) or width of ${FIT_TARGETS.join(', ')} with a factor (shorter 0.7, a bit shorter 0.85, much shorter 0.5, taller 1.3, a bit 1.15, much 1.6; "20% less" is 0.8) or an exact px; "align" sets the text alignment (part "buttons" moves only the buttons of that part: "hero button to the left"); "resetLayout" undoes all sizes, alignments and moves. Renaming the business is the "rename" operation, not "title".
+- Look: "mood" gives the whole site a design mood (minimal-light, minimal-dark, soft-neo = neumorphism, retro, cyberpunk, glass, bold-contrast = brutalist, editorial, playful-pop, luxe-dark; none = the look of the business type; auto). "style" sets ONE kind of thing on one part or the whole page ("page"): buttonColor (only the buttons, the accent of the site stays), headingColor, textColor, radius (square|rounded|pill) or font. "make the buttons blue" with no part named is the accent operation; "hero button green" or "only the buttons green" is style buttonColor.
 - "services" lists what the business offers (name, optional price as typed); "contact" fields: email, phone, address, whatsapp, hours (opening hours as one line).
 - Keep the capitalisation of new names and texts exactly as the person wrote them. Never invent text the person did not ask for.
 - A request with several changes gives several operations, in the order spoken. Do nothing for requests that are chit-chat or impossible: ops empty and a helpful reply.

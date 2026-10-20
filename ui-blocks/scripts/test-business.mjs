@@ -63,12 +63,16 @@ for (const key of THEME_KEYS) {
   ok(Object.keys(v)[0] === variable && /^"[A-Za-z0-9 ]+", /.test(Object.values(v)[0]), `font of ${key} goes to ${variable}`)
   ok(/^https:\/\/fonts\.googleapis\.com\/css2\?family=[A-Za-z0-9+]+:wght@[0-9;]+&display=swap$/.test(fontHref(key)), `font address of ${key}`)
 }
+// the typeface of the business type (a design mood, when there is one, brings its own: see test-moods.mjs)
+const { setCreativity } = await loadGeneratorModule('creativity.ts')
+setCreativity('safe')
 const food = generateWebsite('bakery in Jaipur', 0)
 ok(food.tokens.light['--font-serif']?.startsWith('"Playfair Display"') && food.tokens.dark['--font-serif'] === food.tokens.light['--font-serif'], 'the page tokens carry the font in both modes')
 const src = sourceFromPage(food)
 ok(buildStandalone(src).includes('fonts.googleapis.com/css2?family=Playfair+Display'), 'one-file export links the font')
 const files = buildStaticFiles(sourceFromSite(generateSite('bakery in Jaipur', 0)))
 ok(files.filter((f) => f.path.endsWith('.html')).every((f) => f.content.includes('fonts.googleapis.com')), 'every page of the static export links the font')
+setCreativity('balanced')
 ok(fontLinks('modern_tech').includes('preconnect'), 'preconnect hints')
 
 // ── deploy files in the static export

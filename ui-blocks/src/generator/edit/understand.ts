@@ -6,7 +6,7 @@ import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
-import { cleanOp, type EditOp, type Harmony, type ServiceItem, type PageKey, type SectionKey, type Target, type TextField, type Tone, TONES } from './edits'
+import { cleanOp, type EditOp, type FitTarget, type StyleProp, type Harmony, type ServiceItem, type PageKey, type SectionKey, type Target, type TextField, type Tone, TONES } from './edits'
 import {
   COLOR_HEX,
   COLOR_NOUNS,
@@ -533,8 +533,62 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
     return { ops, notes }
   }
 
-  // parts with a colour of their own ("header red, footer green", "make the gallery dark") ─────────
+  // the look of one kind of thing: the colour of buttons, headings or text, round or sharp corners, the typeface ─────────
   const parts = partMentions(clause)
+  {
+    const quoted = hasQuote(clause)
+    const targets = parts.length ? parts.map((p) => p.value as FitTarget) : (['page'] as FitTarget[])
+    const style = (prop: StyleProp, value: string) => targets.forEach((target) => push({ op: 'style', target, prop, value }))
+    const colour = colorOf(clause)
+    const BUTTONS = /(?<![\p{L}\p{M}])(?:buttons?|btns?|बटन)(?![\p{L}\p{M}])/iu.test(clause)
+    const HEADINGS = /(?<![\p{L}\p{M}])(?:headings?|headlines?|headers?\s+text|titles?|हेडिंग)(?![\p{L}\p{M}])/iu.test(clause)
+    const TEXT = /(?<![\p{L}\p{M}])(?:body\s+text|paragraphs?|text|writing|likhai|font\s+colou?r|टेक्स्ट)(?![\p{L}\p{M}])/iu.test(clause)
+    const ALONE = /(?<![\p{L}\p{M}])(?:only|just|sirf|keval|alone|alag|separately|akele|सिर्फ)(?![\p{L}\p{M}])/iu.test(clause)
+    const valueTalk = quoted || /(?<![\p{L}])(?:likho|write|says?|naam|name|label)(?![\p{L}])|[:=]/iu.test(clause) || /\b(?:to|as)\s+[A-Z]/.test(clause)
+    if (colour && !valueTalk && !re.remove.test(clause)) {
+      // the colour of the buttons of one part, or "only the buttons" (else "the buttons blue" keeps meaning the main colour of the site, below)
+      if (BUTTONS && (parts.length > 0 || ALONE) && !HEADINGS) {
+        style('buttonColor', colour)
+        return { ops, notes }
+      }
+      if ((HEADINGS || TEXT) && !BUTTONS) {
+        if (HEADINGS) style('headingColor', colour)
+        if (TEXT && !(HEADINGS && /(?<![\p{L}])(?:heading|title)s?\s+text(?![\p{L}])/iu.test(clause))) style('textColor', colour)
+        return { ops, notes }
+      }
+    }
+    // corners
+    const sharp = /(?<![\p{L}])(?:sharp|square|squared|boxy|flat|edgy|no\s+round(?:ed)?|na\s+gol|nokile|नुकीले)(?![\p{L}])/iu.test(clause)
+    const round = /(?<![\p{L}\p{M}])(?:round(?:ed)?|pill|circular|curved|smooth\s+corners|gol|golai|गोल)(?![\p{L}\p{M}])/iu.test(clause)
+    const cornerWord = /(?<![\p{L}\p{M}])(?:corners?|edges?|borders?|shape|buttons?|cards?|boxes|kone|कोने)(?![\p{L}\p{M}])/iu.test(clause)
+    if ((sharp || round) && cornerWord && !valueTalk && !re.remove.test(clause) && !colorMentions(clause).length) {
+      style('radius', sharp && !round ? 'square' : /pill/i.test(clause) || (BUTTONS && round) ? 'pill' : 'rounded')
+      return { ops, notes }
+    }
+    if (/(?<![\p{L}])(?:default|normal|original|pehle jaise|reset)\s+(?:corners?|edges?|font|typeface|button\s+colou?r|heading\s+colou?r|text\s+colou?r)/iu.test(clause)) {
+      const what = /font|typeface/i.test(clause) ? 'font' : /corner|edge/i.test(clause) ? 'radius' : /button/i.test(clause) ? 'buttonColor' : /heading/i.test(clause) ? 'headingColor' : 'textColor'
+      style(what as StyleProp, 'default')
+      return { ops, notes }
+    }
+    // the typeface
+    if (/(?<![\p{L}])(?:fonts?|typeface|lettering|aksar|फॉन्ट)(?![\p{L}])/iu.test(clause) && !valueTalk && !colour) {
+      const kinds: [RegExp, string][] = [
+        [/(?<![\p{L}])(?:elegant|fancy|luxury|luxurious|wedding|calligraph\w*)(?![\p{L}])/iu, 'elegant'],
+        [/(?<![\p{L}])(?:serif|classic|classical|traditional|newspaper|book)(?![\p{L}])/iu, 'serif'],
+        [/(?<![\p{L}])(?:mono|monospace|typewriter|code|coding|retro)(?![\p{L}])/iu, 'mono'],
+        [/(?<![\p{L}])(?:rounded|friendly|playful|cute|soft|kids|bubbly)(?![\p{L}])/iu, 'rounded'],
+        [/(?<![\p{L}])(?:futuristic|tech|techy|display|sci-?fi|cyber|robotic)(?![\p{L}])/iu, 'display'],
+        [/(?<![\p{L}])(?:sans|sans-serif|modern|clean|simple|plain|minimal)(?![\p{L}])/iu, 'sans'],
+      ]
+      const hit = kinds.find(([re2]) => re2.test(clause))
+      if (hit) {
+        push({ op: 'style', target: 'page', prop: 'font', value: hit[1] })
+        return { ops, notes }
+      }
+    }
+  }
+
+  // parts with a colour of their own ("header red, footer green", "make the gallery dark") ─────────
   if (parts.length && !re.remove.test(clause) && !/(?<![\p{L}])(?:buttons?|links?|accent|font|text colou?r|btn)(?![\p{L}])/iu.test(clause)) {
     const colours = colorMentions(clause)
     const darkOnly = !colours.length && /(?<![\p{L}])(?:dark|andhera|andhere)(?![\p{L}])/iu.test(clause)
@@ -731,7 +785,7 @@ for (const list of [...Object.values(SECTION_TERMS), Object.keys(COLOR_HEX), ...
   for (const term of list) if (/^[a-z]{5,12}$/.test(term) && !RISKY_COLORS.has(term)) vocabulary.add(term)
 const KNOWN = [...vocabulary]
 // everyday words that are one letter away from a command word
-const COMMON = new Set(['right', 'rights', 'left', 'write', 'writes', 'store', 'stores', 'stone', 'those', 'three', 'other', 'there', 'where', 'which', 'shine', 'phone', 'plain', 'place', 'point', 'paint', 'print', 'quote', 'order', 'orders', 'items', 'teams', 'trial', 'brand', 'rates', 'prices', 'lower', 'power', 'fresh', 'order', 'house', 'horse', 'table', 'cable', 'water', 'later', 'under', 'every', 'above', 'while', 'never', 'where', 'shops', 'style', 'tales', 'tasks', 'class', 'clean', 'close', 'clear', 'coach'])
+const COMMON = new Set(['glass', 'glasses', 'right', 'rights', 'left', 'write', 'writes', 'store', 'stores', 'stone', 'those', 'three', 'other', 'there', 'where', 'which', 'shine', 'phone', 'plain', 'place', 'point', 'paint', 'print', 'quote', 'order', 'orders', 'items', 'teams', 'trial', 'brand', 'rates', 'prices', 'lower', 'power', 'fresh', 'order', 'house', 'horse', 'table', 'cable', 'water', 'later', 'under', 'every', 'above', 'while', 'never', 'where', 'shops', 'style', 'tales', 'tasks', 'class', 'clean', 'close', 'clear', 'coach'])
 
 const SHORT_TYPOS: Record<string, string> = { drak: 'dark', dakr: 'dark', udno: 'undo', unod: 'undo', rdeo: 'redo', lihgt: 'light', ligth: 'light', whtie: 'white', mneu: 'menu', blakc: 'black' }
 function fixTypos(input: string): string {

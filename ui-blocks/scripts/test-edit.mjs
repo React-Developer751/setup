@@ -247,6 +247,8 @@ ok(text(['header', 'hero', 'footer', ...list('SECTIONS')]) === text(edits.TARGET
 ok(text(list('TITLE_SECTIONS')) === text(edits.TITLE_SECTIONS), 'server TITLE_SECTIONS equal edits.ts')
 ok(text(list('NAV_PAGES')) === text(edits.NAV_PAGES), 'server NAV_PAGES equal edits.ts')
 ok(text(list('MOVES')) === text(edits.MOVES), 'server MOVES equal edits.ts')
+ok(text(list('MOOD_CHOICES')) === text(edits.MOOD_CHOICES), 'server MOOD_CHOICES equal edits.ts')
+ok(text(list('STYLE_PROPS')) === text(edits.STYLE_PROPS), 'server STYLE_PROPS equal edits.ts')
 ok(text(['page', 'header', 'hero', 'footer', ...list('SECTIONS')]) === text(edits.FIT_TARGETS), 'server FIT_TARGETS equal edits.ts')
 const { THEME_KEYS } = await loadGeneratorModule('themes.ts')
 ok(text([...list('THEMES')].sort()) === text([...THEME_KEYS].sort()), 'server THEMES equal themes.ts')

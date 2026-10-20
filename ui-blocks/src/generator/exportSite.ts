@@ -10,7 +10,7 @@ import motionBrainSource from './motionBrain.ts?raw'
 import motionRuntimeSource from './motionRuntime.ts?raw'
 import packageJson from '../../package.json?raw'
 import { faviconSvg } from './artBrain'
-import { fontLinks } from './fonts'
+import { fontLinksFor } from './fonts'
 import { compileSiteHtml, type SiteFile } from './compileSite'
 import type { generateSite } from './generateSite'
 import type { generateWebsite } from './generateWebsite'
@@ -245,7 +245,7 @@ export function buildProject(source: ExportSource): ZipEntry[] {
     <title>${escapeHtml(source.brand)}</title>
     <meta name="description" content="${escapeHtml(source.description)}" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    ${fontLinks(source.themeKey).replace(/\n/g, '\n    ')}
+    ${fontLinksFor(source.themeKey, source.tokens.light).replace(/\n/g, '\n    ')}
   </head>
   <body>
     <div id="root"></div>
@@ -429,7 +429,7 @@ export function buildStandalone(source: ExportSource): string {
 <title>${escapeHtml(source.brand)}</title>
 <meta name="description" content="${escapeHtml(source.description)}" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,${encodeURIComponent(svg)}" />
-${fontLinks(source.themeKey)}
+${fontLinksFor(source.themeKey, source.tokens.light)}
 <style>${css}
 html{scroll-behavior:smooth;scroll-padding-top:5rem}body{margin:0}</style>
 </head>

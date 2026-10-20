@@ -1,9 +1,9 @@
 // Size, alignment and order of the parts of a page ("make the pricing section shorter", "narrower", "center the gallery", "put FAQ above pricing").
 // A size is worked out on the markup of a block: the vertical padding and the tall fixed boxes scale with the height factor, the widest
 // container with the width factor (or an exact pixel size). Nothing in the templates has to know about it.
-import type { Align, Axis, FitTarget, Move, SectionKey, SiteEdits, SizeChange, Target } from './edits'
+import type { Align, Axis, FitTarget, Move, SectionKey, SiteEdits, SizeChange, StyleSet, Target } from './edits'
 
-export type Fit = { height?: SizeChange; width?: SizeChange; align?: Align; /** the buttons alone */ buttons?: Align }
+export type Fit = { height?: SizeChange; width?: SizeChange; align?: Align; /** the buttons alone */ buttons?: Align; /** colours of headings and text, roundness of corners */ style?: Pick<StyleSet, 'headingColor' | 'textColor' | 'radius'> }
 export type Fits = Partial<Record<Target, Fit>>
 
 const MERGE = (page: SizeChange | undefined, own: SizeChange | undefined): SizeChange | undefined => {
@@ -15,7 +15,7 @@ const MERGE = (page: SizeChange | undefined, own: SizeChange | undefined): SizeC
 
 /** the fit of every part that was changed (the whole-page change is merged into each part) */
 export function fitsFrom(edits: SiteEdits | undefined, targets: readonly Target[]): Fits | undefined {
-  if (!edits || (!Object.keys(edits.sizes).length && !Object.keys(edits.aligns).length && !Object.keys(edits.buttonAligns ?? {}).length)) return undefined
+  if (!edits || (!Object.keys(edits.sizes).length && !Object.keys(edits.aligns).length && !Object.keys(edits.buttonAligns ?? {}).length && !Object.keys(edits.styles ?? {}).length)) return undefined
   const out: Fits = {}
   for (const target of targets) {
     const page = edits.sizes.page
@@ -24,7 +24,11 @@ export function fitsFrom(edits: SiteEdits | undefined, targets: readonly Target[
     const width = MERGE(page?.width, own?.width)
     const align = edits.aligns[target as FitTarget] ?? edits.aligns.page
     const buttons = edits.buttonAligns?.[target as FitTarget] ?? edits.buttonAligns?.page
-    if (height || width || align || buttons) out[target] = { ...(height ? { height } : {}), ...(width ? { width } : {}), ...(align ? { align } : {}), ...(buttons ? { buttons } : {}) }
+    // the look of headings, text and corners: the part's own setting over the whole page's
+    const mine = edits.styles?.[target as FitTarget]
+    const all = edits.styles?.page
+    const style = { ...(all?.headingColor || mine?.headingColor ? { headingColor: mine?.headingColor ?? all?.headingColor } : {}), ...(all?.textColor || mine?.textColor ? { textColor: mine?.textColor ?? all?.textColor } : {}), ...(all?.radius || mine?.radius ? { radius: mine?.radius ?? all?.radius } : {}) }
+    if (height || width || align || buttons || Object.keys(style).length) out[target] = { ...(height ? { height } : {}), ...(width ? { width } : {}), ...(align ? { align } : {}), ...(buttons ? { buttons } : {}), ...(Object.keys(style).length ? { style } : {}) }
   }
   return Object.keys(out).length ? out : undefined
 }
@@ -193,6 +197,32 @@ function buttonsAlignOf(html: string, align: Align, mode: 'html' | 'jsx', tags: 
   return replaceTags(html, out)
 }
 
+const RADIUS_CLASS = /^rounded(?:-(?:xs|sm|md|lg|xl|2xl|3xl|none))?$/
+const COLOR_CLASS = /^text-(?:\(--g-[a-z-]+\)|\[var\(--g-[a-z-]+\)\])(?:\/\d+)?$/
+
+/** colours of headings and text, and the roundness of corners, put on the tags of a block */
+function styleMarkup(html: string, style: NonNullable<Fit['style']>, mode: 'html' | 'jsx'): string {
+  const out: [Tag, string][] = []
+  for (const tag of tagsOf(html)) {
+    const classes = (classAttr(tag.attrs, mode)?.[1] ?? '').split(/\s+/).filter(Boolean)
+    let next = classes
+    let css = ''
+    const paint = (hex: string) => {
+      if (mode === 'html') css += `color:${hex};`
+      else next = [...next.filter((c) => !COLOR_CLASS.test(c)), `text-[${hex}]`]
+    }
+    if (style.headingColor && /^h[1-4]$/.test(tag.name)) paint(style.headingColor)
+    if (style.textColor && /^(?:p|li|figcaption|blockquote)$/.test(tag.name)) paint(style.textColor)
+    if (style.radius && next.some((c) => RADIUS_CLASS.test(c))) {
+      const clickable = /^(?:a|button)$/.test(tag.name)
+      const to = style.radius === 'square' ? 'rounded-none' : style.radius === 'pill' ? (clickable ? 'rounded-full' : 'rounded-3xl') : 'rounded-xl'
+      next = [...next.filter((c) => !RADIUS_CLASS.test(c)), to]
+    }
+    if (next !== classes || css) out.push([tag, rebuild(tag, mode, () => next, css)])
+  }
+  return replaceTags(html, out)
+}
+
 /** applies a fit to the markup of one block (html for the preview, jsx for the React export) */
 export function fitMarkup(markup: string, fit: Fit, mode: 'html' | 'jsx'): string {
   let html = markup
@@ -204,6 +234,7 @@ export function fitMarkup(markup: string, fit: Fit, mode: 'html' | 'jsx'): strin
   }
   if (fit.align) html = alignOf(html, fit.align, mode, tagsOf(html))
   if (fit.buttons) html = buttonsAlignOf(html, fit.buttons, mode, tagsOf(html))
+  if (fit.style && Object.keys(fit.style).length) html = styleMarkup(html, fit.style, mode)
   return html
 }
 
