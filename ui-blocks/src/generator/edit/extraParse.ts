@@ -103,7 +103,7 @@ export function extraOps(clause: string): ExtraResult {
 
   // another colour: a fresh one
   if (/(?<![\p{L}])(?:kuch\s+)?(?:aur|dusra|doosra|alag|naya|nayi|different|another|new|other|some other)\s+(?:colou?rs?|rang)(?:\s+(?:try|lagao|karo|dikhao|do|please|kar\s+do|chahiye|chaiye|rakho|banao|dedo|de\s+do|laga\s+do|दो|चाहिए|करो))*\s*$/iu.test(text) || /^(?:colou?r|rang)\s+(?:change|badlo|badal)(?:\s+karo|\s+kar\s+do)?\s*$/iu.test(text))
-    return { ops: [{ op: 'accent', hex: randomHex() }], notes: [] }
+    return { ops: [{ op: 'accent', hex: randomHex() }], notes: ['I picked a fresh colour for you. Say "another colour" for a different one, or "undo".'] }
 
   return undefined
 }

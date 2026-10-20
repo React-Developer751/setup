@@ -78,6 +78,19 @@ ok(share(learned) > share(baseline), `after the verdicts more new designs have t
 ok(newness({ hue: keptOnes[0].hue, accent: keptOnes[0].accent }, insights, 20) === 0, 'a colour that was already made is not new')
 ok(tasteScore(sample, insights) >= 0 && tasteScore(sample, insights) <= 1, 'the taste score stays between 0 and 1')
 
+// ── "a new colour" asked for in chat is moved to a hue that is not used yet
+const { uniqueAccent } = await loadGeneratorModule('memory/designMemory.ts')
+const { hslToRgb, hexToRgb, rgbToHsl } = await loadGeneratorModule('art/color.ts')
+const toHex = (h, sat, l) => `#${hslToRgb(h, sat, l).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`
+const hslOf = (hex) => rgbToHsl(hexToRgb(hex))
+const usedHues = [0, 40, 80, 120, 160, 200, 240, 280, 320]
+const askedFor = ['#dc2626', '#16a34a', '#2563eb', '#eab308', '#7c3aed']
+for (const hex of askedFor) {
+  const moved = uniqueAccent(hex, usedHues, toHex, hslOf)
+  ok(usedHues.every((h) => hueGap(h, hslOf(moved).h) >= 6), `a fresh colour ${hex} becomes ${moved}, away from the hues in use`)
+}
+ok(uniqueAccent('#dc2626', [], toHex, hslOf) === '#dc2626' || hueGap(hslOf(uniqueAccent('#dc2626', [], toHex, hslOf)).h, 0) < 3, 'with nothing in use the colour stays')
+
 // ── the file database of the server
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'designs-'))
 const PORT = 9200 + Math.floor(Math.random() * 90)

@@ -27,7 +27,8 @@ import DesignHistory from './DesignHistory'
 import JsonEditor from './JsonEditor'
 import { blueprintOf } from './generator/edit/blueprint'
 import { MOODS } from './generator/moods'
-import { analyse, type Insights } from './generator/memory/designMemory'
+import { analyse, uniqueAccent, type Insights } from './generator/memory/designMemory'
+import { hslToRgb, hexToRgb, rgbToHsl } from './generator/art/color'
 import { planDesign } from './generator/memory/designPlanner'
 import { newId, openStore, type DesignRecord, type DesignStore } from './generator/memory/designStore'
 import { businessKey } from './generator/edit/imageRatings'
@@ -157,6 +158,8 @@ function GeneratorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const hslOfHex = (hex: string) => rgbToHsl(hexToRgb(hex))
+  const hslToHex = (h: number, s: number, l: number) => `#${hslToRgb(h, s, l).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`
   // ───────────── the design memory ─────────────
   const DESIGN_COLOUR = 'A colour that was not used yet'
   const insightsOf = (rows: DesignRecord[], prompt: string): Insights => analyse(rows, businessKey(prompt))
@@ -395,7 +398,11 @@ function GeneratorPage() {
         return
       }
       if (parsed.kind === 'ops' && parsed.ops.length) {
-        applyOps(text, parsed.ops, 'rules', parsed.notes.length ? `Done. ${parsed.notes.join(' ')}` : undefined)
+        // "a new colour": the random colour is moved to a hue this kind of business has not had yet (the design memory knows them)
+        const fresh = parsed.notes.some((n) => /fresh colour/i.test(n))
+        const used = [...designs.map((d) => d.hue), hslOfHex(palette.light.accent).h, ...history.flatMap((h) => h.ops.filter((o) => o.op === 'accent').map((o) => hslOfHex((o as { hex: string }).hex).h))]
+        const ops = fresh ? parsed.ops.map((o) => (o.op === 'accent' ? { ...o, hex: uniqueAccent(o.hex, used, hslToHex, hslOfHex) } : o)) : parsed.ops
+        applyOps(text, ops, 'rules', parsed.notes.length ? `Done. ${parsed.notes.join(' ')}` : undefined)
         return
       }
       if (parsed.kind === 'ops') {

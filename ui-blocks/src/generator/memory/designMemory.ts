@@ -134,3 +134,12 @@ export function scoreCandidate(c: Candidate, ins: Insights): Scored {
   // a colour that is not new is out: its score is 0
   return { candidate: c, taste, fresh, score: fresh === 0 ? 0 : 0.55 * taste + 0.45 * fresh }
 }
+
+/** a "fresh colour" asked for in chat: the colour that was drawn at random, moved to the nearest hue that is not used yet by this kind of business (or by the page now) */
+export function uniqueAccent(hex: string, usedHues: number[], toHex: (h: number, s: number, l: number) => string, hslOf: (hex: string) => { h: number; s: number; l: number }): string {
+  const { h, s, l } = hslOf(hex)
+  // a crowded wheel: the gap to the old hues is made smaller until a free place is found
+  let free: number | undefined
+  for (let gap = minGapFor(usedHues.length); free === undefined && gap >= 1; gap = Math.floor(gap / 2)) free = nearestFreeHue(h, usedHues, gap, 180)
+  return free === undefined ? hex : toHex(free, Math.min(Math.max(s, 55), 80), Math.min(Math.max(l, 38), 52))
+}
