@@ -1,7 +1,7 @@
 // What the person says about the pictures (a thumb up or down on each one) is the real teacher of the main AI:
 //   - a picture with a thumb up: for this kind of business the same scene (with the same seed, so the very same picture) is used first next time
 //   - a picture with a thumb down: that scene is not used again for this business, and a prompt that gets thumbs down again and again is left out for everyone
-// Everything here is plain data in, plain data out (the browser wrapper below keeps it in localStorage).
+// Everything here is plain data in, plain data out. The server database (image-ratings.jsonl) is shared by all browsers; localStorage is the cache and the fallback.
 import type { Scene, ScenePlan } from '../imageAi'
 import { businessText } from './imageDirector'
 
@@ -77,6 +77,22 @@ export function applyRatings(plan: ScenePlan, store: RatingStore, key: string): 
   return { plan: { ...plan, hero: result[0], about: result[1], gallery: result.slice(2) }, used, swapped }
 }
 
+/** one thumb as the server stores it */
+export type RatingEvent = { key: string; prompt: string; seed: number; liked: boolean }
+
+/** the thumbs in the order they were given -> the store the planner reads */
+export function foldRatings(events: RatingEvent[]): RatingStore {
+  return events.reduce((store, e) => rate(store, e.key, { prompt: e.prompt, seed: e.seed }, e.liked), emptyRatings())
+}
+
+/** thumbs that this browser has in its cache but the server does not know yet (an old browser memory moving to the database) */
+export function missingEvents(local: RatingStore, shared: RatingStore): RatingEvent[] {
+  const out: RatingEvent[] = []
+  for (const [key, list] of Object.entries(local.liked)) for (const l of list) if (!(shared.liked[key] ?? []).some((x) => x.prompt === l.prompt)) out.push({ key, prompt: l.prompt, seed: l.seed, liked: true })
+  for (const [key, list] of Object.entries(local.disliked)) for (const p of list) if (!(shared.disliked[key] ?? []).includes(p)) out.push({ key, prompt: p, seed: 0, liked: false })
+  return out
+}
+
 // ───────────── the browser's memory ─────────────
 const KEY = 'ui-blocks:image-ratings'
 export function loadRatings(): RatingStore {
@@ -95,14 +111,39 @@ export function saveRatings(store: RatingStore): void {
   }
 }
 
-/** a thumb up or down: remembered here, and sent to the server (image-feedback.jsonl) for `npm run images:learn` */
+const post = (path: string, body: unknown) => fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), keepalive: true })
+
+/** a thumb up or down: cached here, saved in the server database (shared by all browsers) and logged for `npm run images:learn` */
 export function rateScene(prompt: string, scene: Pick<Scene, 'prompt' | 'seed'>, liked: boolean): RatingStore {
-  const next = rate(loadRatings(), businessKey(prompt), scene, liked)
+  const key = businessKey(prompt)
+  const next = rate(loadRatings(), key, scene, liked)
   saveRatings(next)
   try {
-    void fetch('/api/image-feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt: scene.prompt, seed: scene.seed, attempt: 0, accepted: liked, score: liked ? 1 : 0, reasons: [`thumb ${liked ? 'up' : 'down'} for: ${businessKey(prompt)}`.slice(0, 110)], stage: 'rating' }), keepalive: true }).catch(() => undefined)
+    void post('/api/image-ratings', { key, prompt: scene.prompt, seed: scene.seed, liked }).catch(() => undefined)
+    void post('/api/image-feedback', { prompt: scene.prompt, seed: scene.seed, attempt: 0, accepted: liked, score: liked ? 1 : 0, reasons: [`thumb ${liked ? 'up' : 'down'} for: ${key}`.slice(0, 110)], stage: 'rating' }).catch(() => undefined)
   } catch {
-    // the log is optional
+    // the database and the log are optional
   }
   return next
+}
+
+let synced = 0
+/** the thumbs of all browsers: read from the server database into the cache (once a minute at most); thumbs only this browser knows move to the database. Without a server the cache stays as it is. */
+export async function syncRatings(force = false): Promise<RatingStore> {
+  const local = loadRatings()
+  if (!force && Date.now() - synced < 60_000) return local
+  try {
+    const res = await fetch('/api/image-ratings', { signal: AbortSignal.timeout(4000) })
+    if (!res.ok) return local
+    const events = ((await res.json()) as { events: (RatingEvent & { at?: string })[] }).events
+    const shared = foldRatings(events)
+    const extra = missingEvents(local, shared)
+    await Promise.all(extra.map((e) => post('/api/image-ratings', e).catch(() => undefined)))
+    const merged = extra.length ? foldRatings([...events, ...extra]) : shared
+    saveRatings(merged)
+    synced = Date.now()
+    return merged
+  } catch {
+    return local
+  }
 }

@@ -10,7 +10,7 @@ import type { EditOp } from './edits'
 import { assessPixels, cleanPrompt, promptUnderstood, type ParseAnswer, type PixelReport } from './imageCheck'
 import { sampleTopK, temperature } from '../creativity'
 import { directPlan, mashups } from './imageDirector'
-import { applyRatings, blockedByRatings, businessKey, loadRatings } from './imageRatings'
+import { applyRatings, blockedByRatings, businessKey, loadRatings, syncRatings } from './imageRatings'
 import { readPicture } from './imageFile'
 
 export type PictureReport = { pictures: number; redrawn: number; otherScene: number; /** scenes replaced because they showed nothing of the business */ directed: number; notes: string[] }
@@ -164,7 +164,8 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
   const directNotes0: string[] = []
   let trusted = new Set<string>()
   if (options.prompt) {
-    // what the person said about the pictures of this kind of business comes first
+    // what people said about the pictures of this kind of business comes first (the shared database, then the cache)
+    await syncRatings()
     const rated = applyRatings(plan, loadRatings(), businessKey(options.prompt))
     plan = rated.plan
     trusted = new Set((loadRatings().liked[businessKey(options.prompt)] ?? []).map((l) => l.prompt))

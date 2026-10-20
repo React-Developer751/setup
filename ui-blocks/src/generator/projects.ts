@@ -17,7 +17,7 @@ export type Project = {
   motion: MotionSetting
   engine: 'templates' | 'library'
   pages: 'multi' | 'single'
-  history: { text: string; ops: EditOp[] }[]
+  history: { text: string; ops: EditOp[]; logId?: string }[]
   details: ExportDetails
 }
 

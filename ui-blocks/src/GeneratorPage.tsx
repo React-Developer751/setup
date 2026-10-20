@@ -21,7 +21,8 @@ import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
-import { rateScene } from './generator/edit/imageRatings'
+import { rateScene, syncRatings } from './generator/edit/imageRatings'
+import { doubtQuestion, isDoubtful, logRow, normaliseCommand, openEditLog, undoStats } from './generator/memory/editHistory'
 import RatePictures from './RatePictures'
 import DesignHistory from './DesignHistory'
 import JsonEditor from './JsonEditor'
@@ -89,8 +90,8 @@ function GeneratorPage() {
   const [device, setDevice] = useState<Device>('mobile')
   const [details, setDetails] = useState<ExportDetails>({})
   // changes asked for in the chat: a site is the prompt + this list (see generator/edit/edits.ts)
-  const [history, setHistory] = useState<{ text: string; ops: EditOp[] }[]>([])
-  const [undone, setUndone] = useState<{ text: string; ops: EditOp[] }[]>([])
+  const [history, setHistory] = useState<{ text: string; ops: EditOp[]; logId?: string }[]>([])
+  const [undone, setUndone] = useState<{ text: string; ops: EditOp[]; logId?: string }[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatBusy, setChatBusy] = useState(false)
   const [useServer, setUseServer] = useState(false)
@@ -267,13 +268,22 @@ function GeneratorPage() {
     if (!useServer) return
     let alive = true
     void serverHealth().then((ok) => alive && setServerReady(ok))
+    void syncRatings(true)
     return () => {
       alive = false
     }
   }, [useServer])
 
+  // chat commands (typed or chosen) go to the edit history database; pictures and the first colour do not
+  const chatting = useRef(false)
   const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string) => {
-    setHistory((list) => [...list, { text, ops }])
+    let logId: string | undefined
+    if (chatting.current) {
+      const row = logRow(text, businessKey(submitted), isMulti ? 'multi' : 'single', ops.map(describeOp), via)
+      logId = row.id
+      void openEditLog().then((store) => store.add(row)).catch(() => undefined)
+    }
+    setHistory((list) => [...list, { text, ops, logId }])
     setUndone([])
     setView('preview')
     say({ role: 'ai', text: reply || (ops.length === 1 ? 'Done.' : `Done: ${ops.length} changes.`), ops, via })
@@ -345,6 +355,10 @@ function GeneratorPage() {
     if (!last) return say({ role: 'ai', text: 'There is nothing to undo.' })
     setHistory(history.slice(0, -1))
     setUndone((list) => [...list, last])
+    if (last.logId) {
+      const id = last.logId
+      void openEditLog().then((store) => store.markUndone(id)).catch(() => undefined)
+    }
     say({ role: 'ai', text: `Undone: ${last.ops.map(describeOp).join('; ')}` })
     if (useServer && serverReady) sendFeedback({ text: last.text, ops: last.ops, accepted: false, source: 'rules' })
   }
@@ -377,12 +391,17 @@ function GeneratorPage() {
       say({ role: 'ai', text: 'Okay. Tell me what to change.' })
       return
     }
-    applyOps(choice.label, choice.ops, 'rules')
+    chatting.current = true
+    // "Do it anyway" counts for the command that was doubted, so a later undo is held against that command
+    const original = choice.label === 'Do it anyway' ? [...messages].reverse().find((m) => m.role === 'user')?.text : undefined
+    applyOps(original ?? choice.label, choice.ops, 'rules')
+    chatting.current = false
   }
 
   const sendChat = async (text: string) => {
     say({ role: 'user', text })
     setChatBusy(true)
+    chatting.current = true
     try {
       const parsed = parseEdit(text, isMulti ? 'multi' : 'single')
       if (parsed.kind === 'control') {
@@ -402,6 +421,17 @@ function GeneratorPage() {
         const fresh = parsed.notes.some((n) => /fresh colour/i.test(n))
         const used = [...designs.map((d) => d.hue), hslOfHex(palette.light.accent).h, ...history.flatMap((h) => h.ops.filter((o) => o.op === 'accent').map((o) => hslOfHex((o as { hex: string }).hex).h))]
         const ops = fresh ? parsed.ops.map((o) => (o.op === 'accent' ? { ...o, hex: uniqueAccent(o.hex, used, hslToHex, hslOfHex) } : o)) : parsed.ops
+        // a command that was undone again and again: ask before doing it once more
+        {
+          const rows = await (await openEditLog()).list().catch(() => [])
+          const stats = undoStats(rows, text)
+          if (isDoubtful(stats)) {
+            const norm = normaliseCommand(text)
+            const earlier = rows.filter((r) => r.norm === norm && r.undone).map((r) => r.ops)
+            say({ role: 'ai', text: doubtQuestion(stats, ops.map(describeOp), earlier), choices: [{ label: 'Do it anyway', ops }, { label: 'I will say it differently', action: 'dismiss' }], via: 'guess' })
+            return
+          }
+        }
         applyOps(text, ops, 'rules', parsed.notes.length ? `Done. ${parsed.notes.join(' ')}` : undefined)
         return
       }
@@ -465,6 +495,7 @@ function GeneratorPage() {
       }
       say({ role: 'ai', text: parsed.reason })
     } finally {
+      chatting.current = false
       setChatBusy(false)
     }
   }

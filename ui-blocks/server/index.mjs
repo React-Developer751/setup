@@ -3,6 +3,7 @@
 // POST /api/edit      { text, state }   -> { ops, control?, newSite?, reply }   the AI reads the request and answers with operations
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
 // GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
+// GET/POST /api/edit-log, POST /api/edit-log/undo -> the chat commands and which ones were undone;  GET/POST /api/image-ratings -> picture thumbs shared by all browsers
 // GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
 // GET  /api/health    -> { ok, ai }
 // The page checks every operation again (cleanOp), so this server is never trusted with more than the offline rules may do.
@@ -257,6 +258,61 @@ export const server = http.createServer(async (req, res) => {
         // "this one is the right one, the others are not": the undecided designs of the same round are turned down
         if (verdict === 'good' && r.best === true) for (const x of rows) if (x.group && x.group === target.group && x.id !== target.id && x.verdict === 'unrated') x.verdict = 'bad'
         writeAll(rows)
+        return send(res, 200, { ok: true })
+      }
+    }
+    // the edit history: every chat command, what it changed, and whether the person undid it (an undo is a thumb down for how the command was read)
+    if (url.pathname === '/api/edit-log' || url.pathname === '/api/edit-log/undo') {
+      const file = path.join(DATA, 'edit-log.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      const writeAll = (rows) => {
+        fs.mkdirSync(DATA, { recursive: true })
+        const tmp = `${file}.tmp`
+        fs.writeFileSync(tmp, rows.map((r) => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : ''))
+        fs.renameSync(tmp, file)
+      }
+      if (req.method === 'GET' && url.pathname === '/api/edit-log') {
+        const key = url.searchParams.get('key')
+        const limit = Math.max(1, Math.min(3000, Number(url.searchParams.get('limit')) || 800))
+        const rows = readAll().filter((r) => !key || r.key === key)
+        return send(res, 200, { rows: rows.slice(-limit), total: rows.length })
+      }
+      if (req.method === 'POST' && url.pathname === '/api/edit-log') {
+        const r = JSON.parse(await readBody(req))
+        const text = (v, n) => String(v ?? '').slice(0, n)
+        const row = {
+          id: text(r.id, 40) || `e${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
+          at: new Date().toISOString(), key: text(r.key, 120), text: text(r.text, 300), norm: text(r.norm, 300), context: r.context === 'multi' ? 'multi' : 'single',
+          ops: Array.isArray(r.ops) ? r.ops.slice(0, 12).map((o) => text(o, 160)) : [], via: ['rules', 'server', 'choice'].includes(r.via) ? r.via : 'rules', undone: false,
+        }
+        const rows = readAll()
+        if (rows.length >= 20000) rows.splice(0, rows.length - 19999)
+        rows.push(row)
+        writeAll(rows)
+        return send(res, 200, { ok: true, id: row.id })
+      }
+      if (req.method === 'POST' && url.pathname === '/api/edit-log/undo') {
+        const r = JSON.parse(await readBody(req))
+        const rows = readAll()
+        const target = rows.find((x) => x.id === r.id)
+        if (!target) return send(res, 404, { error: 'unknown command' })
+        target.undone = true
+        writeAll(rows)
+        return send(res, 200, { ok: true })
+      }
+    }
+    // picture thumbs, shared by every browser: one line per thumb, the page folds them into liked / disliked / votes
+    if (url.pathname === '/api/image-ratings') {
+      const file = path.join(DATA, 'image-ratings.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      if (req.method === 'GET') return send(res, 200, { events: readAll().slice(-5000) })
+      if (req.method === 'POST') {
+        const r = JSON.parse(await readBody(req))
+        const prompt = String(r.prompt ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+        const key = String(r.key ?? '').slice(0, 120)
+        if (prompt.length < 2 || !key || typeof r.liked !== 'boolean') return send(res, 400, { error: 'key, prompt and liked are needed' })
+        fs.mkdirSync(DATA, { recursive: true })
+        fs.appendFileSync(file, `${JSON.stringify({ at: new Date().toISOString(), key, prompt, seed: Math.max(0, Math.min(999999, Math.round(Number(r.seed) || 0))), liked: r.liked })}\n`)
         return send(res, 200, { ok: true })
       }
     }
