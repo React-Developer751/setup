@@ -23,7 +23,11 @@ import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generato
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
 import { rateScene } from './generator/edit/imageRatings'
 import RatePictures from './RatePictures'
-import { planColors } from './generator/colorPlanner'
+import DesignHistory from './DesignHistory'
+import { analyse, type Insights } from './generator/memory/designMemory'
+import { planDesign } from './generator/memory/designPlanner'
+import { newId, openStore, type DesignRecord, type DesignStore } from './generator/memory/designStore'
+import { businessKey } from './generator/edit/imageRatings'
 import { artPictures } from './generator/edit/artPictures'
 import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, temperature, type CreativityLevel } from './generator/creativity'
 import { parseEdit } from './generator/edit/understand'
@@ -55,6 +59,12 @@ function GeneratorPage() {
   // counts every "Generate website" / "Another variation" click, so the pictures are drawn again for the same prompt too
   const [runs, setRuns] = useState(0)
   const autoMade = useRef(false)
+  // the design memory: the designs of this kind of business, the round the person is in, and the design on the page
+  const [designs, setDesigns] = useState<DesignRecord[]>([])
+  const [designStore, setDesignStore] = useState<DesignStore>()
+  const [designBusy, setDesignBusy] = useState(false)
+  const designGroup = useRef(newId())
+  const [currentDesign, setCurrentDesign] = useState<string>()
   // the scenes of the pictures on the page (for the thumbs) and what the person said about each
   const [drawn, setDrawn] = useState<UsedScene[]>([])
   const [rated, setRated] = useState<Record<number, 'up' | 'down'>>({})
@@ -142,6 +152,43 @@ function GeneratorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // ───────────── the design memory ─────────────
+  const DESIGN_COLOUR = 'A colour that was not used yet'
+  const insightsOf = (rows: DesignRecord[], prompt: string): Insights => analyse(rows, businessKey(prompt))
+  const refreshDesigns = async (prompt: string) => {
+    const store = designStore ?? (await openStore())
+    if (!designStore) setDesignStore(store)
+    setDesigns(await store.list(businessKey(prompt)).catch(() => []))
+  }
+  /** a new design from what the memory knows: its colour is new, its style leans to what was kept; it is kept in the memory at once */
+  const newDesign = async (prompt: string) => {
+    const store = designStore ?? (await openStore())
+    if (!designStore) setDesignStore(store)
+    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature() })
+    await store.add(plan.record).catch(() => undefined)
+    setCurrentDesign(plan.record.id)
+    setDesigns(await store.list(businessKey(prompt)).catch(() => []))
+    return plan
+  }
+  const anotherDesign = async () => {
+    setDesignBusy(true)
+    const plan = await newDesign(submitted)
+    say({ role: 'ai', text: plan.reasons.slice(-2).join(' ') })
+    setVariation(plan.variation)
+    // the earlier colour change of a design is replaced, the edits of the person stay
+    setHistory((list) => [...list.filter((h) => h.text !== DESIGN_COLOUR), ...(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])])
+    setUndone([])
+    setRuns((n) => n + 1)
+    setView('preview')
+    setDesignBusy(false)
+  }
+  const markDesign = async (id: string, verdict: 'good' | 'bad', best: boolean) => {
+    const store = designStore ?? (await openStore())
+    await store.setVerdict(id, verdict, best).catch(() => undefined)
+    await refreshDesigns(submitted)
+    say({ role: 'ai', text: verdict === 'good' ? 'Kept as the right design. The others of this round are turned down; the next design learns from it and gets a colour that is new.' : 'Noted: this design is turned down. The next design stays away from its colours.' })
+  }
+
   const generate = async (text: string) => {
     if (!text.trim()) return
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
@@ -150,10 +197,12 @@ function GeneratorPage() {
     setHistory([])
     setUndone([])
     // the colours are thought out first: a new idea that does not look like the last sites
-    const idea = planColors(text)
+    designGroup.current = newId()
+    const plan = await newDesign(text)
     messageId.current += 1
-    setMessages([{ id: messageId.current, role: 'ai', text: `Colour idea: ${idea.name}. ${idea.reasons[0] ?? ''}` }])
-    setVariation(idea.variation)
+    setMessages([{ id: messageId.current, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
+    setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])
+    setVariation(plan.variation)
     setRuns((n) => n + 1)
     autoMade.current = false
     setDrawn([])
@@ -456,13 +505,7 @@ function GeneratorPage() {
             <button
               type="button"
               onClick={() => {
-                {
-                  const idea = planColors(submitted)
-                  setVariation(idea.variation)
-                  say({ role: 'ai', text: `Colour idea: ${idea.name}. ${idea.reasons[0] ?? ''}` })
-                }
-                setRuns((n) => n + 1)
-                setView('preview')
+                void anotherDesign()
               }}
               className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100"
             >
@@ -500,6 +543,16 @@ function GeneratorPage() {
               return { label: i === 0 ? 'first screen' : i === 1 ? 'about' : `gallery ${i - 1}`, thumb: thumb ?? '', state: rated[i], busy: rateBusy === i, key: scene.prompt }
             }).filter((item) => item.thumb)}
             onRate={(i, verdict) => void ratePicture(i, verdict)}
+          />
+
+          <DesignHistory
+            designs={designs}
+            currentId={currentDesign}
+            insights={insightsOf(designs, submitted)}
+            where={designStore?.kind ?? 'browser'}
+            busy={designBusy}
+            onVerdict={(id, verdict, best) => void markDesign(id, verdict, best)}
+            onNew={() => void anotherDesign()}
           />
 
           {resume && (

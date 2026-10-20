@@ -3,6 +3,7 @@
 // POST /api/edit      { text, state }   -> { ops, control?, newSite?, reply }   the AI reads the request and answers with operations
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
 // GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
+// GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
 // GET  /api/health    -> { ok, ai }
 // The page checks every operation again (cleanOp), so this server is never trusted with more than the offline rules may do.
 import fs from 'node:fs'
@@ -207,6 +208,52 @@ export const server = http.createServer(async (req, res) => {
       const bytes = Buffer.from(await upstream.arrayBuffer())
       res.writeHead(200, { 'content-type': upstream.headers.get('content-type'), 'content-length': bytes.length, 'cache-control': 'public, max-age=86400' })
       return res.end(bytes)
+    }
+    // the design memory: every design that was made, and what the person said about it (a small file database, one JSON line per design)
+    if (url.pathname === '/api/designs' || url.pathname === '/api/designs/verdict') {
+      const file = path.join(DATA, 'designs.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      const writeAll = (rows) => {
+        fs.mkdirSync(DATA, { recursive: true })
+        const tmp = `${file}.tmp`
+        fs.writeFileSync(tmp, rows.map((r) => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : ''))
+        fs.renameSync(tmp, file)
+      }
+      if (req.method === 'GET' && url.pathname === '/api/designs') {
+        const key = url.searchParams.get('key')
+        const limit = Math.max(1, Math.min(2000, Number(url.searchParams.get('limit')) || 500))
+        const rows = readAll().filter((r) => !key || r.key === key)
+        return send(res, 200, { designs: rows.slice(-limit).reverse(), total: rows.length })
+      }
+      if (req.method === 'POST' && url.pathname === '/api/designs') {
+        const r = JSON.parse(await readBody(req))
+        const text = (v, n) => String(v ?? '').slice(0, n)
+        const hex = (v) => (/^#[0-9a-f]{6}$/i.test(String(v)) ? String(v).toLowerCase() : '#000000')
+        const record = {
+          id: text(r.id, 40) || `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
+          at: new Date().toISOString(), key: text(r.key, 120), group: text(r.group, 80), prompt: text(r.prompt, 300), variation: Number(r.variation) || 0, creativity: text(r.creativity, 12),
+          theme: text(r.theme, 40), niche: text(r.niche, 60), paletteName: text(r.paletteName, 80), kind: text(r.kind, 30), accent: hex(r.accent), alt: hex(r.alt), hue: Math.round(Number(r.hue) || 0) % 360,
+          sat: Math.round(Number(r.sat) || 0), light: Math.round(Number(r.light) || 0), mode: r.mode === 'dark' ? 'dark' : 'light', tier: text(r.tier, 12), heroLayout: text(r.heroLayout, 40),
+          layouts: Array.isArray(r.layouts) ? r.layouts.slice(0, 30).map((l) => text(l, 40)) : [], heroTitle: text(r.heroTitle, 140), verdict: ['good', 'bad'].includes(r.verdict) ? r.verdict : 'unrated',
+        }
+        const rows = readAll()
+        if (rows.length >= 20000) rows.splice(0, rows.length - 19999)
+        rows.push(record)
+        writeAll(rows)
+        return send(res, 200, { ok: true, id: record.id })
+      }
+      if (req.method === 'POST' && url.pathname === '/api/designs/verdict') {
+        const r = JSON.parse(await readBody(req))
+        const rows = readAll()
+        const target = rows.find((x) => x.id === r.id)
+        if (!target) return send(res, 404, { error: 'unknown design' })
+        const verdict = r.verdict === 'good' ? 'good' : r.verdict === 'bad' ? 'bad' : 'unrated'
+        target.verdict = verdict
+        // "this one is the right one, the others are not": the undecided designs of the same round are turned down
+        if (verdict === 'good' && r.best === true) for (const x of rows) if (x.group && x.group === target.group && x.id !== target.id && x.verdict === 'unrated') x.verdict = 'bad'
+        writeAll(rows)
+        return send(res, 200, { ok: true })
+      }
     }
     // how the image engine understands a prompt (its /parse): the page asks before it draws, and tries other words when nothing is understood
     if (req.method === 'GET' && url.pathname === '/api/ai-parse') {
