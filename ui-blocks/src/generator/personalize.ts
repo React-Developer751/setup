@@ -74,7 +74,8 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   const lists: string[] = []
   const after = withoutPlace.match(/(?:selling|sells|offering|offers|providing|provides|specialis(?:ing|es)\s+in|specializ(?:ing|es)\s+in|dealing\s+in|deals\s+in|including|includes|such as|known for|focus(?:ed)?\s+on|for)\s+(.+)$/i)
   if (after) lists.push(after[1].replace(/[.,;]+$/, ''))
-  const head = withoutPlace.replace(/\s+(?:for|selling|offering|providing|with|including|that|which)\s+[\s\S]*$/i, '')
+  // a brand name at the end ("pet shop and vet clinic Happy Paws") is not one more item of the list
+  const head = withoutPlace.replace(/\s+(?:for|selling|offering|providing|with|including|that|which)\s+[\s\S]*$/i, '').replace(/(?<=[a-z])(?:\s+[A-Z][\p{L}&'-]*)+$/u, '')
   if (/,|&|\band\b|\baur\b/i.test(head) && head.split(/\s+/).length <= 9) lists.push(head)
   const audience: string[] = []
   const seen = new Set<string>()
@@ -129,7 +130,7 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
     const extra = [where, perkLine].filter(Boolean).join(' ')
     const base = next.hero.subtitle.replace(/\s*$/, '')
     if (extra && base.length + extra.length + 1 <= 175) next = { ...next, hero: { ...next.hero, subtitle: `${base} ${extra}` } }
-  } else if (services.length) {
+  } else if (services.length >= 2) {
     const shown = services.slice(0, 3).map((s, i) => (i === 0 ? upperFirst(lowerFirst(fixAcronyms(s))) : lowerFirst(fixAcronyms(s))))
     const subtitle = `${list(shown)}${audience ? ` for ${audience}` : ''}${place ? ` in ${place}` : ''}.${perkLine ? ` ${perkLine}` : ''}`
     if (subtitle.length <= 150) next = { ...next, hero: { ...next.hero, subtitle } }

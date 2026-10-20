@@ -145,7 +145,24 @@ function corpusFor(theme: ThemeKey) {
   return made
 }
 
-export function writeContent(theme: ThemeKey, brand: string, rand: () => number, plain = false): CreativeContent {
+/** the business of the prompt as a phrase ("bike rental", "dog grooming"): without the request, the brand name, the place; '' when the prompt says nothing particular */
+const REQUEST_WORDS = new Set(['create', 'make', 'build', 'generate', 'design', 'a', 'an', 'the', 'website', 'site', 'web', 'page', 'landing', 'for', 'my', 'our', 'me', 'i', 'need', 'want', 'new', 'please'])
+const businessPhrase = (prompt: string | undefined) => {
+  if (!prompt) return ''
+  const head = prompt.split(/\b(?:called|named)\b/i)[0].split(/\s+(?:in|at|near|from)\s+(?=[A-Z])/)[0]
+  let words = head
+    .split(/\s+/)
+    .filter((w, i) => !(i > 0 && /^[A-Z][\p{L}&'-]*$/u.test(w)) && !REQUEST_WORDS.has(w.toLowerCase().replace(/[^\p{L}]/gu, '')) )
+    .map((w) => w.replace(/[^\p{L}\p{N}'&-]+/gu, ''))
+    .filter(Boolean)
+  while (words.length > 2 && /^(?:service|services|company|firm|business|agency)$/i.test(words[words.length - 1])) words = words.slice(0, -1)
+  const phrase = words.join(' ').toLowerCase()
+  if (phrase.length < 4 || words.length > 5) return ''
+  if (/^(?:business|website|site|company|startup|brand|page|store|shop|project)$/.test(phrase)) return ''
+  return phrase
+}
+
+export function writeContent(theme: ThemeKey, brand: string, rand: () => number, plain = false, userPrompt?: string): CreativeContent {
   const lex: Lexicon = LEXICONS[theme] ?? LEXICONS.general_business
 
   // ── typed word drawers
@@ -210,9 +227,16 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
     if (!model || mixRand() >= 0.75 * temp) return plainTitle
     return newLine(model, temp, mixRand, { maxLength: MAX_TITLE, repeats: (t) => repeatsAWord(t.split(brand).join('')), coherent }) ?? plainTitle
   }
-  const heroTitle = fresh(markov?.hero, heroPlain)
+  // a business the theme words do not describe ("bike rental" under the car theme): headlines and a subtitle that name the business itself
+  const biz = plain ? '' : businessPhrase(userPrompt)
+  const bizRand = biz ? seededRandom(Math.floor(rand() * 2 ** 31)) : rand
+  const Biz = titleCase(biz)
+  const oneWord = !biz.includes(' ')
+  const bizTitles = oneWord ? [`Your Trusted ${Biz}`, `${Biz} You Can Count On`, `Better ${Biz} Starts Here`] : [`${Biz}, Done Right`, `${Biz} You Can Count On`, `Better ${Biz} Starts Here`, `${Biz} Made Simple`]
+  const heroMarkov = fresh(markov?.hero, heroPlain)
+  const heroTitle = biz && bizRand() < 0.65 ? bizTitles[Math.floor(bizRand() * bizTitles.length)] : heroMarkov
 
-  const heroSubtitle = write(
+  const heroSubtitlePlain = write(
     [
       () => { const p = phrase(); return `${brand} brings ${lowerFirst(p.adj)} ${lowerFirst(p.noun)} to ${audience()}, ${lowerFirst(benefit())}.` },
       () => { const p = phrase(); return `${p.verb} ${lowerFirst(p.adj)} ${lowerFirst(p.noun)} with a team that ${promise()}.` },
@@ -221,6 +245,8 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
     ],
     140,
   )
+  const brandHasBiz = !!biz && brand.toLowerCase().includes(biz)
+  const heroSubtitle = biz && !brandHasBiz && bizRand() < 0.7 ? [`${brand} makes ${biz} simple: ${lowerFirst(benefit())}.`, `${sentence(biz)} done properly, ${lowerFirst(benefit())}.`, `Friendly ${biz} from ${brand}, ${lowerFirst(benefit())}.`][Math.floor(bizRand() * 3)] : heroSubtitlePlain
 
   const featurePlain = write([
     () => `Why ${titleCase(audience())} Choose ${brand}`,

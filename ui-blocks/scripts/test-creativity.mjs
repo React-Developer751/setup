@@ -61,6 +61,14 @@ ok(new Set(mixes).size === mixes.length, 'scene mixes differ from each other')
 ok(mixes.some((m) => /pizza/.test(m)), 'a prop of a scene the person liked is mixed in (crossover)')
 const none = await mashups(['yogi'], async () => ({ mode: 'scene', entities: [], not_in_lexicon: ['zxqv'] }), seededRandom(2))
 ok(none.length === 0, 'a mix the engine does not understand is thrown away')
+// ── a business the theme does not describe names itself in the first lines
+setCreativity('balanced')
+const bike = [1, 2, 3, 4, 5, 6, 7, 8].map((v) => generateWebsite('Bike rental in Goa called Wheelie Rides', v).content.hero)
+ok(bike.filter((h) => /bike rental/i.test(`${h.title} ${h.subtitle}`)).length >= 5, `a bike rental names itself in the headline or the line under it (${bike.filter((h) => /bike rental/i.test(`${h.title} ${h.subtitle}`)).length} of 8)`)
+const vet = generateWebsite('Pet shop and vet clinic Happy Paws', 1).content.hero
+ok(!/^Vet clinic happy paws\.?$/i.test(vet.subtitle), `a brand name at the end of the prompt is not read as one more service (${vet.subtitle})`)
+const pest = generateWebsite('Pest control service BugAway', 1).content.hero.title
+ok(/pest/i.test(pest), 'a niche page keeps its own hand-written headline')
 setCreativity('balanced')
 
 console.log(`${pass} checks passed, ${fail.length} failed`)

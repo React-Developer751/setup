@@ -89,10 +89,11 @@ export function planWebsite(
   const choice = applyChoiceEdits(baseChoice, edits)
 
   // creative brains get their own seeded streams, so turning them on never shuffles the layout choices above
-  const brand = edits?.brand ?? extractContentDetails(prompt, themeKey, niche?.label).businessName
+  const details = extractContentDetails(prompt, themeKey, niche?.label)
+  const brand = edits?.brand ?? details.businessName
   // business types without hand-written template texts (law firm, clinic ...) always use the brains
   const useBrains = creative || !hasTemplates(themeKey)
-  const copy = useBrains ? writeContent(themeKey, brand, seededRandom(hash(`${prompt.toLowerCase()}|copy|${variation}`))) : undefined
+  const copy = useBrains ? writeContent(themeKey, brand, seededRandom(hash(`${prompt.toLowerCase()}|copy|${variation}`)), false, niche ? undefined : prompt) : undefined
   const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}`))) : undefined
   const palette = applyColorEdits(colors?.palette ?? presetPalette(themeKey, paletteIndex), themeKey, edits)
 
