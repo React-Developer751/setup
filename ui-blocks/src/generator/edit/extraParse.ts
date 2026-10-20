@@ -2,7 +2,7 @@
 // and the things this editor cannot do (fonts, text size, logo ...), which are answered honestly instead of silently doing something else.
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
-import { AMBIGUOUS_MOOD_WORDS, moodFromText } from '../moods'
+import { AMBIGUOUS_MOOD_WORDS, MOODS, moodFromText } from '../moods'
 import type { EditOp } from './edits'
 
 export type ExtraResult = { ops: EditOp[]; notes: string[] } | undefined
@@ -11,6 +11,7 @@ const L = (re: string) => new RegExp(`(?<![\\p{L}\\p{M}])(?:${re})(?![\\p{L}\\p{
 const SIZE_WORDS = 'bada|badi|bade|chhota|chhoti|chhote|bigger|larger|smaller|big|small|badha|badhao|ghatao|increase|decrease|zyada|kam'
 
 const UNSUPPORTED: { when: RegExp; note: string }[] = [
+  { when: /(?<![\p{L}\p{M}])(?:फॉन्ट|फ़ॉन्ट|अक्षर|टेक्स्ट)\s+(?:का\s+)?(?:साइज़|साइज|आकार)?\s*(?:बड़ा|बड़ी|बड़े|छोटा|छोटी|छोटे|कम|ज्यादा|ज़्यादा)/iu, note: 'I cannot change the size of the text yet. I can change its words, its colours and the height and width of a section.' },
   { when: new RegExp(`(?<![\\p{L}])(?:text|writing|likhai|akshar|letters|font)\\s*(?:size|ka size)?\\s*(?:ko\\s+)?(?:${SIZE_WORDS})`, 'iu'), note: 'I cannot change the size of the text yet. I can change its words, its colours and the height and width of a section.' },
   { when: L('logo|लोगो'), note: 'I cannot upload a logo yet. The name of the business is shown as the logo: say "rename it to ...".' },
   { when: L('sticky|fixed\\s+(?:header|navbar|menu)'), note: 'The menu bar of the page is already fixed at the top while scrolling where the layout allows it; I cannot switch that on or off.' },
@@ -65,6 +66,12 @@ export function extraOps(clause: string): ExtraResult {
   const text = clause.trim().normalize('NFC')
   if (!text) return undefined
 
+  // "mood badlo", "kuch alag style try karo", "show me another look": a different mood
+  if (/(?<![\p{L}])(?:mood|style|look|vibe|theme|design|स्टाइल|लुक)\s+(?:change|badlo|badal|alag|naya|nayi|different|another|new|dusra|doosra)|(?:alag|naya|nayi|different|another|new|dusra|doosra|kuch\s+aur)\s+(?:mood|style|look|vibe|design|स्टाइल|लुक)|change\s+(?:the\s+)?(?:mood|style|look|vibe)|मूड\s+बदलो|स्टाइल\s+बदलो|लुक\s+बदलो/iu.test(text) && !/colou?r|rang|रंग|font|corner|button/i.test(text) && text.split(/\s+/).length <= 7) {
+    const ids = MOODS.map((m) => m.id)
+    return { ops: [{ op: 'mood', mood: ids[Math.floor(Math.random() * ids.length)] }], notes: [] }
+  }
+
   const moodOp = moodEdit(text)
   if (moodOp) return { ops: [moodOp], notes: [] }
 
@@ -95,7 +102,7 @@ export function extraOps(clause: string): ExtraResult {
   }
 
   // another colour: a fresh one
-  if (/(?<![\p{L}])(?:kuch\s+)?(?:aur|dusra|doosra|alag|naya|nayi|different|another|new|other|some other)\s+(?:colou?rs?|rang)(?:\s+(?:try|lagao|karo|dikhao|do|please|kar\s+do))*\s*$/iu.test(text) || /^(?:colou?r|rang)\s+(?:change|badlo|badal)(?:\s+karo|\s+kar\s+do)?\s*$/iu.test(text))
+  if (/(?<![\p{L}])(?:kuch\s+)?(?:aur|dusra|doosra|alag|naya|nayi|different|another|new|other|some other)\s+(?:colou?rs?|rang)(?:\s+(?:try|lagao|karo|dikhao|do|please|kar\s+do|chahiye|chaiye|rakho|banao|dedo|de\s+do|laga\s+do|दो|चाहिए|करो))*\s*$/iu.test(text) || /^(?:colou?r|rang)\s+(?:change|badlo|badal)(?:\s+karo|\s+kar\s+do)?\s*$/iu.test(text))
     return { ops: [{ op: 'accent', hex: randomHex() }], notes: [] }
 
   return undefined

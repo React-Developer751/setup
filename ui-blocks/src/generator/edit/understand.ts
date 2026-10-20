@@ -424,7 +424,7 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
       return { ops, notes }
     }
   }
-  const koKar = clause.match(/^(?:(?:sab|har)\s+jagah\s+|सब जगह\s+|हर जगह\s+)?(§\d+§|[\p{L}\p{M}]+)(?:\s+word)?\s+ko\s+(§\d+§|[\p{L}\p{M}]+)\s+(?:likho|kar do|karo|kardo|bana do|rakho|कर दो|करो|लिखो)$/iu)
+  const koKar = clause.match(/^(?:(?:sab|har)\s+jagah\s+|सब जगह\s+|हर जगह\s+)?(§\d+§|[\p{L}\p{M}]+(?:\s+[\p{L}\p{M}]+){0,2})(?:\s+word)?\s+ko\s+(§\d+§|[\p{L}\p{M}]+(?:\s+[\p{L}\p{M}]+){0,2})\s+(?:likho|kar do|karo|kardo|bana do|rakho|कर दो|करो|लिखो)$/iu)
   if (koKar && !/^(?:design|dizain|look|site|website|page|colou?rs?|theme|rang|it|isko|ise)$/i.test(koKar[1]) && !COLOR_RE.test(koKar[1]) && !COLOR_RE.test(koKar[2]) && !anySection(koKar[1]) && !FIELD_RE.some((f) => f.re.test(koKar[1]))) {
     push({ op: 'replace', from: cleanFrom(koKar[1]), to: cleanTo(koKar[2]) })
     return { ops, notes }
@@ -499,7 +499,13 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
     }
     // "buttons bade karo" asks for a style (size, shape), not for the words "bade" on the button
     if (value && !hasQuote(clause) && wordCount(value) <= 2 && /^(?:bad[ae]|badi|chh?ot[ae]|chh?oti|big(?:ger)?|small(?:er)?|large(?:r)?|round(?:ed)?|sharp|bold|thin|thick|zyada|jyada|kam|bigger|smaller|gol|moti|patli|patla)$/i.test(value.trim())) {
-      notes.push('I cannot change the size or shape of buttons yet. I can change the button text and colour.')
+      // a shape is a style edit now (round / square corners); a size of a button is still not possible
+      if (/^(?:round(?:ed)?|gol|sharp)$/i.test(value.trim())) {
+        const parts2 = partMentions(clause).map((p) => p.value as FitTarget)
+        for (const target of parts2.length ? parts2 : (['page'] as FitTarget[])) push({ op: 'style', target, prop: 'radius', value: /sharp/i.test(value) ? 'square' : 'pill' })
+        return { ops, notes }
+      }
+      notes.push('I cannot change the size of buttons yet. I can change the button text, colour, corners and place.')
       return { ops, notes }
     }
     if (value && value.length >= 1 && !(colorMentions(value).length > 0 && wordCount(value) <= 3 && !hasQuote(clause))) {
@@ -528,7 +534,7 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
     push({ op: 'mode', mode: /black|kal/i.test(blackWhiteTheme[0]) ? 'dark' : 'light' })
     return { ops, notes }
   }
-  if (!aboutAPart && (darkWord || lightWord) && !(darkWord && lightWord) && (modeCtx || wordCount(clause) <= 4 || /go\s+(?:dark|light)|make it (?:dark|light)|(?:dark|light)\s+(?:karo|kar do|rakho|chahiye|do)/i.test(clause)) && !/button|link|heading|text colou?r|font/i.test(modeText)) {
+  if (!aboutAPart && (darkWord || lightWord) && !(darkWord && lightWord) && (modeCtx || wordCount(clause) <= 4 || /go\s+(?:dark|light)|make it (?:dark|light)|(?:dark|light)\s+(?:karo|kar do|rakho|chahiye|do)/i.test(clause)) && !/button|link|heading|text colou?r|font|बटन|हेडिंग|लिंक/i.test(modeText)) {
     push({ op: 'mode', mode: darkWord ? 'dark' : 'light' })
     return { ops, notes }
   }
@@ -558,7 +564,7 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
       }
     }
     // corners
-    const sharp = /(?<![\p{L}])(?:sharp|square|squared|boxy|flat|edgy|no\s+round(?:ed)?|na\s+gol|nokile|नुकीले)(?![\p{L}])/iu.test(clause)
+    const sharp = /(?<![\p{L}\p{M}])(?:sharp|square|squared|boxy|flat|edgy|no\s+round(?:ed)?|na\s+gol|noki\w*|nuki\w*|nukeel\w*|नुकीले|नुकीला|नुकीली|चौकोर)(?![\p{L}\p{M}])/iu.test(clause)
     const round = /(?<![\p{L}\p{M}])(?:round(?:ed)?|pill|circular|curved|smooth\s+corners|gol|golai|गोल)(?![\p{L}\p{M}])/iu.test(clause)
     const cornerWord = /(?<![\p{L}\p{M}])(?:corners?|edges?|borders?|shape|buttons?|cards?|boxes|kone|कोने)(?![\p{L}\p{M}])/iu.test(clause)
     if ((sharp || round) && cornerWord && !valueTalk && !re.remove.test(clause) && !colorMentions(clause).length) {

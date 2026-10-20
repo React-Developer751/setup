@@ -241,6 +241,18 @@ export function moodFromText(text: string): Mood | undefined {
   return hits.sort((a, b) => b.length - a.length)[0]?.mood
 }
 
+/** what the words of the prompt say about the look: moods they suit (more likely) and moods that would clash with them (very unlikely) */
+const PROMPT_LOOK: { words: RegExp; suit: MoodId[]; avoid: MoodId[] }[] = [
+  { words: /(?<![a-z])(?:yoga|spa|meditation|wellness|ayurved\w*|clinic|dental|dentist|hospital|doctor|therapy|physio\w*|pharmacy|salon|skincare|beauty)(?![a-z])/i, suit: ['soft-neo', 'minimal-light', 'editorial', 'glass'], avoid: ['cyberpunk', 'bold-contrast', 'retro'] },
+  { words: /(?<![a-z])(?:wedding|bridal|bride|jewel\w*|boutique|couture|fashion|perfume|watch|luxury)(?![a-z])/i, suit: ['luxe-dark', 'editorial', 'minimal-light'], avoid: ['cyberpunk', 'playful-pop', 'bold-contrast'] },
+  { words: /(?<![a-z])(?:kids?|child\w*|toys?|school|nursery|daycare|playschool|pets?|dogs?|cats?|puppy|candy|ice\s*cream)(?![a-z])/i, suit: ['playful-pop', 'soft-neo'], avoid: ['cyberpunk', 'luxe-dark', 'minimal-dark'] },
+  { words: /(?<![a-z])(?:gym|fitness|crossfit|boxing|sports?|cricket|football|martial|bike|motorcycle|garage|automotive|racing)(?![a-z])/i, suit: ['cyberpunk', 'bold-contrast', 'minimal-dark'], avoid: ['soft-neo', 'editorial'] },
+  { words: /(?<![a-z])(?:tech|software|saas|startup|app|ai|crypto|gaming|games?|cyber|developer|coding)(?![a-z])/i, suit: ['cyberpunk', 'glass', 'minimal-dark', 'minimal-light'], avoid: ['retro', 'playful-pop'] },
+  { words: /(?<![a-z])(?:law|lawyer|legal|advocate|attorney|consult\w*|accountant|finance|insurance|bank|ca\s+firm|tax)(?![a-z])/i, suit: ['editorial', 'minimal-light', 'minimal-dark'], avoid: ['playful-pop', 'cyberpunk', 'bold-contrast'] },
+  { words: /(?<![a-z])(?:bakery|cafe|coffee|restaurant|diner|pizza|burger|sweets?|mithai|dhaba|bar|brewery|food|kitchen)(?![a-z])/i, suit: ['retro', 'editorial', 'playful-pop'], avoid: ['cyberpunk'] },
+  { words: /(?<![a-z])(?:temple|mandir|church|funeral|memorial|ngo|charity|trust)(?![a-z])/i, suit: ['editorial', 'minimal-light'], avoid: ['cyberpunk', 'bold-contrast', 'playful-pop', 'retro'] },
+]
+
 /**
  * The mood of a site: the one named in the prompt, else one that suits the business type, chosen among the best few by the creativity temperature
  * (safe = none, the business type's own look; balanced = a mood most of the time; wild = always a mood).
@@ -251,7 +263,12 @@ export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, 
   if (temp < 0.3) return undefined
   if (rand() > 0.55 + temp * 0.45) return undefined
   // a roulette wheel: the moods that suit the business have bigger slices; the higher the temperature, the flatter the slices
-  const slices = MOODS.map((m) => ({ mood: m, weight: (0.12 + (m.affinity[theme] ?? 0) / 3) ** (1 / (0.25 + temp)) }))
+  const look = PROMPT_LOOK.filter((l) => l.words.test(prompt))
+  const slices = MOODS.map((m) => {
+    let w = (0.06 + (m.affinity[theme] ?? 0) / 3) ** (1 / (0.25 + temp))
+    for (const l of look) w *= l.suit.includes(m.id) ? 3 : l.avoid.includes(m.id) ? 0.04 : 1
+    return { mood: m, weight: w }
+  })
   let pick = rand() * slices.reduce((a, b) => a + b.weight, 0)
   for (const s of slices) {
     pick -= s.weight
@@ -264,7 +281,10 @@ export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, 
 const bothModes = <T,>(make: (mode: ColorMode) => T) => ({ light: make('light'), dark: make('dark') })
 
 /** the palette of a mood from a base hue (the unique hue the colour planner chose) and a second hue */
-export function moodPalette(mood: Mood, hue: number, altHue: number, baseName = ''): { palette: Palette; tokens: Record<ColorMode, Record<string, string>> } {
+export function moodPalette(mood: Mood, hue: number, altHue0: number, baseName = ''): { palette: Palette; tokens: Record<ColorMode, Record<string, string>> } {
+  // the second colour stays within 70 degrees of the first (a neighbour, not a clash): neon green on a maroon page was the case that showed it
+  const gap = ((altHue0 - hue + 540) % 360) - 180
+  const altHue = hue + Math.sign(gap || 1) * Math.min(70, Math.max(25, Math.abs(gap)))
   const made = bothModes((mode) => mood.colors(hue, altHue, mode))
   const strip = (c: ReturnType<Colors>): PaletteMode => ({ bg: c.bg, surface: c.surface, border: c.border, text: c.text, muted: c.muted, accent: c.accent, alt: c.alt })
   const palette: Palette = { name: baseName ? `${mood.label}: ${baseName}` : `${mood.label}: hue ${Math.round(hue)}`, light: strip(made.light), dark: strip(made.dark) }

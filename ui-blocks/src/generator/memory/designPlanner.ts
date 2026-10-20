@@ -61,7 +61,7 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
   const all = await store.list().catch(() => [] as DesignRecord[])
   const insights = analyse(all, key)
   // the hues of the other businesses made lately count a little too: two sites in a row should not look alike
-  const recent = all.filter((r) => r.key !== key).slice(0, 4).map((r) => r.hue)
+  const recent = all.filter((r) => r.key !== key).slice(0, 14).map((r) => r.hue)
   const made = Array.from({ length: options.candidates ?? CANDIDATES }, () => describeDesign(prompt, 1 + Math.floor(rand() * 9000), options.creativity, options.group))
   // a design whose colour was already made keeps its look but gets the nearest colour that is new (the colour of a design is an edit like any other)
   let gap = minGapFor(insights.seenHues.length)
@@ -75,7 +75,7 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
     const taste = tasteScore(design as Candidate, insights)
     const near = recent.length ? Math.min(...recent.map((h) => hueGap(design.hue, h))) : 180
     // a design that needed no change is worth a little more than one that was recoloured; far from the other businesses made lately, a little more
-    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 15 ? 0.9 : 1))
+    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1))
     return [{ record: design, shifted, score }]
   })
   let scored = evaluate(gap)

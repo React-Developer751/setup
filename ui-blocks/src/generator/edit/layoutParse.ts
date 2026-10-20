@@ -254,7 +254,9 @@ export function layoutOps(clause: string, context: 'single' | 'multi', quotes: s
   const heightWord = has(HEIGHT_WORDS, text)
   const widthWord = has(WIDTH_WORDS, text)
   const amount = sizeAmount(text)
-  const sizeVerbless = has(w(['smaller', 'bigger', 'larger', 'chhota', 'chhoti', 'chhote', 'chota', 'choti', 'bada', 'badi', 'bade', 'shrink', 'enlarge', 'छोटा', 'छोटी', 'बड़ा', 'बड़ी']), text)
+  // "pricing kam karo", "faq zyada karo": a part and a bare more / less is its height
+  const bareMoreLess = ments.length > 0 && text.split(/\s+/).length <= 4 && has(w(['kam', 'zyada', 'jyada', 'ghatao', 'badhao', 'कम', 'ज्यादा', 'घटाओ', 'बढ़ाओ']), text)
+  const sizeVerbless = bareMoreLess || has(w(['smaller', 'bigger', 'larger', 'chhota', 'chhoti', 'chhote', 'chota', 'choti', 'bada', 'badi', 'bade', 'shrink', 'enlarge', 'छोटा', 'छोटी', 'बड़ा', 'बड़ी']), text)
   if (amount && (heightWord || widthWord || ((sizeVerbless || PERCENT.test(text)) && ments.length)) && !has(REMOVALS, text) && !/(?<![\p{L}])(?:animation|animations|motion|colou?r|font|text size|button|buttons|logo|image|images|photo|photos|picture)(?![\p{L}])/iu.test(text.replace(/section|hero|gallery/gi, ''))) {
     const axes: ('height' | 'width')[] = []
     if (widthWord && !(heightWord && !/(?<![\p{L}])(?:narrow|narrower|wide|wider|patla|patli|chauda|chaudi)(?![\p{L}])/iu.test(text))) axes.push('width')

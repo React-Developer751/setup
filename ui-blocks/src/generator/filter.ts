@@ -1,5 +1,6 @@
 // Pulls the business name out of the prompt ("... called Leafy Premium", "... named zen yoga").
 import { KNOWN_CITIES } from './siteBanks'
+const KNOWN_CITY_WORDS = new Set(Object.keys(KNOWN_CITIES))
 import { isBusinessWord } from './themeClassifier'
 
 const STOP_WORDS = new Set(['with', 'that', 'which', 'for', 'and', 'in', 'on', 'at', 'selling', 'offering', 'who', 'where'])
@@ -28,13 +29,15 @@ const CUT_WORDS = /\s+(?:that|which|who|whose|where|offers?|offering|with|having
 function nameFromCapitals(rawPrompt: string) {
   // "Dr. Sharma": the full stop after a title is not the end of a sentence
   const userPrompt = rawPrompt.replace(/\b(Dr|Mr|Mrs|Ms|Prof|Er|Adv)\.\s+(?=[A-Z])/g, '$1 ')
-  for (const match of userPrompt.matchAll(/[A-Z][\w&'-]*(?:\s+(?:&\s+)?[A-Z][\w&'-]*){0,3}/g)) {
-    const parts = match[0].split(/\s+/)
+  for (const match of userPrompt.matchAll(/[A-Z][\w&'-]*(?:\s+(?:(?:&|and)\s+)?[A-Z][\w&'-]*){0,3}/g)) {
+    let parts = match[0].split(/\s+/)
+    // a city or a word like "India" at either end is the place, not the name ("Sharma Sweets Jaipur")
+    while (parts.length > 1 && NOT_A_NAME.has(parts[parts.length - 1].toLowerCase())) parts = parts.slice(0, -1)
     const words = parts.filter((w) => !NOT_A_NAME.has(w.toLowerCase()))
     if (!words.length || words.length !== parts.length) continue
     // at the very start of the prompt a single capitalised word is just the first word of a sentence
     if (match.index === 0 && words.length < 2) continue
-    return match[0].replace(/^(Dr|Mr|Mrs|Ms|Prof|Er|Adv) /, '$1. ')
+    return parts.join(' ').replace(/^(Dr|Mr|Mrs|Ms|Prof|Er|Adv) /, '$1. ')
   }
   return undefined
 }
@@ -137,6 +140,12 @@ export function extractContentDetails(userPrompt: string, themeKey?: string, nic
   const fromLoose = titleCase((stop >= 0 ? words.slice(0, stop) : words).join(' '))
 
   const subject = extractSubject(userPrompt)
-  const named = (capitalised ?? (fromLoose || nameFromCapitals(userPrompt) || '')).slice(0, MAX_NAME_LENGTH).trim()
+  // "called Iron Pulse Delhi": the city at the end is the place
+  const dropCity = (name: string | undefined) => {
+    let parts = (name ?? '').split(/\s+/).filter(Boolean)
+    while (parts.length > 1 && KNOWN_CITY_WORDS.has(parts[parts.length - 1].toLowerCase())) parts = parts.slice(0, -1)
+    return parts.join(' ')
+  }
+  const named = (dropCity(capitalised) || fromLoose || nameFromCapitals(userPrompt) || '').slice(0, MAX_NAME_LENGTH).trim()
   return { businessName: named || inventName(subject, userPrompt, themeKey, nicheLabel), subject }
 }
