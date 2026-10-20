@@ -20,7 +20,9 @@ import { answerFor, clarify, type Choice, type Expect } from './generator/edit/c
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp } from './generator/edit/edits'
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
-import { makePictures } from './generator/edit/imageAiClient'
+import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
+import { rateScene } from './generator/edit/imageRatings'
+import RatePictures from './RatePictures'
 import { planColors } from './generator/colorPlanner'
 import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
@@ -51,6 +53,10 @@ function GeneratorPage() {
   // counts every "Generate website" / "Another variation" click, so the pictures are drawn again for the same prompt too
   const [runs, setRuns] = useState(0)
   const autoMade = useRef(false)
+  // the scenes of the pictures on the page (for the thumbs) and what the person said about each
+  const [drawn, setDrawn] = useState<UsedScene[]>([])
+  const [rated, setRated] = useState<Record<number, 'up' | 'down'>>({})
+  const [rateBusy, setRateBusy] = useState(-1)
   const [level, setLevel] = useState<'auto' | Tier>('auto')
   const [creative, setCreative] = useState(true)
   const [motionSetting, setMotionSetting] = useState<MotionSetting>('auto')
@@ -144,6 +150,8 @@ function GeneratorPage() {
     setVariation(idea.variation)
     setRuns((n) => n + 1)
     autoMade.current = false
+    setDrawn([])
+    setRated({})
     setRoute('/')
     setFileIndex(0)
     setView('preview')
@@ -224,11 +232,43 @@ function GeneratorPage() {
     const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, prompt: submitted })
     if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return
     autoMade.current = true
+    if (answer.used) {
+      setDrawn(answer.used)
+      setRated({})
+    }
     if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', `Pictures added${answer.report && (answer.report.redrawn || answer.report.otherScene || answer.report.directed) ? ` (checked: ${answer.report.directed} scenes changed to show your business, ${answer.report.redrawn} drawn again because they looked empty)` : ' (all checked)'}. You can draw other ones or use your own in "Real photos".`)
   }
   useEffect(() => {
     void autoDraw.current()
   }, [submitted, variation, runs])
+
+  // a thumb on a picture: remembered for this kind of business; a thumb down draws another scene in its place right away
+  const ratePicture = async (index: number, verdict: 'up' | 'down') => {
+    const scene = drawn[index]
+    if (!scene) return
+    rateScene(submitted, scene, verdict === 'up')
+    setRated((r) => ({ ...r, [index]: verdict }))
+    if (verdict === 'up') {
+      say({ role: 'ai', text: `Noted: for this kind of business I will use "${scene.prompt}" first next time.` })
+      return
+    }
+    setRateBusy(index)
+    say({ role: 'ai', text: `Noted: "${scene.prompt}" will not be used for this business again. Drawing another scene ...` })
+    const fresh = await redrawScene(scene, { accent: palette.light.accent, prompt: submitted })
+    setRateBusy(-1)
+    if (!fresh) {
+      say({ role: 'ai', text: 'The image engine did not answer. Start it with npm run images.' })
+      return
+    }
+    const gallery = [...(edits.photos?.gallery ?? [])]
+    const op: EditOp = index === 0 ? { op: 'photos', hero: fresh.picture } : index === 1 ? { op: 'photos', about: fresh.picture } : { op: 'photos', gallery: Object.assign(gallery, { [index - 2]: fresh.picture }) }
+    setDrawn((list) => list.map((item, i) => (i === index ? fresh.scene : item)))
+    setRated((r) => {
+      const { [index]: _gone, ...rest } = r
+      return rest
+    })
+    applyOps(`Another picture (${fresh.scene.prompt})`, [op], 'rules', `Drew "${fresh.scene.prompt}" instead. Thumb it too if you like it.`)
+  }
 
   const undo = () => {
     const last = history[history.length - 1]
@@ -440,6 +480,15 @@ function GeneratorPage() {
             onReset={reset}
           />
 
+          <RatePictures
+            items={drawn.map((scene, i) => {
+              const photos = edits.photos
+              const thumb = i === 0 ? photos?.hero : i === 1 ? photos?.about : photos?.gallery?.[i - 2]
+              return { label: i === 0 ? 'first screen' : i === 1 ? 'about' : `gallery ${i - 1}`, thumb: thumb ?? '', state: rated[i], busy: rateBusy === i, key: scene.prompt }
+            }).filter((item) => item.thumb)}
+            onRate={(i, verdict) => void ratePicture(i, verdict)}
+          />
+
           {resume && (
             <div role="status" className="space-y-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
               <p>
@@ -495,12 +544,16 @@ function GeneratorPage() {
             planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
             accent={palette.light.accent}
             prompt={submitted}
-            onApply={(ops, label) => {
+            onApply={(ops, label, used) => {
               autoMade.current = false
+              setDrawn(used ?? [])
+              setRated({})
               say({ role: 'user', text: label })
               applyOps(label, ops, 'rules', 'Put the photos on your site.')
             }}
             onClear={() => {
+              setDrawn([])
+              setRated({})
               say({ role: 'user', text: 'Remove the photos' })
               applyOps('Remove the photos', [{ op: 'clearPhotos' }], 'rules', 'The drawn pictures are back.')
             }}

@@ -19,7 +19,14 @@ const rows = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) =
 const stats = new Map()
 for (const row of rows) {
   if (row.stage === 'plan') continue
-  const s = stats.get(row.prompt) ?? { tries: 0, accepted: 0, parse: 0, reasons: new Map() }
+  const s = stats.get(row.prompt) ?? { tries: 0, accepted: 0, parse: 0, up: 0, down: 0, reasons: new Map() }
+  if (row.stage === 'rating') {
+    // a thumb of the person counts for much more than a check of the machine
+    if (row.accepted) s.up += 1
+    else s.down += 1
+    stats.set(row.prompt, s)
+    continue
+  }
   if (row.stage === 'parse') s.parse += 1
   else {
     s.tries += 1
@@ -28,11 +35,16 @@ for (const row of rows) {
   for (const r of row.reasons ?? []) s.reasons.set(r, (s.reasons.get(r) ?? 0) + 1)
   stats.set(row.prompt, s)
 }
-const bad = [...stats.entries()].filter(([, s]) => (s.tries >= MIN_TRIES && s.accepted / s.tries <= MAX_ACCEPTANCE) || s.parse >= 2)
+const bad = [...stats.entries()].filter(([, s]) => (s.tries >= MIN_TRIES && s.accepted / s.tries <= MAX_ACCEPTANCE) || s.parse >= 2 || (s.down >= 3 && s.down > s.up * 2))
+const loved = [...stats.entries()].filter(([, s]) => s.up >= 2 && s.up > s.down).sort((a, b) => b[1].up - a[1].up).slice(0, 10)
 console.log(`${rows.length} decisions about ${stats.size} scenes`)
 for (const [prompt, s] of [...stats.entries()].sort((a, b) => a[1].accepted / Math.max(1, a[1].tries) - b[1].accepted / Math.max(1, b[1].tries)).slice(0, 12)) {
   const top = [...s.reasons.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? ''
   console.log(`  ${(s.tries ? Math.round((100 * s.accepted) / s.tries) : 0).toString().padStart(3)}% of ${String(s.tries).padStart(2)} tries   ${prompt}${top ? `   (${top})` : ''}`)
+}
+if (loved.length) {
+  console.log('\nThumbs up most often:')
+  for (const [prompt, s] of loved) console.log(`  + ${s.up} up / ${s.down} down   ${prompt}`)
 }
 if (!bad.length) console.log('\nNothing is drawn badly often enough to be left out.')
 else {

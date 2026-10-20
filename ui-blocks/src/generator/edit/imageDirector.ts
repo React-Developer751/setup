@@ -9,14 +9,18 @@ export type Parse = (text: string) => Promise<ParseAnswer | undefined>
 /** props that appear in many prompts without saying what the business is */
 const GENERIC = new Set(['shop', 'plant', 'square', 'circle', 'star', 'city', 'worker', 'person', 'tiles', 'tile', 'abstract', 'grass', 'tree', 'house', 'sun', 'moon', 'cloud', 'road', 'sea'])
 
-/** the business words of a prompt: without the brand name ("called Iron Pulse"), the place ("in Pune") and capitalised names */
+/** words of the request itself, not of the business ("create a website for a ..."): the engine would draw a monitor for "website" */
+export const FILLER = new Set(['create', 'make', 'build', 'generate', 'design', 'a', 'an', 'the', 'website', 'site', 'web', 'page', 'landing', 'for', 'my', 'our', 'me', 'i', 'need', 'want', 'new', 'and', 'with', 'please'])
+
+/** the business words of a prompt: without the request words, the brand name ("called Iron Pulse"), the place ("in Pune") and capitalised names */
 export function businessText(prompt: string): string {
   const head = prompt.split(/\b(?:called|named)\b/i)[0].split(/\s+(?:in|at|near|from|of)\s+(?=[A-Z])/)[0]
   return head
     .split(/\s+/)
-    .filter((w, i) => i === 0 || !/^[A-Z][\p{L}&'-]*$/u.test(w))
+    .filter((w, i) => !(i > 0 && /^[A-Z][\p{L}&'-]*$/u.test(w)) && !FILLER.has(w.toLowerCase().replace(/[^\p{L}]/gu, '')))
     .join(' ')
     .replace(/[^\p{L}\p{N} ,.'-]+/gu, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
 }
 
@@ -38,7 +42,7 @@ export async function shows(scene: Scene, props: string[], parse: Parse): Promis
   return ents.some((e) => props.includes(e))
 }
 
-export async function directPlan(prompt: string, plan: ScenePlan, parse: Parse): Promise<Directed> {
+export async function directPlan(prompt: string, plan: ScenePlan, parse: Parse, trust: Set<string> = new Set()): Promise<Directed> {
   // the scenes of a niche were written for that niche by hand: they are not second-guessed
   if (plan.fromNiche) return { plan, props: [], replaced: 0, notes: [] }
   const props = await businessProps(prompt, parse)
@@ -50,7 +54,7 @@ export async function directPlan(prompt: string, plan: ScenePlan, parse: Parse):
     return !!a && namesOf(a).some((e) => props.includes(e))
   }
   const swap = async (scene: Scene, candidates: string[], why: string): Promise<Scene> => {
-    if (await shows(scene, props, parse)) return scene
+    if (trust.has(scene.prompt) || (await shows(scene, props, parse))) return scene
     for (const candidate of candidates) {
       if (candidate !== scene.prompt && (await understood(candidate))) {
         replaced += 1

@@ -226,7 +226,7 @@ export const server = http.createServer(async (req, res) => {
       const entry = JSON.parse(await readBody(req))
       fs.mkdirSync(DATA, { recursive: true })
       const reasons = Array.isArray(entry.reasons) ? entry.reasons.slice(0, 5).map((r) => String(r).slice(0, 120)) : []
-      fs.appendFileSync(path.join(DATA, 'image-feedback.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), prompt: String(entry.prompt ?? '').slice(0, 200), seed: Number(entry.seed) || 0, attempt: Number(entry.attempt) || 1, accepted: entry.accepted === true, score: Number(entry.score) || 0, reasons, stage: entry.stage === 'parse' || entry.stage === 'plan' ? entry.stage : 'pixels' })}\n`)
+      fs.appendFileSync(path.join(DATA, 'image-feedback.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), prompt: String(entry.prompt ?? '').slice(0, 200), seed: Number(entry.seed) || 0, attempt: Number(entry.attempt) || 1, accepted: entry.accepted === true, score: Number(entry.score) || 0, reasons, stage: ['parse', 'plan', 'rating'].includes(entry.stage) ? entry.stage : 'pixels' })}\n`)
       return send(res, 200, { ok: true })
     }
     if (req.method === 'GET' && url.pathname === '/api/photos') {

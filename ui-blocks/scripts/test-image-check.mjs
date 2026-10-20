@@ -81,7 +81,8 @@ fs.rmSync(dir, { recursive: true, force: true })
 
 // ── the director: scenes must show the business
 const { businessText, businessProps, directPlan } = await loadGeneratorModule('edit/imageDirector.ts')
-ok(businessText('Create a website for a yoga studio called Zen Flow in Pune') === 'Create a website for a yoga studio', `the brand and the place are cut from the business words (${businessText('Create a website for a yoga studio called Zen Flow in Pune')})`)
+ok(businessText('Create a website for a yoga studio called Zen Flow in Pune') === 'yoga studio', `the request words, the brand and the place are cut from the business words (${businessText('Create a website for a yoga studio called Zen Flow in Pune')})`)
+ok(!businessText('Landing page for a gym').includes('page'), 'a word like "page" or "website" is not a business')
 ok(businessText('Italian pizza restaurant Forno') === 'Italian pizza restaurant', 'a capitalised brand name is dropped')
 const LEX = { yoga: 'yogi', pizza: 'pizza', restaurant: 'restaurant', salon: 'salon', scissors: 'scissors', bread: 'bread', bakery: 'bakery' }
 const fakeParse = async (text) => ({ mode: 'scene', entities: text.toLowerCase().split(/[^a-z]+/).filter((w) => LEX[w]).map((w) => ({ name: LEX[w] })), not_in_lexicon: [] })
@@ -95,6 +96,26 @@ ok(directed.plan.gallery[2].prompt === 'pizza', 'a scene that already shows the 
 const niche = await directPlan('pizza restaurant', { ...base, fromNiche: true }, fakeParse)
 ok(niche.replaced === 0 && niche.plan.hero.prompt === 'salon with scissors', 'the scenes of a niche are trusted')
 ok((await directPlan('something unknown here', base, async () => ({ mode: 'scene', entities: [], not_in_lexicon: ['something'] }))).replaced === 0, 'with no props found the plan stays')
+
+// ── the thumbs of the person
+const { emptyRatings, rate, applyRatings, businessKey, blockedByRatings } = await loadGeneratorModule('edit/imageRatings.ts')
+ok(businessKey('Create a website for a yoga studio called Zen Flow in Pune') === 'yoga studio', `the business key ignores filler, brand and place (${businessKey('Create a website for a yoga studio called Zen Flow in Pune')})`)
+ok(businessKey('yoga studio Zen Flow') === 'yoga studio', 'the same business gets the same key')
+const plan0 = { hero: { ...mk('a'), alt: ['x', 'y'] }, about: { ...mk('b'), alt: ['z'] }, gallery: [mk('c'), mk('d')] }
+let store = emptyRatings()
+store = rate(store, 'yoga studio', { prompt: 'liked scene', seed: 42 }, true)
+store = rate(store, 'yoga studio', { prompt: 'a', seed: 1 }, false)
+const applied = applyRatings(plan0, store, 'yoga studio')
+ok(applied.plan.hero.prompt === 'liked scene' && applied.plan.hero.seed === 42 && applied.used === 1, 'a liked scene comes first, with the same seed (the same picture)')
+ok(applied.plan.about.prompt === 'b', 'the other slots stay')
+const none = applyRatings({ ...plan0, hero: { ...plan0.hero } }, rate(emptyRatings(), 'yoga studio', { prompt: 'a', seed: 1 }, false), 'yoga studio')
+ok(none.plan.hero.prompt === 'x' && none.swapped === 1, 'a scene that was turned down is swapped for another one')
+ok(applyRatings(plan0, store, 'bakery').used === 0, 'what was said about one business does not touch another')
+let votes = emptyRatings()
+for (let i = 0; i < 3; i += 1) votes = rate(votes, `biz ${i}`, { prompt: 'bad one', seed: 1 }, false)
+ok(blockedByRatings(votes).includes('bad one'), 'a prompt that gets thumbs down from different businesses is blocked for everyone')
+ok(!blockedByRatings(rate(rate(rate(votes, 'k', { prompt: 'bad one', seed: 1 }, true), 'k2', { prompt: 'bad one', seed: 1 }, true), 'k3', { prompt: 'bad one', seed: 1 }, true)).includes('bad one'), 'thumbs up keep a prompt in use')
+ok((await directPlan('pizza restaurant', { ...base }, fakeParse, new Set(['salon with scissors']))).plan.hero.prompt === 'salon with scissors', 'a scene the person liked is not second-guessed by the director')
 
 console.log(`${pass} checks passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)

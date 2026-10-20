@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import type { EditOp } from './generator/edit/edits'
 import type { ScenePlan } from './generator/imageAi'
-import { makePictures } from './generator/edit/imageAiClient'
+import { makePictures, type UsedScene } from './generator/edit/imageAiClient'
 import { readPicture } from './generator/edit/imageFile'
 import { searchPhotos, type PhotoResult } from './generator/edit/serverEdit'
 
 type Props = {
   defaultQuery: string
   hasPhotos: boolean
-  onApply: (ops: EditOp[], label: string) => void
+  onApply: (ops: EditOp[], label: string, used?: UsedScene[]) => void
   onClear: () => void
   /** the photos are put on the pages of the built-in templates; the 92-components page keeps its own pictures */
   supported: boolean
@@ -56,7 +56,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, pla
     setProgress('')
     if (answer.ops) {
       setRound((r) => r + 1)
-      onApply(answer.ops, 'Pictures from the image AI')
+      onApply(answer.ops, 'Pictures from the image AI', answer.used)
     } else setProblem(answer.problem ?? '')
   }
 

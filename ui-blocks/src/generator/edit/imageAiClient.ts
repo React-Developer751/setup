@@ -9,10 +9,13 @@ import { sceneUrl, type Scene, type ScenePlan } from '../imageAi'
 import type { EditOp } from './edits'
 import { assessPixels, cleanPrompt, promptUnderstood, type ParseAnswer, type PixelReport } from './imageCheck'
 import { directPlan } from './imageDirector'
+import { applyRatings, blockedByRatings, businessKey, loadRatings } from './imageRatings'
 import { readPicture } from './imageFile'
 
 export type PictureReport = { pictures: number; redrawn: number; otherScene: number; /** scenes replaced because they showed nothing of the business */ directed: number; notes: string[] }
-export type ImageAiResult = { ops?: EditOp[]; problem?: string; report?: PictureReport }
+/** a scene as it was finally drawn (the prompt can differ from the plan: another words, another scene), with the kind of picture it is */
+export type UsedScene = Scene & { kind: 'hero' | 'about' | 'tile' }
+export type ImageAiResult = { ops?: EditOp[]; problem?: string; report?: PictureReport; used?: UsedScene[] }
 
 const MEMORY_KEY = 'ui-blocks:image-memory'
 type Memory = Record<string, { tries: number; rejects: number }>
@@ -38,7 +41,7 @@ const remember = (prompt: string, accepted: boolean) => {
 /** a prompt that was drawn badly most of the times it was tried is not tried first any more */
 const mistrusted = (prompt: string) => {
   const entry = readMemory()[prompt]
-  return !!entry && entry.tries >= 4 && entry.rejects / entry.tries >= 0.75
+  return (!!entry && entry.tries >= 4 && entry.rejects / entry.tries >= 0.75) || blockedByRatings(loadRatings()).includes(prompt)
 }
 
 const log = (entry: { prompt: string; seed: number; attempt: number; accepted: boolean; score: number; reasons: string[]; stage: 'parse' | 'pixels' | 'plan' }) => {
@@ -94,7 +97,7 @@ async function pixelsOf(blob: Blob, accent?: string): Promise<PixelReport> {
 
 type Tries = { redrawn: number; otherScene: number; notes: string[] }
 
-async function one(scene: Scene, accent: string | undefined, tries: Tries): Promise<string> {
+async function one(scene: Scene, accent: string | undefined, tries: Tries): Promise<{ picture: string; prompt: string; seed: number }> {
   // the tries: the prompt as planned, the same prompt with another seed, then other scenes of the business
   let prompt = scene.prompt
   if (mistrusted(prompt) && scene.alt?.[0]) {
@@ -117,23 +120,39 @@ async function one(scene: Scene, accent: string | undefined, tries: Tries): Prom
     { prompt: scene.alt?.find((p) => p !== prompt) ?? prompt, seed: scene.seed + 7 },
     { prompt: scene.alt?.filter((p) => p !== prompt)[1] ?? prompt, seed: scene.seed + 13 },
   ]
-  let best: { blob: Blob; score: number } | undefined
+  let best: { blob: Blob; score: number; prompt: string; seed: number } | undefined
   for (let i = 0; i < plan.length; i += 1) {
     const { prompt: p, seed } = plan[i]
     const blob = await fetchBlob(scene, p, seed)
     const report = await pixelsOf(blob, accent)
     log({ prompt: p, seed, attempt: i + 1, accepted: report.ok, score: report.score, reasons: report.reasons, stage: 'pixels' })
     remember(p, report.ok)
-    if (!best || report.score > best.score) best = { blob, score: report.score }
+    if (!best || report.score > best.score) best = { blob, score: report.score, prompt: p, seed }
     if (report.ok) {
       if (i > 0) tries.redrawn += 1
       if (p !== prompt) tries.otherScene += 1
-      best = { blob, score: report.score }
+      best = { blob, score: report.score, prompt: p, seed }
       break
     }
     if (i > 0) tries.redrawn += 1
   }
-  return readPicture(new File([(best as { blob: Blob }).blob], 'scene.png', { type: (best as { blob: Blob }).blob.type }), Math.max(scene.width, scene.height))
+  const chosen = best as { blob: Blob; prompt: string; seed: number }
+  return { picture: await readPicture(new File([chosen.blob], 'scene.png', { type: chosen.blob.type }), Math.max(scene.width, scene.height)), prompt: chosen.prompt, seed: chosen.seed }
+}
+
+/** one picture again, for a scene the person turned down: another scene of the business (never one that was turned down) */
+export async function redrawScene(scene: UsedScene, options: { accent?: string; prompt?: string } = {}): Promise<{ picture: string; scene: UsedScene } | undefined> {
+  const store = loadRatings()
+  const disliked = new Set(store.disliked[options.prompt ? businessKey(options.prompt) : ''] ?? [])
+  disliked.add(scene.prompt)
+  const candidate = (scene.alt ?? []).find((p) => !disliked.has(p))
+  const next: Scene = candidate ? { ...scene, prompt: candidate, seed: scene.seed + 31, alt: (scene.alt ?? []).filter((p) => p !== candidate) } : { ...scene, seed: scene.seed + 57 }
+  try {
+    const made = await one(next, options.accent, { redrawn: 0, otherScene: 0, notes: [] })
+    return { picture: made.picture, scene: { ...next, prompt: made.prompt, seed: made.seed, kind: scene.kind } }
+  } catch {
+    return undefined
+  }
 }
 
 /** the picture of every scene, two at a time; `onProgress(done, total)` tells how far it is */
@@ -141,12 +160,20 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
   let plan = basePlan
   let directed = 0
   const directNotes: string[] = []
+  const directNotes0: string[] = []
+  let trusted = new Set<string>()
   if (options.prompt) {
+    // what the person said about the pictures of this kind of business comes first
+    const rated = applyRatings(plan, loadRatings(), businessKey(options.prompt))
+    plan = rated.plan
+    trusted = new Set((loadRatings().liked[businessKey(options.prompt)] ?? []).map((l) => l.prompt))
+    if (rated.used) directNotes0.push(`${rated.used} picture${rated.used === 1 ? '' : 's'} you liked before for this kind of business ${rated.used === 1 ? 'is' : 'are'} used again`)
+    if (rated.swapped) directNotes0.push(`${rated.swapped} scene${rated.swapped === 1 ? '' : 's'} you turned down before ${rated.swapped === 1 ? 'is' : 'are'} not used`)
     try {
-      const answer = await directPlan(options.prompt, basePlan, askParse)
+      const answer = await directPlan(options.prompt, plan, askParse, trusted)
       plan = answer.plan
       directed = answer.replaced
-      directNotes.push(...answer.notes)
+      directNotes.push(...directNotes0, ...answer.notes)
       for (const note of answer.notes) log({ prompt: note.slice(0, 190), seed: 0, attempt: 0, accepted: false, score: 0, reasons: [note.slice(0, 110)], stage: 'plan' })
     } catch {
       // the direction is an extra: the plan of the business type is used as it is
@@ -154,6 +181,7 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
   }
   const scenes = [plan.hero, plan.about, ...plan.gallery]
   const pictures: string[] = new Array(scenes.length)
+  const used: UsedScene[] = new Array(scenes.length)
   const tries: Tries = { redrawn: 0, otherScene: 0, notes: [] }
   let next = 0
   let done = 0
@@ -161,7 +189,9 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
     const worker = async () => {
       while (next < scenes.length) {
         const i = next++
-        pictures[i] = await one(scenes[i], options.accent, tries)
+        const made = await one(scenes[i], options.accent, tries)
+        pictures[i] = made.picture
+        used[i] = { ...scenes[i], prompt: made.prompt, seed: made.seed, kind: i === 0 ? 'hero' : i === 1 ? 'about' : 'tile' }
         done += 1
         onProgress(done, scenes.length)
       }
@@ -171,5 +201,5 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
     const down = error instanceof TypeError || (error instanceof Error && error.message === 'down')
     return { problem: down ? 'The image engine is not running. Start it with: npm run images (and the server: npm run server).' : error instanceof Error ? error.message : 'Could not make the pictures.' }
   }
-  return { ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: scenes.length, redrawn: tries.redrawn, otherScene: tries.otherScene, directed, notes: [...directNotes, ...tries.notes].slice(0, 6) } }
+  return { used, ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: scenes.length, redrawn: tries.redrawn, otherScene: tries.otherScene, directed, notes: [...directNotes, ...tries.notes].slice(0, 6) } }
 }
