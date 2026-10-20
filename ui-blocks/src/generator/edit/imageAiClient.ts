@@ -8,9 +8,10 @@
 import { sceneUrl, type Scene, type ScenePlan } from '../imageAi'
 import type { EditOp } from './edits'
 import { assessPixels, cleanPrompt, promptUnderstood, type ParseAnswer, type PixelReport } from './imageCheck'
+import { directPlan } from './imageDirector'
 import { readPicture } from './imageFile'
 
-export type PictureReport = { pictures: number; redrawn: number; otherScene: number; notes: string[] }
+export type PictureReport = { pictures: number; redrawn: number; otherScene: number; /** scenes replaced because they showed nothing of the business */ directed: number; notes: string[] }
 export type ImageAiResult = { ops?: EditOp[]; problem?: string; report?: PictureReport }
 
 const MEMORY_KEY = 'ui-blocks:image-memory'
@@ -40,7 +41,7 @@ const mistrusted = (prompt: string) => {
   return !!entry && entry.tries >= 4 && entry.rejects / entry.tries >= 0.75
 }
 
-const log = (entry: { prompt: string; seed: number; attempt: number; accepted: boolean; score: number; reasons: string[]; stage: 'parse' | 'pixels' }) => {
+const log = (entry: { prompt: string; seed: number; attempt: number; accepted: boolean; score: number; reasons: string[]; stage: 'parse' | 'pixels' | 'plan' }) => {
   try {
     void fetch('/api/image-feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(entry), keepalive: true }).catch(() => undefined)
   } catch {
@@ -136,7 +137,21 @@ async function one(scene: Scene, accent: string | undefined, tries: Tries): Prom
 }
 
 /** the picture of every scene, two at a time; `onProgress(done, total)` tells how far it is */
-export async function makePictures(plan: ScenePlan, onProgress: (done: number, total: number) => void, options: { accent?: string } = {}): Promise<ImageAiResult> {
+export async function makePictures(basePlan: ScenePlan, onProgress: (done: number, total: number) => void, options: { accent?: string; /** the words of the person: the pictures must show this business */ prompt?: string } = {}): Promise<ImageAiResult> {
+  let plan = basePlan
+  let directed = 0
+  const directNotes: string[] = []
+  if (options.prompt) {
+    try {
+      const answer = await directPlan(options.prompt, basePlan, askParse)
+      plan = answer.plan
+      directed = answer.replaced
+      directNotes.push(...answer.notes)
+      for (const note of answer.notes) log({ prompt: note.slice(0, 190), seed: 0, attempt: 0, accepted: false, score: 0, reasons: [note.slice(0, 110)], stage: 'plan' })
+    } catch {
+      // the direction is an extra: the plan of the business type is used as it is
+    }
+  }
   const scenes = [plan.hero, plan.about, ...plan.gallery]
   const pictures: string[] = new Array(scenes.length)
   const tries: Tries = { redrawn: 0, otherScene: 0, notes: [] }
@@ -156,5 +171,5 @@ export async function makePictures(plan: ScenePlan, onProgress: (done: number, t
     const down = error instanceof TypeError || (error instanceof Error && error.message === 'down')
     return { problem: down ? 'The image engine is not running. Start it with: npm run images (and the server: npm run server).' : error instanceof Error ? error.message : 'Could not make the pictures.' }
   }
-  return { ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: scenes.length, redrawn: tries.redrawn, otherScene: tries.otherScene, notes: tries.notes.slice(0, 4) } }
+  return { ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: scenes.length, redrawn: tries.redrawn, otherScene: tries.otherScene, directed, notes: [...directNotes, ...tries.notes].slice(0, 6) } }
 }

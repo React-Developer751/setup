@@ -10,7 +10,7 @@ import { hash } from './random'
 import type { ThemeKey } from './themes'
 
 export type Scene = { prompt: string; width: number; height: number; seed: number; /** other scenes of the same business, for a redraw when this one does not work out */ alt?: string[] }
-export type ScenePlan = { hero: Scene; about: Scene; gallery: Scene[] }
+export type ScenePlan = { hero: Scene; about: Scene; gallery: Scene[]; /** the scenes were written for this very niche (pest control, tailor ...): they are trusted as they are */ fromNiche?: boolean }
 
 type SceneSet = { hero: string[]; about: string; gallery: string[] }
 const THEME_SCENES = scenes.themes as unknown as Record<ThemeKey, SceneSet>
@@ -40,7 +40,7 @@ export function scenePlan(theme: ThemeKey, niche: string | undefined, variation 
   const pool = usable([...set.gallery, ...base.gallery, ...base.hero])
   const gallery = pool.filter((p) => !seen.has(p) && !!seen.add(p)).slice(0, 6)
   const spare = pool.filter((p) => !gallery.includes(p) && p !== hero && p !== about)
-  return { hero: make(hero, 'hero', variation, [...heroes, ...spare]), about: make(about, 'about', variation, [...usable(base.hero), ...spare]), gallery: gallery.map((p, i) => make(p, 'tile', i + variation, spare)) }
+  return { hero: make(hero, 'hero', variation, [...heroes, ...spare]), about: make(about, 'about', variation, [...usable(base.hero), ...spare]), gallery: gallery.map((p, i) => make(p, 'tile', i + variation, spare)), ...(own ? { fromNiche: true } : {}) }
 }
 
 /** every scene of every business type and niche (for the checks) */

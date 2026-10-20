@@ -79,6 +79,23 @@ srv.kill()
 engine.close()
 fs.rmSync(dir, { recursive: true, force: true })
 
+// ── the director: scenes must show the business
+const { businessText, businessProps, directPlan } = await loadGeneratorModule('edit/imageDirector.ts')
+ok(businessText('Create a website for a yoga studio called Zen Flow in Pune') === 'Create a website for a yoga studio', `the brand and the place are cut from the business words (${businessText('Create a website for a yoga studio called Zen Flow in Pune')})`)
+ok(businessText('Italian pizza restaurant Forno') === 'Italian pizza restaurant', 'a capitalised brand name is dropped')
+const LEX = { yoga: 'yogi', pizza: 'pizza', restaurant: 'restaurant', salon: 'salon', scissors: 'scissors', bread: 'bread', bakery: 'bakery' }
+const fakeParse = async (text) => ({ mode: 'scene', entities: text.toLowerCase().split(/[^a-z]+/).filter((w) => LEX[w]).map((w) => ({ name: LEX[w] })), not_in_lexicon: [] })
+const mk = (prompt) => ({ prompt, width: 640, height: 400, seed: 1, alt: [] })
+const base = { hero: mk('salon with scissors'), about: mk('bakery with bread'), gallery: [mk('bread'), mk('salon'), mk('pizza')] }
+const props = await businessProps('yoga studio called Zen', fakeParse)
+ok(props.join() === 'yogi', `the props of the business come from the engine (${props})`)
+const directed = await directPlan('pizza restaurant called Forno', base, fakeParse)
+ok(directed.plan.hero.prompt === 'pizza and restaurant' && directed.replaced >= 2, `a scene that shows nothing of the business is replaced (${directed.plan.hero.prompt}, ${directed.replaced} replaced)`)
+ok(directed.plan.gallery[2].prompt === 'pizza', 'a scene that already shows the business stays')
+const niche = await directPlan('pizza restaurant', { ...base, fromNiche: true }, fakeParse)
+ok(niche.replaced === 0 && niche.plan.hero.prompt === 'salon with scissors', 'the scenes of a niche are trusted')
+ok((await directPlan('something unknown here', base, async () => ({ mode: 'scene', entities: [], not_in_lexicon: ['something'] }))).replaced === 0, 'with no props found the plan stays')
+
 console.log(`${pass} checks passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

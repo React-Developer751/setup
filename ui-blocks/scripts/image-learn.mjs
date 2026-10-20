@@ -18,6 +18,7 @@ if (!fs.existsSync(file)) {
 const rows = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l))
 const stats = new Map()
 for (const row of rows) {
+  if (row.stage === 'plan') continue
   const s = stats.get(row.prompt) ?? { tries: 0, accepted: 0, parse: 0, reasons: new Map() }
   if (row.stage === 'parse') s.parse += 1
   else {

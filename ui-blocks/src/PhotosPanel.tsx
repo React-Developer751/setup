@@ -16,10 +16,12 @@ type Props = {
   planFor: (offset: number) => ScenePlan
   /** the main colour of the site: the check of a picture prefers pictures in its hues */
   accent?: string
+  /** what the person asked for: the pictures must show this business */
+  prompt?: string
 }
 
 /** The first screen, the about picture and the gallery get real photos: from the photo search of the server (Pexels) or from the person's own files. */
-function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, planFor, accent }: Props) {
+function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, planFor, accent, prompt }: Props) {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [result, setResult] = useState<PhotoResult>()
@@ -49,7 +51,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, pla
     setBusy(true)
     setProblem('')
     setProgress('0 of 8')
-    const answer = await makePictures(planFor(round), (done, total) => setProgress(`${done} of ${total}`), { accent })
+    const answer = await makePictures(planFor(round), (done, total) => setProgress(`${done} of ${total}`), { accent, prompt })
     setBusy(false)
     setProgress('')
     if (answer.ops) {

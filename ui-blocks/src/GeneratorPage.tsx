@@ -221,10 +221,10 @@ function GeneratorPage() {
     // pictures the person added themselves stay; pictures drawn earlier by this page are drawn again for a new variation
     if (!(await imageEngineUp()) || (hasPhotosRef.current && !autoMade.current)) return
     say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
-    const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent })
+    const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, prompt: submitted })
     if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return
     autoMade.current = true
-    if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', `Pictures added${answer.report && (answer.report.redrawn || answer.report.otherScene) ? ` (checked: ${answer.report.redrawn} drawn again, ${answer.report.otherScene} with another scene, because they looked empty or did not fit)` : ' (all checked)'}. You can draw other ones or use your own in "Real photos".`)
+    if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', `Pictures added${answer.report && (answer.report.redrawn || answer.report.otherScene || answer.report.directed) ? ` (checked: ${answer.report.directed} scenes changed to show your business, ${answer.report.redrawn} drawn again because they looked empty)` : ' (all checked)'}. You can draw other ones or use your own in "Real photos".`)
   }
   useEffect(() => {
     void autoDraw.current()
@@ -494,6 +494,7 @@ function GeneratorPage() {
             supported={shownEngine === 'templates'}
             planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
             accent={palette.light.accent}
+            prompt={submitted}
             onApply={(ops, label) => {
               autoMade.current = false
               say({ role: 'user', text: label })
