@@ -462,6 +462,28 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
 
 // The components bring grey placeholder pictures (dummyimage.com). The pictures the person added (or drew with the image AI) take their place;
 // without pictures a soft gradient in the colours of the site stands there, never a grey "720 x 600" box.
+import { makeArt } from '../art/generate'
+import { toDataUrl } from '../art/encode'
+import { temperature } from '../creativity'
+import { hash } from '../random'
+const artCache = new Map<string, string>()
+/** a picture made by maths (noise, fractals, the colours of the site) for a box that has no photo; the same box of the same page always gets the same one */
+function artFor(seed: string, colors: { accent: string; alt: string }, w: number, h: number): string | undefined {
+  const key = `${seed}|${colors.accent}|${colors.alt}|${w}x${h}`
+  const cached = artCache.get(key)
+  if (cached) return cached
+  try {
+    const width = Math.min(480, w)
+    const height = Math.round((width * h) / w)
+    const art = makeArt({ seed: hash(key), accent: colors.accent, alt: colors.alt, width, height, population: 8, generations: 1, temperature: temperature() })
+    const url = toDataUrl(art.image)
+    artCache.set(key, url)
+    return url
+  } catch {
+    return undefined
+  }
+}
+
 const DUMMY = /dummyimage\.com\/(\d+)x(\d+)/
 const blank = (w: number, h: number) => `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"/>`)}`
 /** a round avatar with the initials of a person, in the colours of the site (for the pictures of reviews and team members) */
@@ -496,6 +518,14 @@ function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { acc
       img.removeAttribute('srcset')
       img.classList.add('object-cover')
       return
+    }
+    if (w >= 200 && h >= 100 && colors) {
+      const art = artFor(`${role}|${next++}`, colors, w, h)
+      if (art) {
+        img.setAttribute('src', art)
+        img.classList.add('object-cover')
+        return
+      }
     }
     img.setAttribute('src', blank(w, h))
     img.style.background = 'linear-gradient(135deg, var(--g-accent, #6366f1), color-mix(in oklab, var(--g-accent, #6366f1) 70%, var(--g-alt, #a855f7)))'

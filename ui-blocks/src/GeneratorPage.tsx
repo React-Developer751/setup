@@ -24,7 +24,8 @@ import { makePictures, redrawScene, type UsedScene } from './generator/edit/imag
 import { rateScene } from './generator/edit/imageRatings'
 import RatePictures from './RatePictures'
 import { planColors } from './generator/colorPlanner'
-import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, type CreativityLevel } from './generator/creativity'
+import { artPictures } from './generator/edit/artPictures'
+import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, temperature, type CreativityLevel } from './generator/creativity'
 import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
@@ -232,7 +233,14 @@ function GeneratorPage() {
     if (drawnFor.current === key) return
     drawnFor.current = key
     // pictures the person added themselves stay; pictures drawn earlier by this page are drawn again for a new variation
-    if (!(await imageEngineUp()) || (hasPhotosRef.current && !autoMade.current)) return
+    if (hasPhotosRef.current && !autoMade.current) return
+    if (!(await imageEngineUp())) {
+      // no image engine: the maths makes the pictures, so that the site is never left with empty boxes
+      const made = artPictures({ prompt: submitted, accent: palette.light.accent, alt: palette.light.alt, temperature: temperature(), round: runs })
+      autoMade.current = true
+      applyOps('Abstract art made with maths', made.ops, 'rules', 'The image engine is not running, so I made the pictures with maths (noise, fractals and your colours). Start it with npm run images for scene pictures.')
+      return
+    }
     say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
     const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, prompt: submitted })
     if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return
@@ -548,6 +556,7 @@ function GeneratorPage() {
             supported={shownEngine === 'templates'}
             planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
             accent={palette.light.accent}
+            alt={palette.light.alt}
             prompt={submitted}
             onApply={(ops, label, used) => {
               autoMade.current = false

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { EditOp } from './generator/edit/edits'
 import type { ScenePlan } from './generator/imageAi'
 import { makePictures, type UsedScene } from './generator/edit/imageAiClient'
+import { artPictures } from './generator/edit/artPictures'
+import { temperature } from './generator/creativity'
 import { readPicture } from './generator/edit/imageFile'
 import { searchPhotos, type PhotoResult } from './generator/edit/serverEdit'
 
@@ -16,12 +18,16 @@ type Props = {
   planFor: (offset: number) => ScenePlan
   /** the main colour of the site: the check of a picture prefers pictures in its hues */
   accent?: string
+  /** the second colour of the site */
+  alt?: string
+  /** the site starts in dark mode */
+  dark?: boolean
   /** what the person asked for: the pictures must show this business */
   prompt?: string
 }
 
 /** The first screen, the about picture and the gallery get real photos: from the photo search of the server (Pexels) or from the person's own files. */
-function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, planFor, accent, prompt }: Props) {
+function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, planFor, accent, alt, dark, prompt }: Props) {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [result, setResult] = useState<PhotoResult>()
@@ -29,6 +35,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, pla
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState('')
   const [round, setRound] = useState(0)
+  const [artRound, setArtRound] = useState(0)
 
   const search = async (nextPage: number) => {
     setBusy(true)
@@ -58,6 +65,23 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, pla
       setRound((r) => r + 1)
       onApply(answer.ops, 'Pictures from the image AI', answer.used)
     } else setProblem(answer.problem ?? '')
+  }
+
+  // pictures made by maths (noise, fractals, colour theory; the best of many): no engine needed
+  const drawArt = () => {
+    setBusy(true)
+    setProblem('')
+    // one tick, so that the button shows its state before the pictures are worked out
+    window.setTimeout(() => {
+      try {
+        const made = artPictures({ prompt: prompt ?? defaultQuery, accent: accent ?? '#2563eb', alt, dark, temperature: temperature(), round: artRound })
+        setArtRound((r) => r + 1)
+        onApply(made.ops, 'Abstract art made with maths')
+      } catch {
+        setProblem('Could not make the art in this browser.')
+      }
+      setBusy(false)
+    }, 30)
   }
 
   const upload = async (files: FileList | null) => {
@@ -90,6 +114,13 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, pla
           <p className="text-[11px] text-gray-500">Flat illustrations that fit your kind of business (sunsets, skylines, forests, galaxies, mandalas): not photos of your products. Needs: npm run images and npm run server.</p>
           <button type="button" onClick={() => void draw()} disabled={busy} className="w-full rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
             {busy && progress ? `Drawing ${progress} ...` : round ? 'Draw other scenes' : 'Draw scenes for my site'}
+          </button>
+        </div>
+        <div className="space-y-1">
+          <span className="font-medium text-gray-700">Or make abstract art with maths (no engine needed)</span>
+          <p className="text-[11px] text-gray-500">Smooth noise, fractals and tree or snowflake drawings in colours worked out from your site colours: many are tried, the judge keeps the best.</p>
+          <button type="button" onClick={drawArt} disabled={busy} className="w-full rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">
+            {artRound ? 'Make other art' : 'Make abstract art'}
           </button>
         </div>
         <div className="space-y-1">
