@@ -122,6 +122,9 @@ const coherent = (text: string) => {
   if (/^Start\b/i.test(text) && !/\bToday\.$/.test(text)) return false
   if (/^Let's/i.test(text) !== /\bTogether\.$/.test(text) && !/Come Together$/.test(text)) return false
   if (/^Where\b/i.test(text) !== /Come Together$/.test(text)) return false
+  // a line that ends on a group of people needs its "For" ("Brew Ethically Sourced Everyday People", "Master Your Serious Lifters"); "For The Wait" is not a phrase
+  if (/\b(People|Families|Lifters|Growers|Tasters|Eaters|Athletes|Members|Patients|Lovers|Beginners|Pros|Owners|Kids|Students|Travellers|Diners|Guests)[.!]?$/.test(text) && !/\bFor\b/.test(text)) return false
+  if (/\bFor The Wait\b/i.test(text)) return false
   return true
 }
 

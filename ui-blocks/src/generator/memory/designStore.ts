@@ -29,6 +29,8 @@ export type DesignRecord = {
   heroTitle: string
   /** the texts of the design by place (brand name replaced): what the phrase scores are about */
   copy?: Record<string, string>
+  /** the headline names the business (its kind or its name); not stored */
+  fit?: boolean
   verdict: Verdict
 }
 

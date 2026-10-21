@@ -3,7 +3,7 @@
 import type { EditOp } from '../edit/edits'
 import { generateWebsite } from '../generateWebsite'
 import type { Feedback } from './sentiment'
-import { choosePhrase, copyOf, normalisePhrase, PHRASE_SLOTS, type PhraseEvent, type PhraseReason, type PhraseScores, type PhraseSlot } from './phraseScores'
+import { choosePhrase, copyOf, fitsBusiness, normalisePhrase, PHRASE_SLOTS, type PhraseEvent, type PhraseReason, type PhraseScores, type PhraseSlot } from './phraseScores'
 
 type Content = Parameters<typeof copyOf>[0]
 
@@ -38,15 +38,20 @@ export function alternativeFor(prompt: string, slot: PhraseSlot, ctx: { current:
   const rand = ctx.rand ?? Math.random
   const skip = new Set([normalisePhrase(ctx.current, ctx.brand), ...(ctx.avoid ?? []).map((a) => normalisePhrase(a, ctx.brand))])
   const found = new Map<string, string>()
+  const fitting = new Set<string>()
   for (let i = 0; i < (ctx.tries ?? 24); i += 1) {
     const site = generateWebsite(prompt, 1 + Math.floor(rand() * 9000))
     const text = slotTexts(site.content)[slot]
     const key = normalisePhrase(text, site.content.brandName)
     if (!text || skip.has(key) || found.has(key)) continue
     // the generator wrote the brand of the prompt; the site on screen may have been renamed
+    if (fitsBusiness(text, site.content.subject, site.content.brandName)) fitting.add(key)
     found.set(key, site.content.brandName && ctx.brand ? text.split(site.content.brandName).join(ctx.brand) : text)
   }
-  const pick = choosePhrase([...found.entries()].map(([phrase, text]) => ({ item: text, phrase })), ctx.scores, ctx.group, slot, rand)
+  // texts that name the business come first (a tea cafe gets no "Pure Wellness For Curious Tasters"); when they are used up, the others
+  const entries = [...found.entries()]
+  const named = entries.filter(([key]) => fitting.has(key))
+  const pick = choosePhrase((slot === 'heroTitle' && named.length ? named : entries).map(([phrase, text]) => ({ item: text, phrase })), ctx.scores, ctx.group, slot, rand)
   return pick ? { text: pick, op: { op: 'text', field: slot, text: pick } } : undefined
 }
 

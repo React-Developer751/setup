@@ -6,7 +6,7 @@ import { sampleTopK } from '../creativity'
 import { generateWebsite } from '../generateWebsite'
 import { businessKey } from '../edit/imageRatings'
 import { analyse, hueGap, hueName, minGapFor, nearestFreeHue, tasteScore, type Candidate, type Insights } from './designMemory'
-import { copyFactor, copyOf, type PhraseScores } from './phraseScores'
+import { copyFactor, copyOf, fitsBusiness, type PhraseScores } from './phraseScores'
 import { newId, type DesignRecord, type DesignStore } from './designStore'
 
 export type DesignPlan = {
@@ -53,6 +53,7 @@ export function describeDesign(prompt: string, variation: number, creativity: st
     layouts: site.layoutIds,
     heroTitle: site.content.hero.title,
     copy: copyOf(site.content),
+    fit: fitsBusiness(site.content.hero.title, site.content.subject, site.content.brandName),
     verdict: 'unrated',
   }
 }
@@ -79,7 +80,7 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
     // a design that needed no change is worth a little more than one that was recoloured; far from the other businesses made lately, a little more
     // the texts of the design: sent back by people (score under 7) it is mostly left out, kept by people it is preferred
     const words = options.phrases ? copyFactor(options.phrases, record.niche || record.theme, record.copy) : { factor: 1, dropped: [] as string[] }
-    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor)
+    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor * (record.fit === false ? 0.75 : 1))
     return [{ record: design, shifted, score, dropped: words.dropped }]
   })
   let scored = evaluate(gap)

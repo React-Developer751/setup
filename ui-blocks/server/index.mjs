@@ -398,5 +398,20 @@ export const server = http.createServer(async (req, res) => {
 })
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  // the phrase events only grow: once a day the oldest ones beyond 20000 are dropped (older opinions count little anyway)
+  const compact = () => {
+    try {
+      const file = path.join(DATA, 'phrase-events.jsonl')
+      if (!fs.existsSync(file)) return
+      const lines = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean)
+      if (lines.length <= 20000) return
+      fs.writeFileSync(`${file}.tmp`, `${lines.slice(-20000).join('\n')}\n`)
+      fs.renameSync(`${file}.tmp`, file)
+    } catch {
+      // try again tomorrow
+    }
+  }
+  compact()
+  setInterval(compact, 86_400_000).unref()
   server.listen(PORT, HOST, () => console.log(`edit server on http://${HOST}:${PORT}  (AI: ${KEY ? MODEL : 'OFF: set ANTHROPIC_API_KEY'})`))
 }

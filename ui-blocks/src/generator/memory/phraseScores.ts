@@ -151,3 +151,11 @@ export function analyseTrends(events: PhraseEvent[], now = Date.now(), minPeople
     phrases: rows.length,
   }
 }
+
+/** does a headline speak about this business (its kind or its name)? "Pure Wellness For Curious Tasters" does not say it is for a tea cafe */
+export const fitsBusiness = (title: string, subject: string, brand: string): boolean => {
+  const t = title.toLowerCase()
+  const s = subject.toLowerCase().trim()
+  const b = brand.toLowerCase().trim()
+  return (s.length >= 3 && t.includes(s)) || (b.length >= 3 && t.includes(b))
+}

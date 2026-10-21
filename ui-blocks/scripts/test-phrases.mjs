@@ -116,6 +116,35 @@ ok(alt && alt.text !== current.heroTitle && alt.op.op === 'text' && alt.op.field
 ok(alt && P.normalisePhrase(alt.text, 'Zen Flow') !== top, 'a headline that people sent back is not offered as the other one')
 ok(!alt || alt.text.includes('Zen Flow') || !/Zen Flow/i.test(current.heroTitle), 'the brand name of the site stays')
 
+// ── a headline that is about the business: the tea cafe gets tea cafe headlines, and broken lines are not written
+const TEA = 'Create a page for an organic green tea cafe named Leafy Premium'
+const teaCurrent = describeDesign(TEA, 3, 'balanced', 'g')
+const teaGroup = teaCurrent.niche || teaCurrent.theme
+let offTopic = 0
+let seenTexts = new Set()
+let avoid = []
+for (let i = 0; i < 6; i += 1) {
+  const a = L.alternativeFor(TEA, 'heroTitle', { current: teaCurrent.heroTitle, brand: 'Leafy Premium', group: teaGroup, scores: new Map(), avoid, rand: seededRandom(100 + i) })
+  if (!a) break
+  seenTexts.add(a.text)
+  avoid = [...avoid, a.text]
+  if (!P.fitsBusiness(a.text, 'organic green tea cafe', 'Leafy Premium')) offTopic += 1
+}
+ok(seenTexts.size >= 4 && offTopic === 0, `six "another heading" in a row for a tea cafe are all about the tea cafe (${seenTexts.size} different, ${offTopic} off topic)`)
+ok(P.fitsBusiness('Dental Clinic You Can Count On', 'dental clinic', 'Smile Care') && !P.fitsBusiness('Pure Wellness For Curious Tasters', 'organic green tea cafe', 'Leafy Premium'), 'the fit check tells a headline about the business from a general one')
+const { generateWebsite } = await loadGeneratorModule('generateWebsite.ts')
+const BROKEN = /\bFor The Wait\b|\b(People|Lifters|Growers|Tasters|Eaters|Athletes|Members|Patients|Families|Pros)[.!]?$/
+let broken = 0
+let total = 0
+for (const prompt of [TEA, 'Create a website for a gym called Iron House in Delhi', 'dental clinic in Pune called Smile Care', PROMPT]) {
+  for (let v = 1; v <= 150; v += 1) {
+    const title = generateWebsite(prompt, v * 17).content.hero.title
+    total += 1
+    if (BROKEN.test(title) && !/\bFor\b/.test(title)) broken += 1
+  }
+}
+ok(broken === 0, `600 generated headlines: none ends on a group of people without its "For" or says "For The Wait" (${broken} of ${total})`)
+
 // ── the trend report
 const fail3 = P.analyseTrends(Array.from({ length: 3 }, (_, i) => ev(`t${i}`, -1)))
 ok(fail3.failing.length === 1 && fail3.failing[0].phrase === 'transform your body today', 'three people against a phrase: it is reported as failing')
