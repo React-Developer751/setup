@@ -20,6 +20,8 @@ type Props = {
   /** what the person filled in (shared with the preview) */
   details: ExportDetails
   onDetails: (next: ExportDetails | ((current: ExportDetails) => ExportDetails)) => void
+  /** called when a file is downloaded: the person kept this site (a thumb up for its texts) */
+  onExport?: () => void
 }
 
 /** Reads a picture and shrinks it, so that it can be embedded in the pages without making them heavy. */
@@ -31,7 +33,7 @@ const FIELDS: { key: 'email' | 'phone' | 'address' | 'siteUrl' | 'formEndpoint';
   { key: 'formEndpoint', label: 'Form service', placeholder: 'https://formspree.io/f/xxxxxxx', templatesOnly: true },
 ]
 
-function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails }: Props) {
+function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails, onExport }: Props) {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState('')
   const isLibrary = engine === 'library'
@@ -52,16 +54,19 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
   }
 
   const zip = async () => {
+    onExport?.()
     if (isLibrary) return downloadFile(`${libraryProjectName(library)}.zip`, await buildLibraryZip(lib()), 'application/zip')
     const s = source()
     downloadFile(`${projectName(s)}.zip`, buildZip(s), 'application/zip')
   }
   const staticZip = () => {
+    onExport?.()
     if (isLibrary) return downloadFile(`${libraryProjectName(library)}-static.zip`, buildLibraryStaticZip(lib(), details), 'application/zip')
     const s = source()
     downloadFile(`${projectName(s)}-static.zip`, buildStaticZip(s), 'application/zip')
   }
   const html = () => {
+    onExport?.()
     if (isLibrary) return downloadFile(`${libraryProjectName(library)}.html`, buildLibraryStandalone(lib()), 'text/html')
     const s = source()
     downloadFile(`${projectName(s)}.html`, buildStandalone(s), 'text/html')

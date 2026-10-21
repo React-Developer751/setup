@@ -27,6 +27,8 @@ export type DesignRecord = {
   heroLayout: string
   layouts: string[]
   heroTitle: string
+  /** the texts of the design by place (brand name replaced): what the phrase scores are about */
+  copy?: Record<string, string>
   verdict: Verdict
 }
 

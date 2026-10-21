@@ -4,6 +4,7 @@
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
 // GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
 // GET/POST /api/edit-log, POST /api/edit-log/undo -> the chat commands and which ones were undone;  GET/POST /api/image-ratings -> picture thumbs shared by all browsers
+// GET/POST /api/phrase-events -> what people say and do about the texts of the sites (the content AI's phrase scores)
 // GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
 // GET  /api/health    -> { ok, ai }
 // The page checks every operation again (cleanOp), so this server is never trusted with more than the offline rules may do.
@@ -240,7 +241,7 @@ export const server = http.createServer(async (req, res) => {
           at: new Date().toISOString(), key: text(r.key, 120), group: text(r.group, 80), prompt: text(r.prompt, 300), variation: Number(r.variation) || 0, creativity: text(r.creativity, 12),
           theme: text(r.theme, 40), niche: text(r.niche, 60), paletteName: text(r.paletteName, 80), kind: text(r.kind, 30), accent: hex(r.accent), alt: hex(r.alt), hue: Math.round(Number(r.hue) || 0) % 360,
           sat: Math.round(Number(r.sat) || 0), light: Math.round(Number(r.light) || 0), mode: r.mode === 'dark' ? 'dark' : 'light', tier: text(r.tier, 12), heroLayout: text(r.heroLayout, 40),
-          layouts: Array.isArray(r.layouts) ? r.layouts.slice(0, 30).map((l) => text(l, 40)) : [], heroTitle: text(r.heroTitle, 140), verdict: ['good', 'bad'].includes(r.verdict) ? r.verdict : 'unrated',
+          layouts: Array.isArray(r.layouts) ? r.layouts.slice(0, 30).map((l) => text(l, 40)) : [], heroTitle: text(r.heroTitle, 140), copy: r.copy && typeof r.copy === 'object' ? Object.fromEntries(Object.entries(r.copy).slice(0, 8).map(([k, v]) => [text(k, 20), text(v, 140)])) : undefined, verdict: ['good', 'bad'].includes(r.verdict) ? r.verdict : 'unrated',
         }
         const rows = readAll()
         if (rows.length >= 20000) rows.splice(0, rows.length - 19999)
@@ -299,6 +300,26 @@ export const server = http.createServer(async (req, res) => {
         target.undone = true
         writeAll(rows)
         return send(res, 200, { ok: true })
+      }
+    }
+    // what people say and do about the texts of the sites (headlines, buttons ...): one line per event, the page folds them into a score per phrase
+    if (url.pathname === '/api/phrase-events') {
+      const file = path.join(DATA, 'phrase-events.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      if (req.method === 'GET') return send(res, 200, { events: readAll().slice(-8000) })
+      if (req.method === 'POST') {
+        const body = JSON.parse(await readBody(req))
+        const text = (v, n) => String(v ?? '').replace(/\p{Cc}+/gu, ' ').slice(0, n)
+        const SLOTS = ['heroTitle', 'heroSubtitle', 'heroButton', 'ctaTitle', 'featuresTitle', 'aboutTitle']
+        const REASONS = ['opinion', 'replaced', 'regenerate', 'rating', 'export', 'abandoned']
+        const events = (Array.isArray(body.events) ? body.events : [body]).slice(0, 20).flatMap((e) => {
+          if (!e || !SLOTS.includes(e.slot) || !text(e.phrase, 140).trim() || !text(e.session, 60) || !text(e.group, 80)) return []
+          return [{ at: new Date().toISOString(), session: text(e.session, 60), group: text(e.group, 80), slot: e.slot, phrase: text(e.phrase, 140), delta: e.delta === 1 ? 1 : e.delta === -1 ? -1 : 0, reason: REASONS.includes(e.reason) ? e.reason : 'opinion', ...(e.text ? { text: text(e.text, 200) } : {}), ...(['POSITIVE', 'NEGATIVE', 'NEUTRAL'].includes(e.sentiment) ? { sentiment: e.sentiment } : {}) }]
+        })
+        if (!events.length) return send(res, 400, { error: 'session, group, slot and phrase are needed' })
+        fs.mkdirSync(DATA, { recursive: true })
+        fs.appendFileSync(file, events.map((e) => JSON.stringify(e)).join('\n') + '\n')
+        return send(res, 200, { ok: true, stored: events.length })
       }
     }
     // picture thumbs, shared by every browser: one line per thumb, the page folds them into liked / disliked / votes

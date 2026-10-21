@@ -22,6 +22,10 @@ import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
 import { rateScene, syncRatings } from './generator/edit/imageRatings'
+import { analyseFeedback } from './generator/memory/sentiment'
+import { ALL_SLOTS, alternativeFor, eventsFor, groupOf, slotsOfFeedback, slotTexts, SLOT_NAME, treatAsOpinion } from './generator/memory/copyLearning'
+import { loadPhraseScores, recordPhrases, sessionId } from './generator/memory/phraseStore'
+import { PHRASE_SLOTS, type PhraseSlot } from './generator/memory/phraseScores'
 import { doubtQuestion, isDoubtful, logRow, normaliseCommand, openEditLog, undoStats } from './generator/memory/editHistory'
 import RatePictures from './RatePictures'
 import DesignHistory from './DesignHistory'
@@ -163,6 +167,28 @@ function GeneratorPage() {
   const hslToHex = (h: number, s: number, l: number) => `#${hslToRgb(h, s, l).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`
   // ───────────── the design memory ─────────────
   const DESIGN_COLOUR = 'A colour that was not used yet'
+  // ───────────── what the person says about the texts (the content AI's phrase scores) ─────────────
+  const textSite = isMulti ? multi : site
+  const phraseCtx = () => ({ session: sessionId(), group: groupOf(site), content: textSite.content })
+  const learn = (slots: readonly PhraseSlot[], delta: 1 | -1 | 0, reason: Parameters<typeof eventsFor>[3], extra: Parameters<typeof eventsFor>[4] = {}) => void recordPhrases(eventsFor(phraseCtx(), slots, delta, reason, extra))
+  const turnedDown = useRef<string[]>([])
+  const exported = useRef(false)
+  // a window closed without any download: logged as a fact about the design (it changes no score)
+  const leaving = useRef<() => void>(() => undefined)
+  leaving.current = () => {
+    if (exported.current || !history.length) return
+    try {
+      navigator.sendBeacon('/api/phrase-events', new Blob([JSON.stringify({ events: eventsFor(phraseCtx(), ['heroTitle'], 0, 'abandoned') })], { type: 'application/json' }))
+    } catch {
+      // the log is optional
+    }
+    exported.current = true
+  }
+  useEffect(() => {
+    const onHide = () => leaving.current()
+    window.addEventListener('pagehide', onHide)
+    return () => window.removeEventListener('pagehide', onHide)
+  }, [])
   const insightsOf = (rows: DesignRecord[], prompt: string): Insights => analyse(rows, businessKey(prompt))
   const refreshDesigns = async (prompt: string) => {
     const store = designStore ?? (await openStore())
@@ -173,7 +199,7 @@ function GeneratorPage() {
   const newDesign = async (prompt: string) => {
     const store = designStore ?? (await openStore())
     if (!designStore) setDesignStore(store)
-    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature() })
+    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature(), phrases: await loadPhraseScores() })
     await store.add(plan.record).catch(() => undefined)
     setCurrentDesign(plan.record.id)
     setDesigns(await store.list(businessKey(prompt)).catch(() => []))
@@ -181,6 +207,8 @@ function GeneratorPage() {
   }
   const anotherDesign = async () => {
     setDesignBusy(true)
+    // asking for another design is a (small) thumb down for the texts of this one
+    learn(['heroTitle'], -1, 'regenerate')
     const plan = await newDesign(submitted)
     say({ role: 'ai', text: plan.reasons.slice(-2).join(' ') })
     setVariation(plan.variation)
@@ -194,6 +222,13 @@ function GeneratorPage() {
   const markDesign = async (id: string, verdict: 'good' | 'bad', best: boolean) => {
     const store = designStore ?? (await openStore())
     await store.setVerdict(id, verdict, best).catch(() => undefined)
+    // a design kept as right: its texts are liked; turned down: its headline most of all
+    const record = designs.find((d) => d.id === id)
+    if (record?.copy) {
+      const at = new Date().toISOString()
+      const group = record.niche || record.theme
+      void recordPhrases(PHRASE_SLOTS.flatMap((slot) => (record.copy?.[slot] ? [{ at, session: sessionId(), group, slot, phrase: record.copy[slot], delta: verdict === 'good' ? (1 as const) : (-1 as const), reason: slot === 'heroTitle' || verdict === 'good' ? ('rating' as const) : ('regenerate' as const) }] : [])))
+    }
     await refreshDesigns(submitted)
     say({ role: 'ai', text: verdict === 'good' ? 'Kept as the right design. The others of this round are turned down; the next design learns from it and gets a colour that is new.' : 'Noted: this design is turned down. The next design stays away from its colours.' })
   }
@@ -207,6 +242,8 @@ function GeneratorPage() {
     setUndone([])
     // the colours are thought out first: a new idea that does not look like the last sites
     designGroup.current = newId()
+    turnedDown.current = []
+    exported.current = false
     const plan = await newDesign(text)
     messageId.current += 1
     setMessages([{ id: messageId.current, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
@@ -278,6 +315,8 @@ function GeneratorPage() {
   const chatting = useRef(false)
   const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string) => {
     let logId: string | undefined
+    // a text the person writes over is a text they did not want
+    if (chatting.current) for (const o of ops) if (o.op === 'text' && (PHRASE_SLOTS as readonly string[]).includes(o.field)) learn([o.field as PhraseSlot], -1, 'replaced')
     if (chatting.current) {
       const row = logRow(text, businessKey(submitted), isMulti ? 'multi' : 'single', ops.map(describeOp), via)
       logId = row.id
@@ -398,12 +437,55 @@ function GeneratorPage() {
     chatting.current = false
   }
 
+  const answerOpinion = async (text: string, feedback: ReturnType<typeof analyseFeedback>) => {
+    const good = feedback.label === 'POSITIVE'
+    const slots = good && feedback.target === 'overall' ? ALL_SLOTS : slotsOfFeedback(feedback)
+    const ctx = phraseCtx()
+    const group = ctx.group
+    const names = slots.map((slot) => `"${slotTexts(ctx.content)[slot]}"`).join(', ')
+    if (slots.length) await recordPhrases(eventsFor(ctx, slots, good ? 1 : -1, 'opinion', { text, sentiment: feedback.label }))
+    if (good) {
+      say({ role: 'ai', text: slots.length ? `Thanks, noted: ${names} will be used more often for this kind of business.` : 'Thanks, noted. Tell me if you want to change anything.' })
+      return
+    }
+    const part = feedback.target
+    if (part === 'colour') {
+      const used = [...designs.map((d) => d.hue), hslOfHex(palette.light.accent).h, ...history.flatMap((h) => h.ops.filter((o) => o.op === 'accent').map((o) => hslOfHex((o as { hex: string }).hex).h))]
+      const hex = uniqueAccent(`#${[0, 0, 0].map(() => Math.floor(Math.random() * 200 + 30).toString(16).padStart(2, '0')).join('')}`, used, hslToHex, hslOfHex)
+      applyOps('Another colour', [{ op: 'accent', hex }], 'rules', 'Noted, you did not like the colour. I picked a colour that this kind of business has not had yet. Say "undo" to go back.')
+      return
+    }
+    if (part === 'image') {
+      say({ role: 'ai', text: 'Noted. Use the thumb down on the picture you do not like (under "Rate the pictures"): another scene is drawn at once and the turned-down scene is not used again.' })
+      return
+    }
+    if (part === 'layout' || (part === 'overall' && !feedback.wantsChange)) {
+      say({ role: 'ai', text: `Noted${slots.length ? `: ${names} will be used less` : ''}. What should change: the heading, the colours, the pictures or the whole design? You can also press "Another design".` })
+      return
+    }
+    const slot = slots[0]
+    const scores = await loadPhraseScores(true)
+    turnedDown.current = [...turnedDown.current, ctx.content && slotTexts(ctx.content)[slot]]
+    const alt = alternativeFor(submitted, slot, { current: slotTexts(ctx.content)[slot], brand: ctx.content.brandName, group, scores, avoid: turnedDown.current })
+    if (!alt) {
+      say({ role: 'ai', text: `Noted: ${names} will be used less. I have no other ${SLOT_NAME[slot]} for this business yet. Type the one you want, for example: ${SLOT_NAME[slot] === 'button text' ? 'button text Book now' : 'heading "Your new heading"'}.` })
+      return
+    }
+    applyOps(`Another ${SLOT_NAME[slot]}`, [alt.op], 'rules', `Noted: ${names} will be used less for this kind of business. New ${SLOT_NAME[slot]}: "${alt.text}". Say "undo" to get the old one back, or "another ${SLOT_NAME[slot]}" for a different one.`)
+  }
+
   const sendChat = async (text: string) => {
     say({ role: 'user', text })
     setChatBusy(true)
     chatting.current = true
     try {
       const parsed = parseEdit(text, isMulti ? 'multi' : 'single')
+      // an opinion ("heading boring hai", "this is not good") is answered and learned from; the edit parser would turn it into a command
+      const feedback = pending.current ? undefined : analyseFeedback(text)
+      if (feedback && parsed.kind !== 'newSite' && treatAsOpinion(feedback, text, parsed.kind === 'ops' ? parsed.ops : undefined)) {
+        await answerOpinion(text, feedback)
+        return
+      }
       if (parsed.kind === 'control') {
         if (parsed.control === 'undo') undo()
         else if (parsed.control === 'redo') redo()
@@ -811,7 +893,7 @@ function GeneratorPage() {
 
           <section className="space-y-2 rounded-xl border border-gray-200 p-3">
             <h2 className="text-sm font-semibold text-gray-900">Export</h2>
-            <ExportPanel engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} />
+            <ExportPanel engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
           </section>
         </div>
       </aside>

@@ -6,6 +6,7 @@ import { sampleTopK } from '../creativity'
 import { generateWebsite } from '../generateWebsite'
 import { businessKey } from '../edit/imageRatings'
 import { analyse, hueGap, hueName, minGapFor, nearestFreeHue, tasteScore, type Candidate, type Insights } from './designMemory'
+import { copyFactor, copyOf, type PhraseScores } from './phraseScores'
 import { newId, type DesignRecord, type DesignStore } from './designStore'
 
 export type DesignPlan = {
@@ -51,11 +52,12 @@ export function describeDesign(prompt: string, variation: number, creativity: st
     heroLayout: site.layoutIds.find((id) => id.startsWith('hero')) ?? '',
     layouts: site.layoutIds,
     heroTitle: site.content.hero.title,
+    copy: copyOf(site.content),
     verdict: 'unrated',
   }
 }
 
-export async function planDesign(prompt: string, store: DesignStore, options: { group: string; creativity: string; temperature: number; rand?: () => number; candidates?: number }): Promise<DesignPlan> {
+export async function planDesign(prompt: string, store: DesignStore, options: { group: string; creativity: string; temperature: number; rand?: () => number; candidates?: number; /** what people said about the texts (phraseScores.ts): texts they sent back are left out, texts they kept are preferred */ phrases?: PhraseScores }): Promise<DesignPlan> {
   const rand = options.rand ?? Math.random
   const key = businessKey(prompt)
   const all = await store.list().catch(() => [] as DesignRecord[])
@@ -75,8 +77,10 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
     const taste = tasteScore(design as Candidate, insights)
     const near = recent.length ? Math.min(...recent.map((h) => hueGap(design.hue, h))) : 180
     // a design that needed no change is worth a little more than one that was recoloured; far from the other businesses made lately, a little more
-    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1))
-    return [{ record: design, shifted, score }]
+    // the texts of the design: sent back by people (score under 7) it is mostly left out, kept by people it is preferred
+    const words = options.phrases ? copyFactor(options.phrases, record.niche || record.theme, record.copy) : { factor: 1, dropped: [] as string[] }
+    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor)
+    return [{ record: design, shifted, score, dropped: words.dropped }]
   })
   let scored = evaluate(gap)
   // the wheel is crowded: the gap to the old colours is made smaller until a free place is found
@@ -85,9 +89,13 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
     scored = evaluate(gap)
   }
   const fresh = scored.filter((s) => !s.shifted)
-  const winner = sampleTopK(scored.map((s) => ({ item: s, score: s.score })), options.temperature, rand)
+  // designs with a text that people sent back are dropped as long as other designs are left
+  const clean = scored.filter((s) => !s.dropped.length)
+  const pool = clean.length ? clean : scored
+  const demoted = scored.length - pool.length
+  const winner = sampleTopK(pool.map((s) => ({ item: s, score: s.score })), options.temperature, rand)
   const ops: EditOp[] = winner.shifted ? [{ op: 'accent', hex: winner.record.accent }] : []
-  const reasons = [...insights.summary, `New design: ${hueName(winner.record.hue)} colours (${winner.record.paletteName}${winner.shifted ? ', moved to a hue that was not used yet' : ''}), ${winner.record.mode} mode, first screen "${winner.record.heroLayout}". Chosen from ${made.length} designs.`]
+  const reasons = [...insights.summary, `New design: ${hueName(winner.record.hue)} colours (${winner.record.paletteName}${winner.shifted ? ', moved to a hue that was not used yet' : ''}), ${winner.record.mode} mode, first screen "${winner.record.heroLayout}". Chosen from ${made.length} designs.`, ...(demoted ? [`${demoted} design${demoted === 1 ? '' : 's'} left out: people did not like their texts before.`] : [])]
   return { variation: winner.record.variation, record: winner.record, insights, ops, reasons, tried: made.length, fresh: fresh.length }
 }
 
