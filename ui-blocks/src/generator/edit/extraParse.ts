@@ -4,6 +4,7 @@ import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
 import { AMBIGUOUS_MOOD_WORDS, MOODS, moodFromText } from '../moods'
 import type { EditOp } from './edits'
+import { styleOps } from './styleParse'
 
 export type ExtraResult = { ops: EditOp[]; notes: string[] } | undefined
 
@@ -66,6 +67,10 @@ export function extraOps(clause: string): ExtraResult {
   const text = clause.trim().normalize('NFC')
   if (!text) return undefined
 
+  // sizes, corners, menu place, pictures, things that do not exist: read first (the words of these requests look like new texts to the readers below)
+  const style = styleOps(text)
+  if (style) return style
+
   // "mood badlo", "kuch alag style try karo", "show me another look": a different mood
   if (/(?<![\p{L}])(?:mood|style|look|vibe|theme|design|स्टाइल|लुक)\s+(?:change|badlo|badal|alag|naya|nayi|different|another|new|dusra|doosra)|(?:alag|naya|nayi|different|another|new|dusra|doosra|kuch\s+aur)\s+(?:mood|style|look|vibe|design|स्टाइल|लुक)|change\s+(?:the\s+)?(?:mood|style|look|vibe)|मूड\s+बदलो|स्टाइल\s+बदलो|लुक\s+बदलो/iu.test(text) && !/colou?r|rang|रंग|font|corner|button/i.test(text) && text.split(/\s+/).length <= 7) {
     const ids = MOODS.map((m) => m.id)
@@ -93,7 +98,7 @@ export function extraOps(clause: string): ExtraResult {
   if (/(?<![\p{L}])(?:swap|exchange|interchange)\s+(?:the\s+)?[\p{L}\s]+?\s+(?:and|with|aur)\s+/iu.test(text) && !/§|['"]/.test(text) && !/\bfor\b/i.test(text)) return { ops: [], notes: ['I cannot swap two parts in one go. Move one of them: "move about below services".'] }
 
   // "make this website for a restaurant"
-  const biz = text.match(/^(?:is\s+|iss\s+|this\s+)?(?:website|site)\s+ko\s+(.+?)\s+ke\s+liye\s+(?:badlo|badal\s+do|karo|kar\s+do|bana\s+do)$/i) ?? text.match(/^(?:make|change|turn)\s+(?:this|the)\s+(?:website|site)\s+(?:for|into)\s+(?:a\s+|an\s+)?(.+)$/i)
+  const biz = text.match(/^(?:is\s+|iss\s+|this\s+)?(?:website|site)\s+ko\s+(.+?)\s+ke\s+liye\s+(?:badlo|badal\s+do|karo|kar\s+do|bana\s+do)$/i) ?? text.match(/^(?:make|change|turn)\s+(?:this|the)\s+(?:website|site)\s+(?:for|into)\s+(?:a\s+|an\s+)?(.+)$/i) ?? text.match(/^(?:is\s+|iss\s+|this\s+)?(?:website|site)\s+ko\s+(?:ek\s+)?(.+?)\s+(?:bana\s+do|banao|bana\s+de|banado|karo|kar\s+do)$/i)
   if (biz) {
     const value = biz[1].trim()
     const decision = decideTheme(value)

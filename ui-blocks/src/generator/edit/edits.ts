@@ -28,7 +28,9 @@ export const MOOD_CHOICES = ['minimal-light', 'minimal-dark', 'soft-neo', 'retro
 export type MoodChoice = (typeof MOOD_CHOICES)[number]
 
 /** the look of one kind of thing on a part of the page (or the whole page): the colour of the buttons, of the headings, of the text, the roundness of corners, the typeface */
-export const STYLE_PROPS = ['buttonColor', 'headingColor', 'textColor', 'radius', 'font'] as const
+export const STYLE_PROPS = ['buttonColor', 'headingColor', 'textColor', 'radius', 'font', 'headingSize', 'textSize'] as const
+/** headingSize / textSize are steps on the type scale (-3 .. 3) */
+export const SIZE_PROPS = ['headingSize', 'textSize'] as const
 export type StyleProp = (typeof STYLE_PROPS)[number]
 export const RADIUS_CHOICES = ['square', 'rounded', 'pill'] as const
 export const FONT_KEYS = ['serif', 'sans', 'mono', 'elegant', 'rounded', 'display'] as const
@@ -179,7 +181,7 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       if (!(FIT_TARGETS as readonly unknown[]).includes(o.target) || !(STYLE_PROPS as readonly unknown[]).includes(o.prop)) return undefined
       const prop = o.prop as StyleProp
       const value = typeof o.value === 'string' ? o.value.trim().toLowerCase() : ''
-      const ok = value === 'default' || (prop === 'radius' ? (RADIUS_CHOICES as readonly string[]).includes(value) : prop === 'font' ? (FONT_KEYS as readonly string[]).includes(value) : HEX.test(value))
+      const ok = value === 'default' || ((SIZE_PROPS as readonly string[]).includes(prop) ? /^[+-][1-3]$/.test(value) : prop === 'radius' ? (RADIUS_CHOICES as readonly string[]).includes(value) : prop === 'font' ? (FONT_KEYS as readonly string[]).includes(value) : HEX.test(value))
       return ok ? { op: 'style', target: o.target as FitTarget, prop, value } : undefined
     }
     case 'mood':
@@ -304,7 +306,12 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'style': {
         const current = { ...(e.styles[op.target] ?? {}) }
         if (op.value === 'default') delete current[op.prop]
-        else current[op.prop] = op.value
+        else if ((SIZE_PROPS as readonly string[]).includes(op.prop)) {
+          // "bigger" twice is two steps: a size is relative to what was asked before
+          const step = Math.max(-3, Math.min(3, Number(current[op.prop] ?? 0) + Number(op.value)))
+          if (step === 0) delete current[op.prop]
+          else current[op.prop] = `${step > 0 ? '+' : ''}${step}`
+        } else current[op.prop] = op.value
         e.styles = { ...e.styles, [op.target]: current }
         break
       }
@@ -424,6 +431,11 @@ export function describeOp(op: EditOp): string {
     case 'clearSectionColor':
       return `The ${op.target} has the normal colours again`
     case 'style': {
+      if (op.prop === 'headingSize' || op.prop === 'textSize') {
+        const noun = op.prop === 'headingSize' ? 'headings' : 'text'
+        const where = op.target === 'page' ? 'the page' : `the ${op.target}`
+        return op.value === 'default' ? `The ${noun} of ${where} have the normal size again` : `The ${noun} of ${where} are ${op.value.startsWith('+') ? 'bigger' : 'smaller'}`
+      }
       const what = { buttonColor: 'buttons', headingColor: 'headings', textColor: 'text', radius: 'corners', font: 'typeface' }[op.prop]
       return op.value === 'default' ? `The ${what} of ${op.target === 'page' ? 'the page' : `the ${op.target}`} are back to normal` : `${op.target === 'page' ? 'All' : `The ${op.target}`} ${what}: ${op.value}`
     }

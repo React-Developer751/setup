@@ -6,6 +6,7 @@ import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
+import { styleOps } from './styleParse'
 import { cleanOp, type EditOp, type FitTarget, type StyleProp, type Harmony, type ServiceItem, type PageKey, type SectionKey, type Target, type TextField, type Tone, TONES } from './edits'
 import {
   COLOR_HEX,
@@ -242,6 +243,7 @@ function controlOf(text: string): Control | undefined {
   // "undo the undo", "undo cancel karo": taking an undo back is a redo
   if (/(?<![\p{L}])un-?undo|undo\s+(?:the\s+)?undo|undo\s+ko\s+undo|revert\s+the\s+undo|(?:undo|undone)\b.*\b(?:cancel|reverse|restore|wapas|revert|kiya tha)|(?:cancel|reverse|restore|apply|bring back|take back|revert)\b.*\b(?:undo|undone)\b/iu.test(text)) return 'redo'
   if (/सब\s+बदलाव\s+(?:हटा|वापस|रीसेट)/u.test(text)) return 'reset'
+  if (words <= 5 && /(?<![\p{L}])(?:start\s+(?:again|over|fresh)|from\s+scratch|fresh\s+start|shuru\s+se|phir\s+se\s+shuru|dobara\s+shuru)(?![\p{L}])/iu.test(text)) return 'reset'
   if (re.reset.test(text) && !/(?<![\p{L}\p{M}])(?:साइज़|साइज|लेआउट|layout|sizes?|heights?|widths?|alignments?|spacing|positions?|order)(?![\p{L}])/iu.test(text)) return 'reset'
   if (!sections && re.redo.test(text)) return 'redo'
   if (!sections && /(?<![\p{L}\p{M}])(?:wapas|wapis|वापस)\s+(?:lagao|laga do|laga de|apply|chahiye|do|laao|lao)/iu.test(text)) return /wapas\s+(?:chahiye|laao|lao|do)/i.test(text) ? (/(?:old|pehle|purana)/i.test(text) ? 'undo' : 'redo') : 'redo'
@@ -506,6 +508,11 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
         return { ops, notes }
       }
       notes.push('I cannot change the size of buttons yet. I can change the button text, colour, corners and place.')
+      return { ops, notes }
+    }
+    // words of a command are not a new text ("heading ka rang gol karo" must not become the heading "rang gol")
+    if (value && !hasQuote(clause) && /(?<![\p{L}\p{M}])(?:size|saiz|naam|name|daalo|dalo|bold|italic|underline|font|spacing|bada|badi|bade|chhota|chhoti|chhote|badhao|ghatao|karo|kardo|krdo|hatao|hata|upar|niche|left|right|center|centre|color|colour|rang|square|rounded|corners?|animation|dark|light)(?![\p{L}\p{M}])/iu.test(value) && wordCount(value) <= 6) {
+      notes.push('I did not change the text. To set new words, give them in quotes: for example heading "Your new heading".')
       return { ops, notes }
     }
     if (value && value.length >= 1 && !(colorMentions(value).length > 0 && wordCount(value) <= 3 && !hasQuote(clause))) {
@@ -825,16 +832,36 @@ export function parseEdit(input: string, context: EditContext = 'single'): Under
   const hoursText = parseHoursText(plain)
   if (hoursText) return { kind: 'ops', ops: [{ op: 'contact', field: 'hours', value: hoursText }], notes: [] }
 
+  // one style request (a size, corners, "cookie banner hatao"): read as typed, before the typo fixer turns "spacing" into "pricing"
+  if (splitCommands(hidden.text).length === 1) {
+    const early = styleOps(raw)
+    if (early) return { kind: 'ops', ops: early.ops.flatMap((o) => (cleanOp(o) ? [cleanOp(o) as EditOp] : [])), notes: early.notes }
+  }
   const ops: EditOp[] = []
   const notes: string[] = []
   const carry: { verb?: 'remove' | 'add'; last?: string; target?: string } = {}
-  for (const command of splitCommands(hidden.text)) {
+  const commands = splitCommands(hidden.text)
+  const results: ClauseResult[] = []
+  for (const command of commands) {
     const result = clauseOps(command, context, hidden.quotes, carry)
     carry.last = result.ops.at(-1)?.op
     for (const o of result.ops) {
       const t = 'section' in o ? o.section : 'page' in o ? (o.page === 'services' ? 'features' : o.page) : 'target' in o ? o.target : undefined
       if (typeof t === 'string' && t !== 'page') carry.target = t
     }
+    results.push(result)
+  }
+  // "gallery aur faq hatao": the verb belongs to every section of the list, not only to the last one
+  for (let i = results.length - 2; i >= 0; i -= 1) {
+    const next = results[i + 1].ops[0]
+    if (results[i].ops.length || results[i].notes.length || !next || (next.op !== 'remove' && next.op !== 'add')) continue
+    const named = sectionsIn(commands[i])
+    // only the names of sections stand there (no other words but "and")
+    if (!named.length || commands[i].split(/[\s,&]+/).filter(Boolean).length > named.length * 3) continue
+    const verb = next.op
+    results[i] = { ops: named.flatMap((key) => sectionChange(key, verb, context)), notes: [] }
+  }
+  for (const result of results) {
     ops.push(...result.ops)
     notes.push(...result.notes)
   }

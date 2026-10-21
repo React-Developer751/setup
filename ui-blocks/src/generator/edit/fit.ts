@@ -3,7 +3,7 @@
 // container with the width factor (or an exact pixel size). Nothing in the templates has to know about it.
 import type { Align, Axis, FitTarget, Move, SectionKey, SiteEdits, SizeChange, StyleSet, Target } from './edits'
 
-export type Fit = { height?: SizeChange; width?: SizeChange; align?: Align; /** the buttons alone */ buttons?: Align; /** colours of headings and text, roundness of corners */ style?: Pick<StyleSet, 'headingColor' | 'textColor' | 'radius'> }
+export type Fit = { height?: SizeChange; width?: SizeChange; align?: Align; /** the buttons alone */ buttons?: Align; /** colours of headings and text, roundness of corners */ style?: Pick<StyleSet, 'headingColor' | 'textColor' | 'radius' | 'headingSize' | 'textSize'> }
 export type Fits = Partial<Record<Target, Fit>>
 
 const MERGE = (page: SizeChange | undefined, own: SizeChange | undefined): SizeChange | undefined => {
@@ -27,7 +27,7 @@ export function fitsFrom(edits: SiteEdits | undefined, targets: readonly Target[
     // the look of headings, text and corners: the part's own setting over the whole page's
     const mine = edits.styles?.[target as FitTarget]
     const all = edits.styles?.page
-    const style = { ...(all?.headingColor || mine?.headingColor ? { headingColor: mine?.headingColor ?? all?.headingColor } : {}), ...(all?.textColor || mine?.textColor ? { textColor: mine?.textColor ?? all?.textColor } : {}), ...(all?.radius || mine?.radius ? { radius: mine?.radius ?? all?.radius } : {}) }
+    const style = { ...(all?.headingColor || mine?.headingColor ? { headingColor: mine?.headingColor ?? all?.headingColor } : {}), ...(all?.textColor || mine?.textColor ? { textColor: mine?.textColor ?? all?.textColor } : {}), ...(all?.radius || mine?.radius ? { radius: mine?.radius ?? all?.radius } : {}), ...(all?.headingSize || mine?.headingSize ? { headingSize: stepSum(all?.headingSize, mine?.headingSize) } : {}), ...(all?.textSize || mine?.textSize ? { textSize: stepSum(all?.textSize, mine?.textSize) } : {}) }
     if (height || width || align || buttons || Object.keys(style).length) out[target] = { ...(height ? { height } : {}), ...(width ? { width } : {}), ...(align ? { align } : {}), ...(buttons ? { buttons } : {}), ...(Object.keys(style).length ? { style } : {}) }
   }
   return Object.keys(out).length ? out : undefined
@@ -197,6 +197,28 @@ function buttonsAlignOf(html: string, align: Align, mode: 'html' | 'jsx', tags: 
   return replaceTags(html, out)
 }
 
+/** page-wide and part-wide size steps add up */
+const stepSum = (a?: string, b?: string) => {
+  const n = Math.max(-3, Math.min(3, Number(a ?? 0) + Number(b ?? 0)))
+  return `${n > 0 ? '+' : ''}${n}`
+}
+/** the type scale of Tailwind, in rem */
+const SCALE = [['xs', 0.75], ['sm', 0.875], ['base', 1], ['lg', 1.125], ['xl', 1.25], ['2xl', 1.5], ['3xl', 1.875], ['4xl', 2.25], ['5xl', 3], ['6xl', 3.75], ['7xl', 4.5], ['8xl', 6], ['9xl', 8]] as const
+const SIZE_CLASS = /^((?:[a-z0-9]+:)*)text-(xs|sm|base|lg|xl|[2-9]xl)$/
+const shiftSize = (name: string, steps: number) => SCALE[Math.max(0, Math.min(SCALE.length - 1, SCALE.findIndex(([n]) => n === name) + steps))]
+
+/** a bigger or smaller type: the classes move along the scale (React export), the preview gets a font-size of its own that keeps the responsive range */
+function sizeOf(classes: string[], steps: number, mode: 'html' | 'jsx'): { classes: string[]; css: string } {
+  const found = classes.map((c) => SIZE_CLASS.exec(c)).filter((m): m is RegExpExecArray => !!m)
+  if (!found.length) return { classes, css: '' }
+  if (mode === 'jsx') return { classes: classes.map((c) => { const m = SIZE_CLASS.exec(c); return m ? `${m[1]}text-${shiftSize(m[2], steps)[0]}` : c }), css: '' }
+  const base = found.find((m) => !m[1]) ?? found[0]
+  const widest = found[found.length - 1]
+  const a = shiftSize(base[2], steps)[1]
+  const b = shiftSize(widest[2], steps)[1]
+  return { classes: classes.filter((c) => !SIZE_CLASS.test(c)), css: `font-size:${a === b ? `${a}rem` : `clamp(${a}rem, 4vw + 0.5rem, ${b}rem)`};` }
+}
+
 const RADIUS_CLASS = /^rounded(?:-(?:xs|sm|md|lg|xl|2xl|3xl|none))?$/
 const COLOR_CLASS = /^text-(?:\(--g-[a-z-]+\)|\[var\(--g-[a-z-]+\)\])(?:\/\d+)?$/
 
@@ -213,6 +235,12 @@ function styleMarkup(html: string, style: NonNullable<Fit['style']>, mode: 'html
     }
     if (style.headingColor && /^h[1-4]$/.test(tag.name)) paint(style.headingColor)
     if (style.textColor && /^(?:p|li|figcaption|blockquote)$/.test(tag.name)) paint(style.textColor)
+    const sizeSteps = /^h[1-4]$/.test(tag.name) ? Number(style.headingSize ?? 0) : /^(?:p|li|figcaption|blockquote)$/.test(tag.name) ? Number(style.textSize ?? 0) : 0
+    if (sizeSteps) {
+      const sized = sizeOf(next, sizeSteps, mode)
+      next = sized.classes
+      css += sized.css
+    }
     if (style.radius && next.some((c) => RADIUS_CLASS.test(c))) {
       const clickable = /^(?:a|button)$/.test(tag.name)
       const to = style.radius === 'square' ? 'rounded-none' : style.radius === 'pill' ? (clickable ? 'rounded-full' : 'rounded-3xl') : 'rounded-xl'
