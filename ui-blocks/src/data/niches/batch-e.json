@@ -1,0 +1,2670 @@
+[
+  {
+    "id": "gym_fitness_studio",
+    "label": "Gym and fitness studio",
+    "theme": "bold_fitness",
+    "keywords": [
+      "gym membership",
+      "fitness centre",
+      "crossfit box",
+      "personal trainer",
+      "weight training gym",
+      "gym near me",
+      "जिम",
+      "gym ki membership",
+      "gym",
+      "fitness studio",
+      "health club"
+    ],
+    "heroTitles": [
+      "Strong Starts With One Good Workout",
+      "Train With Coaches Who Know Your Name",
+      "Your Gym, Your Pace, Your Goals"
+    ],
+    "heroSubtitles": [
+      "{brand} gives you clean equipment, coached floor time and a workout plan that fits your schedule and your fitness level.",
+      "Walk in for a free trial session and meet the trainers before you pay for a single month of membership.",
+      "Whether you lift, run or just want to move more, {brand} has a plan and a coach to keep you showing up."
+    ],
+    "button": "Book A Free Trial",
+    "featureTitle": "Everything You Need To Train Properly",
+    "features": [
+      {
+        "title": "Strength Floor",
+        "text": "Racks, free weights and machines laid out with space, so you never wait long between sets."
+      },
+      {
+        "title": "Cardio Zone",
+        "text": "Treadmills, cycles and rowers on one side of the floor, with fans and a clear view of the clock."
+      },
+      {
+        "title": "Personal Training",
+        "text": "One to one sessions built around your body, your injuries if any, and the goal you actually care about."
+      },
+      {
+        "title": "Group Classes",
+        "text": "Coached sessions for strength, conditioning and cardio, scaled so beginners can follow along."
+      },
+      {
+        "title": "Fitness Assessment",
+        "text": "A basic check of weight, mobility and strength so your first plan starts from where you really are."
+      },
+      {
+        "title": "Open Slots",
+        "text": "Early morning to late evening timings, so work and college hours do not block your workout."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Free",
+        "label": "Trial session"
+      },
+      {
+        "value": "1 to 1",
+        "label": "Coaching available"
+      },
+      {
+        "value": "Early-late",
+        "label": "Open timings"
+      }
+    ],
+    "steps": {
+      "title": "How To Start Training With Us",
+      "items": [
+        {
+          "title": "Trial Session",
+          "text": "Visit, tour the floor and try one session with a trainer at no cost."
+        },
+        {
+          "title": "Assessment",
+          "text": "We note your goals, past injuries and current fitness so the plan is safe."
+        },
+        {
+          "title": "Your Plan",
+          "text": "You get a workout schedule written down, with the exercises explained on the floor."
+        },
+        {
+          "title": "Keep Going",
+          "text": "Trainers check your progress each month and change the plan when you outgrow it."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Can a complete beginner join?",
+        "a": "Yes. Most members start as beginners, and a trainer will show you each machine and exercise in the first week."
+      },
+      {
+        "q": "Do you offer a trial before membership?",
+        "a": "Yes, a trial session lets you see the gym, meet the trainers and decide without any commitment."
+      },
+      {
+        "q": "Can I pause my membership?",
+        "a": "Ask us at the desk. We usually allow a pause for travel or medical reasons, with the details agreed in writing."
+      },
+      {
+        "q": "Is personal training included in the membership?",
+        "a": "It is a separate add on. Plain membership gives you floor access, and personal training is booked with a trainer."
+      },
+      {
+        "q": "I have an old injury. Is that a problem?",
+        "a": "Tell the trainer before you begin. We can adjust exercises, and we suggest you check with your doctor first."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Take The First Rep?",
+      "button": "Book A Free Trial"
+    },
+    "about": {
+      "title": "About Our Gym",
+      "paragraphs": [
+        "{brand} is a neighbourhood gym built for regular people who want to get stronger, fitter and more energetic without the intimidation.",
+        "Our trainers coach on the floor, correct your form and keep plans simple, so you spend time training instead of guessing."
+      ],
+      "points": [
+        "Coaches on the floor every shift",
+        "Beginner friendly and well maintained",
+        "Plans written down and reviewed monthly"
+      ]
+    },
+    "pricing": {
+      "title": "Membership Plans",
+      "plans": [
+        {
+          "name": "Monthly",
+          "price": "$18",
+          "period": "/month",
+          "perks": [
+            "Full gym floor access",
+            "Cardio and weights",
+            "One fitness assessment"
+          ]
+        },
+        {
+          "name": "Quarterly",
+          "price": "$45",
+          "period": "/quarter",
+          "perks": [
+            "Everything in monthly",
+            "Written workout plan",
+            "Monthly progress check"
+          ]
+        },
+        {
+          "name": "Personal Training",
+          "price": "$70",
+          "period": "/month",
+          "perks": [
+            "Twelve coached sessions",
+            "Custom workout plan",
+            "Form and technique focus"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Inside The Gym",
+      "captions": [
+        "Free weights area",
+        "Morning batch",
+        "Personal training",
+        "Cardio zone",
+        "Group conditioning",
+        "Stretch corner"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Trainers",
+      "roles": [
+        "Head Coach",
+        "Strength Trainer",
+        "Group Class Instructor"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "I was nervous about joining a gym, but the trainer walked me through everything on day one.",
+        "role": "Member"
+      },
+      {
+        "quote": "Open late enough that I can train after office without rushing, and the floor is never chaotic.",
+        "role": "Working professional"
+      },
+      {
+        "quote": "My plan is written down and the coach changes it every month, so I never feel stuck.",
+        "role": "Member"
+      }
+    ],
+    "blog": {
+      "title": "From The Training Floor",
+      "posts": [
+        {
+          "tag": "Beginners",
+          "title": "How To Plan Your First Four Weeks At The Gym"
+        },
+        {
+          "tag": "Technique",
+          "title": "Five Common Squat Mistakes And Simple Fixes"
+        },
+        {
+          "tag": "Habits",
+          "title": "Building A Workout Routine You Can Actually Keep"
+        }
+      ]
+    },
+    "marquee": [
+      "Strength",
+      "Cardio",
+      "Coaching",
+      "Conditioning",
+      "Mobility",
+      "Free Trial",
+      "Group Classes",
+      "Flexible Timings"
+    ],
+    "contactText": "Drop by {brand} for a tour or send us a message, and we will book your free trial session at a time that suits you."
+  },
+  {
+    "id": "yoga_studio",
+    "label": "Yoga studio",
+    "theme": "beauty_wellness",
+    "keywords": [
+      "yoga classes",
+      "yoga studio",
+      "hatha yoga classes",
+      "vinyasa yoga",
+      "yoga class near me",
+      "योग कक्षा",
+      "yoga sikhna",
+      "yoga teacher"
+    ],
+    "heroTitles": [
+      "Find Your Breath, Find Your Balance",
+      "Yoga Classes For Every Body And Age",
+      "Unroll Your Mat And Slow Things Down"
+    ],
+    "heroSubtitles": [
+      "{brand} offers small yoga classes where the teacher watches your posture and helps you move at a pace that feels right.",
+      "From gentle hatha for beginners to flowing vinyasa, pick a class that suits your day and come as you are.",
+      "Join a calm room, a patient teacher and a regular practice that gives your week a steady, quieter rhythm."
+    ],
+    "button": "Book A Trial Class",
+    "featureTitle": "Classes To Suit Every Level And Mood",
+    "features": [
+      {
+        "title": "Hatha Yoga",
+        "text": "Slow, steady postures held with attention to breath, ideal for beginners and anyone returning to practice."
+      },
+      {
+        "title": "Vinyasa Flow",
+        "text": "Postures linked with the breath in a flowing sequence that builds warmth, strength and focus."
+      },
+      {
+        "title": "Beginner Basics",
+        "text": "A gentle class that teaches alignment, props and the names of the poses before you move faster."
+      },
+      {
+        "title": "Pranayama And Meditation",
+        "text": "Breathing practice and guided sitting to help you wind down at the end of a busy day."
+      },
+      {
+        "title": "Small Batches",
+        "text": "Limited mat space in every class, so your teacher can correct posture and offer an easier variation."
+      },
+      {
+        "title": "Private Sessions",
+        "text": "One to one classes at home or in the studio for a specific need, schedule or comfort level."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Small",
+        "label": "Class sizes"
+      },
+      {
+        "value": "All levels",
+        "label": "Welcome"
+      },
+      {
+        "value": "Mats",
+        "label": "Provided on request"
+      }
+    ],
+    "steps": {
+      "title": "How To Begin Your Practice",
+      "items": [
+        {
+          "title": "Pick A Class",
+          "text": "Choose hatha, vinyasa or beginner basics from the weekly timetable."
+        },
+        {
+          "title": "Tell Us About You",
+          "text": "Mention any injury or health concern so the teacher can suggest safe variations."
+        },
+        {
+          "title": "Attend A Trial",
+          "text": "Come for one class, borrow a mat and see whether the room and teacher suit you."
+        },
+        {
+          "title": "Practise Regularly",
+          "text": "Choose a monthly pass and build a routine that fits your week."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "I am not flexible. Can I still do yoga?",
+        "a": "Yes. Flexibility grows with practice, and the teacher will show you easier versions of every posture."
+      },
+      {
+        "q": "What should I wear?",
+        "a": "Comfortable stretchy clothing that lets you move freely. We have mats, and you can bring your own."
+      },
+      {
+        "q": "Should I eat before class?",
+        "a": "Keep a gap of about two hours after a meal. A light snack or water earlier is usually fine."
+      },
+      {
+        "q": "Is yoga safe with a back or knee problem?",
+        "a": "Please inform the teacher and check with your doctor. We adjust postures, but yoga is not a replacement for medical care."
+      },
+      {
+        "q": "Can I join mid month?",
+        "a": "Yes. Passes start from the day you join, and we can suggest which class to begin with."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Roll Out Your Mat?",
+      "button": "Book A Trial Class"
+    },
+    "about": {
+      "title": "About Our Yoga Studio",
+      "paragraphs": [
+        "{brand} is a quiet neighbourhood yoga studio where classes are kept small and the teaching stays personal.",
+        "Our teachers focus on breath, alignment and kindness to your body, so the practice feels welcoming whether it is your first week or your fifth year."
+      ],
+      "points": [
+        "Small, unhurried classes",
+        "Trained, patient teachers",
+        "Props and mats available"
+      ]
+    },
+    "pricing": {
+      "title": "Class Passes",
+      "plans": [
+        {
+          "name": "Single Class",
+          "price": "$5",
+          "period": "/class",
+          "perks": [
+            "Any scheduled class",
+            "Mat on request",
+            "No commitment"
+          ]
+        },
+        {
+          "name": "Monthly Pass",
+          "price": "$28",
+          "period": "/month",
+          "perks": [
+            "Unlimited weekly classes",
+            "Hatha and vinyasa",
+            "Priority booking"
+          ]
+        },
+        {
+          "name": "Private Sessions",
+          "price": "$40",
+          "period": "/month",
+          "perks": [
+            "Four one to one classes",
+            "Plan around your needs",
+            "Flexible timings"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Life At The Studio",
+      "captions": [
+        "Morning hatha class",
+        "Sun salutations",
+        "Breathing practice",
+        "Props and blocks",
+        "Evening wind down",
+        "Studio corner"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Teachers",
+      "roles": [
+        "Lead Yoga Teacher",
+        "Vinyasa Instructor",
+        "Meditation Guide"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The class is small enough that the teacher actually corrects my posture, which I never got elsewhere.",
+        "role": "Student"
+      },
+      {
+        "quote": "I started as a complete beginner and never felt rushed or compared to anyone.",
+        "role": "Beginner"
+      },
+      {
+        "quote": "The evening session is the calmest hour of my week.",
+        "role": "Regular student"
+      }
+    ],
+    "blog": {
+      "title": "Notes From The Mat",
+      "posts": [
+        {
+          "tag": "Beginners",
+          "title": "What To Expect In Your First Yoga Class"
+        },
+        {
+          "tag": "Breath",
+          "title": "A Simple Five Minute Breathing Routine For Busy Days"
+        },
+        {
+          "tag": "Practice",
+          "title": "Hatha Or Vinyasa: Choosing The Class That Fits You"
+        }
+      ]
+    },
+    "marquee": [
+      "Hatha",
+      "Vinyasa",
+      "Breathwork",
+      "Meditation",
+      "Alignment",
+      "Beginners",
+      "Small Batches",
+      "Calm"
+    ],
+    "contactText": "Write to {brand} or call to ask about the timetable, and we will help you choose the right first class."
+  },
+  {
+    "id": "dental_clinic",
+    "label": "Dental clinic",
+    "theme": "healthcare",
+    "keywords": [
+      "dental clinic",
+      "dentist near me",
+      "root canal treatment",
+      "braces and aligners",
+      "teeth cleaning",
+      "orthodontist",
+      "दांतों का डॉक्टर",
+      "dant ka doctor",
+      "dentist"
+    ],
+    "heroTitles": [
+      "Gentle Dental Care For The Whole Family",
+      "Healthy Teeth Begin With A Check Up",
+      "A Dentist Who Explains Before Treating"
+    ],
+    "heroSubtitles": [
+      "{brand} offers check ups, cleaning and treatment in a calm clinic where the dentist explains every step before starting.",
+      "Bring your family for regular dental care, with clear advice, sterilised instruments and prices told in advance.",
+      "From a simple cleaning to braces and root canals, {brand} treats you with patience and plain explanations."
+    ],
+    "button": "Book An Appointment",
+    "featureTitle": "Dental Treatments Under One Roof",
+    "features": [
+      {
+        "title": "Check Up And Cleaning",
+        "text": "A full mouth examination with scaling and polishing to remove plaque and tartar build up."
+      },
+      {
+        "title": "Fillings And Cavities",
+        "text": "Tooth coloured fillings that repair decay and are shaped to match your bite."
+      },
+      {
+        "title": "Root Canal Treatment",
+        "text": "Treatment for a deeply infected or painful tooth, done with numbing so you stay comfortable."
+      },
+      {
+        "title": "Braces And Aligners",
+        "text": "Assessment and treatment to straighten teeth for children, teens and adults."
+      },
+      {
+        "title": "Crowns And Dentures",
+        "text": "Caps, bridges and dentures made to restore chewing, with careful matching of fit and shade."
+      },
+      {
+        "title": "Children's Dentistry",
+        "text": "Gentle check ups and advice for little ones, so the first dental visits are not scary."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Sterilised",
+        "label": "Instruments"
+      },
+      {
+        "value": "Clear",
+        "label": "Cost before treatment"
+      },
+      {
+        "value": "Family",
+        "label": "Friendly care"
+      }
+    ],
+    "steps": {
+      "title": "What To Expect At Your Visit",
+      "items": [
+        {
+          "title": "Book A Slot",
+          "text": "Call or message us and choose a time that suits you."
+        },
+        {
+          "title": "Examination",
+          "text": "The dentist checks your teeth and gums, and X rays are taken only if they are needed."
+        },
+        {
+          "title": "Treatment Plan",
+          "text": "You get the options and cost explained in plain words before anything begins."
+        },
+        {
+          "title": "Follow Up",
+          "text": "We tell you how to care for the area and book your next visit if one is needed."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Is a root canal painful?",
+        "a": "The area is numbed first, so the procedure is usually no more uncomfortable than a filling. Some soreness afterwards is common."
+      },
+      {
+        "q": "How often should I get a dental check up?",
+        "a": "Most people benefit from a check up and cleaning every six months, though your dentist may suggest a different gap."
+      },
+      {
+        "q": "At what age can children visit the dentist?",
+        "a": "As soon as the first teeth appear. Early visits help parents learn how to care for milk teeth."
+      },
+      {
+        "q": "How long do braces treatment take?",
+        "a": "It depends on the case. The dentist will give an estimate after examining your teeth and discussing your options."
+      },
+      {
+        "q": "Are your instruments sterilised?",
+        "a": "Yes. Instruments are cleaned and sterilised between patients, and single use items are discarded."
+      }
+    ],
+    "cta": {
+      "title": "Time For Your Dental Check Up?",
+      "button": "Book An Appointment"
+    },
+    "about": {
+      "title": "About Our Dental Clinic",
+      "paragraphs": [
+        "{brand} is a family dental clinic focused on careful treatment, honest advice and a relaxed waiting room.",
+        "We tell you what is needed and what can wait, so you can make decisions about your teeth without pressure."
+      ],
+      "points": [
+        "Qualified, registered dentists",
+        "Treatment explained before it starts",
+        "Hygiene and sterilisation protocols"
+      ]
+    },
+    "pricing": {
+      "title": "Dental Care Pricing",
+      "plans": [
+        {
+          "name": "Consultation",
+          "price": "$6",
+          "period": "/visit",
+          "perks": [
+            "Full examination",
+            "Treatment advice",
+            "Written plan"
+          ]
+        },
+        {
+          "name": "Scaling And Polishing",
+          "price": "$25",
+          "period": "/visit",
+          "perks": [
+            "Deep cleaning",
+            "Polishing",
+            "Oral care guidance"
+          ]
+        },
+        {
+          "name": "Root Canal",
+          "price": "$75",
+          "period": "/tooth",
+          "perks": [
+            "Numbed procedure",
+            "Temporary filling",
+            "Follow up visit"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Our Clinic",
+      "captions": [
+        "Treatment room",
+        "Reception area",
+        "Dental chair",
+        "Sterilisation corner",
+        "Children's corner",
+        "Consultation desk"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Dental Team",
+      "roles": [
+        "Consultant Dentist",
+        "Orthodontist",
+        "Dental Assistant"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The dentist explained each option and the cost first, and I never felt pressured.",
+        "role": "Patient"
+      },
+      {
+        "quote": "My child was scared of dentists but came out of the first visit smiling.",
+        "role": "Parent"
+      },
+      {
+        "quote": "The clinic is clean, on time and the staff are very patient.",
+        "role": "Patient"
+      }
+    ],
+    "blog": {
+      "title": "Dental Care Tips",
+      "posts": [
+        {
+          "tag": "Daily Care",
+          "title": "How To Brush And Floss The Right Way"
+        },
+        {
+          "tag": "Children",
+          "title": "Looking After Your Child's First Teeth"
+        },
+        {
+          "tag": "Treatment",
+          "title": "What Happens During A Root Canal Procedure"
+        }
+      ]
+    },
+    "marquee": [
+      "Check Ups",
+      "Cleaning",
+      "Fillings",
+      "Root Canal",
+      "Braces",
+      "Crowns",
+      "Kids Dentistry",
+      "Aligners"
+    ],
+    "contactText": "Call or message {brand} to book a visit, or ask us any question about a tooth problem before you come in."
+  },
+  {
+    "id": "hair_salon_spa",
+    "label": "Hair salon and spa",
+    "theme": "beauty_wellness",
+    "keywords": [
+      "hair salon",
+      "unisex salon",
+      "beauty parlour",
+      "facial and spa",
+      "hair spa",
+      "haircut and colour",
+      "ब्यूटी पार्लर",
+      "parlour"
+    ],
+    "heroTitles": [
+      "Look Good, Feel Even Better",
+      "Hair, Skin And A Little Time For You",
+      "A Salon That Listens Before It Styles"
+    ],
+    "heroSubtitles": [
+      "{brand} offers haircuts, colour, facials and spa treatments from stylists who first ask what you want.",
+      "Book a slot, relax in the chair and leave with a look that suits your hair, your skin and your routine.",
+      "Fresh haircut or a full pamper session, {brand} keeps it clean, comfortable and priced openly."
+    ],
+    "button": "Book Your Appointment",
+    "featureTitle": "Hair And Beauty Services We Offer",
+    "features": [
+      {
+        "title": "Haircut And Styling",
+        "text": "Cuts for women, men and kids, shaped around your face, hair type and how much time you spend styling."
+      },
+      {
+        "title": "Hair Colour",
+        "text": "Global colour, highlights and touch ups, with a patch test for new clients before we start."
+      },
+      {
+        "title": "Hair Spa",
+        "text": "Deep conditioning and scalp massage treatments to bring back softness to dry or tired hair."
+      },
+      {
+        "title": "Facial And Cleanup",
+        "text": "Facials chosen by skin type, with products explained before they are applied."
+      },
+      {
+        "title": "Waxing And Threading",
+        "text": "Hygienic waxing and threading with fresh strips and disposable items for each client."
+      },
+      {
+        "title": "Manicure And Pedicure",
+        "text": "Nail shaping, soaking and massage, with a quiet corner to put your feet up."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Patch test",
+        "label": "Before colour"
+      },
+      {
+        "value": "Fresh",
+        "label": "Disposables each client"
+      },
+      {
+        "value": "Open",
+        "label": "Prices on the menu"
+      }
+    ],
+    "steps": {
+      "title": "How Your Salon Visit Works",
+      "items": [
+        {
+          "title": "Book A Slot",
+          "text": "Call, message or walk in, and pick the service and time that suit you."
+        },
+        {
+          "title": "Quick Chat",
+          "text": "Your stylist asks about your hair, skin and what you want, and suggests options."
+        },
+        {
+          "title": "Your Service",
+          "text": "We work in a clean, comfortable setting and tell you what products are being used."
+        },
+        {
+          "title": "Aftercare",
+          "text": "You leave with simple tips to keep your hair and skin looking fresh at home."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do I need an appointment?",
+        "a": "Walk ins are welcome when a stylist is free, but booking ahead guarantees your slot, especially on weekends."
+      },
+      {
+        "q": "Do you do a patch test before hair colour?",
+        "a": "Yes, we recommend a patch test for new clients to check for any skin reaction before colouring."
+      },
+      {
+        "q": "Can I show a photo of the haircut I want?",
+        "a": "Please do. A picture helps, and your stylist will tell you honestly how it will work on your hair."
+      },
+      {
+        "q": "Are your products and tools hygienic?",
+        "a": "Tools are cleaned and sanitised between clients, and disposable items are used for waxing and facials."
+      },
+      {
+        "q": "Do you serve both men and women?",
+        "a": "Yes, we are a unisex salon, with services for men, women and children."
+      }
+    ],
+    "cta": {
+      "title": "Ready For A Fresh New Look?",
+      "button": "Book Your Appointment"
+    },
+    "about": {
+      "title": "About Our Salon",
+      "paragraphs": [
+        "{brand} is a friendly neighbourhood salon where stylists take time to understand your hair and skin before they begin.",
+        "We keep the space clean, the menu clear and the pricing open, so you can relax and enjoy the service."
+      ],
+      "points": [
+        "Trained stylists and therapists",
+        "Clean tools and fresh disposables",
+        "Clear price menu"
+      ]
+    },
+    "pricing": {
+      "title": "Salon Price Menu",
+      "plans": [
+        {
+          "name": "Haircut",
+          "price": "$6",
+          "period": "/service",
+          "perks": [
+            "Wash and cut",
+            "Blow dry",
+            "Style advice"
+          ]
+        },
+        {
+          "name": "Facial And Cleanup",
+          "price": "$18",
+          "period": "/service",
+          "perks": [
+            "Skin analysis",
+            "Cleanup and massage",
+            "Pack and finish"
+          ]
+        },
+        {
+          "name": "Hair Spa",
+          "price": "$22",
+          "period": "/service",
+          "perks": [
+            "Scalp massage",
+            "Deep conditioning",
+            "Blow dry"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Inside The Salon",
+      "captions": [
+        "Styling chairs",
+        "Hair colour work",
+        "Facial room",
+        "Nail corner",
+        "Fresh haircut",
+        "Reception"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Stylists",
+      "roles": [
+        "Senior Hair Stylist",
+        "Skin Therapist",
+        "Nail Artist"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "My stylist asked what I wanted and told me honestly what would suit my hair.",
+        "role": "Client"
+      },
+      {
+        "quote": "The salon is spotless and the facial was relaxing, with no hard selling of products.",
+        "role": "Client"
+      },
+      {
+        "quote": "Easy to book and they run on time, which is rare.",
+        "role": "Regular client"
+      }
+    ],
+    "blog": {
+      "title": "Beauty Notes",
+      "posts": [
+        {
+          "tag": "Hair Care",
+          "title": "How Often Should You Trim And Condition Your Hair"
+        },
+        {
+          "tag": "Skin",
+          "title": "A Simple Facial Routine Between Salon Visits"
+        },
+        {
+          "tag": "Style",
+          "title": "Choosing A Haircut That Suits Your Face Shape"
+        }
+      ]
+    },
+    "marquee": [
+      "Haircut",
+      "Colour",
+      "Hair Spa",
+      "Facial",
+      "Waxing",
+      "Manicure",
+      "Pedicure",
+      "Styling"
+    ],
+    "contactText": "Call or message {brand} to book a slot, or send us a photo of the style you like and we will suggest what works."
+  },
+  {
+    "id": "barber_shop",
+    "label": "Barber shop",
+    "theme": "bold_fitness",
+    "keywords": [
+      "barber shop",
+      "gents salon",
+      "beard trim",
+      "men's haircut",
+      "hair cutting saloon",
+      "नाई की दुकान",
+      "gents parlour",
+      "nai"
+    ],
+    "heroTitles": [
+      "Sharp Cuts And Clean Shaves Daily",
+      "A Proper Barber For A Proper Look",
+      "Walk In Scruffy, Walk Out Sharp"
+    ],
+    "heroSubtitles": [
+      "{brand} is a barber shop for men who want a clean haircut, a tidy beard and a few quiet minutes in the chair.",
+      "Our barbers listen, cut with care and finish with a hot towel shave, so you step out looking your best.",
+      "From a quick trim before work to a full grooming session for a wedding, {brand} keeps it sharp and affordable."
+    ],
+    "button": "Book Your Chair",
+    "featureTitle": "Grooming Services For Men",
+    "features": [
+      {
+        "title": "Haircut",
+        "text": "Classic and modern cuts with scissors or clippers, finished with a wash and neat styling."
+      },
+      {
+        "title": "Beard Trim And Shaping",
+        "text": "Beard lines, fade and trim shaped to your face, with a razor finish on the edges."
+      },
+      {
+        "title": "Hot Towel Shave",
+        "text": "A relaxing clean shave with warm towels and fresh blades for each customer."
+      },
+      {
+        "title": "Fade And Skin Fade",
+        "text": "Smooth fades blended with care, from a low taper to a high skin fade."
+      },
+      {
+        "title": "Hair Colour And Beard Colour",
+        "text": "Colour for grey hair or a style change, applied neatly with a patch test if required."
+      },
+      {
+        "title": "Head Massage And Facial",
+        "text": "Short relaxing head massage and men's cleanup to refresh tired skin."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Fresh",
+        "label": "Blades each customer"
+      },
+      {
+        "value": "Walk in",
+        "label": "Welcome"
+      },
+      {
+        "value": "Clean",
+        "label": "Tools sanitised"
+      }
+    ],
+    "steps": {
+      "title": "How A Visit Works",
+      "items": [
+        {
+          "title": "Walk In Or Book",
+          "text": "Come in when a chair is free, or book a slot to skip the wait."
+        },
+        {
+          "title": "Tell Us The Look",
+          "text": "Show a photo or describe it, and the barber tells you what will suit your hair."
+        },
+        {
+          "title": "The Cut",
+          "text": "Your haircut, beard or shave is done carefully, with regular checks on length."
+        },
+        {
+          "title": "Finish",
+          "text": "Hot towel, styling and quick tips to keep the look tidy at home."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do I need to book in advance?",
+        "a": "No, walk ins are welcome. Booking a slot saves you waiting, especially on weekends and before festivals."
+      },
+      {
+        "q": "Do you use a fresh blade for shaves?",
+        "a": "Yes. Fresh blades are used for every shave, and tools are sanitised between customers."
+      },
+      {
+        "q": "Can you copy a haircut from a photo?",
+        "a": "Yes, bring a photo. The barber will say honestly if it needs changes for your hair type."
+      },
+      {
+        "q": "Do you cut children's hair?",
+        "a": "Yes, we do kids haircuts. Bring them in at a quieter hour for a calmer visit."
+      },
+      {
+        "q": "Can you shape my beard if it is patchy?",
+        "a": "Yes. The barber can suggest a shape that works with your growth and keep it neat."
+      }
+    ],
+    "cta": {
+      "title": "Time For A Fresh Cut?",
+      "button": "Book Your Chair"
+    },
+    "about": {
+      "title": "About Our Barber Shop",
+      "paragraphs": [
+        "{brand} is a traditional barber shop with a modern eye, where cuts are careful and the chair is comfortable.",
+        "We keep prices fair, tools clean and conversation easy, so a haircut feels like a break and not a chore."
+      ],
+      "points": [
+        "Experienced barbers",
+        "Fresh blades and clean tools",
+        "Fair, clear prices"
+      ]
+    },
+    "pricing": {
+      "title": "Barber Price List",
+      "plans": [
+        {
+          "name": "Haircut",
+          "price": "$3",
+          "period": "/cut",
+          "perks": [
+            "Hair wash",
+            "Cut and style",
+            "Neck clean up"
+          ]
+        },
+        {
+          "name": "Haircut And Beard",
+          "price": "$6",
+          "period": "/visit",
+          "perks": [
+            "Haircut",
+            "Beard trim and shape",
+            "Hot towel finish"
+          ]
+        },
+        {
+          "name": "Grooming Package",
+          "price": "$14",
+          "period": "/visit",
+          "perks": [
+            "Haircut and beard",
+            "Cleanup",
+            "Head massage"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "In The Chair",
+      "captions": [
+        "Barber chairs",
+        "Fresh fade",
+        "Beard shaping",
+        "Hot towel shave",
+        "Straight razor",
+        "Shop front"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Barbers",
+      "roles": [
+        "Head Barber",
+        "Hair Stylist",
+        "Grooming Specialist"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "Clean shop, fresh blade and a haircut exactly like my photo.",
+        "role": "Customer"
+      },
+      {
+        "quote": "The hot towel shave is the best part of my weekend.",
+        "role": "Regular customer"
+      },
+      {
+        "quote": "Prices are fair and they do not rush you.",
+        "role": "Customer"
+      }
+    ],
+    "blog": {
+      "title": "Grooming Notes",
+      "posts": [
+        {
+          "tag": "Beard",
+          "title": "How To Keep Your Beard Neat Between Trims"
+        },
+        {
+          "tag": "Hair",
+          "title": "Picking A Haircut For Your Face Shape"
+        },
+        {
+          "tag": "Care",
+          "title": "Five Habits For Healthier Hair And Scalp"
+        }
+      ]
+    },
+    "marquee": [
+      "Haircut",
+      "Beard Trim",
+      "Hot Towel",
+      "Shave",
+      "Fade",
+      "Styling",
+      "Head Massage",
+      "Walk In"
+    ],
+    "contactText": "Call or message {brand} to book your chair, or just walk in and we will get you sorted."
+  },
+  {
+    "id": "cafe_coffee_tea",
+    "label": "Cafe, coffee and tea",
+    "theme": "food_dining",
+    "keywords": [
+      "coffee shop",
+      "cafe",
+      "espresso bar",
+      "कैफे",
+      "cold coffee",
+      "filter coffee",
+      "coffee house",
+      "cappuccino bar"
+    ],
+    "heroTitles": [
+      "A Warm Cup And A Place To Sit",
+      "Good Coffee, Better Conversations",
+      "Fresh Brew And Quiet Corners"
+    ],
+    "heroSubtitles": [
+      "{brand} serves freshly brewed coffee, proper chai and simple snacks in a cosy spot to work, read or catch up.",
+      "Come in for your morning cup or an evening chat, with seats by the window and snacks made fresh every day.",
+      "From strong espresso to masala chai, {brand} keeps the menu honest and the table ready for you."
+    ],
+    "button": "Visit Us Today",
+    "featureTitle": "What We Brew And Serve",
+    "features": [
+      {
+        "title": "Espresso And Coffee",
+        "text": "Espresso, cappuccino and latte made from freshly ground beans and steamed with care."
+      },
+      {
+        "title": "Cold Coffee And Iced Drinks",
+        "text": "Cold coffee, iced tea and cool drinks made to order, not poured from a packet."
+      },
+      {
+        "title": "Chai And Specialty Tea",
+        "text": "Masala chai, kadak chai and a range of leaf teas brewed fresh in small pots."
+      },
+      {
+        "title": "Snacks And Sandwiches",
+        "text": "Sandwiches, toasties, fries and light bites that go well with a hot drink."
+      },
+      {
+        "title": "Desserts And Bakes",
+        "text": "Brownies, cakes and cookies, baked fresh and displayed at the counter each day."
+      },
+      {
+        "title": "Cosy Seating",
+        "text": "Comfortable tables, power sockets and wifi for working, reading or meeting friends."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Fresh",
+        "label": "Brewed to order"
+      },
+      {
+        "value": "Free",
+        "label": "Wifi for guests"
+      },
+      {
+        "value": "Daily",
+        "label": "Fresh bakes"
+      }
+    ],
+    "steps": {
+      "title": "Your Visit To The Cafe",
+      "items": [
+        {
+          "title": "Walk In",
+          "text": "Pick a seat by the window, at the counter or in the quiet corner."
+        },
+        {
+          "title": "Order",
+          "text": "Choose from the menu, and ask the barista if you want help picking a brew."
+        },
+        {
+          "title": "Enjoy",
+          "text": "Your drink and snack arrive at the table, made fresh."
+        },
+        {
+          "title": "Stay A While",
+          "text": "Work, read or chat for as long as you like, with wifi and sockets nearby."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do you have wifi and charging points?",
+        "a": "Yes, free wifi and sockets are available for guests who want to work or study."
+      },
+      {
+        "q": "Do you have vegetarian options?",
+        "a": "Our menu has plenty of vegetarian choices, and staff will tell you what contains egg or meat."
+      },
+      {
+        "q": "Can I book a table for a small group?",
+        "a": "Yes. Message us with the number of people and the time, and we will keep a table ready."
+      },
+      {
+        "q": "Do you do takeaway and delivery?",
+        "a": "Yes, drinks and snacks can be taken away, and delivery is available on selected apps."
+      },
+      {
+        "q": "Can I have my drink with oat or almond milk?",
+        "a": "Ask at the counter. We offer plant based milk options on selected drinks."
+      }
+    ],
+    "cta": {
+      "title": "Fancy A Cup Of Something Warm?",
+      "button": "Visit Us Today"
+    },
+    "about": {
+      "title": "About Our Cafe",
+      "paragraphs": [
+        "{brand} is a small neighbourhood cafe where the coffee is fresh, the chai is strong and nobody hurries you out.",
+        "We bake and prepare most things in house, keep prices reasonable and make room for people to talk, work or simply sit."
+      ],
+      "points": [
+        "Freshly brewed drinks",
+        "Baked and prepared in house",
+        "Cosy, work friendly seating"
+      ]
+    },
+    "pricing": {
+      "title": "Menu Highlights",
+      "plans": [
+        {
+          "name": "Chai And Snack",
+          "price": "$3",
+          "period": "/order",
+          "perks": [
+            "Masala chai",
+            "Sandwich or toastie",
+            "Quick and filling"
+          ]
+        },
+        {
+          "name": "Coffee And Dessert",
+          "price": "$6",
+          "period": "/order",
+          "perks": [
+            "Cappuccino or cold coffee",
+            "Brownie or cake slice",
+            "Window seat"
+          ]
+        },
+        {
+          "name": "Group Table",
+          "price": "$18",
+          "period": "/table",
+          "perks": [
+            "Four drinks",
+            "Shared snack platter",
+            "Reserved table"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Around The Cafe",
+      "captions": [
+        "Fresh espresso",
+        "Masala chai",
+        "Window seats",
+        "Baked brownies",
+        "Barista at work",
+        "Cosy corner"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Cafe Team",
+      "roles": [
+        "Head Barista",
+        "Cafe Manager",
+        "Pastry Cook"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "Strong coffee, warm staff and a corner where I can work for hours.",
+        "role": "Regular guest"
+      },
+      {
+        "quote": "The chai tastes like home and the brownies are always fresh.",
+        "role": "Guest"
+      },
+      {
+        "quote": "A calm spot to meet friends without the noise.",
+        "role": "Guest"
+      }
+    ],
+    "blog": {
+      "title": "From The Counter",
+      "posts": [
+        {
+          "tag": "Coffee",
+          "title": "How To Order Coffee When You Are Not Sure What To Pick"
+        },
+        {
+          "tag": "Tea",
+          "title": "Why Masala Chai Needs Time And Patience"
+        },
+        {
+          "tag": "Brewing",
+          "title": "Making A Better Cup Of Coffee At Home"
+        }
+      ]
+    },
+    "marquee": [
+      "Espresso",
+      "Masala Chai",
+      "Cold Coffee",
+      "Cappuccino",
+      "Brownies",
+      "Sandwiches",
+      "Free Wifi",
+      "Takeaway"
+    ],
+    "contactText": "Drop in or message {brand} to ask about our menu, reserve a table or plan a small get together."
+  },
+  {
+    "id": "restaurant_dining",
+    "label": "Restaurant",
+    "theme": "food_dining",
+    "keywords": [
+      "family restaurant",
+      "restaurant near me",
+      "fine dining",
+      "dhaba",
+      "restaurant table booking",
+      "रेस्टोरेंट",
+      "khana khane ki jagah",
+      "veg and non veg restaurant"
+    ],
+    "heroTitles": [
+      "Good Food, Shared With Good People",
+      "A Table Is Waiting For Your Family",
+      "Taste That Brings Everyone To The Table"
+    ],
+    "heroSubtitles": [
+      "{brand} serves freshly cooked meals in a comfortable dining room, from family lunches to special evening dinners.",
+      "Come for the food, stay for the company, with a menu that has something for every member of the family.",
+      "Our kitchen cooks to order with fresh ingredients, and our team makes sure your table is ready when you arrive."
+    ],
+    "button": "Reserve A Table",
+    "featureTitle": "Dine, Celebrate And Take Home",
+    "features": [
+      {
+        "title": "Family Dining",
+        "text": "A relaxed dining room with enough space for large tables and high chairs for little ones."
+      },
+      {
+        "title": "Regional Favourites",
+        "text": "Classic dishes cooked from scratch, with spice levels adjusted when you ask."
+      },
+      {
+        "title": "Veg And Non Veg Menu",
+        "text": "A wide menu with clear vegetarian and non vegetarian sections, so everyone finds a dish."
+      },
+      {
+        "title": "Party And Celebration Tables",
+        "text": "Space for birthdays and small gatherings, planned with a set menu to suit your group."
+      },
+      {
+        "title": "Takeaway And Delivery",
+        "text": "Meals packed carefully for takeaway, and delivery within the nearby areas."
+      },
+      {
+        "title": "Chef's Specials",
+        "text": "A short list of seasonal specials cooked by our chef on selected days."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Fresh",
+        "label": "Cooked to order"
+      },
+      {
+        "value": "Veg, non veg",
+        "label": "Menu"
+      },
+      {
+        "value": "Family",
+        "label": "Friendly seating"
+      }
+    ],
+    "steps": {
+      "title": "Your Evening With Us",
+      "items": [
+        {
+          "title": "Reserve Your Table",
+          "text": "Call or message us with the number of guests and your preferred time."
+        },
+        {
+          "title": "Be Seated",
+          "text": "We welcome you to a table and share the menu and the day's specials."
+        },
+        {
+          "title": "Order And Relax",
+          "text": "Tell us your spice level and allergies, and the kitchen cooks your meal fresh."
+        },
+        {
+          "title": "Dine And Pay",
+          "text": "Enjoy your meal at an unhurried pace, and ask for a takeaway box if you need one."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do I need a reservation?",
+        "a": "Walk ins are welcome, but we suggest booking for weekends, festivals and groups of six or more."
+      },
+      {
+        "q": "Is there a vegetarian menu?",
+        "a": "Yes, our menu has a full vegetarian section, and we prepare it separately from non vegetarian dishes."
+      },
+      {
+        "q": "Can I order a custom menu for a celebration?",
+        "a": "Yes. Share your group size and budget, and we will suggest a set menu you can approve in advance."
+      },
+      {
+        "q": "Do you serve children's portions?",
+        "a": "We can prepare smaller portions and milder spice for children. Just mention it when you order."
+      },
+      {
+        "q": "Do you handle food allergies?",
+        "a": "Please tell us about allergies when ordering. We will check with the kitchen and guide you to suitable dishes."
+      }
+    ],
+    "cta": {
+      "title": "Hungry? Your Table Is Ready",
+      "button": "Reserve A Table"
+    },
+    "about": {
+      "title": "About Our Restaurant",
+      "paragraphs": [
+        "{brand} is a family run restaurant that cooks honest food and serves it with warmth.",
+        "Our kitchen prepares meals fresh each day, our menu changes with the season, and our staff treat guests like family."
+      ],
+      "points": [
+        "Cooked fresh every day",
+        "Clearly marked veg and non veg menu",
+        "Comfortable seating for families"
+      ]
+    },
+    "pricing": {
+      "title": "Dining Options",
+      "plans": [
+        {
+          "name": "Lunch Thali",
+          "price": "$5",
+          "period": "/person",
+          "perks": [
+            "Starter or soup",
+            "Main course and bread",
+            "Dessert"
+          ]
+        },
+        {
+          "name": "Celebration Menu",
+          "price": "$14",
+          "period": "/person",
+          "perks": [
+            "Set menu for groups",
+            "Reserved table",
+            "Planned timing"
+          ]
+        },
+        {
+          "name": "Family Dinner",
+          "price": "$30",
+          "period": "/table",
+          "perks": [
+            "Four main dishes",
+            "Breads and rice",
+            "Dessert to share"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "From Our Kitchen",
+      "captions": [
+        "Signature curry",
+        "Tandoor breads",
+        "Dining room",
+        "Chef plating",
+        "Dessert counter",
+        "Family table"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "roles": [
+        "Head Chef",
+        "Restaurant Manager",
+        "Service Captain"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "Food came out hot and fresh, and the staff made space for our entire family.",
+        "role": "Guest"
+      },
+      {
+        "quote": "We celebrated a birthday here and they planned the menu with us beforehand.",
+        "role": "Guest"
+      },
+      {
+        "quote": "Honest portions, good flavour and friendly service.",
+        "role": "Regular guest"
+      }
+    ],
+    "blog": {
+      "title": "Kitchen Stories",
+      "posts": [
+        {
+          "tag": "Menu",
+          "title": "What Makes A Proper Home Style Curry"
+        },
+        {
+          "tag": "Dining",
+          "title": "Planning A Family Celebration Dinner At A Restaurant"
+        },
+        {
+          "tag": "Seasonal",
+          "title": "Winter Dishes Worth Ordering This Season"
+        }
+      ]
+    },
+    "marquee": [
+      "Family Dining",
+      "Tandoor",
+      "Veg Menu",
+      "Non Veg",
+      "Thali",
+      "Takeaway",
+      "Celebrations",
+      "Chef Specials"
+    ],
+    "contactText": "Call or message {brand} to book a table or plan a family celebration, and we will take care of the rest."
+  },
+  {
+    "id": "bakery_cakes",
+    "label": "Bakery and cake shop",
+    "theme": "food_dining",
+    "keywords": [
+      "custom cakes",
+      "bakery",
+      "cake shop",
+      "birthday cake order",
+      "eggless cake",
+      "pastry shop",
+      "केक शॉप",
+      "cake order online"
+    ],
+    "heroTitles": [
+      "Fresh Bakes For Every Sweet Moment",
+      "Cakes Made To Match Your Celebration",
+      "Baked This Morning, Boxed For You"
+    ],
+    "heroSubtitles": [
+      "{brand} bakes cakes, pastries and breads fresh every day, with eggless options and custom designs for your celebration.",
+      "Order a birthday cake in your flavour and design, and pick it up fresh or have it delivered to your door.",
+      "From a simple tea time loaf to a three tier celebration cake, {brand} bakes with care and delivers on time."
+    ],
+    "button": "Order Your Cake",
+    "featureTitle": "Bakes And Cakes From Our Oven",
+    "features": [
+      {
+        "title": "Custom Cakes",
+        "text": "Birthday and anniversary cakes in your choice of flavour, size, colour and message."
+      },
+      {
+        "title": "Eggless Options",
+        "text": "Many cakes are available eggless, baked separately from cakes that contain eggs."
+      },
+      {
+        "title": "Pastries And Cupcakes",
+        "text": "Individual pastries, cupcakes and brownies made fresh each morning."
+      },
+      {
+        "title": "Breads And Cookies",
+        "text": "Loaves, buns and cookies baked daily for breakfast and tea time."
+      },
+      {
+        "title": "Wedding And Party Orders",
+        "text": "Tiered cakes and dessert boxes for larger events, planned with you in advance."
+      },
+      {
+        "title": "Home Delivery",
+        "text": "Careful local delivery in a sturdy box so your cake arrives in good shape."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Fresh",
+        "label": "Baked daily"
+      },
+      {
+        "value": "Eggless",
+        "label": "Options available"
+      },
+      {
+        "value": "Custom",
+        "label": "Cake designs"
+      }
+    ],
+    "steps": {
+      "title": "How To Order A Cake",
+      "items": [
+        {
+          "title": "Choose",
+          "text": "Pick the flavour, size and any eggless requirement from our menu."
+        },
+        {
+          "title": "Share Your Design",
+          "text": "Send a photo or idea, and we will confirm what we can bake."
+        },
+        {
+          "title": "Confirm",
+          "text": "Pay a small advance and we lock your date and time."
+        },
+        {
+          "title": "Pick Up Or Delivery",
+          "text": "Collect your cake fresh from the shop, or we deliver it to your address."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How early should I order a custom cake?",
+        "a": "We suggest at least two days for custom designs, and a week or more for tiered and wedding cakes."
+      },
+      {
+        "q": "Do you make eggless cakes?",
+        "a": "Yes. Many flavours are available eggless, and they are baked in separate trays and moulds."
+      },
+      {
+        "q": "Can I get a cake with a photo or a message?",
+        "a": "Yes, we can write a message, and edible photo printing is available on selected cakes."
+      },
+      {
+        "q": "Can I customise the sweetness or flavour?",
+        "a": "Tell us your preference when you order, and we will adjust the cake as far as the recipe allows."
+      },
+      {
+        "q": "How should I store the cake?",
+        "a": "Keep cream cakes in the refrigerator and bring them to room temperature before serving. We share tips with each order."
+      }
+    ],
+    "cta": {
+      "title": "Planning A Celebration Cake?",
+      "button": "Order Your Cake"
+    },
+    "about": {
+      "title": "About Our Bakery",
+      "paragraphs": [
+        "{brand} is a local bakery where cakes, pastries and breads are baked fresh each day in small batches.",
+        "We use simple ingredients, take custom orders seriously and make sure each cake looks and tastes the way you pictured it."
+      ],
+      "points": [
+        "Baked fresh every day",
+        "Eggless options available",
+        "Custom designs on request"
+      ]
+    },
+    "pricing": {
+      "title": "Cake Pricing",
+      "plans": [
+        {
+          "name": "Half Kg Cake",
+          "price": "$8",
+          "period": "/cake",
+          "perks": [
+            "Choice of flavour",
+            "Message on cake",
+            "Pickup from shop"
+          ]
+        },
+        {
+          "name": "One Kg Custom Cake",
+          "price": "$18",
+          "period": "/cake",
+          "perks": [
+            "Custom design",
+            "Eggless on request",
+            "Candles and knife"
+          ]
+        },
+        {
+          "name": "Tiered Wedding Cake",
+          "price": "$65",
+          "period": "/cake",
+          "perks": [
+            "Two or three tiers",
+            "Design consultation",
+            "Delivery option"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Fresh From The Oven",
+      "captions": [
+        "Birthday cake",
+        "Chocolate truffle",
+        "Cupcake tray",
+        "Fresh bread",
+        "Wedding tiers",
+        "Bakery counter"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Bakers",
+      "roles": [
+        "Head Baker",
+        "Cake Designer",
+        "Pastry Chef"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The cake looked exactly like my photo and tasted even better.",
+        "role": "Customer"
+      },
+      {
+        "quote": "Eggless cake that nobody could tell was eggless. Delivered on time too.",
+        "role": "Customer"
+      },
+      {
+        "quote": "Fresh bread every morning, and the staff remember my order.",
+        "role": "Regular customer"
+      }
+    ],
+    "blog": {
+      "title": "Baking Notes",
+      "posts": [
+        {
+          "tag": "Ordering",
+          "title": "How To Choose The Right Size Of Cake For Your Party"
+        },
+        {
+          "tag": "Eggless",
+          "title": "Baking Eggless Cakes That Stay Soft And Moist"
+        },
+        {
+          "tag": "Storage",
+          "title": "How To Store And Serve A Cream Cake Properly"
+        }
+      ]
+    },
+    "marquee": [
+      "Birthday Cakes",
+      "Eggless",
+      "Cupcakes",
+      "Pastries",
+      "Fresh Bread",
+      "Cookies",
+      "Custom Designs",
+      "Delivery"
+    ],
+    "contactText": "Message or call {brand} with your date, flavour and design idea, and we will confirm your cake order."
+  },
+  {
+    "id": "pet_grooming_vet",
+    "label": "Pet care and vet",
+    "theme": "pets_animals",
+    "keywords": [
+      "pet shop",
+      "dog grooming",
+      "vet clinic",
+      "pet boarding",
+      "veterinary doctor",
+      "पशु चिकित्सक",
+      "kutte ka doctor",
+      "pet care"
+    ],
+    "heroTitles": [
+      "Caring For Pets Like Family",
+      "Happy Pets, Healthy Pets, Happy Homes",
+      "Grooming, Boarding And Care In One Place"
+    ],
+    "heroSubtitles": [
+      "{brand} offers grooming, check ups, boarding and pet supplies from people who actually love animals.",
+      "Bring your dog or cat for a gentle bath, a trim or a health check, handled with patience by trained staff.",
+      "Going out of town? {brand} looks after your pet with clean kennels, regular walks and updates for you."
+    ],
+    "button": "Book A Visit",
+    "featureTitle": "Complete Care For Your Pet",
+    "features": [
+      {
+        "title": "Dog Grooming",
+        "text": "Bath, brushing, nail trim and coat styling, done gently with pet safe shampoos."
+      },
+      {
+        "title": "Vet Check Ups",
+        "text": "Examination and advice from a qualified vet for everyday concerns and routine visits."
+      },
+      {
+        "title": "Vaccination Reminders",
+        "text": "Vaccines recorded in a health card, with a reminder when the next dose is due."
+      },
+      {
+        "title": "Pet Boarding",
+        "text": "Clean, supervised stay for dogs and cats while you travel, with scheduled meals and walks."
+      },
+      {
+        "title": "Pet Food And Supplies",
+        "text": "Food, treats, leashes, beds and toys, and advice on what suits your pet's age and size."
+      },
+      {
+        "title": "Cat And Small Pet Care",
+        "text": "Grooming and basic care for cats, rabbits and other small pets with calm handling."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Gentle",
+        "label": "Handling"
+      },
+      {
+        "value": "Qualified",
+        "label": "Vet on duty"
+      },
+      {
+        "value": "Daily",
+        "label": "Updates during boarding"
+      }
+    ],
+    "steps": {
+      "title": "How We Care For Your Pet",
+      "items": [
+        {
+          "title": "Book A Visit",
+          "text": "Tell us your pet's breed, age and what you need, and we fix a time."
+        },
+        {
+          "title": "Meet And Greet",
+          "text": "Our team meets your pet, notes any fears or health needs and sets a routine."
+        },
+        {
+          "title": "Care Or Stay",
+          "text": "We groom, examine or board your pet while keeping you updated."
+        },
+        {
+          "title": "Pick Up",
+          "text": "Your pet goes home clean and calm, with notes and tips on the next visit."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How often should I groom my dog?",
+        "a": "It depends on coat and breed. Most dogs benefit from a bath every few weeks, and we can suggest a schedule."
+      },
+      {
+        "q": "Do you board cats as well as dogs?",
+        "a": "Yes, we have separate, quiet areas for cats and for dogs so they feel safe."
+      },
+      {
+        "q": "What do I need to bring for boarding?",
+        "a": "Bring your pet's vaccination card, regular food, and a familiar blanket or toy for comfort."
+      },
+      {
+        "q": "Is grooming stressful for my pet?",
+        "a": "We go slowly, use gentle handling and stop for breaks, so nervous pets stay as calm as possible."
+      },
+      {
+        "q": "Can the vet visit my home?",
+        "a": "Ask us about home visits. Availability depends on the case, so please call before you book."
+      }
+    ],
+    "cta": {
+      "title": "Time To Pamper Your Pet?",
+      "button": "Book A Visit"
+    },
+    "about": {
+      "title": "About Our Pet Care Team",
+      "paragraphs": [
+        "{brand} is a pet care centre run by animal lovers, combining grooming, veterinary care, boarding and a small shop.",
+        "We take time with every animal, keep their space clean and always explain what we find to the people who love them."
+      ],
+      "points": [
+        "Gentle, trained handlers",
+        "Qualified veterinary doctor",
+        "Clean grooming and boarding areas"
+      ]
+    },
+    "pricing": {
+      "title": "Pet Care Pricing",
+      "plans": [
+        {
+          "name": "Vet Consultation",
+          "price": "$6",
+          "period": "/visit",
+          "perks": [
+            "Health check",
+            "Advice on diet",
+            "Prescription if needed"
+          ]
+        },
+        {
+          "name": "Pet Boarding",
+          "price": "$10",
+          "period": "/day",
+          "perks": [
+            "Clean kennel",
+            "Meals and walks",
+            "Daily updates"
+          ]
+        },
+        {
+          "name": "Dog Grooming",
+          "price": "$18",
+          "period": "/session",
+          "perks": [
+            "Bath and brush",
+            "Nail trim",
+            "Ear cleaning"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Pets At Our Place",
+      "captions": [
+        "Bath time",
+        "Fresh trim",
+        "Boarding area",
+        "Vet room",
+        "Play yard",
+        "Pet supplies"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Pet Care Team",
+      "roles": [
+        "Veterinary Doctor",
+        "Pet Groomer",
+        "Boarding Attendant"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "My dog usually hates baths but came home calm and smelling great.",
+        "role": "Pet parent"
+      },
+      {
+        "quote": "The boarding updates meant I could enjoy my trip without worrying.",
+        "role": "Pet parent"
+      },
+      {
+        "quote": "The vet took the time to explain everything about my cat's diet.",
+        "role": "Pet parent"
+      }
+    ],
+    "blog": {
+      "title": "Pet Care Tips",
+      "posts": [
+        {
+          "tag": "Grooming",
+          "title": "How Often Should You Bathe Your Dog"
+        },
+        {
+          "tag": "Health",
+          "title": "Keeping Track Of Your Pet's Vaccinations"
+        },
+        {
+          "tag": "Travel",
+          "title": "Preparing Your Pet For A Stay At A Boarding Centre"
+        }
+      ]
+    },
+    "marquee": [
+      "Grooming",
+      "Vet Care",
+      "Boarding",
+      "Vaccination",
+      "Pet Food",
+      "Dog Bath",
+      "Cat Care",
+      "Pet Supplies"
+    ],
+    "contactText": "Call or message {brand} to book grooming, a vet visit or a boarding stay for your pet."
+  },
+  {
+    "id": "skin_clinic_dermatology",
+    "label": "Skin clinic",
+    "theme": "healthcare",
+    "keywords": [
+      "skin clinic",
+      "dermatologist",
+      "acne treatment",
+      "laser hair removal",
+      "pigmentation treatment",
+      "त्वचा रोग विशेषज्ञ",
+      "skin specialist",
+      "chehre ke daag"
+    ],
+    "heroTitles": [
+      "Expert Skin Care You Can Trust",
+      "Understand Your Skin Before You Treat It",
+      "Clear Advice For Skin And Hair Concerns"
+    ],
+    "heroSubtitles": [
+      "{brand} offers consultations with a qualified dermatologist who examines your skin and explains your options clearly.",
+      "Whether it is acne, pigmentation or hair fall, book a consultation and get a plan matched to your skin type.",
+      "From first consultation to follow up, {brand} keeps advice simple and treatments safe, with no pressure to buy packages."
+    ],
+    "button": "Book A Consultation",
+    "featureTitle": "Skin And Hair Concerns We Treat",
+    "features": [
+      {
+        "title": "Acne And Scar Care",
+        "text": "Assessment of acne type and options for treatment, with guidance on skin care between visits."
+      },
+      {
+        "title": "Pigmentation And Dark Spots",
+        "text": "Evaluation of uneven skin tone and a plan that combines treatment with sun protection."
+      },
+      {
+        "title": "Laser Hair Removal",
+        "text": "Reduction of unwanted hair with laser sessions, planned after a skin and hair assessment."
+      },
+      {
+        "title": "Hair And Scalp Care",
+        "text": "Consultation for hair fall, dandruff and scalp problems, with causes explained."
+      },
+      {
+        "title": "Skin Allergies And Rashes",
+        "text": "Examination of rashes, itching and sensitivity, with advice on triggers and treatment."
+      },
+      {
+        "title": "Peels And Facials",
+        "text": "Medical facials and peels suggested only when suitable for your skin type."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Qualified",
+        "label": "Dermatologist"
+      },
+      {
+        "value": "Clear",
+        "label": "Plan and costs upfront"
+      },
+      {
+        "value": "Follow up",
+        "label": "Reviews included"
+      }
+    ],
+    "steps": {
+      "title": "Your Skin Consultation",
+      "items": [
+        {
+          "title": "Book A Visit",
+          "text": "Choose a consultation slot and share your main concern."
+        },
+        {
+          "title": "Skin Examination",
+          "text": "The doctor examines your skin, asks about history and discusses what may be causing the problem."
+        },
+        {
+          "title": "Treatment Plan",
+          "text": "You get a written plan, expected sessions and costs explained before you decide."
+        },
+        {
+          "title": "Follow Up",
+          "text": "We review your progress and adjust the plan as your skin responds."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How many sessions of laser hair removal do I need?",
+        "a": "It varies with hair type and area. The doctor will estimate after examining your skin, and results differ between people."
+      },
+      {
+        "q": "Can acne be treated in one visit?",
+        "a": "Acne usually needs a course of treatment and follow ups. The doctor will explain what to expect for your skin."
+      },
+      {
+        "q": "Is laser safe for Indian skin?",
+        "a": "The doctor assesses your skin type before any laser treatment and chooses settings accordingly. Discuss any concerns at consultation."
+      },
+      {
+        "q": "Do I have to buy a package?",
+        "a": "No. You decide after the consultation, and the doctor will explain which steps are really needed."
+      },
+      {
+        "q": "What should I bring to my first visit?",
+        "a": "Bring any earlier prescriptions or reports, and a list of products you currently use on your skin."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Understand Your Skin?",
+      "button": "Book A Consultation"
+    },
+    "about": {
+      "title": "About Our Skin Clinic",
+      "paragraphs": [
+        "{brand} is a skin and hair clinic led by a qualified dermatologist, focused on careful diagnosis and honest advice.",
+        "We explain what we see, what is possible and what is not, so you can make unhurried decisions about your skin."
+      ],
+      "points": [
+        "Consultation by a qualified doctor",
+        "Plans explained in plain language",
+        "No pressure on packages"
+      ]
+    },
+    "pricing": {
+      "title": "Clinic Pricing",
+      "plans": [
+        {
+          "name": "Consultation",
+          "price": "$9",
+          "period": "/visit",
+          "perks": [
+            "Skin examination",
+            "Written treatment plan",
+            "Product advice"
+          ]
+        },
+        {
+          "name": "Acne Care Visit",
+          "price": "$25",
+          "period": "/visit",
+          "perks": [
+            "Treatment session",
+            "Skin care guidance",
+            "Follow up review"
+          ]
+        },
+        {
+          "name": "Laser Session",
+          "price": "$40",
+          "period": "/session",
+          "perks": [
+            "Skin assessment",
+            "Laser treatment",
+            "Aftercare advice"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Inside The Clinic",
+      "captions": [
+        "Consultation room",
+        "Treatment room",
+        "Reception",
+        "Laser device",
+        "Skin care shelf",
+        "Waiting area"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Skin Care Team",
+      "roles": [
+        "Consultant Dermatologist",
+        "Skin Therapist",
+        "Clinic Coordinator"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The doctor listened carefully and explained my options without pushing a package.",
+        "role": "Patient"
+      },
+      {
+        "quote": "Clean clinic and a clear plan with costs written down.",
+        "role": "Patient"
+      },
+      {
+        "quote": "Follow up visits made me feel looked after.",
+        "role": "Patient"
+      }
+    ],
+    "blog": {
+      "title": "Skin Care Notes",
+      "posts": [
+        {
+          "tag": "Daily Care",
+          "title": "A Simple Skin Care Routine For Oily Skin"
+        },
+        {
+          "tag": "Sun",
+          "title": "Why Sunscreen Matters Even Indoors"
+        },
+        {
+          "tag": "Hair",
+          "title": "Common Causes Of Hair Fall Worth Discussing With A Doctor"
+        }
+      ]
+    },
+    "marquee": [
+      "Dermatology",
+      "Acne Care",
+      "Pigmentation",
+      "Laser",
+      "Hair Care",
+      "Skin Allergy",
+      "Peels",
+      "Consultation"
+    ],
+    "contactText": "Call or message {brand} to book a consultation, or write to us with your concern before you visit."
+  },
+  {
+    "id": "nutritionist_dietitian",
+    "label": "Dietitian and nutritionist",
+    "theme": "healthcare",
+    "keywords": [
+      "dietitian",
+      "nutritionist",
+      "diet plan",
+      "weight management",
+      "diet consultation",
+      "डाइटीशियन",
+      "diet chart",
+      "weight loss diet"
+    ],
+    "heroTitles": [
+      "Eat Well With A Plan That Fits You",
+      "Nutrition Advice Built Around Your Life",
+      "Practical Diet Plans, No Crash Diets"
+    ],
+    "heroSubtitles": [
+      "{brand} creates simple diet plans around the food you already enjoy, your routine and your health needs.",
+      "Meet a qualified dietitian to talk about your goals, and get a plan you can follow in a real kitchen.",
+      "From weight management to diabetes friendly eating, {brand} gives steady, practical advice, not extreme rules."
+    ],
+    "button": "Book A Consultation",
+    "featureTitle": "Nutrition Support For Real Life",
+    "features": [
+      {
+        "title": "Weight Management",
+        "text": "A balanced plan for gradual weight change, built on regular meals and portions that suit you."
+      },
+      {
+        "title": "Diabetes And Thyroid Diet",
+        "text": "Meal guidance for people managing diabetes or thyroid, planned alongside their doctor's advice."
+      },
+      {
+        "title": "PCOS Diet Support",
+        "text": "Eating plans to support women with PCOS, focused on balanced meals and sustainable habits."
+      },
+      {
+        "title": "Child And Family Nutrition",
+        "text": "Guidance for picky eaters and family meals, so everyone eats better without separate cooking."
+      },
+      {
+        "title": "Sports And Muscle Nutrition",
+        "text": "Protein and energy planning for people who train, based on your schedule and diet preferences."
+      },
+      {
+        "title": "Weekly Follow Ups",
+        "text": "Regular check ins to review your progress and adjust meals when life gets in the way."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Personal",
+        "label": "Diet plans"
+      },
+      {
+        "value": "Indian",
+        "label": "Food friendly"
+      },
+      {
+        "value": "Weekly",
+        "label": "Follow ups"
+      }
+    ],
+    "steps": {
+      "title": "How We Build Your Diet Plan",
+      "items": [
+        {
+          "title": "Consultation",
+          "text": "We discuss your health history, food habits, routine and goals."
+        },
+        {
+          "title": "Your Plan",
+          "text": "You receive a diet plan using foods you eat, with portions and meal timings."
+        },
+        {
+          "title": "Start And Track",
+          "text": "You follow the plan and share a quick weekly update on how it is going."
+        },
+        {
+          "title": "Review",
+          "text": "We adjust meals and targets as your routine and body respond."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Will I have to give up my favourite foods?",
+        "a": "Not usually. We work with the foods you enjoy and adjust portions and frequency to fit your goal."
+      },
+      {
+        "q": "How fast will I lose weight?",
+        "a": "Healthy change is gradual and differs between people. We aim for steady habits instead of quick fixes."
+      },
+      {
+        "q": "Can you help with medical conditions like diabetes?",
+        "a": "Yes, we plan meals around such conditions. Please share your reports and keep following your doctor's advice."
+      },
+      {
+        "q": "Do I need to buy supplements?",
+        "a": "Not as a rule. We focus on food first and recommend supplements only if there is a clear reason."
+      },
+      {
+        "q": "Do you offer online consultations?",
+        "a": "Yes, consultations and follow ups are available by phone or video call."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Eat With A Plan?",
+      "button": "Book A Consultation"
+    },
+    "about": {
+      "title": "About Our Nutrition Practice",
+      "paragraphs": [
+        "{brand} is a dietitian led practice that turns nutrition science into plain, workable meal plans.",
+        "We avoid fad diets and crash plans, and focus on routines you can follow at home, at work and during festivals."
+      ],
+      "points": [
+        "Qualified dietitian",
+        "Plans built on home cooked food",
+        "Regular follow ups"
+      ]
+    },
+    "pricing": {
+      "title": "Consultation Plans",
+      "plans": [
+        {
+          "name": "First Consultation",
+          "price": "$10",
+          "period": "/session",
+          "perks": [
+            "Health and diet review",
+            "Goal setting",
+            "Basic diet guidance"
+          ]
+        },
+        {
+          "name": "Monthly Diet Plan",
+          "price": "$30",
+          "period": "/month",
+          "perks": [
+            "Personal diet plan",
+            "Weekly check ins",
+            "Plan changes as needed"
+          ]
+        },
+        {
+          "name": "Family Nutrition Plan",
+          "price": "$55",
+          "period": "/month",
+          "perks": [
+            "Plan for two to four members",
+            "Grocery guidance",
+            "Monthly review"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Healthy Eating Ideas",
+      "captions": [
+        "Balanced thali",
+        "Fresh vegetables",
+        "Meal planning",
+        "Healthy breakfast",
+        "Portion guide",
+        "Consultation desk"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Nutrition Team",
+      "roles": [
+        "Clinical Dietitian",
+        "Sports Nutritionist",
+        "Wellness Coordinator"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The plan used food from my own kitchen, so it was easy to stick with.",
+        "role": "Client"
+      },
+      {
+        "quote": "Weekly check ins kept me on track without any pressure.",
+        "role": "Client"
+      },
+      {
+        "quote": "She explained portions clearly and never pushed supplements.",
+        "role": "Client"
+      }
+    ],
+    "blog": {
+      "title": "Nutrition Notes",
+      "posts": [
+        {
+          "tag": "Basics",
+          "title": "How To Build A Balanced Indian Thali"
+        },
+        {
+          "tag": "Habits",
+          "title": "Small Changes To Your Breakfast That Help"
+        },
+        {
+          "tag": "Planning",
+          "title": "Meal Planning Tips For A Busy Week"
+        }
+      ]
+    },
+    "marquee": [
+      "Diet Plan",
+      "Nutrition",
+      "Weight Care",
+      "Meal Planning",
+      "Portion Guide",
+      "Follow Ups",
+      "PCOS Diet",
+      "Family Meals"
+    ],
+    "contactText": "Call or message {brand} to book your first consultation and share your goals with us."
+  },
+  {
+    "id": "general_physician_clinic",
+    "label": "General physician clinic",
+    "theme": "healthcare",
+    "keywords": [
+      "family doctor",
+      "general physician",
+      "polyclinic",
+      "doctor near me",
+      "physician clinic",
+      "फैमिली डॉक्टर",
+      "bukhar ka doctor",
+      "opd clinic"
+    ],
+    "heroTitles": [
+      "Your Family Doctor, Close To Home",
+      "Caring For Every Age Under One Roof",
+      "Clear Advice For Everyday Health"
+    ],
+    "heroSubtitles": [
+      "{brand} is a neighbourhood clinic where a qualified doctor listens, examines and explains in plain language.",
+      "Walk in for fever, infections, blood pressure or a routine check up, with timings that suit working families.",
+      "Our doctor keeps your records and follows your health over time, so every visit builds on the last one."
+    ],
+    "button": "Book An Appointment",
+    "featureTitle": "Everyday Healthcare For Your Family",
+    "features": [
+      {
+        "title": "General Consultation",
+        "text": "Examination and advice for fever, cough, stomach trouble, body pain and other common illnesses."
+      },
+      {
+        "title": "Blood Pressure And Sugar Care",
+        "text": "Regular monitoring and follow up for people living with high blood pressure or diabetes."
+      },
+      {
+        "title": "Health Check Ups",
+        "text": "Basic check ups with the tests your doctor advises, recorded in a file you can carry."
+      },
+      {
+        "title": "Vaccinations",
+        "text": "Routine vaccinations for children and adults, noted in a card with the next due date."
+      },
+      {
+        "title": "Minor Procedures",
+        "text": "Dressing, injection and simple procedures done under proper hygiene in the clinic."
+      },
+      {
+        "title": "Records And Referrals",
+        "text": "Your history is kept on file, and we refer you to a specialist when you need one."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Walk in",
+        "label": "Appointments"
+      },
+      {
+        "value": "Family",
+        "label": "Records kept"
+      },
+      {
+        "value": "Same day",
+        "label": "Consultations"
+      }
+    ],
+    "steps": {
+      "title": "Your Visit To The Clinic",
+      "items": [
+        {
+          "title": "Register",
+          "text": "Our front desk notes your details and any earlier records you bring."
+        },
+        {
+          "title": "See The Doctor",
+          "text": "The doctor listens, examines you and explains what may be causing the problem."
+        },
+        {
+          "title": "Tests And Medicine",
+          "text": "If tests are needed, we guide you. Prescriptions are written clearly."
+        },
+        {
+          "title": "Follow Up",
+          "text": "We tell you when to return and what warning signs to watch for."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do I need an appointment?",
+        "a": "Walk ins are welcome. Calling ahead helps reduce your waiting time, especially at busy hours."
+      },
+      {
+        "q": "Can you treat children and elderly patients?",
+        "a": "Yes, our doctor sees patients of all ages and refers to a specialist when the case needs one."
+      },
+      {
+        "q": "Do you give vaccinations?",
+        "a": "Yes, routine vaccines for children and adults are available. Please ask which are in stock."
+      },
+      {
+        "q": "Should I bring my earlier reports?",
+        "a": "Yes, bring previous prescriptions and reports. They help the doctor understand your history."
+      },
+      {
+        "q": "What if it is an emergency?",
+        "a": "This clinic is not an emergency hospital. For serious symptoms, please go straight to the nearest hospital emergency."
+      }
+    ],
+    "cta": {
+      "title": "Need To See A Doctor Today?",
+      "button": "Book An Appointment"
+    },
+    "about": {
+      "title": "About Our Clinic",
+      "paragraphs": [
+        "{brand} is a family clinic run by a qualified physician who knows patients by name and follows their health from visit to visit.",
+        "We keep waiting short, explanations simple and fees fair, so seeing a doctor is less stressful for the whole family."
+      ],
+      "points": [
+        "Qualified, registered doctor",
+        "Records kept for every patient",
+        "Simple, fair consultation fees"
+      ]
+    },
+    "pricing": {
+      "title": "Clinic Fees",
+      "plans": [
+        {
+          "name": "Consultation",
+          "price": "$4",
+          "period": "/visit",
+          "perks": [
+            "Doctor examination",
+            "Prescription",
+            "Health advice"
+          ]
+        },
+        {
+          "name": "Health Check Up",
+          "price": "$20",
+          "period": "/visit",
+          "perks": [
+            "Basic examination",
+            "BP and sugar check",
+            "Written advice"
+          ]
+        },
+        {
+          "name": "Family Care Plan",
+          "price": "$30",
+          "period": "/year",
+          "perks": [
+            "Records for the family",
+            "Discounted follow ups",
+            "Vaccination reminders"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Inside The Clinic",
+      "captions": [
+        "Consultation room",
+        "Waiting area",
+        "Reception",
+        "Examination bed",
+        "Vaccination corner",
+        "Records desk"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Clinic Team",
+      "roles": [
+        "General Physician",
+        "Clinic Nurse",
+        "Front Desk Coordinator"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The doctor listens properly and explains things without medical jargon.",
+        "role": "Patient"
+      },
+      {
+        "quote": "Short waiting time and the doctor remembers my family history.",
+        "role": "Patient"
+      },
+      {
+        "quote": "Fair fees and clear advice every time.",
+        "role": "Patient"
+      }
+    ],
+    "blog": {
+      "title": "Health Notes",
+      "posts": [
+        {
+          "tag": "Everyday",
+          "title": "When To See A Doctor For A Fever"
+        },
+        {
+          "tag": "Prevention",
+          "title": "Why Regular Blood Pressure Checks Matter"
+        },
+        {
+          "tag": "Family",
+          "title": "Keeping Your Child's Vaccination Record Up To Date"
+        }
+      ]
+    },
+    "marquee": [
+      "Consultation",
+      "Fever Care",
+      "BP Check",
+      "Sugar Check",
+      "Vaccination",
+      "Health Check",
+      "Family Doctor",
+      "Records"
+    ],
+    "contactText": "Call or message {brand} to book an appointment or ask about clinic timings."
+  }
+]

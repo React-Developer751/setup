@@ -1,0 +1,227 @@
+[
+  {
+    "id": "tea_house",
+    "label": "Tea house",
+    "theme": "organic_nature",
+    "keywords": [
+      "tea cafe",
+      "tea house",
+      "tea shop",
+      "tea lounge",
+      "tea room",
+      "chai cafe",
+      "chai lounge",
+      "bubble tea",
+      "loose leaf tea",
+      "चाय कैफे",
+      "chai ki dukaan"
+    ],
+    "heroTitles": [
+      "Steep Slowly, Sip Something Honest",
+      "Loose Leaf Tea Worth Sitting Down For",
+      "Your Calm Corner For A Proper Cup"
+    ],
+    "heroSubtitles": [
+      "{brand} pours single-origin teas, masala chai and herbal blends, brewed fresh in a quiet spot made for slow conversations.",
+      "Pick a leaf, watch it steep and stay a while. {brand} brews green, black and herbal teas by the pot or by the cup.",
+      "From first-flush greens to strong masala chai, {brand} serves tea the careful way, with light bites on the side."
+    ],
+    "button": "Reserve A Table",
+    "featureTitle": "What We Steep And Serve",
+    "features": [
+      {
+        "title": "Green And White Teas",
+        "text": "Light, grassy cups brewed at the right temperature so nothing turns bitter."
+      },
+      {
+        "title": "Masala Chai",
+        "text": "Strong milk tea simmered with fresh ginger, cardamom and whole spices."
+      },
+      {
+        "title": "Herbal Infusions",
+        "text": "Caffeine-free blends of tulsi, mint, chamomile and lemongrass for any hour."
+      },
+      {
+        "title": "Teas By The Pot",
+        "text": "A full pot with a small snack, easy to share across a long table."
+      },
+      {
+        "title": "Tea Tastings",
+        "text": "Try three leaves side by side and learn how each one is grown and brewed."
+      },
+      {
+        "title": "Leaves To Take Home",
+        "text": "Buy loose leaf tea by the pack, with brewing notes written on the label."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Loose",
+        "label": "Leaf, no dust"
+      },
+      {
+        "value": "Fresh",
+        "label": "Brewed to order"
+      },
+      {
+        "value": "Daily",
+        "label": "Light bites"
+      }
+    ],
+    "steps": {
+      "title": "How A Visit Goes",
+      "items": [
+        {
+          "title": "Pick A Leaf",
+          "text": "Browse the menu or ask us to suggest a tea for your mood."
+        },
+        {
+          "title": "Watch It Steep",
+          "text": "We time the brew and bring it to your table at its best."
+        },
+        {
+          "title": "Sip And Stay",
+          "text": "Order a snack, refill the pot and take your time."
+        },
+        {
+          "title": "Take Some Home",
+          "text": "Buy a pack of the tea you liked with brewing notes."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do you serve tea without milk or sugar?",
+        "a": "Yes. Every tea can be served plain, and we bring honey or sugar separately on the side."
+      },
+      {
+        "q": "Can I try a tea before buying a pack?",
+        "a": "Of course. Ask for a small cup of any leaf and we will brew it so you can taste before you buy."
+      },
+      {
+        "q": "Do you have caffeine-free options?",
+        "a": "We have several herbal infusions with no caffeine, made from herbs, flowers and spices."
+      },
+      {
+        "q": "Is there seating for a group?",
+        "a": "We have a long shared table and smaller corners. Message us ahead for a bigger group."
+      },
+      {
+        "q": "Do you sell loose leaf tea to take home?",
+        "a": "Yes, we pack loose leaf tea by weight and write simple brewing notes on every pack."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Slow Down With A Cup?",
+      "button": "Reserve A Table"
+    },
+    "about": {
+      "title": "A Quiet Place For Good Tea",
+      "paragraphs": [
+        "{brand} started with a simple idea: tea deserves the same care as any other craft, from the leaf to the cup.",
+        "We buy from small growers, brew each pot by hand and keep the room calm so a cup of tea can still be a pause in the day."
+      ],
+      "points": [
+        "Single-origin loose leaf",
+        "Brewed fresh to order",
+        "Quiet seating for all"
+      ]
+    },
+    "pricing": {
+      "title": "Tea For Every Mood",
+      "plans": [
+        {
+          "name": "Cup Of Tea",
+          "price": "$2",
+          "period": "/cup",
+          "perks": [
+            "Any tea on the menu",
+            "Honey on request",
+            "Free refill of water"
+          ]
+        },
+        {
+          "name": "Tasting Flight",
+          "price": "$5",
+          "period": "/tasting",
+          "perks": [
+            "Three teas to compare",
+            "Tasting notes",
+            "Small snack"
+          ]
+        },
+        {
+          "name": "Tea For Two",
+          "price": "$8",
+          "period": "/pot",
+          "perks": [
+            "A full shared pot",
+            "Two light bites",
+            "Window seat"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "A Look Inside",
+      "captions": [
+        "Steeping pot",
+        "Loose leaf jars",
+        "Masala chai",
+        "Quiet corner",
+        "Tea flight",
+        "Fresh pastries"
+      ]
+    },
+    "team": {
+      "title": "The People Behind The Pot",
+      "roles": [
+        "Tea Sommelier",
+        "Head Brewer",
+        "Cafe Manager"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The masala chai here tastes like it was simmered, not poured from a machine.",
+        "role": "Regular guest"
+      },
+      {
+        "quote": "I came for a quiet hour and ended up trying three teas I had never heard of.",
+        "role": "First-time visitor"
+      },
+      {
+        "quote": "Good tea, calm music and no rush to leave. Exactly what I wanted.",
+        "role": "Weekend visitor"
+      }
+    ],
+    "blog": {
+      "title": "From The Tea Table",
+      "posts": [
+        {
+          "tag": "Guide",
+          "title": "How To Brew Green Tea Without Bitterness"
+        },
+        {
+          "tag": "Origins",
+          "title": "What Single-Origin Tea Really Means"
+        },
+        {
+          "tag": "Recipes",
+          "title": "Making Masala Chai At Home The Slow Way"
+        }
+      ]
+    },
+    "marquee": [
+      "Loose Leaf",
+      "Masala Chai",
+      "Green Tea",
+      "Herbal Blends",
+      "Tea Flights",
+      "Fresh Brews",
+      "Quiet Corners",
+      "Small Batch"
+    ],
+    "contactText": "Planning a visit or a group booking? Message {brand} and we will keep a table ready with the pot already warming."
+  }
+]

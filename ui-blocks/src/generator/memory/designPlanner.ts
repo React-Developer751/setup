@@ -53,7 +53,7 @@ export function describeDesign(prompt: string, variation: number, creativity: st
     layouts: site.layoutIds,
     heroTitle: site.content.hero.title,
     copy: copyOf(site.content),
-    fit: fitsBusiness(site.content.hero.title, site.content.subject, site.content.brandName),
+    fit: !!site.niche || fitsBusiness(site.content.hero.title, site.content.subject, site.content.brandName),
     verdict: 'unrated',
   }
 }

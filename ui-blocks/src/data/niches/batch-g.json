@@ -1,0 +1,2226 @@
+[
+  {
+    "id": "saas_startup",
+    "label": "SaaS startup",
+    "theme": "modern_tech",
+    "keywords": [
+      "saas startup",
+      "saas product",
+      "saas platform",
+      "b2b software",
+      "software for teams",
+      "software product landing page",
+      "app for teams",
+      "सास सॉफ्टवेयर",
+      "saas",
+      "project management tool",
+      "software tool"
+    ],
+    "heroTitles": [
+      "Software That Helps Your Team Do More",
+      "One Dashboard For Everything Your Team Does",
+      "Try It Free And See The Difference Yourself"
+    ],
+    "heroSubtitles": [
+      "{brand} brings your tasks, data and teammates into one clear workspace, so work stops getting lost between apps.",
+      "Set up in an afternoon, connect the tools you already use, and start with a free trial before you decide.",
+      "{brand} is built for small and growing teams who want simple software, honest pricing and real people for support."
+    ],
+    "button": "Start Your Free Trial",
+    "featureTitle": "Everything Your Team Needs In One Product",
+    "features": [
+      {
+        "title": "Live Dashboard",
+        "text": "See projects, numbers and updates for the whole team on one screen that refreshes as work happens."
+      },
+      {
+        "title": "Integrations",
+        "text": "Connect email, calendar, chat and payment tools you already use so data flows without copy paste."
+      },
+      {
+        "title": "Team Workspaces",
+        "text": "Create separate spaces for each team or client, with roles that decide who can see and edit what."
+      },
+      {
+        "title": "Automations",
+        "text": "Turn repeated steps like reminders and status updates into simple rules that run on their own."
+      },
+      {
+        "title": "Reports And Exports",
+        "text": "Build clear weekly reports and download them as a sheet or PDF to share with managers and clients."
+      },
+      {
+        "title": "Secure Access",
+        "text": "Sign in with email or single sign on, set permissions and keep a log of who changed what."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Free",
+        "label": "Trial to start"
+      },
+      {
+        "value": "No card",
+        "label": "Needed for trial"
+      },
+      {
+        "value": "Email",
+        "label": "Human support"
+      }
+    ],
+    "steps": {
+      "title": "From Sign Up To First Result",
+      "items": [
+        {
+          "title": "Create Account",
+          "text": "Sign up with your work email and name your first workspace in under a minute."
+        },
+        {
+          "title": "Connect Tools",
+          "text": "Link your calendar, chat and files so your existing data shows up inside the dashboard."
+        },
+        {
+          "title": "Invite Your Team",
+          "text": "Add teammates, pick their roles and share the first board so everyone starts together."
+        },
+        {
+          "title": "Review And Grow",
+          "text": "Check the reports each week, then upgrade your plan only when your team needs more."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do I need a credit card for the free trial?",
+        "a": "No. You can explore the product with your email only, and we ask for payment details only if you choose a paid plan."
+      },
+      {
+        "q": "Can I import my existing data?",
+        "a": "Yes. You can upload a CSV file or connect your current tool, and our support team will help if something does not map cleanly."
+      },
+      {
+        "q": "Which tools does it connect with?",
+        "a": "The common ones for email, calendar, chat, files and payments. The integrations page lists everything that is available today."
+      },
+      {
+        "q": "Is my team data safe?",
+        "a": "Data is encrypted in transit, access is controlled by roles, and you can export or delete your workspace whenever you want."
+      },
+      {
+        "q": "Can I cancel any time?",
+        "a": "Yes. Plans are monthly, you can cancel from your account settings, and your data stays available for export afterwards."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Give Your Team A Calmer Workday?",
+      "button": "Start Your Free Trial"
+    },
+    "about": {
+      "title": "About The Product And The Team",
+      "paragraphs": [
+        "{brand} started from a simple frustration: teams spend too much time chasing updates across chat, sheets and email.",
+        "We build in small steps, listen to what customers ask for, and write our roadmap in the open so you know what is coming next."
+      ],
+      "points": [
+        "Built with customer feedback",
+        "Clear and simple pricing",
+        "Support from real people"
+      ]
+    },
+    "pricing": {
+      "title": "Simple Plans That Grow With You",
+      "plans": [
+        {
+          "name": "Starter",
+          "price": "$0",
+          "period": "/month",
+          "perks": [
+            "Up to 3 users",
+            "Core dashboard",
+            "Community support"
+          ]
+        },
+        {
+          "name": "Team",
+          "price": "$15",
+          "period": "/month",
+          "perks": [
+            "Unlimited projects",
+            "All integrations",
+            "Email support"
+          ]
+        },
+        {
+          "name": "Business",
+          "price": "$40",
+          "period": "/month",
+          "perks": [
+            "Advanced reports",
+            "Roles and permissions",
+            "Priority support"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "A Look Inside The Product",
+      "captions": [
+        "Main dashboard",
+        "Team workspace",
+        "Report builder",
+        "Integrations page",
+        "Mobile view",
+        "Settings panel"
+      ]
+    },
+    "team": {
+      "title": "The People Behind The Product",
+      "roles": [
+        "Product Manager",
+        "Lead Engineer",
+        "Customer Success Lead"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "Setup was quick and the whole team was using the dashboard by the end of the first week.",
+        "role": "Operations manager"
+      },
+      {
+        "quote": "The integrations saved us from copying data between three different tools every Monday.",
+        "role": "Startup founder"
+      },
+      {
+        "quote": "When we had a question, a real person replied the same day with a clear answer.",
+        "role": "Team lead"
+      }
+    ],
+    "blog": {
+      "title": "Product Updates And Guides",
+      "posts": [
+        {
+          "tag": "Guide",
+          "title": "How To Move Your Team To A New Tool Without Chaos"
+        },
+        {
+          "tag": "Product",
+          "title": "What Is New In This Month Release Notes"
+        },
+        {
+          "tag": "Productivity",
+          "title": "Five Weekly Reports Every Small Team Should Track"
+        }
+      ]
+    },
+    "marquee": [
+      "Dashboard",
+      "Integrations",
+      "Automation",
+      "Reports",
+      "Teamwork",
+      "API Access",
+      "Free Trial",
+      "Support"
+    ],
+    "contactText": "Have a question or want a walkthrough? Message {brand} and we will reply with a demo link or the answer you need."
+  },
+  {
+    "id": "web_app_dev_agency",
+    "label": "Web and app development company",
+    "theme": "modern_tech",
+    "keywords": [
+      "software development company",
+      "web development company",
+      "mobile app development",
+      "app developers",
+      "custom software development",
+      "website and app development",
+      "android app developer",
+      "सॉफ्टवेयर डेवलपमेंट"
+    ],
+    "heroTitles": [
+      "We Build Web And Mobile Apps That Work",
+      "Custom Software Built Around Your Business",
+      "From Idea To Launch With One Dev Team"
+    ],
+    "heroSubtitles": [
+      "{brand} designs and develops websites, web apps and mobile apps, with clear milestones and regular demos along the way.",
+      "Tell us the problem you want to solve and our developers will suggest the simplest product that can solve it.",
+      "{brand} writes clean code, shares progress every week and hands over the full source when your project is done."
+    ],
+    "button": "Discuss Your Project",
+    "featureTitle": "What Our Developers Can Build For You",
+    "features": [
+      {
+        "title": "Web Applications",
+        "text": "Dashboards, portals and booking systems built for browsers, with sign in, roles and admin panels."
+      },
+      {
+        "title": "Mobile Apps",
+        "text": "Android and iOS apps built from one codebase when it makes sense, or natively when it needs to."
+      },
+      {
+        "title": "Business Websites",
+        "text": "Fast, responsive company websites with a content panel so your staff can edit pages themselves."
+      },
+      {
+        "title": "Custom Software",
+        "text": "Billing, inventory and CRM tools shaped around how your business already works day to day."
+      },
+      {
+        "title": "API And Integrations",
+        "text": "Connect payment gateways, WhatsApp, maps and your accounting software to the product you own."
+      },
+      {
+        "title": "Maintenance And Support",
+        "text": "Bug fixes, updates and hosting care after launch, so your app keeps running as phones and browsers change."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Weekly",
+        "label": "Progress demos"
+      },
+      {
+        "value": "Source",
+        "label": "Code is yours"
+      },
+      {
+        "value": "Free",
+        "label": "First consultation"
+      }
+    ],
+    "steps": {
+      "title": "How We Build Your Product",
+      "items": [
+        {
+          "title": "Discovery Call",
+          "text": "We listen to your idea, your users and your budget, then suggest what to build first."
+        },
+        {
+          "title": "Scope And Quote",
+          "text": "You receive a written scope, a timeline and a fixed price for each milestone."
+        },
+        {
+          "title": "Design And Build",
+          "text": "Designers share screens for approval, then developers build in short sprints with demos."
+        },
+        {
+          "title": "Launch And Support",
+          "text": "We test, publish to the web or app stores, and stay available for fixes after release."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How much does an app cost to build?",
+        "a": "It depends on features and screens. After a short call we send a written quote, and you can start with a smaller first version."
+      },
+      {
+        "q": "Who owns the code after the project?",
+        "a": "You do. Once the final payment is made we hand over the source code, design files and access to your servers and accounts."
+      },
+      {
+        "q": "How long does a typical project take?",
+        "a": "A business website can take a few weeks and a custom app a few months. We give a timeline with each milestone."
+      },
+      {
+        "q": "Will you help publish the app on the Play Store and App Store?",
+        "a": "Yes. We prepare the listing, screenshots and builds, and guide you through the store review process."
+      },
+      {
+        "q": "Do you work with startups that only have an idea?",
+        "a": "Yes. We help turn the idea into a simple first version so you can test it with real users before spending more."
+      }
+    ],
+    "cta": {
+      "title": "Have An App Idea You Want To Build?",
+      "button": "Discuss Your Project"
+    },
+    "about": {
+      "title": "About Our Development Team",
+      "paragraphs": [
+        "{brand} is a small team of developers and designers who build web and mobile products for local and international clients.",
+        "We keep communication plain: weekly demos, a shared task board and straight answers about what is possible within your budget."
+      ],
+      "points": [
+        "Weekly demos and updates",
+        "Full source code handover",
+        "Honest advice on scope"
+      ]
+    },
+    "pricing": {
+      "title": "Project Pricing Starting Points",
+      "plans": [
+        {
+          "name": "Monthly Support",
+          "price": "$60",
+          "period": "/month",
+          "perks": [
+            "Bug fixes and updates",
+            "Server monitoring",
+            "Priority replies"
+          ]
+        },
+        {
+          "name": "Business Website",
+          "price": "$250",
+          "period": "/project",
+          "perks": [
+            "Up to 6 pages",
+            "Mobile friendly design",
+            "Content panel"
+          ]
+        },
+        {
+          "name": "Web Or Mobile App",
+          "price": "$1200",
+          "period": "/project",
+          "perks": [
+            "Design and development",
+            "Admin panel",
+            "Store publishing help"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Products We Have Built",
+      "captions": [
+        "Booking app screens",
+        "Admin dashboard",
+        "Mobile app design",
+        "Ecommerce build",
+        "Code review session",
+        "Team sprint board"
+      ]
+    },
+    "team": {
+      "title": "Meet The Developers",
+      "roles": [
+        "Full Stack Developer",
+        "Mobile App Developer",
+        "UI UX Designer"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They explained every step in simple words and showed us a working version every week.",
+        "role": "Startup founder"
+      },
+      {
+        "quote": "Our old billing process is now one screen, and the team learned it in a day.",
+        "role": "Shop owner"
+      },
+      {
+        "quote": "Clean handover with documents, so our own staff can manage the site now.",
+        "role": "Business owner"
+      }
+    ],
+    "blog": {
+      "title": "Notes From The Dev Desk",
+      "posts": [
+        {
+          "tag": "Apps",
+          "title": "Web App Or Mobile App Which One To Build First"
+        },
+        {
+          "tag": "Planning",
+          "title": "How To Write A Project Brief Developers Can Quote On"
+        },
+        {
+          "tag": "Launch",
+          "title": "What To Check Before Your App Goes On The Play Store"
+        }
+      ]
+    },
+    "marquee": [
+      "Web Apps",
+      "Mobile Apps",
+      "Android",
+      "iOS",
+      "APIs",
+      "UI Design",
+      "Cloud Hosting",
+      "Support"
+    ],
+    "contactText": "Tell {brand} about your project by message or call, and we will reply with questions, a rough plan and a quote."
+  },
+  {
+    "id": "online_coach_courses",
+    "label": "Online coach and courses",
+    "theme": "education",
+    "keywords": [
+      "online course",
+      "online coach",
+      "online mentor",
+      "online classes platform",
+      "skill training course",
+      "webinar",
+      "live online course",
+      "ऑनलाइन कोर्स"
+    ],
+    "heroTitles": [
+      "Learn A New Skill From Anywhere",
+      "Live Classes And Courses You Can Finish",
+      "Guidance From A Mentor Who Has Done It"
+    ],
+    "heroSubtitles": [
+      "{brand} runs live online sessions and recorded lessons, so you can learn at your own pace and still ask questions.",
+      "Pick a course, join the next batch and practise with real assignments and feedback from your coach.",
+      "{brand} teaches practical skills in small batches, with notes, recordings and a community to keep you going."
+    ],
+    "button": "Join The Next Batch",
+    "featureTitle": "How You Learn With Our Online Programs",
+    "features": [
+      {
+        "title": "Live Sessions",
+        "text": "Join scheduled classes on video, ask questions in real time and learn alongside other students."
+      },
+      {
+        "title": "Recorded Lessons",
+        "text": "Watch missed or tough lessons again whenever you like, on your phone or laptop."
+      },
+      {
+        "title": "Practice Assignments",
+        "text": "Apply what you learn with small tasks and projects that your coach reviews and comments on."
+      },
+      {
+        "title": "One To One Mentoring",
+        "text": "Book a private call to talk through your goals, doubts and next steps with your mentor."
+      },
+      {
+        "title": "Study Material",
+        "text": "Get notes, templates and worksheets that you can download and keep after the course ends."
+      },
+      {
+        "title": "Community Group",
+        "text": "Share progress, doubts and wins with other learners in a friendly chat group."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Live",
+        "label": "Weekly classes"
+      },
+      {
+        "value": "Free",
+        "label": "Intro webinar"
+      },
+      {
+        "value": "Lifetime",
+        "label": "Notes access"
+      }
+    ],
+    "steps": {
+      "title": "How Joining A Course Works",
+      "items": [
+        {
+          "title": "Attend The Webinar",
+          "text": "Join a free intro session to meet the coach and see if the course fits your goal."
+        },
+        {
+          "title": "Choose Your Batch",
+          "text": "Pick the batch timing that suits you and complete the simple online registration."
+        },
+        {
+          "title": "Learn And Practise",
+          "text": "Attend live classes, finish assignments and get feedback from your coach each week."
+        },
+        {
+          "title": "Finish And Keep Growing",
+          "text": "Complete the final project, collect your certificate and stay in the community group."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do I need any experience before joining?",
+        "a": "Most beginner courses need none. The course page lists any prerequisites, and the intro webinar helps you decide."
+      },
+      {
+        "q": "What if I miss a live class?",
+        "a": "Every live class is recorded and shared with the batch, so you can watch it later and send your doubts to the coach."
+      },
+      {
+        "q": "Will I get a certificate?",
+        "a": "You receive a certificate of completion after finishing the assignments. It shows what you studied, not a job promise."
+      },
+      {
+        "q": "How do I pay for a course?",
+        "a": "You can pay online by UPI, card or net banking, and some courses offer instalments. Details are on each course page."
+      },
+      {
+        "q": "Can I get a refund if the course is not for me?",
+        "a": "Our refund terms are written on the course page. Write to us early in the batch if you feel it is not a fit."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Start Learning Something New?",
+      "button": "Join The Next Batch"
+    },
+    "about": {
+      "title": "About Your Coach And The Platform",
+      "paragraphs": [
+        "{brand} is an online learning space where a working practitioner teaches skills step by step, using live classes and simple lessons.",
+        "We keep batches small so questions get answered, and we focus on practice instead of long lectures that are hard to remember."
+      ],
+      "points": [
+        "Small live batches",
+        "Practical assignments",
+        "Coach feedback every week"
+      ]
+    },
+    "pricing": {
+      "title": "Course And Mentoring Fees",
+      "plans": [
+        {
+          "name": "Intro Webinar",
+          "price": "$0",
+          "period": "/webinar",
+          "perks": [
+            "Live Q and A",
+            "Course overview",
+            "Sample lesson"
+          ]
+        },
+        {
+          "name": "Full Course",
+          "price": "$40",
+          "period": "/course",
+          "perks": [
+            "Live classes",
+            "Recordings and notes",
+            "Certificate"
+          ]
+        },
+        {
+          "name": "Mentor Plus",
+          "price": "$90",
+          "period": "/course",
+          "perks": [
+            "Everything in Full Course",
+            "Monthly one to one calls",
+            "Project review"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Inside Our Classes",
+      "captions": [
+        "Live class on video",
+        "Recorded lesson set",
+        "Student assignment",
+        "Mentor call",
+        "Course notes",
+        "Community chat"
+      ]
+    },
+    "team": {
+      "title": "Meet Your Coaches",
+      "roles": [
+        "Lead Coach",
+        "Course Mentor",
+        "Student Support Lead"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The live classes were easy to follow and the coach reviewed every assignment I sent.",
+        "role": "Student"
+      },
+      {
+        "quote": "I could watch the recordings after work, which made it possible for me to finish.",
+        "role": "Working professional"
+      },
+      {
+        "quote": "The one to one call helped me plan what to learn next without feeling lost.",
+        "role": "Course learner"
+      }
+    ],
+    "blog": {
+      "title": "Learning Tips And Updates",
+      "posts": [
+        {
+          "tag": "Study Tips",
+          "title": "How To Finish An Online Course Without Losing Interest"
+        },
+        {
+          "tag": "Skills",
+          "title": "Choosing Your First Skill To Learn Online This Year"
+        },
+        {
+          "tag": "Webinar",
+          "title": "What To Ask A Coach Before You Join A Course"
+        }
+      ]
+    },
+    "marquee": [
+      "Live Classes",
+      "Recordings",
+      "Webinar",
+      "Mentoring",
+      "Assignments",
+      "Certificate",
+      "Notes",
+      "Community"
+    ],
+    "contactText": "Questions about a course, batch timing or fees? Message {brand} and we will reply with the details you need."
+  },
+  {
+    "id": "ecommerce_store",
+    "label": "Online store",
+    "theme": "general_business",
+    "keywords": [
+      "online store",
+      "ecommerce store",
+      "ecommerce website",
+      "d2c brand",
+      "online shopping website",
+      "buy online",
+      "shop online",
+      "ऑनलाइन स्टोर"
+    ],
+    "heroTitles": [
+      "Shop Online And Get It Delivered",
+      "Everyday Finds Delivered To Your Door",
+      "Order In A Few Taps, Track Every Step"
+    ],
+    "heroSubtitles": [
+      "{brand} brings carefully picked products to your door, with clear photos, honest descriptions and easy returns.",
+      "Browse the collection, pay securely by UPI or card and follow your parcel from our shelf to your home.",
+      "{brand} is a direct to customer brand, so you buy from the makers instead of paying for extra middlemen."
+    ],
+    "button": "Start Shopping",
+    "featureTitle": "Why Shoppers Order From Our Online Store",
+    "features": [
+      {
+        "title": "Clear Product Pages",
+        "text": "Real photos, sizes and details on every product so you know what arrives at your door."
+      },
+      {
+        "title": "Secure Payments",
+        "text": "Pay by UPI, card, net banking or cash on delivery on eligible pincodes."
+      },
+      {
+        "title": "Order Tracking",
+        "text": "Get updates by message and follow your parcel until the moment it reaches you."
+      },
+      {
+        "title": "Easy Returns",
+        "text": "If the product is not right, raise a return request from your account within the return window."
+      },
+      {
+        "title": "Gift Wrap Option",
+        "text": "Add a gift note and wrapping at checkout and send an order straight to a friend."
+      },
+      {
+        "title": "Customer Support",
+        "text": "Reach us on chat or email for sizing help, order changes or a delivery question."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Easy",
+        "label": "Returns window"
+      },
+      {
+        "value": "Secure",
+        "label": "Online payments"
+      },
+      {
+        "value": "Tracked",
+        "label": "Every order"
+      }
+    ],
+    "steps": {
+      "title": "How Ordering Works",
+      "items": [
+        {
+          "title": "Pick Your Products",
+          "text": "Browse the collections, check the details and add what you like to your cart."
+        },
+        {
+          "title": "Checkout Securely",
+          "text": "Enter your address and choose a payment method, then confirm your order."
+        },
+        {
+          "title": "We Pack And Ship",
+          "text": "Your order is packed with care and handed to the courier, and you get tracking details."
+        },
+        {
+          "title": "Delivered To You",
+          "text": "Receive the parcel, try the product, and use our return option if it is not right."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How long does delivery take?",
+        "a": "Delivery time depends on your pincode and is shown at checkout before you pay. You also get tracking once the order ships."
+      },
+      {
+        "q": "Can I return or exchange a product?",
+        "a": "Yes, within the return window listed on our policy page, as long as the product is unused and in its original packing."
+      },
+      {
+        "q": "Do you offer cash on delivery?",
+        "a": "Cash on delivery is available on many pincodes. Enter yours at checkout to see if it is available for your area."
+      },
+      {
+        "q": "How do I track my order?",
+        "a": "After shipping, we send a tracking link by message and email, and you can also see the status in your account."
+      },
+      {
+        "q": "What if I receive a damaged product?",
+        "a": "Send us a photo within two days of delivery and we will arrange a replacement or refund as per our policy."
+      }
+    ],
+    "cta": {
+      "title": "Found Something You Like Yet?",
+      "button": "Start Shopping"
+    },
+    "about": {
+      "title": "About Our Online Store",
+      "paragraphs": [
+        "{brand} started as a small online shop and sells products we would be happy to use ourselves, with honest descriptions.",
+        "We pack every order by hand, work with trusted courier partners and answer messages ourselves, so you are never talking to a bot."
+      ],
+      "points": [
+        "Honest product details",
+        "Hand packed orders",
+        "Real human support"
+      ]
+    },
+    "pricing": {
+      "title": "Shipping And Membership",
+      "plans": [
+        {
+          "name": "Standard Shipping",
+          "price": "$2",
+          "period": "/order",
+          "perks": [
+            "Delivery in a few days",
+            "Order tracking",
+            "Easy returns"
+          ]
+        },
+        {
+          "name": "Express Shipping",
+          "price": "$4",
+          "period": "/order",
+          "perks": [
+            "Faster dispatch",
+            "Order tracking",
+            "Priority support"
+          ]
+        },
+        {
+          "name": "Member Plan",
+          "price": "$6",
+          "period": "/month",
+          "perks": [
+            "Free shipping on orders",
+            "Early sale access",
+            "Birthday coupon"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "From Our Store Shelves",
+      "captions": [
+        "New arrivals",
+        "Packed orders",
+        "Gift wrapped",
+        "Customer favourites",
+        "Unboxing moment",
+        "Seasonal collection"
+      ]
+    },
+    "team": {
+      "title": "Meet The Store Team",
+      "roles": [
+        "Store Manager",
+        "Packing Lead",
+        "Customer Care Executive"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The product looked just like the photos and arrived neatly packed.",
+        "role": "Online shopper"
+      },
+      {
+        "quote": "I needed a different size and the return was sorted with one message.",
+        "role": "Repeat customer"
+      },
+      {
+        "quote": "Tracking updates were clear and the parcel came on the day they said.",
+        "role": "Customer"
+      }
+    ],
+    "blog": {
+      "title": "Store News And Shopping Guides",
+      "posts": [
+        {
+          "tag": "Guide",
+          "title": "How To Choose The Right Size When Shopping Online"
+        },
+        {
+          "tag": "Gifting",
+          "title": "Simple Gift Ideas You Can Send With A Note"
+        },
+        {
+          "tag": "Care",
+          "title": "How To Look After Your Products So They Last Longer"
+        }
+      ]
+    },
+    "marquee": [
+      "New Arrivals",
+      "Free Shipping",
+      "Gift Wrap",
+      "Easy Returns",
+      "UPI Payment",
+      "Tracking",
+      "Collections",
+      "Support"
+    ],
+    "contactText": "Need help with a product or an order? Message {brand} and our team will reply with the answer."
+  },
+  {
+    "id": "fashion_boutique",
+    "label": "Fashion boutique",
+    "theme": "fashion_retail",
+    "keywords": [
+      "fashion boutique",
+      "ladies boutique",
+      "ethnic wear",
+      "saree shop",
+      "kurti collection",
+      "designer wear",
+      "designer suits",
+      "बुटीक"
+    ],
+    "heroTitles": [
+      "Outfits Chosen With Care For You",
+      "Ethnic And Designer Wear For Every Occasion",
+      "Sarees Suits And Kurtis You Will Love"
+    ],
+    "heroSubtitles": [
+      "{brand} brings you sarees, suits, kurtis and designer pieces picked for festivals, weddings and everyday style.",
+      "Walk in to feel the fabric, try the fit and get honest styling advice from people who love clothes.",
+      "{brand} is a boutique where each piece is chosen for its fabric, finish and how well it suits real people."
+    ],
+    "button": "Visit The Boutique",
+    "featureTitle": "What You Will Find At Our Boutique",
+    "features": [
+      {
+        "title": "Sarees",
+        "text": "Silk, cotton, georgette and handloom sarees for weddings, festivals and office days."
+      },
+      {
+        "title": "Kurtis And Suits",
+        "text": "Straight, anarkali and palazzo sets in cotton and rayon that are comfortable through the day."
+      },
+      {
+        "title": "Designer Wear",
+        "text": "Occasion outfits with embroidery and detailing for engagement, sangeet and reception events."
+      },
+      {
+        "title": "Lehengas",
+        "text": "Festive and bridal lehengas in a range of colours, with help choosing blouse and dupatta."
+      },
+      {
+        "title": "Dupattas And Accessories",
+        "text": "Dupattas, stoles and potli bags to finish an outfit without the hunt through other shops."
+      },
+      {
+        "title": "Fitting Help",
+        "text": "Our staff can suggest a style and arrange blouse fitting through a tailor partner."
+      }
+    ],
+    "stats": [
+      {
+        "value": "New",
+        "label": "Styles each season"
+      },
+      {
+        "value": "Try on",
+        "label": "Before you buy"
+      },
+      {
+        "value": "Custom",
+        "label": "Fitting help"
+      }
+    ],
+    "steps": {
+      "title": "How Shopping With Us Works",
+      "items": [
+        {
+          "title": "Tell Us The Occasion",
+          "text": "Share the event, your budget and colours you like, and we pull out matching pieces."
+        },
+        {
+          "title": "Try And Compare",
+          "text": "Try outfits in our trial room, compare fabrics and take your time to decide."
+        },
+        {
+          "title": "Fitting Arrangements",
+          "text": "If you need blouse stitching or alterations, we can arrange it with a trusted tailor."
+        },
+        {
+          "title": "Pick Up Or Delivery",
+          "text": "Take your outfit home on the day, or ask for delivery within the city."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do you offer blouse stitching or alterations?",
+        "a": "We can arrange it through a tailor we work with. Tell us when you need the outfit so the timing can be planned."
+      },
+      {
+        "q": "Can I see outfits before visiting?",
+        "a": "Yes. Message us the occasion and budget, and we will send photos of suitable pieces on chat."
+      },
+      {
+        "q": "Do you take returns or exchanges?",
+        "a": "Exchange rules depend on the item, and stitched or altered pieces cannot be exchanged. Please ask at the time of buying."
+      },
+      {
+        "q": "Do you have bridal and festive collections?",
+        "a": "Yes, we keep lehengas, sarees and heavy suits for weddings and festivals. Visit early so there is time for fitting."
+      },
+      {
+        "q": "Do you have plus sizes?",
+        "a": "We keep a range of sizes in many styles, and we can suggest pieces with extra margin for alteration."
+      }
+    ],
+    "cta": {
+      "title": "Looking For The Perfect Outfit For The Occasion?",
+      "button": "Visit The Boutique"
+    },
+    "about": {
+      "title": "About Our Boutique",
+      "paragraphs": [
+        "{brand} is a boutique built on one idea: clothes should feel good to wear and look good on you, not only in the photo.",
+        "We pick fabrics ourselves, keep our selection focused and spend time with each customer so the outfit you take home is the one you love."
+      ],
+      "points": [
+        "Hand picked fabrics",
+        "Honest styling advice",
+        "Fitting support available"
+      ]
+    },
+    "pricing": {
+      "title": "Price Ranges At A Glance",
+      "plans": [
+        {
+          "name": "Everyday Kurtis",
+          "price": "$12",
+          "period": "/piece",
+          "perks": [
+            "Cotton and rayon",
+            "Daily wear styles",
+            "Comfortable fits"
+          ]
+        },
+        {
+          "name": "Festive Suits Sarees",
+          "price": "$45",
+          "period": "/piece",
+          "perks": [
+            "Embroidered styles",
+            "Silk and georgette",
+            "Dupatta matching"
+          ]
+        },
+        {
+          "name": "Designer And Bridal",
+          "price": "$150",
+          "period": "/piece",
+          "perks": [
+            "Heavy detailing",
+            "Occasion wear",
+            "Fitting guidance"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "From Our Collection",
+      "captions": [
+        "Silk saree rack",
+        "Festive kurti set",
+        "Embroidery detail",
+        "Lehenga display",
+        "Dupatta wall",
+        "Trial room corner"
+      ]
+    },
+    "team": {
+      "title": "Meet The Boutique Team",
+      "roles": [
+        "Boutique Owner",
+        "Fashion Stylist",
+        "Sales Associate"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They listened to what I needed for my cousin wedding and showed outfits in my budget.",
+        "role": "Boutique customer"
+      },
+      {
+        "quote": "The staff were patient and gave honest opinions about what suited me.",
+        "role": "Regular shopper"
+      },
+      {
+        "quote": "Lovely fabrics and they helped arrange blouse fitting in time.",
+        "role": "Festival shopper"
+      }
+    ],
+    "blog": {
+      "title": "Style Notes From The Boutique",
+      "posts": [
+        {
+          "tag": "Styling",
+          "title": "How To Pick A Saree Colour That Suits Your Skin Tone"
+        },
+        {
+          "tag": "Festivals",
+          "title": "Kurti Looks For Festive Evenings And Family Pujas"
+        },
+        {
+          "tag": "Care",
+          "title": "Simple Ways To Store And Care For Silk Sarees"
+        }
+      ]
+    },
+    "marquee": [
+      "Sarees",
+      "Kurtis",
+      "Lehengas",
+      "Suits",
+      "Dupattas",
+      "Festive Wear",
+      "Designer",
+      "New Styles"
+    ],
+    "contactText": "Planning an outfit for an occasion? Call or message {brand} and we will set aside time to show you suitable pieces."
+  },
+  {
+    "id": "furniture_store",
+    "label": "Furniture showroom",
+    "theme": "luxury_minimal",
+    "keywords": [
+      "furniture showroom",
+      "sofa set",
+      "home decor shop",
+      "mattress store",
+      "bed and mattress",
+      "living room furniture",
+      "dining table set",
+      "फर्नीचर शोरूम"
+    ],
+    "heroTitles": [
+      "Furniture That Makes A House A Home",
+      "Sofas Beds And Tables You Can Try Today",
+      "Comfortable Furniture For Every Room"
+    ],
+    "heroSubtitles": [
+      "{brand} displays sofas, beds, dining sets and home decor in one showroom, so you can sit, lie down and compare.",
+      "Visit the showroom, bring your room measurements and let our team help you choose pieces that fit and last.",
+      "{brand} stocks furniture and mattresses in many sizes and finishes, with delivery and fitting at your doorstep."
+    ],
+    "button": "Visit The Showroom",
+    "featureTitle": "Furniture And Decor For Every Room",
+    "features": [
+      {
+        "title": "Sofas And Recliners",
+        "text": "Fabric, leatherette and leather sofas in different seat counts, with sample swatches to compare."
+      },
+      {
+        "title": "Beds And Mattresses",
+        "text": "Storage beds, platform beds and mattresses in foam and spring, which you can lie on before you buy."
+      },
+      {
+        "title": "Dining Sets",
+        "text": "Four, six and eight seater dining tables with chairs in wood, glass and metal finishes."
+      },
+      {
+        "title": "Wardrobes And Storage",
+        "text": "Wardrobes, shoe racks and cabinets in sizes that suit flats, small rooms and bigger bedrooms."
+      },
+      {
+        "title": "Home Decor",
+        "text": "Mirrors, lamps, wall art and cushions to finish a room after the main furniture is placed."
+      },
+      {
+        "title": "Delivery And Fitting",
+        "text": "Careful delivery to your floor and assembly by trained staff, with packing removed after fitting."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Try",
+        "label": "Before you buy"
+      },
+      {
+        "value": "Home",
+        "label": "Delivery and fitting"
+      },
+      {
+        "value": "Many",
+        "label": "Fabric and finish options"
+      }
+    ],
+    "steps": {
+      "title": "How To Buy Furniture With Us",
+      "items": [
+        {
+          "title": "Visit The Showroom",
+          "text": "Browse the display, sit on the sofas, test the mattresses and note down what you like."
+        },
+        {
+          "title": "Share Your Measures",
+          "text": "Tell us the size of the room and doors so we suggest pieces that fit and fit through."
+        },
+        {
+          "title": "Choose And Confirm",
+          "text": "Select the fabric and finish, receive a written quote and confirm with an advance payment."
+        },
+        {
+          "title": "Delivery And Setup",
+          "text": "Our team delivers on a fixed day, assembles the furniture and places it where you want."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Can I choose a different fabric or colour?",
+        "a": "Yes. Many sofas and beds can be ordered in other fabrics and finishes. Ask our staff to show swatches and timing."
+      },
+      {
+        "q": "When will my furniture be delivered?",
+        "a": "Items in stock can be delivered within a few days. Made to order pieces take longer, and we confirm the date in writing."
+      },
+      {
+        "q": "Do you provide assembly?",
+        "a": "Yes, our team assembles beds, wardrobes and tables at your home so you do not have to deal with tools and manuals."
+      },
+      {
+        "q": "Which mattress should I pick?",
+        "a": "It depends on your sleeping position and body weight. Please lie on a few types in the showroom and we will explain the difference."
+      },
+      {
+        "q": "Do you offer a warranty or after sales help?",
+        "a": "Warranty terms depend on the product and brand, and they are written on your bill. We also help with small repair requests."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Sit Down On Your Next Sofa?",
+      "button": "Visit The Showroom"
+    },
+    "about": {
+      "title": "About Our Furniture Showroom",
+      "paragraphs": [
+        "{brand} is a family run showroom for sofas, beds, dining sets and home decor, set up so customers can test every piece in person.",
+        "We explain frame, foam and finish in plain words and help you plan a room around the space you really have at home."
+      ],
+      "points": [
+        "Test before you buy",
+        "Clear written quotes",
+        "Delivery and assembly included"
+      ]
+    },
+    "pricing": {
+      "title": "Starting Prices By Category",
+      "plans": [
+        {
+          "name": "Mattresses",
+          "price": "$90",
+          "period": "/piece",
+          "perks": [
+            "Foam and spring options",
+            "Single to king size",
+            "Warranty on the bill"
+          ]
+        },
+        {
+          "name": "Sofa Sets",
+          "price": "$300",
+          "period": "/set",
+          "perks": [
+            "Three seater and sets",
+            "Fabric choices",
+            "Home delivery"
+          ]
+        },
+        {
+          "name": "Bedroom Or Dining Set",
+          "price": "$600",
+          "period": "/set",
+          "perks": [
+            "Solid finish options",
+            "Fitting at home",
+            "Written quote"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Around The Showroom",
+      "captions": [
+        "Sofa display",
+        "Mattress corner",
+        "Dining set",
+        "Wardrobe range",
+        "Decor wall",
+        "Delivery and fitting"
+      ]
+    },
+    "team": {
+      "title": "Meet The Showroom Team",
+      "roles": [
+        "Showroom Manager",
+        "Furniture Consultant",
+        "Delivery Supervisor"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "We could sit on every sofa and the staff did not rush us while we decided.",
+        "role": "Home owner"
+      },
+      {
+        "quote": "The team measured our door first and the bed was fitted neatly on the delivery day.",
+        "role": "New flat owner"
+      },
+      {
+        "quote": "They helped us pick a mattress for back comfort without pushing a costly one.",
+        "role": "Customer"
+      }
+    ],
+    "blog": {
+      "title": "Furniture Buying Guides",
+      "posts": [
+        {
+          "tag": "Sofas",
+          "title": "How To Measure Your Room Before Buying A Sofa"
+        },
+        {
+          "tag": "Mattress",
+          "title": "Foam Or Spring A Simple Guide To Choosing A Mattress"
+        },
+        {
+          "tag": "Decor",
+          "title": "Small Decor Changes That Freshen Up A Living Room"
+        }
+      ]
+    },
+    "marquee": [
+      "Sofas",
+      "Beds",
+      "Mattresses",
+      "Dining Sets",
+      "Wardrobes",
+      "Home Decor",
+      "Delivery",
+      "Fitting"
+    ],
+    "contactText": "Want to know what is in stock or book a showroom visit? Message or call {brand} and we will be ready for you."
+  },
+  {
+    "id": "ngo_charity",
+    "label": "NGO and charity",
+    "theme": "nonprofit",
+    "keywords": [
+      "ngo",
+      "charity",
+      "donate online",
+      "social work",
+      "foundation donation",
+      "orphanage support",
+      "volunteer with us",
+      "दान करें",
+      "एनजीओ"
+    ],
+    "heroTitles": [
+      "Small Acts Of Giving Change Real Lives",
+      "Stand With Families Who Need Support",
+      "Give Your Time Or Your Help Today"
+    ],
+    "heroSubtitles": [
+      "{brand} works with local families on education, food and care, and shares where every donation goes.",
+      "Donate, volunteer or spread the word, because every kind of help makes our community work a little easier.",
+      "{brand} is a registered organisation that publishes its programs and welcomes visits from supporters."
+    ],
+    "button": "Donate Now",
+    "featureTitle": "How Our Work Reaches People In Need",
+    "features": [
+      {
+        "title": "Education Support",
+        "text": "School fees, books and uniforms for children whose families cannot afford them."
+      },
+      {
+        "title": "Food Drives",
+        "text": "Ration kits and cooked meals shared with families and elders in nearby settlements."
+      },
+      {
+        "title": "Health Camps",
+        "text": "Check up camps with visiting doctors and basic medicines for people who cannot travel far."
+      },
+      {
+        "title": "Care For Children",
+        "text": "Support for children living in shelters, with study materials, clothes and festival celebrations."
+      },
+      {
+        "title": "Women Skill Training",
+        "text": "Short courses in stitching and basic computers so women can earn at home."
+      },
+      {
+        "title": "Volunteer Programs",
+        "text": "Weekend and holiday volunteering for students and professionals who want to help on the ground."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Open",
+        "label": "Reports for donors"
+      },
+      {
+        "value": "80G",
+        "label": "Receipts on request"
+      },
+      {
+        "value": "Weekly",
+        "label": "Volunteer days"
+      }
+    ],
+    "steps": {
+      "title": "How Your Support Reaches Families",
+      "items": [
+        {
+          "title": "You Choose A Cause",
+          "text": "Pick education, food, health or a general fund when you donate or sponsor."
+        },
+        {
+          "title": "We Plan The Work",
+          "text": "Our team studies the need on the ground and plans the drive, camp or sponsorship."
+        },
+        {
+          "title": "Help Is Delivered",
+          "text": "Volunteers and staff deliver the support in person, with photos and records kept."
+        },
+        {
+          "title": "You See The Update",
+          "text": "Supporters receive updates and receipts so they can see how their help was used."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Can I get a receipt for my donation?",
+        "a": "Yes. We issue a receipt for every donation, and tax exemption details are shared as per current rules. Please ask us for the form."
+      },
+      {
+        "q": "Can I donate things instead of money?",
+        "a": "Yes. We accept books, clothes, groceries and stationery in good condition. Please call before bringing items to the office."
+      },
+      {
+        "q": "How can I volunteer?",
+        "a": "Fill in the volunteer form or message us. We will tell you the next drive or camp and what help is needed."
+      },
+      {
+        "q": "Where does my donation go?",
+        "a": "Funds are used for the programs listed on this website, and we share regular reports with supporters."
+      },
+      {
+        "q": "Can I visit and see your work?",
+        "a": "Yes. Supporters are welcome to visit by appointment, so we can show you the program and answer your questions."
+      }
+    ],
+    "cta": {
+      "title": "Will You Stand With Us This Month?",
+      "button": "Donate Now"
+    },
+    "about": {
+      "title": "About Our Organisation",
+      "paragraphs": [
+        "{brand} began with a few neighbours who wanted to help families around them, and it has grown into a registered organisation.",
+        "We keep our work local, publish how funds are used and treat every family we meet with respect and dignity."
+      ],
+      "points": [
+        "Local, on the ground work",
+        "Open accounts and reports",
+        "Respect for every family"
+      ]
+    },
+    "pricing": {
+      "title": "Ways To Give",
+      "plans": [
+        {
+          "name": "Supporter",
+          "price": "$6",
+          "period": "/month",
+          "perks": [
+            "Feeds a family kit",
+            "Monthly update",
+            "Donation receipt"
+          ]
+        },
+        {
+          "name": "Sponsor A Child",
+          "price": "$15",
+          "period": "/month",
+          "perks": [
+            "Books and fees support",
+            "Progress updates",
+            "Donation receipt"
+          ]
+        },
+        {
+          "name": "Champion",
+          "price": "$40",
+          "period": "/month",
+          "perks": [
+            "Fund a health camp",
+            "Visit invitations",
+            "Donation receipt"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Moments From Our Work",
+      "captions": [
+        "Food kit drive",
+        "School supplies",
+        "Health camp",
+        "Volunteer day",
+        "Festival celebration",
+        "Skill class"
+      ]
+    },
+    "team": {
+      "title": "Meet The People Who Serve",
+      "roles": [
+        "Founder And Trustee",
+        "Program Coordinator",
+        "Volunteer Manager"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "I joined a food drive on a Sunday and saw how carefully everything was organised.",
+        "role": "Volunteer"
+      },
+      {
+        "quote": "They sent a receipt and an update photo, which made me trust where my donation went.",
+        "role": "Donor"
+      },
+      {
+        "quote": "The team answered all my questions before I decided to sponsor a child.",
+        "role": "Monthly supporter"
+      }
+    ],
+    "blog": {
+      "title": "Stories And Updates",
+      "posts": [
+        {
+          "tag": "Volunteering",
+          "title": "What To Expect On Your First Day As A Volunteer"
+        },
+        {
+          "tag": "Giving",
+          "title": "How To Choose A Charity You Can Trust"
+        },
+        {
+          "tag": "Programs",
+          "title": "A Day At Our Weekly Food Kit Drive"
+        }
+      ]
+    },
+    "marquee": [
+      "Donate",
+      "Volunteer",
+      "Education",
+      "Food Drive",
+      "Health Camp",
+      "Sponsor",
+      "Community",
+      "Care"
+    ],
+    "contactText": "Want to donate, volunteer or ask about our work? Write to {brand} and a team member will get back to you."
+  },
+  {
+    "id": "recruitment_agency",
+    "label": "Recruitment agency",
+    "theme": "professional_services",
+    "keywords": [
+      "recruitment agency",
+      "hr consultancy",
+      "staffing agency",
+      "placement agency",
+      "job consultancy",
+      "manpower consultancy",
+      "bulk hiring",
+      "भर्ती एजेंसी"
+    ],
+    "heroTitles": [
+      "Hiring The Right People Made Simpler",
+      "Find Your Next Job With A Real Person",
+      "Staffing Support For Growing Businesses"
+    ],
+    "heroSubtitles": [
+      "{brand} connects employers with suitable candidates and helps job seekers find roles that match their skills.",
+      "Share the role you need to fill and we shortlist screened candidates, so your team spends time on interviews only.",
+      "{brand} works with job seekers and companies in many sectors, and keeps both sides informed at every step."
+    ],
+    "button": "Share Your Requirement",
+    "featureTitle": "Hiring And Placement Support We Provide",
+    "features": [
+      {
+        "title": "Permanent Hiring",
+        "text": "We find, screen and shortlist candidates for full time roles across sales, office and technical jobs."
+      },
+      {
+        "title": "Bulk And Contract Staffing",
+        "text": "Supply of teams for shops, factories and events, with payroll handled for contract staff."
+      },
+      {
+        "title": "Candidate Screening",
+        "text": "Resume checks, phone screening and skill checks before anyone is sent for your interview."
+      },
+      {
+        "title": "Job Seeker Support",
+        "text": "Resume review, interview guidance and openings that match your experience and city."
+      },
+      {
+        "title": "Walk In Drives",
+        "text": "We arrange and manage walk in interviews for companies that need many people quickly."
+      },
+      {
+        "title": "HR Documentation",
+        "text": "Offer letters, joining forms and basic HR paperwork support for small businesses without an HR team."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Screened",
+        "label": "Candidate profiles"
+      },
+      {
+        "value": "Free",
+        "label": "For job seekers"
+      },
+      {
+        "value": "Fast",
+        "label": "Shortlists shared"
+      }
+    ],
+    "steps": {
+      "title": "How We Fill Your Vacancy",
+      "items": [
+        {
+          "title": "Understand The Role",
+          "text": "We talk through the job, skills, salary range and team so we know who you really need."
+        },
+        {
+          "title": "Search And Screen",
+          "text": "We source candidates, check their resumes and speak to them before we share any profile."
+        },
+        {
+          "title": "Interview Support",
+          "text": "We schedule interviews, pass on feedback and help with salary talks on both sides."
+        },
+        {
+          "title": "Joining And Follow Up",
+          "text": "We follow up until the candidate joins and check in during the replacement period."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do job seekers pay any fee?",
+        "a": "No. Our job seeker support is free. Please be careful of anyone who asks for money to give you a job."
+      },
+      {
+        "q": "How are your fees charged to employers?",
+        "a": "Fees are agreed in writing before work begins, usually based on the role. We explain the terms and any replacement policy."
+      },
+      {
+        "q": "How fast can you send candidates?",
+        "a": "It depends on the role and city. We usually share first profiles after understanding the requirement, and tell you the timeline."
+      },
+      {
+        "q": "Do you hire for small companies?",
+        "a": "Yes. Many of our clients are small and growing firms who do not have an HR team to find and screen candidates."
+      },
+      {
+        "q": "Can you hire in bulk for factories or shops?",
+        "a": "Yes. We organise walk in drives and contract staffing for larger numbers, and we confirm the process before we begin."
+      }
+    ],
+    "cta": {
+      "title": "Need To Fill A Role Or Find A Job?",
+      "button": "Share Your Requirement"
+    },
+    "about": {
+      "title": "About Our Hiring Team",
+      "paragraphs": [
+        "{brand} is a recruitment and HR consultancy that helps businesses find reliable people and helps job seekers find fair roles.",
+        "We keep both sides honest about pay, role and expectations, because a good match is one that both employer and employee are happy with."
+      ],
+      "points": [
+        "No fee from job seekers",
+        "Screened candidates only",
+        "Clear written terms"
+      ]
+    },
+    "pricing": {
+      "title": "How Our Fees Work",
+      "plans": [
+        {
+          "name": "Job Seeker Support",
+          "price": "$0",
+          "period": "/candidate",
+          "perks": [
+            "Resume review",
+            "Interview guidance",
+            "Matching openings"
+          ]
+        },
+        {
+          "name": "Single Role Hiring",
+          "price": "$180",
+          "period": "/role",
+          "perks": [
+            "Screened shortlist",
+            "Interview scheduling",
+            "Replacement period"
+          ]
+        },
+        {
+          "name": "Bulk Hiring Plan",
+          "price": "$450",
+          "period": "/month",
+          "perks": [
+            "Multiple openings",
+            "Walk in drive support",
+            "Joining follow up"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Our Hiring Work",
+      "captions": [
+        "Candidate interview",
+        "Walk in drive",
+        "Resume screening",
+        "Client meeting",
+        "Training session",
+        "Offer letter signing"
+      ]
+    },
+    "team": {
+      "title": "Meet The Recruiters",
+      "roles": [
+        "Senior Recruiter",
+        "HR Consultant",
+        "Candidate Coordinator"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They understood the role properly and sent only candidates who matched what we asked for.",
+        "role": "Business owner"
+      },
+      {
+        "quote": "Their team helped me fix my resume and prepare for the interview.",
+        "role": "Job seeker"
+      },
+      {
+        "quote": "We needed several people quickly and the walk in drive was well organised.",
+        "role": "Shop manager"
+      }
+    ],
+    "blog": {
+      "title": "Hiring And Career Advice",
+      "posts": [
+        {
+          "tag": "Employers",
+          "title": "How To Write A Job Post That Attracts The Right People"
+        },
+        {
+          "tag": "Job Seekers",
+          "title": "Five Resume Mistakes That Cost You Interview Calls"
+        },
+        {
+          "tag": "Interviews",
+          "title": "How To Prepare For An Interview In One Evening"
+        }
+      ]
+    },
+    "marquee": [
+      "Hiring",
+      "Placement",
+      "Staffing",
+      "Resumes",
+      "Interviews",
+      "Contract Staff",
+      "Walk In Drive",
+      "HR Support"
+    ],
+    "contactText": "Looking to hire or find a job? Send a message to {brand} with your requirement or resume and we will respond."
+  },
+  {
+    "id": "logistics_courier",
+    "label": "Courier and logistics",
+    "theme": "automotive",
+    "keywords": [
+      "courier service",
+      "parcel delivery",
+      "logistics company",
+      "cargo service",
+      "transport company",
+      "domestic courier",
+      "international courier",
+      "कूरियर सर्विस"
+    ],
+    "heroTitles": [
+      "Parcels Picked Up And Delivered On Time",
+      "Courier And Cargo Across India",
+      "Send Anything Safely From Door To Door"
+    ],
+    "heroSubtitles": [
+      "{brand} collects your parcels from your door and delivers them across cities with tracking at every stop.",
+      "From a single document to pallets of goods, we handle pickup, packing and delivery with clear rates upfront.",
+      "{brand} offers local, domestic and international courier options, with tracking updates shared on your phone."
+    ],
+    "button": "Book A Pickup",
+    "featureTitle": "Courier And Cargo Services We Offer",
+    "features": [
+      {
+        "title": "Document Courier",
+        "text": "Fast delivery for letters, certificates and legal papers, with signature on receipt."
+      },
+      {
+        "title": "Parcel Delivery",
+        "text": "Door to door parcels across cities, with packing advice and weight based rates."
+      },
+      {
+        "title": "Cargo And Freight",
+        "text": "Heavy and bulk loads moved by road or rail, with loading help and delivery challans."
+      },
+      {
+        "title": "International Courier",
+        "text": "Send parcels abroad with help on customs forms and the paperwork each country needs."
+      },
+      {
+        "title": "Business Shipping",
+        "text": "Regular pickups for online sellers and shops, with monthly billing and bulk labels."
+      },
+      {
+        "title": "Tracking And Support",
+        "text": "Follow your consignment by phone or web, and reach a person if there is any delay."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Door",
+        "label": "To door pickup"
+      },
+      {
+        "value": "Live",
+        "label": "Parcel tracking"
+      },
+      {
+        "value": "Written",
+        "label": "Rate before booking"
+      }
+    ],
+    "steps": {
+      "title": "How Sending A Parcel Works",
+      "items": [
+        {
+          "title": "Book A Pickup",
+          "text": "Call or message us with pickup and delivery addresses, the weight and the type of goods."
+        },
+        {
+          "title": "Pack And Collect",
+          "text": "Our executive collects the parcel, checks packing and gives you a receipt with a tracking number."
+        },
+        {
+          "title": "In Transit",
+          "text": "Your consignment moves through our network, and tracking updates reach your phone."
+        },
+        {
+          "title": "Delivered",
+          "text": "The receiver signs on delivery and you get confirmation, with proof available on request."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How is the courier charge calculated?",
+        "a": "Charges depend on weight, size, distance and speed of delivery. We tell you the rate before pickup, with no hidden extras."
+      },
+      {
+        "q": "Which items can you not carry?",
+        "a": "We cannot carry illegal, hazardous or restricted goods. Please ask us before booking if you are unsure about an item."
+      },
+      {
+        "q": "Can I track my parcel?",
+        "a": "Yes. You get a tracking number at pickup and we also update you by message when the status changes."
+      },
+      {
+        "q": "What happens if a parcel is delayed or damaged?",
+        "a": "Contact us with the tracking number. We follow up with the delivery team and explain the claim process for insured shipments."
+      },
+      {
+        "q": "Do you offer regular pickups for shops and sellers?",
+        "a": "Yes. We arrange daily or scheduled pickups for shops and online sellers, with monthly invoices for steady senders."
+      }
+    ],
+    "cta": {
+      "title": "Got A Parcel Waiting To Be Sent?",
+      "button": "Book A Pickup"
+    },
+    "about": {
+      "title": "About Our Courier Team",
+      "paragraphs": [
+        "{brand} is a courier and logistics company that moves documents, parcels and cargo with trained staff, tracked vehicles and local knowledge.",
+        "We tell you the rate and the route in advance and keep you updated, because senders care most about knowing where their parcel is."
+      ],
+      "points": [
+        "Clear rates upfront",
+        "Tracked pickup and delivery",
+        "Trained and verified staff"
+      ]
+    },
+    "pricing": {
+      "title": "Courier Rate Starting Points",
+      "plans": [
+        {
+          "name": "Local Parcel",
+          "price": "$2",
+          "period": "/parcel",
+          "perks": [
+            "Same city delivery",
+            "Up to 1 kg",
+            "Tracking number"
+          ]
+        },
+        {
+          "name": "Domestic Courier",
+          "price": "$6",
+          "period": "/parcel",
+          "perks": [
+            "Across major cities",
+            "Pickup from door",
+            "Live tracking"
+          ]
+        },
+        {
+          "name": "Business Account",
+          "price": "$60",
+          "period": "/month",
+          "perks": [
+            "Scheduled pickups",
+            "Monthly invoice",
+            "Account manager"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "On The Road With Us",
+      "captions": [
+        "Parcel pickup",
+        "Sorting hub",
+        "Loading cargo",
+        "Delivery van",
+        "Tracking desk",
+        "Packed shipments"
+      ]
+    },
+    "team": {
+      "title": "Meet The Logistics Team",
+      "roles": [
+        "Operations Manager",
+        "Route Supervisor",
+        "Customer Support Executive"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The pickup came when they said and the tracking updates were easy to follow.",
+        "role": "Online seller"
+      },
+      {
+        "quote": "They packed my documents carefully and the delivery reached the same week.",
+        "role": "Customer"
+      },
+      {
+        "quote": "A clear rate before booking, and no surprise charges at delivery.",
+        "role": "Small business owner"
+      }
+    ],
+    "blog": {
+      "title": "Shipping Tips And Updates",
+      "posts": [
+        {
+          "tag": "Packing",
+          "title": "How To Pack A Parcel So It Arrives In One Piece"
+        },
+        {
+          "tag": "Sellers",
+          "title": "Choosing A Courier For Your Small Online Business"
+        },
+        {
+          "tag": "Shipping",
+          "title": "What Documents You Need To Send A Parcel Abroad"
+        }
+      ]
+    },
+    "marquee": [
+      "Courier",
+      "Parcels",
+      "Cargo",
+      "Documents",
+      "Pickup",
+      "Tracking",
+      "Freight",
+      "Delivery"
+    ],
+    "contactText": "Need a pickup or a rate? Call or message {brand} with the pickup, delivery pincode and weight, and we will reply quickly."
+  },
+  {
+    "id": "fitness_martial_arts_dance",
+    "label": "Martial arts and dance fitness",
+    "theme": "bold_fitness",
+    "keywords": [
+      "martial arts classes",
+      "karate classes",
+      "taekwondo classes",
+      "zumba classes",
+      "aerobics classes",
+      "kickboxing classes",
+      "self defence classes",
+      "मार्शल आर्ट्स"
+    ],
+    "heroTitles": [
+      "Train Hard, Move Free, Feel Strong",
+      "Karate Kickboxing And Zumba Under One Roof",
+      "Learn Self Defence And Build Confidence"
+    ],
+    "heroSubtitles": [
+      "{brand} runs martial arts and dance fitness classes for kids, women and adults, with trainers who guide each step.",
+      "Join a batch for karate, taekwondo, kickboxing, zumba or aerobics, and train in a group that pushes you kindly.",
+      "{brand} teaches discipline, balance and stamina through fun, structured classes at a pace that suits your level."
+    ],
+    "button": "Book A Trial Class",
+    "featureTitle": "Classes You Can Join At Our Academy",
+    "features": [
+      {
+        "title": "Karate",
+        "text": "Basic stances, blocks and kata taught step by step, with belt grading for students who continue."
+      },
+      {
+        "title": "Taekwondo",
+        "text": "Kicks, footwork and flexibility drills with controlled sparring in a safe, padded setting."
+      },
+      {
+        "title": "Kickboxing",
+        "text": "Punch and kick combinations on pads and bags that build stamina and release stress."
+      },
+      {
+        "title": "Zumba",
+        "text": "Dance workouts to upbeat music that anyone can follow, with no dance background needed."
+      },
+      {
+        "title": "Aerobics",
+        "text": "Low and high impact routines to raise your heart rate and build everyday stamina."
+      },
+      {
+        "title": "Self Defence For Women",
+        "text": "Practical techniques and awareness skills taught in a calm, supportive women only batch."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Trial",
+        "label": "Class available"
+      },
+      {
+        "value": "Kids",
+        "label": "And adult batches"
+      },
+      {
+        "value": "Safe",
+        "label": "Padded training floor"
+      }
+    ],
+    "steps": {
+      "title": "How Joining A Class Works",
+      "items": [
+        {
+          "title": "Book A Trial Class",
+          "text": "Pick a class and come for a trial session to meet the trainer and see the floor."
+        },
+        {
+          "title": "Choose Your Batch",
+          "text": "Select a morning or evening batch for your age group and fitness level."
+        },
+        {
+          "title": "Train Regularly",
+          "text": "Attend classes each week, follow the trainer and build skill and stamina step by step."
+        },
+        {
+          "title": "Move Up",
+          "text": "Martial arts students can take belt gradings, and dance students can join special events."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "I have never trained before. Can I join?",
+        "a": "Yes. Most batches start with beginners, and trainers adjust the pace so you learn the basics before anything harder."
+      },
+      {
+        "q": "What age can children start martial arts?",
+        "a": "Children can usually join from around five years old in kids batches. Please ask us about the right group for your child."
+      },
+      {
+        "q": "What should I bring to class?",
+        "a": "Wear comfortable clothes, bring a water bottle and a towel. Uniforms and gear for martial arts can be bought at the academy."
+      },
+      {
+        "q": "Is sparring compulsory?",
+        "a": "No. Sparring comes only after basics and always with protective gear. Students who prefer fitness only can skip it."
+      },
+      {
+        "q": "Do you have batches for women only?",
+        "a": "Yes. We run women only batches for self defence, zumba and aerobics, with a female trainer where possible."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Try Your First Class?",
+      "button": "Book A Trial Class"
+    },
+    "about": {
+      "title": "About Our Academy",
+      "paragraphs": [
+        "{brand} is an academy where martial arts and dance fitness classes sit side by side, so families can train in the same place.",
+        "Our trainers focus on safe technique and steady progress, and we keep the atmosphere friendly so beginners feel comfortable."
+      ],
+      "points": [
+        "Trainers guide each step",
+        "Separate kids and adult batches",
+        "Safe, padded training area"
+      ]
+    },
+    "pricing": {
+      "title": "Class Fees",
+      "plans": [
+        {
+          "name": "Trial Class",
+          "price": "$0",
+          "period": "/class",
+          "perks": [
+            "Meet the trainer",
+            "Try any one class",
+            "No commitment"
+          ]
+        },
+        {
+          "name": "Monthly Batch",
+          "price": "$20",
+          "period": "/month",
+          "perks": [
+            "One chosen discipline",
+            "Regular batch timings",
+            "Belt grading eligible"
+          ]
+        },
+        {
+          "name": "All Classes Pass",
+          "price": "$35",
+          "period": "/month",
+          "perks": [
+            "Martial arts and dance",
+            "Switch between batches",
+            "Special event access"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Life At The Academy",
+      "captions": [
+        "Karate practice",
+        "Kick drills",
+        "Zumba session",
+        "Pad training",
+        "Belt grading day",
+        "Kids batch"
+      ]
+    },
+    "team": {
+      "title": "Meet Your Trainers",
+      "roles": [
+        "Martial Arts Instructor",
+        "Zumba Instructor",
+        "Self Defence Trainer"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "My son enjoys karate class and has become more disciplined in school.",
+        "role": "Parent"
+      },
+      {
+        "quote": "Zumba batch is fun, and the trainer corrects me gently without making me feel slow.",
+        "role": "Zumba student"
+      },
+      {
+        "quote": "The women only self defence class made me feel safer and more confident.",
+        "role": "Student"
+      }
+    ],
+    "blog": {
+      "title": "Training Tips And News",
+      "posts": [
+        {
+          "tag": "Martial Arts",
+          "title": "What To Expect At Your First Karate Class"
+        },
+        {
+          "tag": "Dance Fitness",
+          "title": "Why Zumba Is A Good Start If You Dislike Workouts"
+        },
+        {
+          "tag": "Kids",
+          "title": "Choosing A Martial Art For Your Child"
+        }
+      ]
+    },
+    "marquee": [
+      "Karate",
+      "Taekwondo",
+      "Kickboxing",
+      "Zumba",
+      "Aerobics",
+      "Self Defence",
+      "Kids Batch",
+      "Belt Grading"
+    ],
+    "contactText": "Want to try a class or ask about batch timings? Message {brand} and we will help you pick the right one."
+  }
+]

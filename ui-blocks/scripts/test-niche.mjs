@@ -41,7 +41,7 @@ for (const n of NICHES) {
 const edited = generateWebsite('pest control services called BugOff', 0, undefined, true, 'auto', editsFrom([{ op: 'theme', theme: 'food_dining' }]))
 ok(edited.niche === undefined && edited.themeKey === 'food_dining', 'a business type chosen in the chat replaces the niche')
 ok(generateWebsite('pest control services called BugOff', 0).niche === 'pest_control', 'without a choice the niche is used')
-ok(generateWebsite('website for my gym', 0).niche === undefined, 'a business without a niche pack still uses its kit')
+ok(generateWebsite('website for my robotics lab', 0).niche === undefined, 'a business without a niche pack still uses its kit')
 
 // ── same prompt, same page
 ok(JSON.stringify(generateWebsite('tattoo studio in Pune', 0).content) === JSON.stringify(generateWebsite('tattoo studio in Pune', 0).content), 'the same prompt gives the same text')
@@ -69,12 +69,12 @@ for (const [prompt, subject, want] of cases) {
   if (want.perk) ok(f.perks.some((p) => p.kind === want.perk), `facts promise ${want.perk}`)
   if (want.years) ok(f.years === want.years, `facts years: ${f.years}`)
 }
-const gym = generateWebsite('Create a page for a gym offering yoga, zumba and crossfit in Pune, open 24x7', 0).content
-ok(gym.hero.subtitle.includes('Pune') && /yoga/i.test(gym.hero.subtitle), 'the hero line names the services and the place')
-ok(['Yoga', 'Zumba', 'Crossfit'].every((t) => gym.features.items.some((f) => f.title === t)), 'one feature card per service')
+const gym = generateWebsite('Create a page for a sports academy offering cricket, football and badminton in Pune, open 24x7', 0).content
+ok(gym.hero.subtitle.includes('Pune') && /cricket/i.test(gym.hero.subtitle), 'the hero line names the services and the place')
+ok(['Cricket', 'Football', 'Badminton'].every((t) => gym.features.items.some((f) => f.title === t)), 'one feature card per service')
 ok(gym.faq.some((q) => /Pune/.test(q.a)) && gym.faq.some((q) => /24\/7/.test(q.q)), 'the FAQ answers about the place and the opening promise')
 ok(gym.stats.filter((s) => /24\s*\/\s*7/.test(s.value)).length <= 1, 'the 24/7 promise is not shown twice in the stats')
-const quiet = generateWebsite('Create a page for a gym', 0).content
+const quiet = generateWebsite('Create a page for a sports academy', 0).content
 ok(!/Pune|Serving/.test(JSON.stringify(quiet)), 'a prompt without facts gets no made-up place')
 const dr = generateWebsite('Dental clinic website for Dr. Sharma in Pune, teeth whitening, braces and root canal', 0).content
 ok(dr.brandName === 'Dr. Sharma', `a title and surname is the name (got "${dr.brandName}")`)

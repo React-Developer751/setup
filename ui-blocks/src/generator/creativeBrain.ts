@@ -125,6 +125,8 @@ const coherent = (text: string) => {
   // a line that ends on a group of people needs its "For" ("Brew Ethically Sourced Everyday People", "Master Your Serious Lifters"); "For The Wait" is not a phrase
   if (/\b(People|Families|Lifters|Growers|Tasters|Eaters|Athletes|Members|Patients|Lovers|Beginners|Pros|Owners|Kids|Students|Travellers|Diners|Guests)[.!]?$/.test(text) && !/\bFor\b/.test(text)) return false
   if (/\bFor The Wait\b/i.test(text)) return false
+  // these frames do not take a second "Done Right"
+  if (/^(Everything You Need For|Built Around)\b/i.test(text) && /, Done Right$/i.test(text)) return false
   return true
 }
 
@@ -249,17 +251,19 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
     140,
   )
   const brandHasBiz = !!biz && brand.toLowerCase().includes(biz)
-  const heroSubtitle = biz && !brandHasBiz && bizRand() < 0.7 ? [`${brand} makes ${biz} simple: ${lowerFirst(benefit())}.`, `${sentence(biz)} done properly, ${lowerFirst(benefit())}.`, `Friendly ${biz} from ${brand}, ${lowerFirst(benefit())}.`][Math.floor(bizRand() * 3)] : heroSubtitlePlain
+  const heroSubtitle = biz && !brandHasBiz && bizRand() < 0.7 ? [`${brand}: ${biz} made simple, ${lowerFirst(benefit())}.`, `${sentence(biz)} done properly, ${lowerFirst(benefit())}.`, `Friendly ${biz} from ${brand}, ${lowerFirst(benefit())}.`][Math.floor(bizRand() * 3)] : heroSubtitlePlain
 
   const featurePlain = write([
-    () => `Why ${titleCase(audience())} Choose ${brand}`,
+    // "Why Every Age Choose": only a plural audience goes with "Choose"
+    () => { const who = audience(); return /s$/i.test(who) && !/^(every|all)\b/i.test(who) ? `Why ${titleCase(who)} Choose ${brand}` : `Why People Choose ${brand}` },
     () => { const p = phrase(); return `${p.adj} ${p.noun}, Done Right` },
     () => { const p = phrase(); return `Everything You Need For ${p.adj} ${p.noun}` },
     () => { const p = phrase(); return `Built Around ${p.adj} ${p.noun}` },
   ])
 
   const ctaPlain = write([
-    () => { const p = phrase(pickKind(true)); return `Ready To ${p.verb} Your ${p.noun}?` },
+    // the verb fits things only: a quality is wished for, people are joined ("Ready To Learn Your Learners?" made no sense)
+    () => { const p = phrase(pickKind(true)); return p.kind === 'thing' ? `Ready To ${p.verb} Your ${p.noun}?` : p.kind === 'quality' ? `Ready For ${p.adj} ${p.noun}?` : `Ready To Join ${p.adj} ${p.noun}?` },
     () => { const p = phrase('thing'); return `Let's ${p.verb} ${p.adj} ${p.noun} Together.` },
     () => { const p = phrase(); return `Start ${gerund(p.verb)} ${p.adj} ${p.noun} Today.` },
     () => { const p = phrase(); return `Your Next Chapter Of ${p.adj} ${p.noun} Starts Here.` },

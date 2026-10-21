@@ -1,0 +1,2666 @@
+[
+  {
+    "id": "real_estate_agent",
+    "label": "Real estate agent",
+    "theme": "real_estate",
+    "keywords": [
+      "property dealer",
+      "real estate agent",
+      "property broker",
+      "flats for sale",
+      "plots for sale",
+      "flat for rent",
+      "makaan dalal",
+      "प्रॉपर्टी डीलर"
+    ],
+    "heroTitles": [
+      "Find The Right Home With Local Guidance",
+      "Flats, Plots And Rentals Shown Honestly",
+      "Your Next Address Starts With A Visit"
+    ],
+    "heroSubtitles": [
+      "{brand} lists flats, plots and rental homes in the area and takes you to see them on days that suit your family.",
+      "Tell {brand} your budget and locality, and we shortlist only the properties that really fit, so you do not waste weekends.",
+      "Buying, selling or renting, {brand} helps with site visits, paperwork guidance and a fair talk between both sides."
+    ],
+    "button": "Book A Site Visit",
+    "featureTitle": "Properties We Help You Buy, Sell Or Rent",
+    "features": [
+      {
+        "title": "Flats And Apartments",
+        "text": "Ready and under-construction flats shown with the real floor plan, society details and what is included."
+      },
+      {
+        "title": "Plots And Land",
+        "text": "Residential and commercial plots with location, road access and the documents you should ask the owner for."
+      },
+      {
+        "title": "Independent Houses",
+        "text": "Kothi and villa listings for families who want their own space, with a walk through of every room."
+      },
+      {
+        "title": "Rental Homes",
+        "text": "Flats and rooms for rent for families and working people, matched to your budget and nearby office."
+      },
+      {
+        "title": "Shop And Office Space",
+        "text": "Ground floor shops and small offices for rent or sale, on roads where customers actually walk by."
+      },
+      {
+        "title": "Sell Your Property",
+        "text": "We list your flat or plot, bring genuine buyers for visits and keep you updated after every viewing."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Free",
+        "label": "Site visits"
+      },
+      {
+        "value": "Local",
+        "label": "Area knowledge"
+      },
+      {
+        "value": "Clear",
+        "label": "Fee before you sign"
+      }
+    ],
+    "steps": {
+      "title": "How Your Property Search Works",
+      "items": [
+        {
+          "title": "Share Your Need",
+          "text": "Tell us budget, area, size and whether you plan to buy, rent or sell."
+        },
+        {
+          "title": "Shortlist",
+          "text": "We send a few matching properties with photos and honest notes, not a long random list."
+        },
+        {
+          "title": "Site Visit",
+          "text": "We take you to see them in person and answer questions about the building and surroundings."
+        },
+        {
+          "title": "Deal Support",
+          "text": "We help both sides agree on terms and point you to the paperwork steps before you pay."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do you charge before showing properties?",
+        "a": "No. Viewing properties is free. Our service fee is explained in writing before any deal moves forward."
+      },
+      {
+        "q": "Can I rent a flat through you?",
+        "a": "Yes. Tell us your budget and locality and we will show rental flats and rooms that match, with deposit terms explained."
+      },
+      {
+        "q": "Do you check property papers?",
+        "a": "We tell you which documents to ask for and help you reach a lawyer for checking. Final legal verification should be done by your advocate."
+      },
+      {
+        "q": "Can you help me sell my plot?",
+        "a": "Yes. We list it, arrange visits with serious buyers and keep you informed about every offer that comes in."
+      },
+      {
+        "q": "Do you cover areas outside the city?",
+        "a": "We mostly work in our local area and nearby localities. Call us and we will tell you honestly if a location is outside our reach."
+      }
+    ],
+    "cta": {
+      "title": "Looking For A Home Or A Plot Nearby?",
+      "button": "Book A Site Visit"
+    },
+    "about": {
+      "title": "About Our Property Team",
+      "paragraphs": [
+        "{brand} is a local property dealing team that helps families find flats, plots and rentals in familiar neighbourhoods.",
+        "We would rather show you three right options than thirty wrong ones, and we tell you the downsides of a property too."
+      ],
+      "points": [
+        "Local lanes and societies known",
+        "Fee told in writing first",
+        "Honest notes on every property"
+      ]
+    },
+    "pricing": {
+      "title": "Our Service Fee Plans",
+      "plans": [
+        {
+          "name": "Rental Search",
+          "price": "$12",
+          "period": "/deal",
+          "perks": [
+            "Matching rental shortlist",
+            "Site visits with us",
+            "Deposit terms explained"
+          ]
+        },
+        {
+          "name": "Buy Or Sell Support",
+          "price": "$60",
+          "period": "/deal",
+          "perks": [
+            "Shortlist or property listing",
+            "Visits with serious parties",
+            "Paperwork steps guided"
+          ]
+        },
+        {
+          "name": "Full Assistance",
+          "price": "$130",
+          "period": "/deal",
+          "perks": [
+            "Search plus negotiation help",
+            "Lawyer and bank pointers",
+            "Support till possession"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Properties We Have Shown",
+      "captions": [
+        "Society main gate",
+        "Two bedroom flat",
+        "Residential plot",
+        "Independent house",
+        "Shop on main road",
+        "Balcony view"
+      ]
+    },
+    "team": {
+      "title": "Meet The Property Team",
+      "roles": [
+        "Property Consultant",
+        "Site Visit Coordinator",
+        "Documentation Helper"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They showed us only flats within our budget and told us the problems of each one openly.",
+        "role": "Home buyer"
+      },
+      {
+        "quote": "Our rental was fixed in one weekend and the deposit terms were explained clearly.",
+        "role": "Tenant"
+      },
+      {
+        "quote": "They brought real buyers for my plot and kept me informed after every visit.",
+        "role": "Plot owner"
+      }
+    ],
+    "blog": {
+      "title": "Property Tips And Guides",
+      "posts": [
+        {
+          "tag": "Buying",
+          "title": "What To Check Before Booking A Flat"
+        },
+        {
+          "tag": "Renting",
+          "title": "Questions To Ask Before Paying A Deposit"
+        },
+        {
+          "tag": "Plots",
+          "title": "Documents To Ask For When Buying A Plot"
+        }
+      ]
+    },
+    "marquee": [
+      "Flats",
+      "Plots",
+      "Rentals",
+      "Houses",
+      "Shops",
+      "Site Visits",
+      "Resale",
+      "Offices"
+    ],
+    "contactText": "Send {brand} a message with your budget and area, or call to fix a site visit at a time that suits you."
+  },
+  {
+    "id": "law_firm_advocate",
+    "label": "Law firm and advocate",
+    "theme": "professional_services",
+    "keywords": [
+      "law firm",
+      "advocate",
+      "lawyer",
+      "legal advice",
+      "court case lawyer",
+      "advocate office",
+      "vakil",
+      "वकील"
+    ],
+    "heroTitles": [
+      "Clear Legal Advice In Plain Language",
+      "A Lawyer Who Listens Before Advising",
+      "Your Case Explained Step By Step"
+    ],
+    "heroSubtitles": [
+      "{brand} listens to your problem first, explains your options in simple words and tells you what the court process will look like.",
+      "From civil disputes to family matters, {brand} prepares your papers carefully and keeps you informed after every hearing.",
+      "Meet {brand} for a first discussion and leave knowing the next step, the likely time it takes and the fee."
+    ],
+    "button": "Book A Consultation",
+    "featureTitle": "Areas Of Law We Practise",
+    "features": [
+      {
+        "title": "Civil Matters",
+        "text": "Property disputes, recovery of money, tenancy issues and other civil cases in the local courts."
+      },
+      {
+        "title": "Family Law",
+        "text": "Divorce, maintenance, custody and family settlements handled with care and a calm approach."
+      },
+      {
+        "title": "Criminal Defence",
+        "text": "Bail applications and defence in criminal cases, with the procedure explained to the family."
+      },
+      {
+        "title": "Cheque Bounce Cases",
+        "text": "Legal notice and filing in cheque dishonour matters, with the timelines you must follow."
+      },
+      {
+        "title": "Property Documents",
+        "text": "Drafting and reviewing sale deeds, wills and agreements before you sign anything."
+      },
+      {
+        "title": "Legal Notices",
+        "text": "Drafting and replying to legal notices so your side is recorded properly and on time."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Private",
+        "label": "First discussion"
+      },
+      {
+        "value": "Written",
+        "label": "Fee before we begin"
+      },
+      {
+        "value": "Regular",
+        "label": "Case updates"
+      }
+    ],
+    "steps": {
+      "title": "How We Work On Your Case",
+      "items": [
+        {
+          "title": "First Meeting",
+          "text": "You tell us the facts and bring the papers you have, in confidence."
+        },
+        {
+          "title": "Opinion",
+          "text": "We explain the legal options, the process and the likely steps in simple words."
+        },
+        {
+          "title": "Filing",
+          "text": "With your approval we draft, file and prepare the documents the court needs."
+        },
+        {
+          "title": "Hearings",
+          "text": "We appear on your dates and tell you what happened after every hearing."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Can you tell me if I will win my case?",
+        "a": "No lawyer can promise an outcome. We can explain your position, the evidence needed and the realistic process."
+      },
+      {
+        "q": "How do you decide your fee for a case?",
+        "a": "Fees depend on the type of matter and the court. We tell you the fee in writing before we take up the case."
+      },
+      {
+        "q": "What should I bring to the first meeting?",
+        "a": "Bring all notices, agreements, receipts and ID copies related to the matter. Even incomplete papers help us understand it."
+      },
+      {
+        "q": "Do you appear in all courts?",
+        "a": "We appear in the courts we practise in. If your matter is elsewhere, we say so honestly and can suggest a colleague."
+      },
+      {
+        "q": "Is my discussion kept private?",
+        "a": "Yes. What you tell your advocate is confidential, so please share the full facts so we can advise properly."
+      }
+    ],
+    "cta": {
+      "title": "Need Advice On A Legal Problem?",
+      "button": "Book A Consultation"
+    },
+    "about": {
+      "title": "About Our Law Practice",
+      "paragraphs": [
+        "{brand} is a small advocate office that handles civil, family and criminal matters for individuals and local businesses.",
+        "We believe a client should understand the case, so we explain the process in your language and never hide a weak point."
+      ],
+      "points": [
+        "Plain language explanations",
+        "Fee shared in writing",
+        "Updates after each hearing"
+      ]
+    },
+    "pricing": {
+      "title": "Consultation And Drafting Fees",
+      "plans": [
+        {
+          "name": "First Consultation",
+          "price": "$12",
+          "period": "/meeting",
+          "perks": [
+            "Discussion of your matter",
+            "Review of your papers",
+            "Next steps explained"
+          ]
+        },
+        {
+          "name": "Notice Or Drafting",
+          "price": "$30",
+          "period": "/document",
+          "perks": [
+            "Legal notice or reply",
+            "Agreement drafting",
+            "One round of changes"
+          ]
+        },
+        {
+          "name": "Case Filing",
+          "price": "$100",
+          "period": "/matter",
+          "perks": [
+            "Filing and preparation",
+            "Court paper handling",
+            "Hearing updates"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Inside Our Practice",
+      "captions": [
+        "Consultation room",
+        "Case files",
+        "Law library",
+        "Court preparation",
+        "Document review",
+        "Client meeting"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Legal Team",
+      "roles": [
+        "Senior Advocate",
+        "Associate Advocate",
+        "Legal Assistant"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "He explained every step of my case in simple Hindi and never promised more than he could do.",
+        "role": "Client"
+      },
+      {
+        "quote": "The legal notice was drafted quickly and the fee was told to me before work began.",
+        "role": "Small business owner"
+      },
+      {
+        "quote": "Our family matter was handled calmly and we always knew the next hearing date.",
+        "role": "Family client"
+      }
+    ],
+    "blog": {
+      "title": "Legal Awareness Notes",
+      "posts": [
+        {
+          "tag": "Notices",
+          "title": "What To Do When You Receive A Legal Notice"
+        },
+        {
+          "tag": "Documents",
+          "title": "Why You Should Read An Agreement Before Signing"
+        },
+        {
+          "tag": "Cheques",
+          "title": "Basic Steps After A Cheque Is Dishonoured"
+        }
+      ]
+    },
+    "marquee": [
+      "Civil",
+      "Family",
+      "Criminal",
+      "Notices",
+      "Drafting",
+      "Bail",
+      "Wills",
+      "Hearings"
+    ],
+    "contactText": "Contact {brand} to fix a private consultation. Please bring your papers and we will explain your options."
+  },
+  {
+    "id": "hotel_guesthouse",
+    "label": "Hotel and guest house",
+    "theme": "travel_tourism",
+    "keywords": [
+      "guest house",
+      "budget hotel",
+      "hotel rooms",
+      "hotel booking",
+      "lodge rooms",
+      "resort stay",
+      "hotel",
+      "होटल"
+    ],
+    "heroTitles": [
+      "Clean Rooms And A Warm Welcome",
+      "A Comfortable Stay Close To Everything",
+      "Rest Easy After A Long Journey"
+    ],
+    "heroSubtitles": [
+      "{brand} offers clean rooms, hot water and home-style meals, so you can rest properly whether you stay one night or a week.",
+      "Travelling for work, a wedding or a holiday, {brand} gives you a quiet room and a helpful desk any hour of the day.",
+      "Book direct with {brand} on a call or message and get the room type, price and check-in time confirmed clearly."
+    ],
+    "button": "Check Room Availability",
+    "featureTitle": "Rooms And Comforts At Your Stay",
+    "features": [
+      {
+        "title": "Standard Rooms",
+        "text": "Simple clean rooms with a comfortable bed, fan or air conditioning, TV and an attached bathroom."
+      },
+      {
+        "title": "Deluxe Rooms",
+        "text": "Bigger rooms with better furnishing and a sitting corner, good for couples and longer stays."
+      },
+      {
+        "title": "Family Rooms",
+        "text": "Rooms with extra beds for parents and children, so everyone sleeps in the same place."
+      },
+      {
+        "title": "Restaurant And Room Service",
+        "text": "Breakfast, lunch and dinner served in the dining area or brought to your room."
+      },
+      {
+        "title": "Travel Desk",
+        "text": "Help with local taxis, railway pickup and drop, and suggestions for places worth visiting."
+      },
+      {
+        "title": "Parking And Reception",
+        "text": "Safe parking for cars and bikes and a reception desk that is staffed through the night."
+      }
+    ],
+    "stats": [
+      {
+        "value": "24/7",
+        "label": "Front desk"
+      },
+      {
+        "value": "Hot",
+        "label": "Water all day"
+      },
+      {
+        "value": "Clean",
+        "label": "Fresh linen daily"
+      }
+    ],
+    "steps": {
+      "title": "How Your Booking Works",
+      "items": [
+        {
+          "title": "Ask",
+          "text": "Call or message with your dates, number of guests and room type."
+        },
+        {
+          "title": "Confirm",
+          "text": "We confirm availability and the room price in writing before you travel."
+        },
+        {
+          "title": "Check In",
+          "text": "Show your ID at the desk, receive your key and settle in at your own pace."
+        },
+        {
+          "title": "Check Out",
+          "text": "Pay at the desk, tell us how your stay was and we arrange your taxi if you need one."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "What is the check-in and check-out time?",
+        "a": "Timings are shared at booking. If you arrive early or leave late, ask us and we will try to adjust."
+      },
+      {
+        "q": "Do you provide meals at the hotel?",
+        "a": "Yes, we serve breakfast, lunch and dinner. Please tell us any food preferences when you book."
+      },
+      {
+        "q": "Is ID needed at check-in?",
+        "a": "Yes. Every guest must show a valid government photo ID at check-in as required for all hotels."
+      },
+      {
+        "q": "Can I book rooms for a wedding party?",
+        "a": "Yes. Share the number of rooms and dates and we will tell you what is free and the group rate."
+      },
+      {
+        "q": "Is parking available?",
+        "a": "We have parking for cars and two-wheelers for our guests. Tell us when you book if you are bringing a larger vehicle."
+      }
+    ],
+    "cta": {
+      "title": "Ready For A Peaceful Night Away?",
+      "button": "Check Room Availability"
+    },
+    "about": {
+      "title": "About Our Stay",
+      "paragraphs": [
+        "{brand} is a family-run stay with simple, clean rooms for travellers, wedding guests and people visiting the city for work.",
+        "We keep prices honest, tell you what the room includes and look after you the way we would look after a guest at home."
+      ],
+      "points": [
+        "Clean rooms, fresh linen",
+        "Helpful desk at all hours",
+        "Prices told before arrival"
+      ]
+    },
+    "pricing": {
+      "title": "Room Rates Per Night",
+      "plans": [
+        {
+          "name": "Standard Room",
+          "price": "$15",
+          "period": "/night",
+          "perks": [
+            "Attached bathroom",
+            "Hot water",
+            "Wi-Fi in the room"
+          ]
+        },
+        {
+          "name": "Deluxe Room",
+          "price": "$28",
+          "period": "/night",
+          "perks": [
+            "Air conditioning",
+            "Breakfast for two",
+            "Sitting corner"
+          ]
+        },
+        {
+          "name": "Family Room",
+          "price": "$45",
+          "period": "/night",
+          "perks": [
+            "Extra beds",
+            "Breakfast for four",
+            "Parking spot"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "A Look Around The Stay",
+      "captions": [
+        "Reception area",
+        "Deluxe room",
+        "Dining hall",
+        "Family suite",
+        "Garden sit out",
+        "Entrance"
+      ]
+    },
+    "team": {
+      "title": "Meet The Hotel Staff",
+      "roles": [
+        "Front Desk Manager",
+        "Housekeeping Lead",
+        "Restaurant Captain"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The room was spotless and the staff arranged our early morning taxi without any fuss.",
+        "role": "Business traveller"
+      },
+      {
+        "quote": "We stayed for a family wedding and everyone was comfortable. The breakfast was lovely too.",
+        "role": "Wedding guest"
+      },
+      {
+        "quote": "Simple, quiet and fairly priced. The reception was very helpful at midnight.",
+        "role": "Tourist"
+      }
+    ],
+    "blog": {
+      "title": "Travel And Stay Notes",
+      "posts": [
+        {
+          "tag": "Planning",
+          "title": "How To Pick A Hotel Room For A Family Trip"
+        },
+        {
+          "tag": "Local",
+          "title": "Easy Weekend Ideas Near The City"
+        },
+        {
+          "tag": "Packing",
+          "title": "Small Things To Carry For A Comfortable Stay"
+        }
+      ]
+    },
+    "marquee": [
+      "Rooms",
+      "Deluxe",
+      "Family",
+      "Breakfast",
+      "Parking",
+      "Wi-Fi",
+      "Travel Desk",
+      "Check In"
+    ],
+    "contactText": "Call or message {brand} with your dates and number of guests, and we will confirm a room and the price."
+  },
+  {
+    "id": "school_preschool",
+    "label": "School and preschool",
+    "theme": "education",
+    "keywords": [
+      "preschool",
+      "playschool",
+      "play school",
+      "nursery school",
+      "day care",
+      "kindergarten",
+      "school admission",
+      "प्ले स्कूल"
+    ],
+    "heroTitles": [
+      "A Gentle First Step Into Learning",
+      "Where Small Children Learn Through Play",
+      "Curious Minds Grow Here Every Day"
+    ],
+    "heroSubtitles": [
+      "{brand} gives young children a safe, cheerful place to play, sing, draw and slowly get ready for primary school.",
+      "At {brand}, teachers know each child by name and shape the day around stories, activities and enough time to rest.",
+      "Visit {brand}, see the classrooms and meet the teachers before you decide. Admissions are open to parents who ask."
+    ],
+    "button": "Visit Our Campus",
+    "featureTitle": "How Your Child Spends The Day",
+    "features": [
+      {
+        "title": "Play Group",
+        "text": "Free play, rhymes and sensory activities for the youngest children joining school for the first time."
+      },
+      {
+        "title": "Nursery And Lower KG",
+        "text": "Letters, numbers and colours learned through games, songs and hands-on activity."
+      },
+      {
+        "title": "Upper KG",
+        "text": "Early reading, writing and simple maths to prepare children for primary classes."
+      },
+      {
+        "title": "Activity Time",
+        "text": "Art, craft, music and story circles that build confidence and let every child express themselves."
+      },
+      {
+        "title": "Outdoor Play",
+        "text": "A safe play area for running, swings and group games, supervised by a teacher."
+      },
+      {
+        "title": "Day Care",
+        "text": "Extended hours with meals, rest and homework help for working parents who need a safe place."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Small",
+        "label": "Class groups"
+      },
+      {
+        "value": "Safe",
+        "label": "Supervised campus"
+      },
+      {
+        "value": "Daily",
+        "label": "Parent updates"
+      }
+    ],
+    "steps": {
+      "title": "How Admission Works",
+      "items": [
+        {
+          "title": "Visit",
+          "text": "Walk through the classrooms and play area and meet the teachers."
+        },
+        {
+          "title": "Apply",
+          "text": "Fill the form with your child's details and the documents we list for you."
+        },
+        {
+          "title": "Interaction",
+          "text": "A friendly meeting with your child. It is a chat, not an exam."
+        },
+        {
+          "title": "Join",
+          "text": "Confirm the fee, collect the uniform and book your child's first morning."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "What age can my child join?",
+        "a": "We take children from the age of the play group onwards. Ask us about the age needed for each class."
+      },
+      {
+        "q": "Is the campus safe for small children?",
+        "a": "Yes. Children are always under teacher supervision and we only release them to parents or named guardians."
+      },
+      {
+        "q": "What does the school day look like?",
+        "a": "A mix of circle time, learning activities, snack, play and rest. We share the timetable with parents at admission."
+      },
+      {
+        "q": "Do you provide day care after school hours?",
+        "a": "Yes, for parents who need it. Meals, rest and supervised play are included in the day care plan."
+      },
+      {
+        "q": "Can I speak to the teacher about my child?",
+        "a": "Of course. Teachers meet parents regularly and we also share notes on how your child is settling in."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Start Your Child's First School Days?",
+      "button": "Visit Our Campus"
+    },
+    "about": {
+      "title": "About Our School",
+      "paragraphs": [
+        "{brand} is a small neighbourhood school for young children, built on warm teachers, play and a calm routine.",
+        "We want every child to look forward to coming in, so we keep classes small and talk to parents often."
+      ],
+      "points": [
+        "Teachers who know each child",
+        "Learning through play",
+        "Open door for parents"
+      ]
+    },
+    "pricing": {
+      "title": "Monthly Fee Plans",
+      "plans": [
+        {
+          "name": "Half Day Play Group",
+          "price": "$20",
+          "period": "/month",
+          "perks": [
+            "Morning sessions",
+            "Rhymes and play",
+            "Snack time"
+          ]
+        },
+        {
+          "name": "Nursery To UKG",
+          "price": "$35",
+          "period": "/month",
+          "perks": [
+            "Full school day",
+            "Activity books",
+            "Art and music"
+          ]
+        },
+        {
+          "name": "School With Day Care",
+          "price": "$55",
+          "period": "/month",
+          "perks": [
+            "Extended hours",
+            "Lunch and rest",
+            "Homework help"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Life At Our School",
+      "captions": [
+        "Story circle",
+        "Painting corner",
+        "Play area",
+        "Classroom",
+        "Rhyme time",
+        "Annual day"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Teachers",
+      "roles": [
+        "Class Teacher",
+        "Activity Teacher",
+        "School Coordinator"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "My son used to cry at drop off, now he runs into the class. The teachers are patient and kind.",
+        "role": "Parent"
+      },
+      {
+        "quote": "The day care hours help me manage work and I know my daughter is looked after properly.",
+        "role": "Working parent"
+      },
+      {
+        "quote": "Teachers send us small updates every day, so we always know what she learned.",
+        "role": "Parent"
+      }
+    ],
+    "blog": {
+      "title": "Notes For Parents",
+      "posts": [
+        {
+          "tag": "Admission",
+          "title": "How To Prepare Your Child For The First Week"
+        },
+        {
+          "tag": "Learning",
+          "title": "Simple Games To Play With Your Child At Home"
+        },
+        {
+          "tag": "Routine",
+          "title": "Setting A Sleep Schedule Before School Starts"
+        }
+      ]
+    },
+    "marquee": [
+      "Play Group",
+      "Nursery",
+      "Lower KG",
+      "Upper KG",
+      "Day Care",
+      "Art",
+      "Rhymes",
+      "Admissions"
+    ],
+    "contactText": "Message {brand} to book a campus visit or ask about admissions. We are happy to answer every question."
+  },
+  {
+    "id": "photography_studio",
+    "label": "Photography studio",
+    "theme": "creative_studio",
+    "keywords": [
+      "photography studio",
+      "photographer",
+      "wedding photographer",
+      "photo studio",
+      "portrait shoot",
+      "pre wedding shoot",
+      "फोटोग्राफर",
+      "photo shoot"
+    ],
+    "heroTitles": [
+      "Moments Kept The Way You Felt Them",
+      "Portraits And Weddings Told Honestly",
+      "Your Story, Framed With Care"
+    ],
+    "heroSubtitles": [
+      "{brand} photographs weddings, portraits and family occasions with natural light and patient direction, so you look like yourself.",
+      "From the first shaadi ritual to a quiet family portrait, {brand} catches real expressions instead of stiff poses.",
+      "Share your date and ideas with {brand}, and we plan the shoot, the locations and the delivery of your photos together."
+    ],
+    "button": "Book A Photo Shoot",
+    "featureTitle": "Shoots We Love To Do",
+    "features": [
+      {
+        "title": "Wedding Photography",
+        "text": "Full day coverage of rituals, family moments and small details, edited into a story you can revisit."
+      },
+      {
+        "title": "Pre Wedding Shoot",
+        "text": "Relaxed outdoor or studio sessions for couples, planned around your style and location."
+      },
+      {
+        "title": "Portrait Sessions",
+        "text": "Individual and couple portraits in the studio, with simple guidance so you feel at ease."
+      },
+      {
+        "title": "Family And Baby Shoots",
+        "text": "Gentle sessions for newborns, kids and family groups, done with patience and plenty of breaks."
+      },
+      {
+        "title": "Product And Business Shoots",
+        "text": "Clean photos of products, shops and food for your website and social media pages."
+      },
+      {
+        "title": "Photo Albums And Prints",
+        "text": "Selected photos designed into printed albums and framed prints that last on the shelf."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Planned",
+        "label": "Shot list together"
+      },
+      {
+        "value": "Edited",
+        "label": "Photos by hand"
+      },
+      {
+        "value": "Printed",
+        "label": "Albums and frames"
+      }
+    ],
+    "steps": {
+      "title": "How A Shoot With Us Works",
+      "items": [
+        {
+          "title": "Conversation",
+          "text": "We talk about the occasion, your style, the venue and how many photos you need."
+        },
+        {
+          "title": "Plan",
+          "text": "We fix the date, timings, outfits and locations so the day runs without stress."
+        },
+        {
+          "title": "Shoot",
+          "text": "We photograph with natural moments in mind and guide you only when needed."
+        },
+        {
+          "title": "Delivery",
+          "text": "You receive edited photos in a private gallery, with albums and prints if you wish."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How soon will I get my photos?",
+        "a": "Delivery time depends on the shoot. We tell you the expected date at booking and share a few previews earlier."
+      },
+      {
+        "q": "Do you travel for weddings?",
+        "a": "Yes, we travel to other cities. Travel and stay are discussed in the quote before you book."
+      },
+      {
+        "q": "Can I choose which photos get edited?",
+        "a": "Yes. You can pick favourites from the gallery, and we edit your selections along with our own best picks."
+      },
+      {
+        "q": "Do you provide the raw files?",
+        "a": "Edited photos are delivered in full size. Whether raw files are shared depends on the package, which we explain upfront."
+      },
+      {
+        "q": "How do I confirm my booking?",
+        "a": "Share your date and we check availability. A small advance confirms the booking and the rest is paid by agreed dates."
+      }
+    ],
+    "cta": {
+      "title": "Have A Date And A Story To Capture?",
+      "button": "Book A Photo Shoot"
+    },
+    "about": {
+      "title": "About Our Studio",
+      "paragraphs": [
+        "{brand} is a small photography studio working on weddings, portraits and family events in and around the city.",
+        "We do not chase trends. We care about light, timing and the real laugh, so your photos still feel right in years to come."
+      ],
+      "points": [
+        "Natural, candid style",
+        "Clear packages and delivery date",
+        "Prints and albums in-house"
+      ]
+    },
+    "pricing": {
+      "title": "Photography Packages",
+      "plans": [
+        {
+          "name": "Portrait Session",
+          "price": "$25",
+          "period": "/session",
+          "perks": [
+            "Studio or outdoor",
+            "Edited photos",
+            "Online gallery"
+          ]
+        },
+        {
+          "name": "Pre Wedding Shoot",
+          "price": "$100",
+          "period": "/shoot",
+          "perks": [
+            "Two outfits",
+            "Location shoot",
+            "Edited photos"
+          ]
+        },
+        {
+          "name": "Wedding Day Coverage",
+          "price": "$350",
+          "period": "/day",
+          "perks": [
+            "Full day photographer",
+            "Edited gallery",
+            "Album design"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "From Our Recent Shoots",
+      "captions": [
+        "Couple portrait",
+        "Mehendi details",
+        "Baby shoot",
+        "Bridal look",
+        "Family group",
+        "Studio portrait"
+      ]
+    },
+    "team": {
+      "title": "Meet The Photographers",
+      "roles": [
+        "Lead Photographer",
+        "Photo Editor",
+        "Album Designer"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They made us comfortable in front of the camera and the photos looked natural and joyful.",
+        "role": "Newly married couple"
+      },
+      {
+        "quote": "The editing was soft and honest. Our parents loved the album so much.",
+        "role": "Wedding client"
+      },
+      {
+        "quote": "Quick shoot for my shop, and the photos made my page look professional.",
+        "role": "Shop owner"
+      }
+    ],
+    "blog": {
+      "title": "Photography Notes",
+      "posts": [
+        {
+          "tag": "Weddings",
+          "title": "How To Plan Your Wedding Photography Day"
+        },
+        {
+          "tag": "Portraits",
+          "title": "What To Wear For A Portrait Session"
+        },
+        {
+          "tag": "Albums",
+          "title": "Choosing Photos For Your Wedding Album"
+        }
+      ]
+    },
+    "marquee": [
+      "Weddings",
+      "Portraits",
+      "Pre Wedding",
+      "Baby Shoots",
+      "Albums",
+      "Candid",
+      "Editing",
+      "Frames"
+    ],
+    "contactText": "Message {brand} with your date and what you want captured, and we will reply with a plan and a quote."
+  },
+  {
+    "id": "plumber_electrician",
+    "label": "Plumber and electrician",
+    "theme": "home_services",
+    "keywords": [
+      "plumber",
+      "electrician",
+      "plumbing repair",
+      "electrical wiring",
+      "handyman",
+      "bijli mistri",
+      "पलम्बर",
+      "इलेक्ट्रीशियन"
+    ],
+    "heroTitles": [
+      "Leaks And Faults Fixed The Same Day",
+      "Plumbing And Wiring By Neat Workers",
+      "A Phone Call Away From A Working Home"
+    ],
+    "heroSubtitles": [
+      "{brand} sends an experienced plumber or electrician to your home with the tools and common parts, so small faults are fixed in one visit.",
+      "Tap leaking, switchboard sparking or geyser not heating, {brand} finds the cause, quotes the cost and then fixes it properly.",
+      "Call {brand} in the morning and we aim to reach you the same day, with a clear charge told before any work starts."
+    ],
+    "button": "Book A Technician",
+    "featureTitle": "Plumbing And Electrical Work We Do",
+    "features": [
+      {
+        "title": "Tap And Pipe Repair",
+        "text": "Leaking taps, flush tanks, joints and bathroom fittings repaired or replaced with matching parts."
+      },
+      {
+        "title": "Drain Blockage",
+        "text": "Clearing choked kitchen sinks, bathroom drains and outlet lines without breaking the floor."
+      },
+      {
+        "title": "Water Tank And Motor",
+        "text": "Motor fitting, float valve setup and pipe connections for overhead and underground tanks."
+      },
+      {
+        "title": "Switch And Socket Repair",
+        "text": "Replacing loose switches, burnt sockets and faulty boards in rooms and kitchens."
+      },
+      {
+        "title": "Fan, Light And Geyser Fitting",
+        "text": "Fitting ceiling fans, tube lights, chandeliers and geysers with proper wiring and earthing."
+      },
+      {
+        "title": "MCB And Wiring Work",
+        "text": "Checking tripping MCBs, loose wiring and overloaded circuits, and fixing the fault safely."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Same day",
+        "label": "Visits"
+      },
+      {
+        "value": "Quote",
+        "label": "Before the work"
+      },
+      {
+        "value": "Clean",
+        "label": "Work area left tidy"
+      }
+    ],
+    "steps": {
+      "title": "How A Repair Visit Goes",
+      "items": [
+        {
+          "title": "Call",
+          "text": "Tell us the fault and your address, and we fix a time slot."
+        },
+        {
+          "title": "Check",
+          "text": "The technician finds the cause and tells you the cost before starting."
+        },
+        {
+          "title": "Repair",
+          "text": "The work is done with proper parts and your floor and walls protected."
+        },
+        {
+          "title": "Test",
+          "text": "We test the fix with you and leave the area clean."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do you give the price before starting?",
+        "a": "Yes. The technician checks the fault first and tells you the charge. Work begins only after you agree."
+      },
+      {
+        "q": "Do you carry spare parts?",
+        "a": "We carry common parts like washers, switches and fittings. For brands or special parts we help you buy the right one."
+      },
+      {
+        "q": "Can you fit a geyser or ceiling fan I bought?",
+        "a": "Yes. We fit items you have bought and check the wiring and mounting so they run safely."
+      },
+      {
+        "q": "Is there a warranty on the repair?",
+        "a": "We stand behind our workmanship. Ask us about the repair cover for your particular job before we begin."
+      },
+      {
+        "q": "Do you work on weekends and evenings?",
+        "a": "Yes, we try to schedule visits when someone is at home. Tell us the best time when you call."
+      }
+    ],
+    "cta": {
+      "title": "Is Something Leaking Or Not Working?",
+      "button": "Book A Technician"
+    },
+    "about": {
+      "title": "About Our Repair Team",
+      "paragraphs": [
+        "{brand} is a team of plumbers and electricians serving homes and shops with quick visits and tidy, honest work.",
+        "We do not suggest replacing what can be repaired, and we tell you the price before we touch anything."
+      ],
+      "points": [
+        "Experienced technicians",
+        "Price told before work",
+        "Tidy, careful finishing"
+      ]
+    },
+    "pricing": {
+      "title": "Visit And Job Charges",
+      "plans": [
+        {
+          "name": "Small Repair Visit",
+          "price": "$6",
+          "period": "/visit",
+          "perks": [
+            "Fault check",
+            "Tap or switch repair",
+            "Minor fittings"
+          ]
+        },
+        {
+          "name": "Standard Job",
+          "price": "$15",
+          "period": "/job",
+          "perks": [
+            "Fan or geyser fitting",
+            "Drain clearing",
+            "Wiring fix"
+          ]
+        },
+        {
+          "name": "Larger Fitting Job",
+          "price": "$40",
+          "period": "/job",
+          "perks": [
+            "Motor or tank setup",
+            "Board rewiring",
+            "Multiple points"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Our Plumbing And Wiring Work",
+      "captions": [
+        "Tap replacement",
+        "Switchboard repair",
+        "Drain clearing",
+        "Geyser fitting",
+        "Pipe joint",
+        "Fan installation"
+      ]
+    },
+    "team": {
+      "title": "Meet The Technicians",
+      "roles": [
+        "Senior Plumber",
+        "Senior Electrician",
+        "Customer Support Lead"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The plumber arrived on time, fixed the leak and wiped the floor before leaving.",
+        "role": "Home owner"
+      },
+      {
+        "quote": "He found a loose wire behind the board and told me the cost first. Honest work.",
+        "role": "Flat resident"
+      },
+      {
+        "quote": "Quick geyser fitting and the wiring was neat. I will call again.",
+        "role": "Tenant"
+      }
+    ],
+    "blog": {
+      "title": "Home Repair Tips",
+      "posts": [
+        {
+          "tag": "Plumbing",
+          "title": "What To Do When A Tap Will Not Stop Dripping"
+        },
+        {
+          "tag": "Electrical",
+          "title": "Why Your MCB Keeps Tripping"
+        },
+        {
+          "tag": "Safety",
+          "title": "Simple Checks Before Calling For Wiring Help"
+        }
+      ]
+    },
+    "marquee": [
+      "Plumbing",
+      "Wiring",
+      "Taps",
+      "Switches",
+      "Geyser",
+      "Fans",
+      "Drainage",
+      "MCB"
+    ],
+    "contactText": "Call or message {brand} with a short note on the problem, and we will arrange a visit at a time that suits you."
+  },
+  {
+    "id": "car_wash_detailing",
+    "label": "Car wash and detailing",
+    "theme": "automotive",
+    "keywords": [
+      "car wash",
+      "car detailing",
+      "ceramic coating",
+      "car spa",
+      "car polish",
+      "car cleaning",
+      "कार वॉश",
+      "car interior cleaning"
+    ],
+    "heroTitles": [
+      "A Fresh Clean Car Every Time",
+      "Shine, Polish And Protection For Your Car",
+      "Your Car Deserves More Than A Quick Rinse"
+    ],
+    "heroSubtitles": [
+      "{brand} washes, vacuums and polishes your car by hand with proper products, so the paint and seats look cared for.",
+      "Book {brand} for a quick wash or a full detail with polish and coating, and drive away to a car that feels new.",
+      "Drop your car at {brand} and relax at our waiting area, or ask about a pick up time that suits your day."
+    ],
+    "button": "Book A Car Wash",
+    "featureTitle": "Washing And Detailing Services",
+    "features": [
+      {
+        "title": "Exterior Foam Wash",
+        "text": "Foam wash and rinse of the body, wheels and glass, followed by a soft drying and tyre dressing."
+      },
+      {
+        "title": "Interior Vacuum Cleaning",
+        "text": "Seats, mats, dashboard and boot cleaned and vacuumed so the cabin feels fresh."
+      },
+      {
+        "title": "Machine Polishing",
+        "text": "Machine polish that lowers light scratches and brings back the shine on faded paint."
+      },
+      {
+        "title": "Ceramic Coating",
+        "text": "A protective coating applied on clean paint to help it resist dirt and water spots."
+      },
+      {
+        "title": "Interior Detailing",
+        "text": "Deep cleaning of upholstery, AC vents and plastics with products suited to each surface."
+      },
+      {
+        "title": "Underbody And Engine Wash",
+        "text": "Careful cleaning of the underbody and engine bay, done with water kept away from sensitive parts."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Hand",
+        "label": "Wash by trained staff"
+      },
+      {
+        "value": "Same day",
+        "label": "Delivery for most jobs"
+      },
+      {
+        "value": "Clear",
+        "label": "Price on the board"
+      }
+    ],
+    "steps": {
+      "title": "How We Look After Your Car",
+      "items": [
+        {
+          "title": "Check In",
+          "text": "We walk around the car with you and note any marks before starting."
+        },
+        {
+          "title": "Wash",
+          "text": "The car gets a pre rinse, foam wash and careful hand dry."
+        },
+        {
+          "title": "Detail",
+          "text": "Interior and polish work is done as per the package you picked."
+        },
+        {
+          "title": "Final Check",
+          "text": "We inspect the car in daylight with you before handing over the keys."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "How long does a normal car wash take?",
+        "a": "A regular wash and vacuum takes under an hour on most days. Detailing takes longer and we tell you the time at booking."
+      },
+      {
+        "q": "Is ceramic coating worth it for my car?",
+        "a": "It helps protect paint from dirt and water stains. Results depend on the paint condition and care after the coating, which we explain."
+      },
+      {
+        "q": "Will polishing remove all scratches?",
+        "a": "Polishing reduces light scratches and swirl marks. Deep scratches that go through the paint may need a body shop."
+      },
+      {
+        "q": "Do you clean the interior with water?",
+        "a": "No. We use vacuum and interior cleaners suitable for fabric, leather and plastic, so electronics stay dry."
+      },
+      {
+        "q": "Can I wait while my car is washed?",
+        "a": "Yes, a regular wash can be done while you wait. For detailing, we suggest leaving the car for the day."
+      }
+    ],
+    "cta": {
+      "title": "Ready For A Spotless, Shiny Car?",
+      "button": "Book A Car Wash"
+    },
+    "about": {
+      "title": "About Our Car Care Team",
+      "paragraphs": [
+        "{brand} is a local car wash and detailing workshop where cars are cleaned by hand and every job is checked before delivery.",
+        "We use products suited to your paint and interior, and we tell you honestly what a wash can fix and what it cannot."
+      ],
+      "points": [
+        "Careful hand washing",
+        "Pricing shown upfront",
+        "Inspection with you at delivery"
+      ]
+    },
+    "pricing": {
+      "title": "Car Wash Packages",
+      "plans": [
+        {
+          "name": "Basic Wash",
+          "price": "$6",
+          "period": "/wash",
+          "perks": [
+            "Foam wash",
+            "Interior vacuum",
+            "Tyre dressing"
+          ]
+        },
+        {
+          "name": "Wash And Polish",
+          "price": "$25",
+          "period": "/car",
+          "perks": [
+            "Machine polish",
+            "Interior cleaning",
+            "Dashboard shine"
+          ]
+        },
+        {
+          "name": "Full Detailing",
+          "price": "$85",
+          "period": "/car",
+          "perks": [
+            "Deep interior clean",
+            "Polish and wax",
+            "Underbody wash"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Cars We Have Cleaned",
+      "captions": [
+        "Foam wash",
+        "Machine polish",
+        "Interior vacuum",
+        "Wheel cleaning",
+        "Coating work",
+        "Final shine"
+      ]
+    },
+    "team": {
+      "title": "Meet The Car Care Team",
+      "roles": [
+        "Detailing Specialist",
+        "Wash Supervisor",
+        "Customer Desk"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "My old car looked almost new after the full detail, and the staff showed me every spot before delivery.",
+        "role": "Car owner"
+      },
+      {
+        "quote": "The foam wash is neat and quick, and my seats finally smell fresh.",
+        "role": "Daily commuter"
+      },
+      {
+        "quote": "They told me honestly that a deep scratch would stay, but the polish did a lot.",
+        "role": "SUV owner"
+      }
+    ],
+    "blog": {
+      "title": "Car Care Tips",
+      "posts": [
+        {
+          "tag": "Washing",
+          "title": "How Often Should You Wash Your Car"
+        },
+        {
+          "tag": "Paint",
+          "title": "What A Polish Can And Cannot Fix"
+        },
+        {
+          "tag": "Interior",
+          "title": "Keeping Your Car Seats Fresh In The Summer"
+        }
+      ]
+    },
+    "marquee": [
+      "Foam Wash",
+      "Polish",
+      "Coating",
+      "Vacuum",
+      "Detailing",
+      "Wax",
+      "Interior",
+      "Tyres"
+    ],
+    "contactText": "Message {brand} with your car model and what you need, and we will share the price and a slot for your visit."
+  },
+  {
+    "id": "used_car_dealer",
+    "label": "Used car dealer",
+    "theme": "automotive",
+    "keywords": [
+      "used cars",
+      "second hand car",
+      "pre owned car",
+      "used car dealer",
+      "car showroom",
+      "purani car",
+      "सेकंड हैंड कार",
+      "sell my old car"
+    ],
+    "heroTitles": [
+      "Pre Owned Cars You Can Check With Confidence",
+      "Honest Used Cars For Every Family Budget",
+      "Find A Reliable Second Hand Car"
+    ],
+    "heroSubtitles": [
+      "{brand} brings a range of pre owned hatchbacks, sedans and SUVs, each with its service papers shown before you decide.",
+      "Walk into {brand}, take a test drive and ask for the history. We would rather you ask many questions than regret later.",
+      "Selling your old car? {brand} inspects it, offers a fair price and takes care of the transfer paperwork."
+    ],
+    "button": "Book A Test Drive",
+    "featureTitle": "Cars And Support We Offer",
+    "features": [
+      {
+        "title": "Hatchbacks",
+        "text": "Compact, fuel-friendly cars suited to city driving and first time car buyers."
+      },
+      {
+        "title": "Sedans And SUVs",
+        "text": "Roomier cars for families and highway travel, checked and cleaned before they reach our lot."
+      },
+      {
+        "title": "Test Drive",
+        "text": "Take the car out on your own route and bring a mechanic friend if you wish."
+      },
+      {
+        "title": "Service History",
+        "text": "Available service papers and owner details shown openly so you know the car's past."
+      },
+      {
+        "title": "Sell Your Car",
+        "text": "Bring your car for a check and we give you an offer along with the process, with no pressure."
+      },
+      {
+        "title": "Finance And Transfer",
+        "text": "We guide you on car loans and help with RC transfer so ownership changes smoothly."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Open",
+        "label": "Service papers"
+      },
+      {
+        "value": "Free",
+        "label": "Test drive"
+      },
+      {
+        "value": "Help",
+        "label": "With RC transfer"
+      }
+    ],
+    "steps": {
+      "title": "How Buying A Used Car Works",
+      "items": [
+        {
+          "title": "Browse",
+          "text": "See cars on our lot or send us your budget and preferred type."
+        },
+        {
+          "title": "Inspect",
+          "text": "Test drive and look over the car, and get any independent mechanic check you like."
+        },
+        {
+          "title": "Agree",
+          "text": "We confirm the price, the papers and any work that needs to be done."
+        },
+        {
+          "title": "Transfer",
+          "text": "We help with transfer, insurance and loan steps, then hand over your keys."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Can I get the car checked by my own mechanic?",
+        "a": "Yes. We encourage it. Bring a mechanic or take the car to a garage you trust before you decide."
+      },
+      {
+        "q": "Do the cars come with service records?",
+        "a": "We show whatever records are available for each car. We tell you plainly when a record is not available."
+      },
+      {
+        "q": "Can I pay with a car loan?",
+        "a": "Yes. We can guide you to banks and finance partners. Loan approval depends on the lender and your documents."
+      },
+      {
+        "q": "How do you value my old car?",
+        "a": "We inspect the condition, papers and market demand, then tell you the offer and how we reached it."
+      },
+      {
+        "q": "Who handles the RC transfer?",
+        "a": "We help with the transfer paperwork for both buyer and seller. Please keep ID and the car's documents ready."
+      }
+    ],
+    "cta": {
+      "title": "Looking For Your Next Car Without The Stress?",
+      "button": "Book A Test Drive"
+    },
+    "about": {
+      "title": "About Our Used Car Showroom",
+      "paragraphs": [
+        "{brand} is a local used car showroom where each car is cleaned, checked and priced fairly before it is shown.",
+        "We tell you what the car needs, show you the papers we have and never rush you to decide."
+      ],
+      "points": [
+        "Cars checked before sale",
+        "Papers shown openly",
+        "Help with transfer and loans"
+      ]
+    },
+    "pricing": {
+      "title": "Our Service Fees",
+      "plans": [
+        {
+          "name": "Car Inspection",
+          "price": "$12",
+          "period": "/car",
+          "perks": [
+            "Condition report",
+            "Papers check",
+            "Test drive support"
+          ]
+        },
+        {
+          "name": "Sell Your Car",
+          "price": "$30",
+          "period": "/car",
+          "perks": [
+            "Valuation",
+            "Listing and buyers",
+            "Transfer paperwork"
+          ]
+        },
+        {
+          "name": "Buy With Full Support",
+          "price": "$60",
+          "period": "/car",
+          "perks": [
+            "Shortlisting help",
+            "Loan guidance",
+            "RC transfer"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Cars On Our Lot",
+      "captions": [
+        "Compact hatchback",
+        "Family sedan",
+        "Family SUV",
+        "Interior check",
+        "Engine bay",
+        "Ready for delivery"
+      ]
+    },
+    "team": {
+      "title": "Meet The Showroom Team",
+      "roles": [
+        "Sales Advisor",
+        "Car Inspector",
+        "Papers Executive"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They let my mechanic check the car for an hour and answered everything calmly.",
+        "role": "Car buyer"
+      },
+      {
+        "quote": "I sold my old hatchback here. The price was explained and the transfer was done properly.",
+        "role": "Car seller"
+      },
+      {
+        "quote": "No pressure at all. I came back twice before deciding and they were patient both times.",
+        "role": "First time buyer"
+      }
+    ],
+    "blog": {
+      "title": "Car Buying Guides",
+      "posts": [
+        {
+          "tag": "Buying",
+          "title": "Ten Things To Check In A Used Car"
+        },
+        {
+          "tag": "Papers",
+          "title": "Documents You Need To Buy Or Sell A Car"
+        },
+        {
+          "tag": "Budget",
+          "title": "How To Plan Running Costs Beyond The Price"
+        }
+      ]
+    },
+    "marquee": [
+      "Hatchbacks",
+      "Sedans",
+      "SUVs",
+      "Test Drive",
+      "Finance",
+      "Insurance",
+      "RC Transfer",
+      "Exchange"
+    ],
+    "contactText": "Message {brand} with your budget and the kind of car you want, or call to book a visit and test drive."
+  },
+  {
+    "id": "architect_construction",
+    "label": "Architect and construction",
+    "theme": "real_estate",
+    "keywords": [
+      "architect",
+      "civil contractor",
+      "home construction",
+      "house construction",
+      "building contractor",
+      "house renovation",
+      "ghar banwana",
+      "आर्किटेक्ट"
+    ],
+    "heroTitles": [
+      "Plan, Build And Move Into Your Own Home",
+      "From Drawings To Doors, Handled Carefully",
+      "Construction That Matches Your Plot And Budget"
+    ],
+    "heroSubtitles": [
+      "{brand} designs and builds homes, shops and extensions, from the first sketch to the final coat of paint.",
+      "Share your plot and budget with {brand} and receive a plan, a material list and a stage-wise cost before we start.",
+      "Renovating an old house? {brand} checks the structure first and tells you honestly what to repair and what to leave."
+    ],
+    "button": "Discuss Your Project",
+    "featureTitle": "What We Design And Build",
+    "features": [
+      {
+        "title": "Architectural Planning",
+        "text": "Floor plans, elevations and 3D views that make the best use of your plot size and direction."
+      },
+      {
+        "title": "House Construction",
+        "text": "Foundation to finishing in stages, with a site engineer and clear material specifications."
+      },
+      {
+        "title": "Home Renovation",
+        "text": "Extra rooms, bathroom remodels, flooring and roof repair on existing homes, planned to limit dust and mess."
+      },
+      {
+        "title": "Structural Drawings",
+        "text": "Beam, column and footing drawings prepared before building so the structure is sound."
+      },
+      {
+        "title": "Commercial Construction",
+        "text": "Shops, showrooms and small offices built to the plan and timeline agreed with you."
+      },
+      {
+        "title": "Site Supervision",
+        "text": "A regular engineer visit to check quality, measurements and material use at each stage."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Free",
+        "label": "Site visit"
+      },
+      {
+        "value": "Stage-wise",
+        "label": "Payments"
+      },
+      {
+        "value": "Written",
+        "label": "Quote and drawings"
+      }
+    ],
+    "steps": {
+      "title": "How Your Project Moves Forward",
+      "items": [
+        {
+          "title": "Site Visit",
+          "text": "We see your plot or house, measure it and listen to your needs and budget."
+        },
+        {
+          "title": "Design",
+          "text": "You get a plan and cost estimate, and we edit the drawings until you are happy."
+        },
+        {
+          "title": "Construction",
+          "text": "Work proceeds in stages with site visits and clear photos of progress."
+        },
+        {
+          "title": "Handover",
+          "text": "Final checks, finishing touches and handover of all drawings and bills."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Do you give a cost estimate before building?",
+        "a": "Yes. We prepare a written estimate based on the plan and material choice, and explain what can change it."
+      },
+      {
+        "q": "Can you build as per my own plan?",
+        "a": "Yes. We can build to your plan after a structural check, or help you improve it with our own drawings."
+      },
+      {
+        "q": "Do you need municipal approval?",
+        "a": "Building permissions depend on the local authority. We help with the drawings required and guide you through the process."
+      },
+      {
+        "q": "How long does a house take to build?",
+        "a": "It depends on size, design and weather. We give a realistic schedule with your plan and update you as work moves."
+      },
+      {
+        "q": "Do you work on renovations?",
+        "a": "Yes. We handle repairs, additions and remodels, after checking the existing structure."
+      }
+    ],
+    "cta": {
+      "title": "Want To Build Or Renovate With The Right Team?",
+      "button": "Discuss Your Project"
+    },
+    "about": {
+      "title": "About Our Design And Build Team",
+      "paragraphs": [
+        "{brand} is a local team of architects and civil engineers who design and build homes for families in the area.",
+        "We keep you in the loop through the build with site visits, photos and payment in stages, so nothing stays hidden."
+      ],
+      "points": [
+        "Design and construction under one roof",
+        "Honest estimates",
+        "Regular engineer visits"
+      ]
+    },
+    "pricing": {
+      "title": "Planning And Construction Fees",
+      "plans": [
+        {
+          "name": "Site Visit And Advice",
+          "price": "$12",
+          "period": "/visit",
+          "perks": [
+            "Plot or house visit",
+            "Basic suggestions",
+            "Rough cost idea"
+          ]
+        },
+        {
+          "name": "House Plan Drawings",
+          "price": "$250",
+          "period": "/plan",
+          "perks": [
+            "Floor plan and elevation",
+            "Structural drawings",
+            "Two rounds of changes"
+          ]
+        },
+        {
+          "name": "Site Supervision",
+          "price": "$450",
+          "period": "/month",
+          "perks": [
+            "Weekly engineer visits",
+            "Material checks",
+            "Progress photos"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Projects We Have Worked On",
+      "captions": [
+        "House elevation",
+        "Floor plan",
+        "Foundation work",
+        "Brick work",
+        "Renovated kitchen",
+        "Finished home"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Project Team",
+      "roles": [
+        "Architect",
+        "Site Engineer",
+        "Project Coordinator"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They changed the plan three times for us and explained every cost. The house suits our family.",
+        "role": "Home owner"
+      },
+      {
+        "quote": "The renovation was planned well and the site stayed clean.",
+        "role": "Renovation client"
+      },
+      {
+        "quote": "Clear stage-wise payments helped us manage our budget during construction.",
+        "role": "Plot owner"
+      }
+    ],
+    "blog": {
+      "title": "Building Notes",
+      "posts": [
+        {
+          "tag": "Planning",
+          "title": "Questions To Ask Before Building A House"
+        },
+        {
+          "tag": "Budget",
+          "title": "Where Home Construction Costs Can Increase"
+        },
+        {
+          "tag": "Renovation",
+          "title": "Checking A Building Before You Renovate It"
+        }
+      ]
+    },
+    "marquee": [
+      "Plans",
+      "Elevation",
+      "Foundation",
+      "Structure",
+      "Renovation",
+      "Roofing",
+      "Flooring",
+      "Finishing"
+    ],
+    "contactText": "Share your plot size, location and budget with {brand}, and we will fix a site visit to start the conversation."
+  },
+  {
+    "id": "travel_agency",
+    "label": "Travel agency",
+    "theme": "travel_tourism",
+    "keywords": [
+      "travel agency",
+      "tour packages",
+      "holiday packages",
+      "tour operator",
+      "flight tickets",
+      "honeymoon package",
+      "ट्रैवल एजेंसी",
+      "yatra"
+    ],
+    "heroTitles": [
+      "Holidays Planned Around Your Family",
+      "Tour Packages Without The Confusion",
+      "Pack Your Bags, We Handle The Plan"
+    ],
+    "heroSubtitles": [
+      "{brand} puts together tour packages with flights or trains, hotels and sightseeing, and explains what is included in each.",
+      "Tell {brand} your dates and budget, and we suggest simple, realistic itineraries for families, couples and groups.",
+      "Need only a ticket or a hotel? {brand} also books flights, trains and stays, and helps if plans change."
+    ],
+    "button": "Plan My Trip",
+    "featureTitle": "Trips And Travel Help We Offer",
+    "features": [
+      {
+        "title": "Domestic Tour Packages",
+        "text": "Hill stations, beaches, heritage cities and pilgrimages with stay and local travel included."
+      },
+      {
+        "title": "International Packages",
+        "text": "Popular holiday destinations abroad with flights, hotels and sightseeing explained clearly."
+      },
+      {
+        "title": "Honeymoon Trips",
+        "text": "Quiet, romantic itineraries with a good hotel and time to rest between plans."
+      },
+      {
+        "title": "Flight And Train Tickets",
+        "text": "Ticket booking and reissue help, with fares and rules explained before payment."
+      },
+      {
+        "title": "Hotel And Cab Booking",
+        "text": "Hotel stays and cab transfers booked for the dates and number of guests you tell us."
+      },
+      {
+        "title": "Group And Family Tours",
+        "text": "Trips for friends, families and offices, planned with shared costs and a clear schedule."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Written",
+        "label": "Itinerary and costs"
+      },
+      {
+        "value": "Flexible",
+        "label": "Plans to suit you"
+      },
+      {
+        "value": "Phone",
+        "label": "Help during the trip"
+      }
+    ],
+    "steps": {
+      "title": "How Your Trip Is Planned",
+      "items": [
+        {
+          "title": "Chat",
+          "text": "Tell us where you want to go, your dates, group size and budget."
+        },
+        {
+          "title": "Itinerary",
+          "text": "We send a day-by-day plan with hotels, travel and what is included."
+        },
+        {
+          "title": "Confirm",
+          "text": "You approve the plan and pay the advance, and we book everything."
+        },
+        {
+          "title": "Travel",
+          "text": "We share tickets and vouchers, and stay reachable by phone during your trip."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "What is included in your tour packages?",
+        "a": "Each package lists stay, meals, transfers and sightseeing. We write down what is and is not included before you pay."
+      },
+      {
+        "q": "Can I change the itinerary?",
+        "a": "Yes. Packages can be adjusted for days, hotels and activities. A change may alter the cost, which we tell you first."
+      },
+      {
+        "q": "Do you help with international travel documents?",
+        "a": "We guide you on the documents needed. Visa decisions rest with the embassy, and we do not promise approval."
+      },
+      {
+        "q": "What happens if I need to cancel?",
+        "a": "Cancellation terms depend on airlines and hotels. We share them with you at booking so you know before paying."
+      },
+      {
+        "q": "Can you book only flights or hotels?",
+        "a": "Yes. You can book just tickets, just a stay or a full package, whichever suits your plan."
+      }
+    ],
+    "cta": {
+      "title": "Dreaming Of Your Next Holiday?",
+      "button": "Plan My Trip"
+    },
+    "about": {
+      "title": "About Our Travel Planners",
+      "paragraphs": [
+        "{brand} is a local travel desk that plans holidays, books tickets and looks after small details that make a trip smooth.",
+        "We do not push the costliest plan. We suggest what suits your family and tell you what is worth skipping."
+      ],
+      "points": [
+        "Itinerary and cost in writing",
+        "Hotels checked before booking",
+        "Support through the trip"
+      ]
+    },
+    "pricing": {
+      "title": "Trip Planning Packages",
+      "plans": [
+        {
+          "name": "Ticket Booking",
+          "price": "$6",
+          "period": "/booking",
+          "perks": [
+            "Flight or train search",
+            "Fare comparison",
+            "Reissue help"
+          ]
+        },
+        {
+          "name": "Weekend Tour Plan",
+          "price": "$45",
+          "period": "/person",
+          "perks": [
+            "Stay and transfers",
+            "Local sightseeing",
+            "Day wise plan"
+          ]
+        },
+        {
+          "name": "Holiday Package",
+          "price": "$180",
+          "period": "/person",
+          "perks": [
+            "Flights or trains",
+            "Hotels and meals",
+            "Sightseeing and cabs"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Journeys We Have Planned",
+      "captions": [
+        "Hill station",
+        "Beach holiday",
+        "Heritage trip",
+        "Family group",
+        "Mountain road",
+        "Hotel stay"
+      ]
+    },
+    "team": {
+      "title": "Meet Our Travel Planners",
+      "roles": [
+        "Tour Planner",
+        "Ticketing Executive",
+        "Customer Care Lead"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They planned our family trip so well that we did not have to worry about anything.",
+        "role": "Family traveller"
+      },
+      {
+        "quote": "Honest plan and clear cost. They told me which sightseeing was not worth it.",
+        "role": "Couple on holiday"
+      },
+      {
+        "quote": "Our office group trip ran on time and the hotel was exactly as described.",
+        "role": "Group organiser"
+      }
+    ],
+    "blog": {
+      "title": "Travel Planning Notes",
+      "posts": [
+        {
+          "tag": "Planning",
+          "title": "How To Choose The Right Month For Your Trip"
+        },
+        {
+          "tag": "Budget",
+          "title": "What To Look For In A Holiday Package"
+        },
+        {
+          "tag": "Packing",
+          "title": "A Simple Packing List For Family Trips"
+        }
+      ]
+    },
+    "marquee": [
+      "Tour Packages",
+      "Flights",
+      "Trains",
+      "Hotels",
+      "Honeymoon",
+      "Pilgrimage",
+      "Group Tours",
+      "Cabs"
+    ],
+    "contactText": "Message {brand} with your dates, group size and budget and we will send a trip plan you can edit."
+  },
+  {
+    "id": "banquet_hall_venue",
+    "label": "Banquet hall and venue",
+    "theme": "events_wedding",
+    "keywords": [
+      "banquet hall",
+      "wedding venue",
+      "party hall",
+      "marriage garden",
+      "marriage hall",
+      "shaadi hall",
+      "मैरिज गार्डन",
+      "विवाह भवन"
+    ],
+    "heroTitles": [
+      "A Spacious Venue For Your Big Day",
+      "Weddings And Parties In One Beautiful Hall",
+      "Celebrate With Family In A Comfortable Space"
+    ],
+    "heroSubtitles": [
+      "{brand} offers an air conditioned hall, an open lawn and rooms for guests, so weddings and parties run in one place.",
+      "Book {brand} for engagements, receptions or birthdays and see the hall, stage and kitchen before you fix the date.",
+      "Whatever the size of your guest list, {brand} helps you plan seating, parking and the schedule of the evening."
+    ],
+    "button": "Check Date Availability",
+    "featureTitle": "Spaces And Facilities For Your Event",
+    "features": [
+      {
+        "title": "Air Conditioned Hall",
+        "text": "A large hall with a stage, seating and good lighting for receptions and engagements."
+      },
+      {
+        "title": "Open Lawn",
+        "text": "A garden lawn for evening weddings, haldi and mehendi, with space for tents and a mandap."
+      },
+      {
+        "title": "Bridal And Groom Rooms",
+        "text": "Separate rooms with mirrors and seating for families to get ready in comfort."
+      },
+      {
+        "title": "Guest Rooms",
+        "text": "Rooms for out of town relatives close to the venue, booked together with your event."
+      },
+      {
+        "title": "Parking And Power Backup",
+        "text": "Parking space for guests and generator support so the function does not stop."
+      },
+      {
+        "title": "Kitchen And Dining Area",
+        "text": "A kitchen space and dining hall for your own caterer, or tie-ups we can introduce."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Hall + Lawn",
+        "label": "Both available"
+      },
+      {
+        "value": "Ample",
+        "label": "Parking space"
+      },
+      {
+        "value": "Backup",
+        "label": "Power supply"
+      }
+    ],
+    "steps": {
+      "title": "How To Book Our Venue",
+      "items": [
+        {
+          "title": "Enquire",
+          "text": "Share your date, the function and the number of guests expected."
+        },
+        {
+          "title": "Visit",
+          "text": "Come see the hall, lawn and rooms, and check what suits your event."
+        },
+        {
+          "title": "Book",
+          "text": "Pay the advance, receive the booking slip and fix the schedule with our manager."
+        },
+        {
+          "title": "Celebrate",
+          "text": "Our team is on site through the function to help with lights, power and seating."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Can I bring my own caterer and decorator?",
+        "a": "Yes, in most cases. Please check our booking terms about outside vendors when you visit."
+      },
+      {
+        "q": "How many guests can the hall hold?",
+        "a": "The hall and lawn have different capacities. We show you the seating layout so you can compare it with your guest list."
+      },
+      {
+        "q": "Is a sound system available?",
+        "a": "A basic sound system is available. Local rules about music timings apply and we help you plan around them."
+      },
+      {
+        "q": "How do I confirm my date?",
+        "a": "Visit or call to check the date, then pay the advance. We give a written slip with the terms."
+      },
+      {
+        "q": "Can I book only for a few hours?",
+        "a": "Yes, shorter bookings for parties and small functions are possible. Ask us about slot timings and charges."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Host A Celebration You Will Remember?",
+      "button": "Check Date Availability"
+    },
+    "about": {
+      "title": "About Our Banquet Hall",
+      "paragraphs": [
+        "{brand} is a family-run banquet venue where weddings, engagements and birthdays are held under one roof with room for everyone.",
+        "We keep the terms simple and the date clear, and our manager stays with you from the first visit until the last guest leaves."
+      ],
+      "points": [
+        "Hall, lawn and rooms together",
+        "Clear booking terms",
+        "Manager present at events"
+      ]
+    },
+    "pricing": {
+      "title": "Venue Booking Rates",
+      "plans": [
+        {
+          "name": "Party Hall Slot",
+          "price": "$120",
+          "period": "/event",
+          "perks": [
+            "Air conditioned hall",
+            "Seating for the function",
+            "Basic lighting"
+          ]
+        },
+        {
+          "name": "Wedding Hall",
+          "price": "$350",
+          "period": "/day",
+          "perks": [
+            "Hall and stage",
+            "Bridal room",
+            "Power backup"
+          ]
+        },
+        {
+          "name": "Hall And Lawn",
+          "price": "$650",
+          "period": "/day",
+          "perks": [
+            "Hall plus open lawn",
+            "Guest rooms",
+            "Parking support"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "A Look At Our Venue",
+      "captions": [
+        "Main hall",
+        "Open lawn",
+        "Stage setup",
+        "Bridal room",
+        "Entrance gate",
+        "Dining area"
+      ]
+    },
+    "team": {
+      "title": "Meet The Venue Team",
+      "roles": [
+        "Venue Manager",
+        "Event Coordinator",
+        "Facility Supervisor"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The hall was spacious, and the manager helped us with seating and timing on the day.",
+        "role": "Wedding host"
+      },
+      {
+        "quote": "We held a reception on the lawn and the arrangements ran smoothly.",
+        "role": "Bride's family"
+      },
+      {
+        "quote": "Simple booking terms and a supportive team for our son's engagement.",
+        "role": "Event host"
+      }
+    ],
+    "blog": {
+      "title": "Venue Planning Notes",
+      "posts": [
+        {
+          "tag": "Planning",
+          "title": "Questions To Ask Before Booking A Wedding Venue"
+        },
+        {
+          "tag": "Guests",
+          "title": "How To Plan Seating For A Large Guest List"
+        },
+        {
+          "tag": "Timeline",
+          "title": "A Simple Schedule For A Wedding Reception"
+        }
+      ]
+    },
+    "marquee": [
+      "Wedding",
+      "Reception",
+      "Engagement",
+      "Lawn",
+      "Stage",
+      "Parking",
+      "Rooms",
+      "Parties"
+    ],
+    "contactText": "Call or message {brand} with your date and guest count, and we will tell you what is available and arrange a visit."
+  },
+  {
+    "id": "landscaping_gardening",
+    "label": "Landscaping and gardening",
+    "theme": "organic_nature",
+    "keywords": [
+      "landscaping",
+      "gardener",
+      "garden design",
+      "lawn care",
+      "terrace garden",
+      "plant nursery",
+      "बागवानी",
+      "baghwani"
+    ],
+    "heroTitles": [
+      "Gardens That Grow With Your Home",
+      "Lawns, Plants And Green Corners Planned Well",
+      "Turn Your Empty Yard Into A Garden"
+    ],
+    "heroSubtitles": [
+      "{brand} designs and maintains lawns, terrace gardens and balcony plants, choosing greenery that suits your sunlight and your time.",
+      "Share your space with {brand}, and we propose plants, pots and layout that stay healthy without taking all your weekends.",
+      "From planting a new lawn to monthly trimming, {brand} sends a gardener who knows the soil and weather of your area."
+    ],
+    "button": "Book A Garden Visit",
+    "featureTitle": "Garden Work We Do For Homes",
+    "features": [
+      {
+        "title": "Garden Design",
+        "text": "A layout for lawn, paths, beds and seating based on your plot size and the sun it gets."
+      },
+      {
+        "title": "Lawn Laying And Care",
+        "text": "Grass laying, mowing, weeding and feeding to keep your lawn green and even."
+      },
+      {
+        "title": "Terrace And Balcony Gardens",
+        "text": "Pots, grow bags and planters set up for light and weight limits on terraces and balconies."
+      },
+      {
+        "title": "Plants From Our Nursery",
+        "text": "Flowering plants, foliage, herbs and small trees, with care instructions for each."
+      },
+      {
+        "title": "Monthly Garden Maintenance",
+        "text": "Pruning, watering plans, fertiliser and pest care by a regular visiting gardener."
+      },
+      {
+        "title": "Drip Irrigation Setup",
+        "text": "Pipes and drippers for pots and beds that give plants water on time and cut waste."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Free",
+        "label": "Site visit"
+      },
+      {
+        "value": "Plants",
+        "label": "For local weather"
+      },
+      {
+        "value": "Monthly",
+        "label": "Gardener visits"
+      }
+    ],
+    "steps": {
+      "title": "How We Build Your Garden",
+      "items": [
+        {
+          "title": "Visit",
+          "text": "We see your space, check the sunlight and soil, and hear what you would love to grow."
+        },
+        {
+          "title": "Plan",
+          "text": "You get a layout, plant list and cost with options to keep it simple."
+        },
+        {
+          "title": "Planting",
+          "text": "Our team prepares the soil, plants and sets up watering."
+        },
+        {
+          "title": "Care",
+          "text": "We explain the care routine and offer monthly visits if you want them."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Which plants are right for my balcony?",
+        "a": "It depends on sunlight and space. We visit, check the light and recommend plants that cope with your conditions."
+      },
+      {
+        "q": "How often should a lawn be mowed?",
+        "a": "It depends on the season and grass type. We set a schedule, often every one or two weeks in growing months."
+      },
+      {
+        "q": "Do you supply plants and pots?",
+        "a": "Yes. We bring plants from our nursery, along with pots, soil mix and compost, and plant them for you."
+      },
+      {
+        "q": "Can you maintain my garden every month?",
+        "a": "Yes. A gardener visits on fixed days for pruning, weeding, feeding and basic pest care."
+      },
+      {
+        "q": "Will plants survive the summer heat?",
+        "a": "Many can with the right choice and watering. We select hardy plants and explain how to care for them in peak summer."
+      }
+    ],
+    "cta": {
+      "title": "Ready To Add Some Green To Your Home?",
+      "button": "Book A Garden Visit"
+    },
+    "about": {
+      "title": "About Our Garden Team",
+      "paragraphs": [
+        "{brand} is a local landscaping and nursery team that makes gardens for homes, societies and small offices.",
+        "We pick plants that suit your climate and your routine, and teach you how to care for them instead of keeping you dependent."
+      ],
+      "points": [
+        "Plants chosen for your space",
+        "Care guidance included",
+        "Honest, simple quotes"
+      ]
+    },
+    "pricing": {
+      "title": "Garden Care Plans",
+      "plans": [
+        {
+          "name": "Plants And Setup",
+          "price": "$12",
+          "period": "/visit",
+          "perks": [
+            "Pot and plant selection",
+            "Soil mix",
+            "Planting help"
+          ]
+        },
+        {
+          "name": "Monthly Garden Care",
+          "price": "$30",
+          "period": "/month",
+          "perks": [
+            "Gardener visit",
+            "Pruning and weeding",
+            "Fertiliser and pest care"
+          ]
+        },
+        {
+          "name": "Lawn Or Terrace Garden",
+          "price": "$150",
+          "period": "/project",
+          "perks": [
+            "Design and layout",
+            "Lawn or planters",
+            "Watering setup"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Gardens We Have Grown",
+      "captions": [
+        "Front lawn",
+        "Terrace garden",
+        "Balcony planters",
+        "Nursery plants",
+        "Drip pipes",
+        "Garden path"
+      ]
+    },
+    "team": {
+      "title": "Meet The Garden Team",
+      "roles": [
+        "Landscape Designer",
+        "Head Gardener",
+        "Nursery Supervisor"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They turned our bare terrace into a green corner and showed us how to look after it.",
+        "role": "Home owner"
+      },
+      {
+        "quote": "The monthly gardener is regular, and our lawn looks tidy and healthy.",
+        "role": "Villa resident"
+      },
+      {
+        "quote": "Good advice on which plants suit our shaded balcony. Nothing was oversold.",
+        "role": "Flat resident"
+      }
+    ],
+    "blog": {
+      "title": "Gardening Notes",
+      "posts": [
+        {
+          "tag": "Lawn",
+          "title": "How To Keep A Lawn Green In Summer"
+        },
+        {
+          "tag": "Balcony",
+          "title": "Easy Plants For A Shaded Balcony"
+        },
+        {
+          "tag": "Soil",
+          "title": "Making Compost At Home For Healthier Plants"
+        }
+      ]
+    },
+    "marquee": [
+      "Lawns",
+      "Plants",
+      "Terrace",
+      "Balcony",
+      "Nursery",
+      "Pruning",
+      "Compost",
+      "Drip Pipes"
+    ],
+    "contactText": "Message {brand} with photos of your space, and we will suggest plants and set up a visit."
+  }
+]

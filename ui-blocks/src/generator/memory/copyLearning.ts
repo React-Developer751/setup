@@ -45,7 +45,8 @@ export function alternativeFor(prompt: string, slot: PhraseSlot, ctx: { current:
     const key = normalisePhrase(text, site.content.brandName)
     if (!text || skip.has(key) || found.has(key)) continue
     // the generator wrote the brand of the prompt; the site on screen may have been renamed
-    if (fitsBusiness(text, site.content.subject, site.content.brandName)) fitting.add(key)
+    // a niche page is about its business in every line
+    if (site.niche || fitsBusiness(text, site.content.subject, site.content.brandName)) fitting.add(key)
     found.set(key, site.content.brandName && ctx.brand ? text.split(site.content.brandName).join(ctx.brand) : text)
   }
   // texts that name the business come first (a tea cafe gets no "Pure Wellness For Curious Tasters"); when they are used up, the others
