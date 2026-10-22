@@ -98,9 +98,24 @@ export type EditOp =
   | { op: 'resetLayout'; target?: FitTarget }
   | ({ op: 'photos' } & PhotoSet)
   | { op: 'clearPhotos' }
+  | { op: 'core'; data: CoreBlocks }
   | { op: 'tier'; tier: Tier }
   | { op: 'motion'; level: MotionSetting }
   | { op: 'theme'; theme: ThemeKey }
+
+/** the texts of a page written by Core-Craft AI (the second Content AI) about what the person said: their own services, their place, their language */
+export type CoreBlocks = {
+  lang?: 'en' | 'hi'
+  hero?: { title?: string; subtitle?: string; button?: string }
+  features?: { title?: string; items: { title: string; text: string }[] }
+  about?: { title?: string; paragraphs: string[]; points?: string[] }
+  steps?: { title?: string; items: { title: string; text: string }[] }
+  faq?: { q: string; a: string }[]
+  cta?: { title?: string; button?: string }
+  titles?: Partial<Record<TitleSection, string>>
+  navLabels?: Partial<Record<NavPage, string>>
+  labels?: { learnMore?: string; welcome?: string }
+}
 
 export type SiteEdits = {
   brand?: string
@@ -127,6 +142,8 @@ export type SiteEdits = {
   replace: { from: string; to: string }[]
   contact: Partial<Record<ContactField, string>>
   services?: ServiceItem[]
+  /** texts of Core-Craft AI (op 'core') */
+  core?: CoreBlocks
   photos?: PhotoSet
   /** new headings of sections */
   titles: Partial<Record<TitleSection, string>>
@@ -149,6 +166,51 @@ export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [],
 
 const HEX = /^#[0-9a-f]{6}$/i
 const clean = (text: unknown, max: number) => (typeof text === 'string' ? text.replace(/\p{Cc}+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '')
+
+const noMarkup = (text: string) => text.replace(/[<>]/g, '')
+const pairs = (v: unknown, a: string, b: string, max: number, la: number, lb: number): { x: string; y: string }[] =>
+  (Array.isArray(v) ? v : []).slice(0, max).flatMap((i) => {
+    const x = noMarkup(clean((i as Record<string, unknown>)?.[a], la))
+    const y = noMarkup(clean((i as Record<string, unknown>)?.[b], lb))
+    return x && y ? [{ x, y }] : []
+  })
+
+/** the texts of Core-Craft AI, checked: plain text only, short, no markup (they come from another program) */
+export function cleanCore(raw: unknown): CoreBlocks | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const o = raw as Record<string, any>
+  const t = (v: unknown, n: number) => noMarkup(clean(v, n))
+  const out: CoreBlocks = {}
+  if (o.lang === 'hi' || o.lang === 'en') out.lang = o.lang
+  if (o.hero && typeof o.hero === 'object') {
+    const hero = { title: t(o.hero.title, 90), subtitle: t(o.hero.subtitle, 220), button: t(o.hero.button, 30) }
+    const kept = Object.fromEntries(Object.entries(hero).filter(([, v]) => v))
+    if (Object.keys(kept).length) out.hero = kept
+  }
+  const feats = pairs(o.features?.items, 'title', 'text', 40, 40, 160).slice(0, 8).map(({ x, y }) => ({ title: x, text: y }))
+  if (feats.length) out.features = { ...(t(o.features?.title, 60) ? { title: t(o.features.title, 60) } : {}), items: feats }
+  const paras = (Array.isArray(o.about?.paragraphs) ? o.about.paragraphs : []).slice(0, 3).map((p: unknown) => t(p, 400)).filter(Boolean)
+  if (paras.length) out.about = { ...(t(o.about?.title, 60) ? { title: t(o.about.title, 60) } : {}), paragraphs: paras, ...(Array.isArray(o.about?.points) ? { points: o.about.points.slice(0, 4).map((p: unknown) => t(p, 40)).filter(Boolean) } : {}) }
+  const steps = pairs(o.steps?.items, 'title', 'text', 5, 30, 140).map(({ x, y }) => ({ title: x, text: y }))
+  if (steps.length) out.steps = { ...(t(o.steps?.title, 60) ? { title: t(o.steps.title, 60) } : {}), items: steps }
+  const faq = pairs(o.faq, 'q', 'a', 8, 100, 260).map(({ x, y }) => ({ q: x, a: y }))
+  if (faq.length) out.faq = faq
+  if (o.cta && typeof o.cta === 'object') {
+    const cta = { title: t(o.cta.title, 70), button: t(o.cta.button, 30) }
+    const kept = Object.fromEntries(Object.entries(cta).filter(([, v]) => v))
+    if (Object.keys(kept).length) out.cta = kept
+  }
+  const titles = Object.fromEntries(Object.entries(o.titles ?? {}).filter(([k, v]) => (TITLE_SECTIONS as readonly string[]).includes(k) && typeof v === 'string' && t(v, 60)).map(([k, v]) => [k, t(v, 60)]))
+  if (Object.keys(titles).length) out.titles = titles as CoreBlocks['titles']
+  const navLabels = Object.fromEntries(Object.entries(o.navLabels ?? {}).filter(([k, v]) => (NAV_PAGES as readonly string[]).includes(k) && typeof v === 'string' && t(v, 24).length >= 2).map(([k, v]) => [k, t(v, 24)]))
+  if (Object.keys(navLabels).length) out.navLabels = navLabels as CoreBlocks['navLabels']
+  if (o.labels && typeof o.labels === 'object') {
+    const labels = { learnMore: t(o.labels.learnMore, 24), welcome: t(o.labels.welcome, 30) }
+    const kept = Object.fromEntries(Object.entries(labels).filter(([, v]) => v))
+    if (Object.keys(kept).length) out.labels = kept
+  }
+  return Object.keys(out).filter((k) => k !== 'lang').length ? out : undefined
+}
 
 /** Checks one operation that came from outside (a parser, a model, a file) and returns it cleaned, or undefined when it is not valid. */
 export function cleanOp(raw: unknown): EditOp | undefined {
@@ -245,6 +307,10 @@ export function cleanOp(raw: unknown): EditOp | undefined {
     }
     case 'clearPhotos':
       return { op: 'clearPhotos' }
+    case 'core': {
+      const data = cleanCore(o.data)
+      return data ? { op: 'core', data } : undefined
+    }
     case 'services': {
       const items = (Array.isArray(o.items) ? o.items : [])
         .map((raw): ServiceItem | undefined => {
@@ -396,6 +462,9 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'clearPhotos':
         e.photos = undefined
         break
+      case 'core':
+        e.core = op.data
+        break
       case 'tier':
         e.tier = op.tier
         break
@@ -475,6 +544,10 @@ export function describeOp(op: EditOp): string {
       return `Added photos: ${[op.hero ? 'first screen' : '', op.about ? 'about' : '', op.gallery ? `${op.gallery.length} in the gallery` : ''].filter(Boolean).join(', ')}`
     case 'clearPhotos':
       return 'Removed the photos'
+    case 'core': {
+      const blocks = [op.data.hero ? 'heading' : '', op.data.features ? `${op.data.features.items.length} services` : '', op.data.about ? 'about' : '', op.data.steps ? 'steps' : '', op.data.faq ? 'questions' : '', op.data.lang === 'hi' ? 'in Hindi' : ''].filter(Boolean)
+      return `Texts from Core-Craft AI about your own services: ${blocks.join(', ')}`
+    }
     case 'services':
       return `Listed ${op.items.length} service${op.items.length === 1 ? '' : 's'}: ${op.items.map((i) => i.name).join(', ')}`
     case 'tier':

@@ -4,7 +4,8 @@
 //   - its niche must be one this business type belongs to (a "shop" page is not for a clinic),
 //   - the line must name the business of the prompt (a line that could be on any page is no use),
 //   - sizes, no numbers or links, no corporate button texts ("Learn more", "Download the app"), no lines that end on a group of people without "for".
-import type { TextField } from './edits'
+import type { CoreBlocks, EditOp, TextField } from './edits'
+import { fitsBusiness } from '../memory/phraseScores'
 import type { ThemeKey } from '../themes'
 
 export type CoreCandidate = { seed: number; niche: string; brand: string; hero_heading: string; tagline: string; cta_primary: string; cta_secondary: string; cta_text: string }
@@ -115,4 +116,91 @@ export async function coreCraftUp(): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+// ───────────── a whole page from Core-Craft AI ─────────────
+// Core-Craft's newer engine writes copy about what the person says: the services they list, their place, and Hindi for a Devanagari prompt (names and
+// labels included). This project's own engine is better where a hand-written text pack exists, but it cannot write Hindi and, for a business without a
+// pack, pads the page with texts of the business type next to it (a pottery studio with "Same-Day Car Care Plans"). decideCore says when the page is used.
+export type CorePage = {
+  brand: string
+  lang: 'en' | 'hi'
+  business_type: string
+  type_label: string
+  location: string
+  hero_heading: string
+  tagline: string
+  about_title: string
+  about: string[]
+  features_title: string
+  features: { title: string; text: string }[]
+  highlights: { title: string; text: string }[]
+  steps_title: string
+  steps: { title: string; text: string }[]
+  faq: { q: string; a: string }[]
+  cta_primary: string
+  cta_secondary: string
+  cta_title: string
+  ui: Record<string, string>
+  generated_by: { business_type: string; mode: string; items_from_prompt: string[] }
+  needs_review: string[]
+}
+
+export type CoreOurs = { niche?: string; heroTitle: string; subject: string; theme: ThemeKey; prompt: string; brand: string }
+export type CoreDecision = { use: boolean; reason: string; blocks?: CoreBlocks; /** the business name, when the prompt gave it in Devanagari */ rename?: string; /** sections that would stay in English (team, prices, reviews ...): a Hindi page does not show them */ hide?: EditOp[]; review: string[] }
+
+const HI_NAV = { home: 'होम', services: 'सेवाएं', gallery: 'गैलरी', blog: 'ब्लॉग' }
+const HI_LABELS = { learnMore: 'और जानें', welcome: 'आपका स्वागत है' }
+
+/** a page of Core-Craft AI for one prompt (undefined when it is not running or cannot write one) */
+export async function askCorePage(prompt: string): Promise<CorePage | undefined> {
+  try {
+    const res = await fetch(`/api/corecraft/page?prompt=${encodeURIComponent(prompt)}`, { signal: AbortSignal.timeout(25_000) })
+    return res.ok ? ((await res.json()) as { page: CorePage }).page : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const cards = (page: CorePage) => [...page.features, ...page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase()))].slice(0, 6)
+
+export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
+  const review = page.needs_review ?? []
+  const hindi = page.lang === 'hi'
+  const strict = /^strict/i.test(page.generated_by?.mode ?? '')
+  const items = page.generated_by?.items_from_prompt ?? []
+  if (!page.features?.length || !page.about?.length) return { use: false, reason: 'Core-Craft returned an incomplete page', review }
+  if (hindi) {
+    const t = (en: string, hi: string) => (hi ? hi : en)
+    const ui = page.ui ?? {}
+    const blocks: CoreBlocks = {
+      lang: 'hi',
+      labels: HI_LABELS,
+      hero: { title: page.hero_heading, subtitle: page.tagline, button: page.cta_primary },
+      features: { title: page.features_title, items: cards(page) },
+      about: { title: page.about_title, paragraphs: page.about, points: page.highlights.map((h) => h.title).slice(0, 3) },
+      steps: { title: page.steps_title, items: page.steps },
+      faq: page.faq,
+      cta: { title: page.cta_title, button: page.cta_primary },
+      titles: { features: page.features_title, steps: page.steps_title, faq: ui.faq_title, pricing: ui.pricing, team: ui.team, testimonials: ui.testimonials, contact: ui.contact, gallery: HI_NAV.gallery, blog: HI_NAV.blog, cta: page.cta_title },
+      navLabels: { home: HI_NAV.home, about: t('About', ui.about), services: HI_NAV.services, pricing: ui.pricing, team: ui.team, gallery: HI_NAV.gallery, blog: HI_NAV.blog, faq: ui.faq, contact: ui.contact },
+    }
+    const named = /[ऀ-ॿ]/.test(page.brand) && page.brand !== ours.brand ? page.brand : undefined
+    // the built-in AI has these only in English (names of a team, prices, reviews of sample customers): a Hindi page without them is better than a half English one
+    const hide: EditOp[] = [...(['stats', 'gallery', 'pricing', 'team', 'testimonials', 'blog'] as const).map((section) => ({ op: 'remove', section }) as EditOp), ...(['pricing', 'team', 'gallery', 'blog'] as const).map((page) => ({ op: 'removePage', page }) as EditOp)]
+    return { use: true, reason: 'the prompt is in Hindi: Core-Craft writes the page in Hindi', blocks, rename: named, hide, review }
+  }
+  if (ours.niche) return { use: false, reason: `this business has a hand-written text pack (${ours.niche}), which is better than Core-Craft's frames`, review }
+  if (!strict || items.length < 2) return { use: false, reason: 'Core-Craft could not tie the page to at least two services you named, so its text would be general', review }
+  const blocks: CoreBlocks = {
+    lang: 'en',
+    features: { title: page.features_title, items: cards(page) },
+    about: { paragraphs: page.about, points: page.highlights.map((h) => h.title).slice(0, 3) },
+    steps: { title: page.steps_title, items: page.steps },
+    faq: page.faq,
+  }
+  // the heading too, when the one of this project does not speak about the business
+  // (a line that names one of the person's own services is about the business)
+  if (!fitsBusiness(ours.heroTitle, ours.subject, ours.brand) && !refuse('heroTitle', page.hero_heading, { theme: ours.theme, subject: `${ours.subject} ${items.join(' ')}`, prompt: ours.prompt, current: { heroTitle: ours.heroTitle } })) blocks.hero = { title: page.hero_heading }
+  return { use: true, reason: `no text pack for this business: Core-Craft writes about your own services (${items.slice(0, 4).join(', ')}) and nothing else`, blocks, review }
 }

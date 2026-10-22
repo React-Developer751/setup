@@ -4,7 +4,7 @@
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
 // GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
 // GET/POST /api/edit-log, POST /api/edit-log/undo -> the chat commands and which ones were undone;  GET/POST /api/image-ratings -> picture thumbs shared by all browsers
-// GET  /api/corecraft ?prompt=&n=  -> pages of copy from Core-Craft AI (npm run corecraft); /api/health says corecraft: true when it runs
+// GET  /api/corecraft/page ?prompt=  -> one whole page of Core-Craft copy (services of the prompt, Hindi);  GET /api/corecraft ?prompt=&n=  -> pages of copy from Core-Craft AI (npm run corecraft); /api/health says corecraft: true when it runs
 // GET/POST /api/palettes -> premium colour palettes that people add (on top of src/data/premiumPalettes.json)
 // GET/POST /api/phrase-events -> what people say and do about the texts of the sites (the content AI's phrase scores)
 // GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
@@ -246,6 +246,37 @@ export const server = http.createServer(async (req, res) => {
           seed: Number(c.seed) || 0, niche: text(c.niche, 20), brand: text(c.brand, 60), hero_heading: text(c.hero_heading, 120), tagline: text(c.tagline, 240), cta_primary: text(c.cta_primary, 60), cta_secondary: text(c.cta_secondary, 60), cta_text: text(c.cta_text, 240),
         }))
         return send(res, 200, { niche: text(body.niche, 20), candidates })
+      } catch {
+        return send(res, 503, { error: 'Core-Craft is not running (npm run corecraft)' })
+      }
+    }
+    // one whole page of copy from Core-Craft AI (its own services-only mode, Hindi when the prompt is in Devanagari), cleaned before it reaches the page
+    if (req.method === 'GET' && url.pathname === '/api/corecraft/page') {
+      const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'"&\-;:\u0964\u0965]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
+      if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
+      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      try {
+        const upstream = await fetch(`${CORECRAFT_URL}/page`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, seed: Number(url.searchParams.get('seed')) || 1 }), signal: AbortSignal.timeout(20_000) })
+        if (upstream.status === 422) return send(res, 422, { error: 'Core-Craft could not write a page for this prompt' })
+        if (!upstream.ok) return send(res, 502, { error: `Core-Craft answered ${upstream.status}` })
+        const p = (await upstream.json()).page ?? {}
+        const t = (v, k) => String(v ?? '').replace(/\p{Cc}+/gu, ' ').replace(/[<>]/g, '').slice(0, k)
+        const list = (v, n, f) => (Array.isArray(v) ? v.slice(0, n).map(f) : [])
+        const ui = {}
+        for (const k of ['about', 'faq', 'contact', 'pricing', 'testimonials', 'team', 'features_title', 'steps_title', 'faq_title']) ui[k] = t(p.ui?.[k], 60)
+        return send(res, 200, {
+          page: {
+            brand: t(p.brand, 60), lang: p.lang === 'hi' ? 'hi' : 'en', business_type: t(p.business_type, 30), type_label: t(p.type_label, 60), location: t(p.location, 60), niche: t(p.niche, 20),
+            hero_heading: t(p.hero_heading, 120), tagline: t(p.tagline, 240), about_title: t(p.about_title, 80), about: list(p.about, 3, (x) => t(x, 420)),
+            features_title: t(p.features_title, 60), features: list(p.features, 8, (f) => ({ title: t(f?.title, 40), text: t(f?.text, 160) })),
+            highlights: list(p.highlights, 4, (f) => ({ title: t(f?.title, 40), text: t(f?.text, 160) })),
+            steps_title: t(p.steps_title, 60), steps: list(p.steps, 5, (f) => ({ title: t(f?.title, 30), text: t(f?.text, 140) })),
+            faq: list(p.faq, 8, (f) => ({ q: t(f?.q, 100), a: t(f?.a, 260) })),
+            cta_primary: t(p.cta_primary, 30), cta_secondary: t(p.cta_secondary, 30), cta_title: t(p.cta_title, 70),
+            ui, generated_by: { business_type: t(p.generated_by?.business_type, 60), mode: t(p.generated_by?.mode, 60), items_from_prompt: list(p.generated_by?.items_from_prompt, 8, (x) => t(x, 40)) },
+            needs_review: list(p.needs_review, 8, (x) => t(x, 220)),
+          },
+        })
       } catch {
         return send(res, 503, { error: 'Core-Craft is not running (npm run corecraft)' })
       }

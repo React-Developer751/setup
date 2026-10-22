@@ -7,11 +7,16 @@ type Props = {
   gate: () => GateContext
   prompt: string
   onUse: (slot: CoreSlot, text: string) => void
+  /** Core-Craft writes the whole page where this project's own texts cannot (Hindi, a business without a text pack that names its services) */
+  auto: boolean
+  onAuto: (on: boolean) => void
+  /** who wrote the current page, and why */
+  note: string
 }
 
 const SLOT_NAME: Record<CoreSlot, string> = { heroTitle: 'Heading', heroSubtitle: 'Subheading', heroButton: 'Button' }
 
-function CoreCraftPanel({ gate, prompt, onUse }: Props) {
+function CoreCraftPanel({ gate, prompt, onUse, auto, onAuto, note }: Props) {
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<{ accepted: Suggestion[]; rejected: Rejection[]; total: number } | undefined>()
   const [error, setError] = useState('')
@@ -33,6 +38,11 @@ function CoreCraftPanel({ gate, prompt, onUse }: Props) {
         <h2 className="text-sm font-semibold text-gray-900">Core-Craft AI (second Content AI)</h2>
         <p className="text-[11px] text-gray-600">It writes a few lines for your prompt. Only lines that name your business and fit its type are offered; the rest are kept out.</p>
       </div>
+      <label className="flex items-start gap-2 text-[11px] text-gray-700">
+        <input type="checkbox" checked={auto} onChange={(e) => onAuto(e.target.checked)} className="mt-0.5" />
+        <span>Let Core-Craft AI write the whole page for Hindi prompts and for businesses without a text pack that name their services (undo brings the built-in texts back).</span>
+      </label>
+      {note && <p className="rounded-md bg-white p-2 text-[11px] text-gray-700 ring-1 ring-sky-100">{note}</p>}
       <button type="button" onClick={() => void ask()} disabled={busy} className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700 disabled:opacity-50">
         {busy ? 'Asking ...' : 'Ask Core-Craft AI'}
       </button>

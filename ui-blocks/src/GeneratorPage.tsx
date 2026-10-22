@@ -20,7 +20,7 @@ import { answerFor, clarify, type Choice, type Expect } from './generator/edit/c
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
-import { coreCraftUp, type CoreSlot } from './generator/edit/corecraft'
+import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
 import { rateScene, syncRatings } from './generator/edit/imageRatings'
@@ -103,6 +103,16 @@ function GeneratorPage() {
   const [useServer, setUseServer] = useState(false)
   const [serverReady, setServerReady] = useState(false)
   const [coreCraftReady, setCoreCraftReady] = useState(false)
+  // Core-Craft AI writes the page itself where this project's own text packs cannot (Hindi prompts, businesses without a pack that name their services)
+  const [coreAuto, setCoreAuto] = useState(() => {
+    try {
+      return localStorage.getItem('ui-blocks:core-auto') !== 'off'
+    } catch {
+      return true
+    }
+  })
+  const [coreNote, setCoreNote] = useState('')
+  const coreRun = useRef(0)
   const [projects, setProjects] = useState<Project[]>(() => listProjects())
   const [projectNote, setProjectNote] = useState('')
   // the last session of this browser: offered at the start; it is only overwritten after the person has chosen
@@ -236,6 +246,22 @@ function GeneratorPage() {
     say({ role: 'ai', text: verdict === 'good' ? 'Kept as the right design. The others of this round are turned down; the next design learns from it and gets a colour that is new.' : 'Noted: this design is turned down. The next design stays away from its colours.' })
   }
 
+  /** Core-Craft AI, when it runs: for a Hindi prompt, or a business without a text pack that names its services, its page replaces the texts */
+  const applyCoreContent = async (text: string, variationNo: number, run: number) => {
+    if (!coreAuto || !(await coreCraftUp())) return
+    setCoreCraftReady(true)
+    const page = await askCorePage(text)
+    if (run !== coreRun.current) return
+    if (!page) return setCoreNote('Core-Craft AI did not write a page for this prompt; the built-in AI wrote it.')
+    const preview = generateWebsite(text, variationNo, level === 'auto' ? undefined : level, creative, motionSetting)
+    const decision = decideCore(page, { niche: preview.niche, heroTitle: preview.content.hero.title, subject: preview.content.subject, theme: preview.themeKey, prompt: text, brand: preview.content.brandName })
+    setCoreNote(`${decision.use ? 'Core-Craft AI' : 'Built-in AI'} wrote this page: ${decision.reason}.`)
+    if (decision.review.length) say({ role: 'ai', text: `Core-Craft AI says to check: ${decision.review.slice(0, 3).join(' ')}` })
+    if (!decision.use || !decision.blocks) return
+    const ops: EditOp[] = [{ op: 'core', data: decision.blocks }, ...(decision.rename ? [{ op: 'rename' as const, name: decision.rename }] : []), ...(decision.hide ?? [])]
+    applyOps('Texts from Core-Craft AI', ops, 'rules', `Core-Craft AI wrote the texts of this page about what you said (${decision.reason}). Say "undo" to go back to the built-in texts.`)
+  }
+
   const generate = async (text: string) => {
     if (!text.trim()) return
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
@@ -253,6 +279,9 @@ function GeneratorPage() {
     setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])
     setVariation(plan.variation)
     setRuns((n) => n + 1)
+    coreRun.current += 1
+    setCoreNote('')
+    void applyCoreContent(text, plan.variation, coreRun.current)
     autoMade.current = false
     setDrawn([])
     setRated({})
@@ -685,6 +714,16 @@ function GeneratorPage() {
           {coreCraftReady && (
             <CoreCraftPanel
               prompt={submitted}
+              auto={coreAuto}
+              note={coreNote}
+              onAuto={(on) => {
+                setCoreAuto(on)
+                try {
+                  localStorage.setItem('ui-blocks:core-auto', on ? 'on' : 'off')
+                } catch {
+                  // the switch is remembered when it can be
+                }
+              }}
               gate={() => ({ theme: themeKey, subject: textSite.content.subject, prompt: submitted, current: { heroTitle: textSite.content.hero.title, heroSubtitle: textSite.content.hero.subtitle, heroButton: textSite.content.hero.button }, avoid: turnedDown.current })}
               onUse={(slot: CoreSlot, text: string) => applyOps(`Core-Craft AI: ${slot}`, [{ op: 'text', field: slot, text }], 'rules', `Used a line from Core-Craft AI: "${text}". Say "undo" to get the old one back.`)}
             />

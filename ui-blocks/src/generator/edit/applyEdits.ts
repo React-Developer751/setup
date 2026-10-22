@@ -72,9 +72,24 @@ const money = (price: string, currency: string): { price: string; period: string
   return m ? { price: `${currency}${Number(m[1].replace(/,/g, '')).toLocaleString(currency === '₹' ? 'en-IN' : 'en-US')}`, period: m[2] ?? '' } : { price: price.trim(), period: '' }
 }
 
+/** Core-Craft's texts over a page: only about the services the person named (the page has no other claims) */
+function mergeCore(content: WebsiteContent, core: NonNullable<SiteEdits['core']>): WebsiteContent {
+  let next = content
+  if (core.hero) next = { ...next, hero: { title: core.hero.title ?? next.hero.title, subtitle: core.hero.subtitle ?? next.hero.subtitle, button: core.hero.button ?? next.hero.button } }
+  if (core.features) next = { ...next, features: { title: core.features.title ?? next.features.title, items: core.features.items }, marquee: core.features.items.map((i) => i.title.slice(0, 16)).slice(0, 8) }
+  if (core.about) next = { ...next, about: { title: core.about.title ?? next.about.title, paragraphs: core.about.paragraphs, points: core.about.points?.length ? core.about.points : next.about.points } }
+  if (core.steps) next = { ...next, steps: { title: core.steps.title ?? next.steps.title, items: core.steps.items } }
+  if (core.faq) next = { ...next, faq: core.faq }
+  if (core.labels) next = { ...next, labels: core.labels }
+  if (core.cta) next = { ...next, cta: { title: core.cta.title ?? next.cta.title, button: core.cta.button ?? next.cta.button } }
+  return next
+}
+
 export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | undefined, currency = '$'): WebsiteContent {
   if (!edits) return content
   let next: WebsiteContent = content
+  // the texts of Core-Craft AI come first: what the person types afterwards (text, titles, services) wins over them
+  if (edits.core) next = mergeCore(next, edits.core)
   const t = edits.text
   if (t.heroTitle) next = { ...next, hero: { ...next.hero, title: t.heroTitle } }
   if (t.heroSubtitle) next = { ...next, hero: { ...next.hero, subtitle: t.heroSubtitle } }
@@ -90,7 +105,7 @@ export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | un
   if (hours) next = { ...next, hours: parseHours(hours), contact: { ...next.contact, hoursText: hours } }
   if (edits.photos) next = { ...next, photos: edits.photos }
   // new headings: the field the template reads, and `titles` for the headings that were fixed text before
-  const T = edits.titles
+  const T = { ...(edits.core?.titles ?? {}), ...edits.titles }
   if (Object.keys(T).length) {
     next = {
       ...next,
@@ -106,7 +121,8 @@ export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | un
       ...(T.contact ? { contact: { ...next.contact, title: T.contact } } : {}),
     }
   }
-  if (Object.keys(edits.navLabels).length) next = { ...next, navLabels: { ...next.navLabels, ...edits.navLabels } }
+  const NL = { ...(edits.core?.navLabels ?? {}), ...edits.navLabels }
+  if (Object.keys(NL).length) next = { ...next, navLabels: { ...next.navLabels, ...NL } }
   // the services the person listed are the feature cards; the priced ones are the price list
   if (edits.services?.length) {
     const items = edits.services

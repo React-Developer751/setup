@@ -33,6 +33,8 @@ export type WebsiteContent = {
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>
+  /** fixed words of the templates in another language (Hindi pages of Core-Craft AI) */
+  labels?: { learnMore?: string; welcome?: string }
   /** real pictures instead of the drawn ones (see edit/edits.ts) */
   photos?: { hero?: string; about?: string; gallery?: string[]; credit?: string }
   /** words for the scrolling keyword strip */

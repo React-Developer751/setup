@@ -4,6 +4,7 @@
 
 GET  /health                          -> {"ok": true, "model": true|false}
 POST /generate {"prompt", "seed"?, "n"?}  -> {"niche", "candidates": [one Core-Craft page of copy per seed]}
+POST /page {"prompt", "seed"?, "lang"?}   -> {"page": the whole page of copy (services of the prompt, place, Hindi when asked), with what to check}
 
 Only text slots are returned (no stats: Core-Craft invents numbers, this project never shows invented numbers). Pure standard library.
 """
@@ -55,7 +56,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, {"error": "not found"})
 
     def do_POST(self):
-        if self.path.split("?")[0] != "/generate":
+        route = self.path.split("?")[0]
+        if route not in ("/generate", "/page"):
             return self._send(404, {"error": "not found"})
         try:
             body = json.loads(self.rfile.read(min(int(self.headers.get("content-length") or 0), 20_000)) or b"{}")
@@ -64,8 +66,14 @@ class Handler(BaseHTTPRequestHandler):
         prompt = str(body.get("prompt", "")).strip()[:300]
         if len(prompt) < 2:
             return self._send(400, {"error": "prompt is needed"})
-        n = max(1, min(8, int(body.get("n") or 4)))
         seed = body.get("seed")
+        if route == "/page":
+            try:
+                lang = body.get("lang") if body.get("lang") in ("en", "hi") else None
+                return self._send(200, {"page": content_engine.generate_content(prompt, int(seed) if isinstance(seed, int) else 1, lang=lang)})
+            except (ValueError, KeyError) as e:
+                return self._send(422, {"error": str(e)})
+        n = max(1, min(8, int(body.get("n") or 4)))
         cands = candidates(prompt, int(seed) if isinstance(seed, int) else None, n)
         self._send(200, {"niche": cands[0]["niche"] if cands else None, "candidates": cands})
 

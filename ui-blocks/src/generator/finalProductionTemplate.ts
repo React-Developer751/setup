@@ -235,7 +235,7 @@ const heroText = ({ t, c, k, m }: Ctx, align: string, buttons: string) => `
           </p>
           <div ${k}="flex flex-wrap gap-3 ${buttons}"${m.rv('up', 3)}>
             <a href="#contact" ${k}="${t.primary_btn} ${t.radius} px-6 py-3 font-medium transition${m.fx('shimmer')}${m.fx('press')}">${esc(c.hero.button)}</a>
-            <a href="#features" ${k}="${t.secondary_btn} ${t.radius} px-6 py-3 font-medium transition${m.fx('press')}">Learn more</a>
+            <a href="#features" ${k}="${t.secondary_btn} ${t.radius} px-6 py-3 font-medium transition${m.fx('press')}">${esc(c.labels?.learnMore ?? 'Learn more')}</a>
           </div>`
 
 const heroVisual = (ctx: Ctx, order: string) => {
@@ -246,7 +246,7 @@ const heroVisual = (ctx: Ctx, order: string) => {
           <div ${k}="absolute -right-10 -top-10 size-48 rounded-full bg-white/20 blur-2xl${m.fx('float')}"></div>
           <div ${k}="absolute -bottom-12 -left-8 size-56 rounded-full bg-black/20 blur-2xl${m.fx('floatSlow')}"></div>
           <div ${k}="${t.surface} ${t.border} ${t.radius} absolute bottom-6 left-6 border px-5 py-4 shadow-xl">
-            <div ${k}="text-xs ${t.text_muted}">Welcome to</div>
+            <div ${k}="text-xs ${t.text_muted}">${esc(c.labels?.welcome ?? 'Welcome to')}</div>
             <div ${k}="text-lg font-bold ${t.text_main}">${esc(c.brandName)}</div>
           </div>
         </div>`

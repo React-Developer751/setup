@@ -34,7 +34,7 @@ export function generateSite(
   const sitePlan = {
     ...planned,
     pages: reorderPages(
-      planned.pages.map((page) => ({ ...page, label: edits?.navLabels[page.id as NavPage] ?? page.label, sections: orderLayout(page.sections, edits) })),
+      planned.pages.map((page) => ({ ...page, label: edits?.navLabels[page.id as NavPage] ?? edits?.core?.navLabels?.[page.id as NavPage] ?? page.label, sections: orderLayout(page.sections, edits) })),
       edits?.pageMoves ?? [],
     ),
   }
