@@ -39,20 +39,22 @@ const COLOR_WORDS: Record<string, number> = {
 }
 
 // 2) business clues
-const HINTS: { hue: number; label: string; words: string[] }[] = [
-  { hue: 145, label: 'greens', words: ['tea', 'leaf', 'herbal', 'organic', 'nature', 'garden', 'yoga', 'plant', 'eco', 'farm', 'vegan', 'wellness'] },
-  { hue: 28, label: 'warm browns', words: ['coffee', 'roast', 'roastery', 'chocolate', 'cocoa', 'bakery', 'bread', 'pastry', 'cafe'] },
-  { hue: 205, label: 'ocean blues', words: ['ocean', 'sea', 'water', 'marine', 'cloud', 'travel', 'swim', 'surf', 'beach'] },
-  { hue: 5, label: 'energetic reds', words: ['fire', 'boxing', 'crossfit', 'gym', 'fitness', 'energy', 'racing', 'burger', 'spicy', 'protein'] },
-  { hue: 325, label: 'playful pinks', words: ['kids', 'toys', 'toy', 'candy', 'party', 'ice', 'cream', 'circus', 'cute', 'baby'] },
-  { hue: 44, label: 'golds', words: ['jewelry', 'jewellery', 'diamond', 'watch', 'watches', 'perfume', 'wedding', 'leather', 'wallet'] },
-  { hue: 255, label: 'tech indigos', words: ['tech', 'ai', 'saas', 'crypto', 'software', 'cyber', 'code', 'data', 'startup', 'app'] },
-  { hue: 190, label: 'clinical teals', words: ['medical', 'clinic', 'health', 'dental', 'hospital', 'pharmacy', 'care'] },
-  { hue: 220, label: 'trust blues', words: ['finance', 'bank', 'legal', 'law', 'consulting', 'insurance', 'accounting'] },
-  { hue: 285, label: 'creative purples', words: ['music', 'art', 'creative', 'studio', 'photo', 'design', 'gallery'] },
-  { hue: 15, label: 'appetising oranges', words: ['food', 'restaurant', 'pizza', 'kitchen', 'grill', 'bistro', 'catering', 'sushi', 'dining'] },
-  { hue: 235, label: 'school blues', words: ['school', 'academy', 'tutor', 'tutoring', 'courses', 'course', 'learning', 'teacher', 'college'] },
-  { hue: 35, label: 'friendly oranges', words: ['pet', 'pets', 'dog', 'cat', 'plumber', 'plumbing', 'repair', 'cleaning', 'garage'] },
+const HINTS: { hue: number; label: string; words: string[]; /** half width of the band of hues, 50 by default */ half?: number }[] = [
+  { hue: 145, label: 'greens', words: ['tea', 'leaf', 'herbal', 'organic', 'nature', 'garden', 'yoga', 'plant', 'eco', 'farm', 'vegan', 'wellness', 'grocery', 'vegetable', 'vegetables', 'kirana', 'supermarket', 'nursery', 'ayurveda', 'ayurvedic'] },
+  { hue: 28, label: 'warm browns', words: ['coffee', 'roast', 'roastery', 'chocolate', 'cocoa', 'bakery', 'bread', 'pastry', 'cafe', 'furniture', 'carpenter', 'carpentry', 'wooden', 'interior', 'interiors'] },
+  { hue: 205, label: 'ocean blues', words: ['ocean', 'sea', 'water', 'marine', 'cloud', 'travel', 'swim', 'surf', 'beach', 'tour', 'tours', 'holiday', 'holidays', 'tourism', 'cruise'] },
+  { hue: 5, half: 42, label: 'energetic reds', words: ['fire', 'boxing', 'crossfit', 'gym', 'fitness', 'energy', 'racing', 'spicy', 'protein', 'trainer', 'sports', 'bodybuilding'] },
+  { hue: 335, label: 'soft pinks', words: ['cake', 'cakes', 'dessert', 'desserts', 'saree', 'sarees', 'kurti', 'boutique', 'bridal', 'makeup', 'salon', 'parlour', 'parlor', 'beauty', 'florist', 'flowers', 'gifts'] },
+  { hue: 325, label: 'playful pinks', words: ['kids', 'toys', 'toy', 'candy', 'party', 'ice', 'cream', 'circus', 'cute', 'baby', 'preschool', 'playschool'] },
+  { hue: 44, label: 'golds', words: ['jewelry', 'jewellery', 'diamond', 'watch', 'watches', 'perfume', 'wedding', 'leather', 'wallet', 'event', 'events', 'planner', 'banquet', 'astrology', 'astrologer'] },
+  { hue: 255, label: 'tech indigos', words: ['tech', 'ai', 'saas', 'crypto', 'software', 'cyber', 'code', 'data', 'startup', 'app', 'mobile', 'laptop', 'computer', 'electronics', 'gadgets', 'digital'] },
+  { hue: 190, label: 'clinical teals', words: ['medical', 'clinic', 'health', 'dental', 'hospital', 'pharmacy', 'care', 'doctor', 'physio', 'diagnostic', 'lab'] },
+  { hue: 220, label: 'trust blues', words: ['finance', 'bank', 'legal', 'law', 'lawyer', 'advocate', 'consulting', 'insurance', 'accounting', 'accountant', 'tax', 'property', 'realestate', 'builder', 'construction', 'architect', 'car', 'cars', 'showroom', 'dealer', 'motors', 'automobile'] },
+  { hue: 285, label: 'creative purples', words: ['music', 'art', 'creative', 'studio', 'photo', 'design', 'gallery', 'photographer', 'photography', 'dance'] },
+  { hue: 15, half: 42, label: 'appetising oranges', words: ['food', 'restaurant', 'kitchen', 'grill', 'bistro', 'catering', 'sushi', 'dining', 'dhaba', 'biryani', 'tandoori', 'momos', 'chaat', 'mithai', 'sweet', 'sweets', 'snacks', 'tiffin', 'bakery', 'pizza', 'pizzeria', 'burger'] },
+  { hue: 235, label: 'school blues', words: ['school', 'academy', 'tutor', 'tutoring', 'courses', 'course', 'learning', 'teacher', 'college', 'tuition', 'coaching', 'institute', 'classes', 'university', 'education', 'ielts'] },
+  { hue: 35, label: 'friendly oranges', words: ['pet', 'pets', 'dog', 'cat', 'plumber', 'plumbing', 'repair', 'cleaning', 'garage', 'electrician', 'handyman', 'laundry'] },
+  { hue: 160, label: 'caring greens', words: ['ngo', 'charity', 'foundation', 'donate', 'trust', 'volunteer'] },
 ]
 
 const HUE_NAMES: [number, string][] = [
@@ -66,6 +68,8 @@ const HARMONIES = [
   { name: 'triad', offset: 120 },
   { name: 'split-complementary', offset: 150 },
 ] as const
+
+const FORMULA_HARMONIES = HARMONIES.filter((h) => h.name === 'analogous' || h.name === 'complementary')
 
 // ───────────── colour maths ─────────────
 const wrap = (hue: number) => ((hue % 360) + 360) % 360
@@ -104,7 +108,7 @@ function hueName(hue: number) {
 }
 
 // ───────────── the brain ─────────────
-function chooseHue(prompt: string, theme: ThemeKey, rand: () => number) {
+function chooseHue(prompt: string, theme: ThemeKey, rand: () => number, band?: HueBand) {
   const words = prompt.toLowerCase().split(/[^a-z]+/).filter(Boolean)
 
   const named = words.find((w) => w in COLOR_WORDS)
@@ -115,7 +119,7 @@ function chooseHue(prompt: string, theme: ThemeKey, rand: () => number) {
   if (rand() < 0.4) {
     // lively, but still a hue the business type can wear (a jewellery shop in lime was the case that showed it): within 70 degrees of the theme's own range
     const [low, high] = MOODS[theme].range
-    const fits = LIVELY.filter((h) => hueGap(h, (low + high) / 2) <= (high - low) / 2 + 70)
+    const fits = band ? LIVELY.filter((h) => inBand(h, band)) : LIVELY.filter((h) => hueGap(h, (low + high) / 2) <= (high - low) / 2 + 70)
     const pool = fits.length ? fits : LIVELY
     const hue = pool[Math.floor(rand() * pool.length)]
     return { hue: wrap(hue + Math.round((rand() - 0.5) * 24)), reason: 'a lively hue chosen for this site, so no two sites look alike' }
@@ -204,11 +208,13 @@ function fitness(g: Genome, mood: Mood): number {
   return (valid ? 0.4 : 0) + 0.2 * gapScore + 0.15 * moodScore + 0.25 * novelty - muddy(g.hue) - muddy(g.altHue) * 0.5 - neon
 }
 
-export function evolvePalette(theme: ThemeKey, rand: () => number, temp: number, generations = 5): ColorPlan {
+export function evolvePalette(theme: ThemeKey, rand: () => number, temp: number, generations = 5, band?: HueBand): ColorPlan {
   const mood = MOODS[theme]
   const [low, high] = mood.range
+  // the hue stays in the band of the business
+  const inside = (h: number) => (band && !inBand(h, band) ? (hueGapOf(h, band.lo) < hueGapOf(h, band.hi) ? band.lo : band.hi) : h)
   const randomGenome = (): Genome => {
-    const hue = wrap(low - 40 + rand() * (high - low + 80))
+    const hue = wrap(band ? band.lo + rand() * (band.hi - band.lo) : low - 40 + rand() * (high - low + 80))
     return { hue, altHue: wrap(hue + (rand() < 0.5 ? 25 + rand() * 30 : 120 + rand() * 60) * (rand() < 0.5 ? 1 : -1)), sat: mood.saturation - 12 + rand() * 24, light: mood.accentLight - 6 + rand() * 12 }
   }
   const pool = curatedFor(theme)
@@ -217,7 +223,7 @@ export function evolvePalette(theme: ThemeKey, rand: () => number, temp: number,
     ...Array.from({ length: 12 }, randomGenome),
   ].slice(0, 12)
   const mutate = (g: Genome): Genome => ({
-    hue: wrap(g.hue + (rand() - 0.5) * 70),
+    hue: wrap(inside(wrap(g.hue + (rand() - 0.5) * 70))),
     altHue: wrap(g.altHue + (rand() - 0.5) * 50),
     sat: clamp(g.sat + (rand() - 0.5) * 20, 40, 92),
     light: clamp(g.light + (rand() - 0.5) * 10, 28, 50),
@@ -256,20 +262,43 @@ export function evolvePalette(theme: ThemeKey, rand: () => number, temp: number,
 
 export type ColorPlan = { palette: Palette; hue: number; harmony: string; reasons: string[] }
 
+/** the hues a business may wear: the hint of its words (a pizza shop is red-orange, a school blue), else the range of its business type, widened a little */
+export type HueBand = { lo: number; hi: number; source: string }
+export function allowedBand(prompt: string, theme: ThemeKey): HueBand {
+  const words = prompt.toLowerCase().split(/[^a-z]+/).filter(Boolean)
+  const hits = HINTS.map((hint) => ({ hint, n: words.filter((w) => hint.words.includes(w)).length })).filter((x) => x.n)
+  if (hits.length) {
+    const best = hits.reduce((a, b) => (b.n > a.n ? b : a)).hint
+    const half = best.half ?? 50
+    return { lo: best.hue - half, hi: best.hue + half, source: best.label }
+  }
+  const [low, high] = MOODS[theme].range
+  return { lo: low - 35, hi: high + 35, source: `${theme.replace(/_/g, ' ')} range` }
+}
+export function inBand(hue: number, band: HueBand): boolean {
+  const mid = (band.lo + band.hi) / 2
+  return hueGapOf(hue, mid) <= (band.hi - band.lo) / 2
+}
+const hueGapOf = (a: number, b: number) => {
+  const d = Math.abs(((a % 360) + 360) % 360 - (((b % 360) + 360) % 360))
+  return d > 180 ? 360 - d : d
+}
+
 /** how often the premium set is used: always a part of the sites, most of the premium ones (the normal colours stay beside it) */
 const PREMIUM_SHARE: Record<Tier, number> = { normal: 0.2, better: 0.4, premium: 0.7 }
 
 /** the prompt names a colour ("red", "gold"): that is the person's choice */
 export const namesColor = (prompt: string): boolean => prompt.toLowerCase().split(/[^a-z]+/).some((w) => w in COLOR_WORDS)
 
-export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number, tier: Tier = 'normal'): ColorPlan {
+function thinkOnce(prompt: string, theme: ThemeKey, rand: () => number, tier: Tier, band: HueBand | undefined, formulaOnly = false): ColorPlan {
   const mood = MOODS[theme]
   // a colour named in the prompt always wins; otherwise most sites get a hand-picked pair of colours (curatedPalettes.ts), the formula is the rest
   const named = prompt.toLowerCase().split(/[^a-z]+/).some((w) => w in COLOR_WORDS)
   // the premium set: a deep main colour with a metal or a soft neutral, on a calm page (premiumPalettes.ts)
   const premiumRoll = rand()
-  if (!named && premiumRoll < PREMIUM_SHARE[tier]) {
-    const options = premiumFor(theme, prompt)
+  if (!named && !formulaOnly && premiumRoll < PREMIUM_SHARE[tier]) {
+    const all = premiumFor(theme, prompt)
+    const options = band ? all.filter((o) => inBand(hexToHsl(o.palette.accent).h, band)) : all
     if (options.length) {
       let at = rand() * options.reduce((sum, o) => sum + o.weight, 0)
       const chosen = options.find((o) => (at -= o.weight) <= 0)?.palette ?? options[0].palette
@@ -284,9 +313,11 @@ export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number,
   }
   const temp = temperature()
   // the higher the creativity, the more often the colours are evolved instead of taken from the hand-picked list
-  if (!named && rand() < 0.65 * temp) return evolvePalette(theme, rand, temp)
-  const pool = curatedFor(theme)
-  if (!named && pool.length && rand() < 0.8) {
+  if (!named && !formulaOnly && rand() < 0.65 * temp) return evolvePalette(theme, rand, temp, 5, band)
+  const allCurated = curatedFor(theme)
+  const fitted = band ? allCurated.filter((p) => inBand(hexToHsl(p.accent).h, band)) : allCurated
+  const pool = fitted.length ? fitted : allCurated
+  if (!named && !formulaOnly && pool.length && rand() < 0.8) {
     const pick = pool[Math.floor(rand() * pool.length)]
     const a = hexToHsl(pick.accent)
     const b = hexToHsl(pick.alt)
@@ -304,9 +335,13 @@ export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number,
       reasons: [`hand-picked colours "${pick.name}" (${hueName(a.h)} with ${hueName(b.h)}), chosen for a ${theme.replace(/_/g, ' ')} site`, `${defaultMode(theme)} first, contrast checked (WCAG AA) in both modes`],
     }
   }
-  const { hue, reason } = chooseHue(prompt, theme, rand)
-  const harmony = HARMONIES[Math.floor(rand() * HARMONIES.length)]
-  const altHue = wrap(hue + harmony.offset)
+  const chosen = chooseHue(prompt, theme, rand, band)
+  // a hue the business can wear: the jitter or a lively hue may have left its band, then it is brought back to the nearest edge
+  const hue = band && !inBand(chosen.hue, band) ? (hueGapOf(chosen.hue, band.lo) < hueGapOf(chosen.hue, band.hi) ? band.lo : band.hi) : chosen.hue
+  const reason = chosen.reason
+  // the second colour: a neighbour or the opposite (a triad or a split next to a loud colour is the pink-and-green of a Christmas card)
+  const harmony = FORMULA_HARMONIES[Math.floor(rand() * FORMULA_HARMONIES.length)]
+  const altHue = wrap(hue + harmony.offset * (harmony.offset < 180 && rand() < 0.5 ? -1 : 1))
   const name = `${hueName(hue)} + ${hueName(altHue)} (${harmony.name})`
 
   return {
@@ -394,4 +429,18 @@ export function recolor(palette: Palette, theme: ThemeKey, change: PaletteChange
   }
   next.name = `${hueName(hue)} + ${hueName(altHue)} (edited)`
   return next
+}
+
+/**
+ * The colours of a site. A business wears the hues that suit it (allowedBand): the brain thinks again until the main colour is one of them, so
+ * a pizza shop is never purple and a school never neon pink, whatever the creativity; inside the band every site still gets its own colours.
+ * A colour named in the prompt is the person's choice and needs no band.
+ */
+export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number, tier: Tier = 'normal'): ColorPlan {
+  if (namesColor(prompt)) return thinkOnce(prompt, theme, rand, tier, undefined)
+  const band = allowedBand(prompt, theme)
+  let plan = thinkOnce(prompt, theme, rand, tier, band)
+  for (let attempt = 0; attempt < 10 && !inBand(hexToHsl(plan.palette.light.accent).h, band); attempt += 1) plan = thinkOnce(prompt, theme, rand, tier, band)
+  // nothing fitted in ten tries: the formula, which brings its hue into the band itself
+  return inBand(hexToHsl(plan.palette.light.accent).h, band) ? plan : thinkOnce(prompt, theme, rand, tier, band, true)
 }

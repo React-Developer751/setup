@@ -247,7 +247,8 @@ export function moodFromText(text: string): Mood | undefined {
 const PROMPT_LOOK: { words: RegExp; suit: MoodId[]; avoid: MoodId[] }[] = [
   { words: /(?<![a-z])(?:yoga|spa|meditation|wellness|ayurved\w*|clinic|dental|dentist|hospital|doctor|therapy|physio\w*|pharmacy|salon|skincare|beauty)(?![a-z])/i, suit: ['soft-neo', 'minimal-light', 'editorial', 'glass'], avoid: ['cyberpunk', 'bold-contrast', 'retro'] },
   { words: /(?<![a-z])(?:wedding|bridal|bride|jewel\w*|boutique|couture|fashion|perfume|watch|luxury)(?![a-z])/i, suit: ['luxe-dark', 'editorial', 'minimal-light'], avoid: ['cyberpunk', 'playful-pop', 'bold-contrast'] },
-  { words: /(?<![a-z])(?:kids?|child\w*|toys?|school|nursery|daycare|playschool|pets?|dogs?|cats?|puppy|candy|ice\s*cream)(?![a-z])/i, suit: ['playful-pop', 'soft-neo'], avoid: ['cyberpunk', 'luxe-dark', 'minimal-dark'] },
+  { words: /(?<![a-z])(?:kids?|child\w*|toys?|nursery|daycare|playschool|preschool|pets?|dogs?|cats?|puppy|candy|ice\s*cream)(?![a-z])/i, suit: ['playful-pop', 'soft-neo'], avoid: ['cyberpunk', 'luxe-dark', 'minimal-dark'] },
+  { words: /(?<![a-z])(?:school|tuition|coaching|institute|academy|college|classes|university|ielts|courses?)(?![a-z])/i, suit: ['minimal-light', 'soft-neo', 'editorial', 'glass'], avoid: ['cyberpunk', 'bold-contrast', 'retro', 'luxe-dark', 'playful-pop'] },
   { words: /(?<![a-z])(?:gym|fitness|crossfit|boxing|sports?|cricket|football|martial|bike|motorcycle|garage|automotive|racing)(?![a-z])/i, suit: ['cyberpunk', 'bold-contrast', 'minimal-dark'], avoid: ['soft-neo', 'editorial'] },
   { words: /(?<![a-z])(?:tech|software|saas|startup|app|ai|crypto|gaming|games?|cyber|developer|coding)(?![a-z])/i, suit: ['cyberpunk', 'glass', 'minimal-dark', 'minimal-light'], avoid: ['retro', 'playful-pop'] },
   { words: /(?<![a-z])(?:law|lawyer|legal|advocate|attorney|consult\w*|accountant|finance|insurance|bank|ca\s+firm|tax)(?![a-z])/i, suit: ['editorial', 'minimal-light', 'minimal-dark'], avoid: ['playful-pop', 'cyberpunk', 'bold-contrast'] },
@@ -259,6 +260,8 @@ const PROMPT_LOOK: { words: RegExp; suit: MoodId[]; avoid: MoodId[] }[] = [
  * The mood of a site: the one named in the prompt, else one that suits the business type, chosen among the best few by the creativity temperature
  * (safe = none, the business type's own look; balanced = a mood most of the time; wild = always a mood).
  */
+const LOUD_MOODS = new Set<MoodId>(['cyberpunk', 'bold-contrast', 'playful-pop', 'retro'])
+
 export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, temp: number): Mood | undefined {
   const named = moodFromText(prompt)
   if (named) return named
@@ -268,7 +271,11 @@ export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, 
   const look = PROMPT_LOOK.filter((l) => l.words.test(prompt))
   const slices = MOODS.map((m) => {
     let w = (0.06 + (m.affinity[theme] ?? 0) / 3) ** (1 / (0.25 + temp))
+    // a mood the business type has no affinity with (cyberpunk for a school, retro for a clinic) is rare, even when the creativity is high
+    if ((m.affinity[theme] ?? 0) < 2) w *= 0.1
     for (const l of look) w *= l.suit.includes(m.id) ? 3 : l.avoid.includes(m.id) ? 0.04 : 1
+    // the loud moods need a reason in the words (a gym, a toy shop, a game): a plain "portfolio" or "school" gets a calm look, unless the creativity is wild
+    if (LOUD_MOODS.has(m.id) && temp < 0.8 && !look.some((l) => l.suit.includes(m.id))) w *= 0.12
     return { mood: m, weight: w }
   })
   let pick = rand() * slices.reduce((a, b) => a + b.weight, 0)

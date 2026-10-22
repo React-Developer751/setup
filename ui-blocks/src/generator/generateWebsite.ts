@@ -114,8 +114,10 @@ export function planWebsite(
   const basePalette = colors?.palette ?? presetPalette(themeKey, paletteIndex)
   const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name, colors?.harmony === 'curated' || colors?.harmony === 'premium') : undefined
   // the colours of the brain and of the moods are checked as a pair: no neon second colour, no two loud colours of one lightness (colorHarmony.ts); what the person chooses afterwards is theirs
-  const generated = premiumColours && !askedMood ? basePalette : (moodMade?.palette ?? basePalette)
-  const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
+  const trustedPair = colors?.harmony === 'curated' || colors?.harmony === 'premium'
+  // a designer's pair keeps its own second colour inside a mood (a charcoal second colour must not turn into the mood's blue)
+  const generated = premiumColours && !askedMood ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
+  const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
 
   // the motion brain has its own seeded stream too; some motion needs its own sections
   const motion = thinkMotion(themeKey, tier, edits?.motion ?? motionSetting, seededRandom(hash(`${prompt.toLowerCase()}|motion|${variation}`)))

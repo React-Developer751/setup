@@ -142,6 +142,38 @@ for (let i = 0; i < 24; i += 1) {
 }
 ok(limeDesigns <= 1, `24 designs of one jewellery shop, each with a new colour: at most one yellow-green (${limeDesigns})`)
 
+// ── what a normal person types: short, vague, Hinglish. The colours must still suit the business and make a pair.
+const hueIn = (h, lo, hi) => { const x = ((h % 360) + 360) % 360; const a = ((lo % 360) + 360) % 360; const b = ((hi % 360) + 360) % 360; return a <= b ? x >= a && x <= b : x >= a || x <= b }
+const people = [
+  ['pizza shop', 320, 70], ['mera restaurant ka website banao', 320, 80], ['restaurant website', 320, 80], ['bakery', 320, 80], ['mithai ki dukaan', 320, 80], ['cafe', 330, 90],
+  ['school website', 170, 290], ['tuition classes', 170, 290], ['coaching institute', 170, 290], ['hospital website', 130, 235], ['dental clinic', 130, 235], ['yoga', 90, 200],
+  ['gym', 320, 70], ['personal trainer', 320, 70], ['online grocery', 90, 200], ['ngo website', 110, 210], ['law firm', 170, 290], ['real estate agent', 170, 290], ['car showroom', 170, 290],
+  ['mobile shop', 190, 310], ['ai startup landing page', 190, 300], ['clothing store', 280, 70], ['wedding planner', 280, 80], ['furniture shop', 320, 80], ['travel agency', 150, 260], ['salon', 280, 40],
+  ['hotel', 130, 260], ['photographer portfolio', 190, 330], ['digital marketing agency', 190, 300], ['plumber', 335, 80],
+]
+const calmBad = new Set(['cyberpunk', 'bold-contrast', 'retro', 'playful-pop'])
+const wrongHue = []
+const badPair = []
+let loudMood = 0
+let runs = 0
+for (const [text, lo, hi] of people) {
+  for (let v = 1; v <= 14; v += 1) {
+    runs += 1
+    const s = generateWebsite(text, v * 71)
+    const a = hexToHsl(s.palette.light.accent)
+    if (!hueIn(a.h, lo - 8, hi + 8) && a.s > 20) wrongHue.push(`${text}: ${Math.round(a.h)} (${s.palette.name.slice(0, 30)})`)
+    for (const mode of ['light', 'dark']) if (pairIssues(s.palette[mode].accent, s.palette[mode].alt).length) badPair.push(`${text} ${mode}`)
+    if (s.mood && calmBad.has(s.mood.id) && /tuition|coaching|hospital|dental|law|real estate|bank|ngo|hotel|plumber|grocery|furniture|clinic/.test(text)) loudMood += 1
+  }
+}
+ok(wrongHue.length === 0, `${runs} sites from everyday prompts: every main colour suits its business (${wrongHue.length} off: ${wrongHue.slice(0, 3).join(' | ')})`)
+ok(badPair.length === 0, `and every pair of colours is clean (${badPair.length})`)
+ok(loudMood === 0, `a tuition centre, clinic, law firm or hotel never gets cyberpunk, bold, retro or playful looks from a plain prompt (${loudMood})`)
+// a plain prompt without a business: still a calm, readable result
+let vague = 0
+for (const text of ['make a website', 'website for my shop', 'portfolio website', 'mujhe apni dukaan ki website banani hai', 'simple website']) for (let v = 1; v <= 12; v += 1) { const s = generateWebsite(text, v * 43); if (!(s.mood && calmBad.has(s.mood.id)) && pairIssues(s.palette.light.accent, s.palette.light.alt).length === 0) vague += 1 }
+ok(vague >= 55, `vague prompts ("make a website", "website for my shop") give clean calm designs in most cases (${vague} of 60)`)
+
 // ── palettes added to the database join the set
 const before = P.premiumSet().length
 ok(P.registerPremium([{ id: 'x1', name: 'Test Palette', accent: '#224466', alt: '#ccbb99', neutral: 'sand', themes: ['food_dining'], tags: ['cafe'] }]) === 1, 'a good palette is added')

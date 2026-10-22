@@ -102,9 +102,22 @@ function harmoniseMode(m: PaletteMode, mode: 'light' | 'dark'): PaletteMode {
   return { ...m, accent, alt: repairAlt(accent, m.alt, mode, m.bg) }
 }
 
+/** the second hue of a computed pair: a neighbour (about 30 degrees) or the opposite, never the awkward third of the wheel between them (pink with green, red with olive) */
+function rotateAlt(m: PaletteMode): PaletteMode {
+  const a = hexToHsl(m.accent)
+  const b = hexToHsl(m.alt)
+  const gap = hueGap(a.h, b.h)
+  if (gap <= 50 || gap >= 160 || b.s < 25) return m
+  const sign = wrap(b.h - a.h) < 180 ? 1 : -1
+  // the nearer of the two good places
+  const target = gap < 105 ? wrap(a.h + sign * 35) : wrap(a.h + sign * 180)
+  return { ...m, alt: hslToHex(target, b.s, b.l) }
+}
+
 /** a palette whose pairs of colours are repaired (light and dark mode each) */
-export function harmonisePalette(palette: Palette, options: { theme?: string; keepHue?: boolean } = {}): Palette {
+export function harmonisePalette(palette: Palette, options: { theme?: string; keepHue?: boolean; /** a pair chosen by a designer (curated, premium) keeps its second hue */ trusted?: boolean } = {}): Palette {
   let source = palette
+  if (!options.trusted) source = { ...palette, light: rotateAlt(palette.light), dark: rotateAlt(palette.dark) }
   // yellow-green is moved to gold or emerald for the business types that want calm colours (not when the person named a colour)
   if (!options.keepHue && options.theme && avoidsLime(options.theme) && (inLimeBand(palette.light.accent) || inLimeBand(palette.dark.accent))) {
     const move = (m: PaletteMode): PaletteMode => {
@@ -121,6 +134,18 @@ export function harmonisePalette(palette: Palette, options: { theme?: string; ke
       return { ...m, accent, alt: a.s > 35 && a.h >= LIME_BAND[0] && a.h <= LIME_BAND[1] ? hslToHex(outOfLime(a.h), a.s, a.l) : m.alt }
     }
     source = { ...palette, light: move(palette.light), dark: move(palette.dark) }
+  }
+  // the second colour in yellow-green is moved the same way (a retro bakery with a lime second colour was the case that showed it)
+  if (!options.keepHue && options.theme && avoidsLime(options.theme)) {
+    const fixAlt = (m: PaletteMode): PaletteMode => {
+      const b = hexToHsl(m.alt)
+      if (!(b.s > 35 && b.h >= LIME_BAND[0] && b.h <= LIME_BAND[1])) return m
+      const accentHue = hexToHsl(m.accent).h
+      const gold = hueGap(46, accentHue)
+      const green = hueGap(150, accentHue)
+      return { ...m, alt: hslToHex(gold <= green ? 46 : 150, Math.min(b.s, 56), b.l) }
+    }
+    source = { ...source, light: fixAlt(source.light), dark: fixAlt(source.dark) }
   }
   return { ...source, light: harmoniseMode(source.light, 'light'), dark: harmoniseMode(source.dark, 'dark') }
 }

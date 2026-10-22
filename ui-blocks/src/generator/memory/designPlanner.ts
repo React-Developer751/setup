@@ -6,6 +6,7 @@ import { sampleTopK } from '../creativity'
 import { generateWebsite } from '../generateWebsite'
 import { businessKey } from '../edit/imageRatings'
 import { analyse, hueGap, hueName, minGapFor, nearestFreeHue, tasteScore, type Candidate, type Insights } from './designMemory'
+import { allowedBand, inBand, namesColor } from '../colorBrain'
 import { loadServerPalettes } from '../premiumPalettes'
 import { avoidsLime, LIME_BAND, pairScore } from '../colorHarmony'
 import { copyFactor, copyOf, fitsBusiness, type PhraseScores } from './phraseScores'
@@ -74,9 +75,15 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
   // a design whose colour was already made keeps its look but gets the nearest colour that is new (the colour of a design is an edit like any other)
   let gap = minGapFor(insights.seenHues.length)
   const toHex = (h: number, sat: number, light: number) => `#${hslToRgb(h, sat, light).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`
+  // the hues the business may wear (a pizza shop is never moved to purple to make its colour new); only when the band is full are others allowed
+  let useBand = !namesColor(prompt)
   const evaluate = (g: number) => made.flatMap((record) => {
     const free = nearestFreeHue(record.hue, insights.seenHues, g, 180)
     if (free === undefined || insights.seenAccents.has(record.accent)) return []
+    // (a colour of the band that is hardly different from a turned-down one is worth less than a different one outside it: below a 14 degree gap the band is let go)
+    if (useBand && g >= 14 && !inBand(free, allowedBand(prompt, record.theme as never))) return []
+    // a hue the person turned down is not chosen again, not even a near neighbour
+    if (insights.badHues.some((h) => hueGap(h, free) < 12)) return []
     // a business that wants calm colours is not moved into yellow-green to make its colour new
     if (shiftedIntoLime(free, record)) return []
     const shifted = hueGap(free, record.hue) > 0
@@ -95,6 +102,15 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
   while (!scored.length && gap > 1) {
     gap = Math.max(1, Math.floor(gap / 2))
     scored = evaluate(gap)
+  }
+  if (!scored.length && useBand) {
+    useBand = false
+    gap = minGapFor(insights.seenHues.length)
+    scored = evaluate(gap)
+    while (!scored.length && gap > 1) {
+      gap = Math.max(1, Math.floor(gap / 2))
+      scored = evaluate(gap)
+    }
   }
   const fresh = scored.filter((s) => !s.shifted)
   // designs with a text that people sent back are dropped as long as other designs are left
