@@ -85,6 +85,10 @@ ok(/Pune/.test(pest.hero.subtitle) && pest.hero.subtitle.length <= 175, 'a niche
 ok(!pest.features.items.some((f) => /24x7|free inspection/i.test(f.title)), 'promises are not turned into services')
 ok(pest.faq.some((q) => /free/i.test(q.q)), 'the free inspection is a question')
 
+// the business of the prompt decides the niche, the services it lists do not ("salon ... with haircut, facial and bridal makeup" is a salon, not a bridal makeup artist)
+ok(generateWebsite('salon called Glow Up in Lucknow with haircut, facial and bridal makeup', 3).niche === 'hair_salon_spa', 'a salon that also does bridal makeup is still a salon')
+ok(generateWebsite('bridal makeup artist called Glow in Lucknow', 3).niche === 'bridal_makeup', 'a bridal makeup artist is still one')
+
 // names with "and": the whole name is kept
 const { extractContentDetails } = await loadGeneratorModule('filter.ts')
 for (const [prompt, name] of [['Create a website for a law firm called Rao and Partners in Delhi', 'Rao and Partners'], ['cafe called Tom and Jerry Cafe in Pune', 'Tom and Jerry Cafe'], ['bakery called Sweet and Salty', 'Sweet and Salty'], ['gym called Iron House and open 24x7', 'Iron House']]) {
