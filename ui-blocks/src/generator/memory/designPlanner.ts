@@ -6,6 +6,8 @@ import { sampleTopK } from '../creativity'
 import { generateWebsite } from '../generateWebsite'
 import { businessKey } from '../edit/imageRatings'
 import { analyse, hueGap, hueName, minGapFor, nearestFreeHue, tasteScore, type Candidate, type Insights } from './designMemory'
+import { loadServerPalettes } from '../premiumPalettes'
+import { avoidsLime, LIME_BAND, pairScore } from '../colorHarmony'
 import { copyFactor, copyOf, fitsBusiness, type PhraseScores } from './phraseScores'
 import { newId, type DesignRecord, type DesignStore } from './designStore'
 
@@ -23,8 +25,9 @@ export type DesignPlan = {
 }
 
 const CANDIDATES = 16
+const shiftedIntoLime = (hue: number, record: DesignRecord) => avoidsLime(record.theme) && hue >= LIME_BAND[0] && hue <= LIME_BAND[1] && Math.round(record.hue) !== Math.round(hue)
 
-const kindOf = (name: string) => (/evolved/.test(name) ? 'evolved' : / \+ /.test(name) ? 'formula' : 'curated')
+const kindOf = (name: string) => (/\(premium\)/.test(name) ? 'premium' : /evolved/.test(name) ? 'evolved' : / \+ /.test(name) ? 'formula' : 'curated')
 
 /** the features of the design that a prompt and a variation give (the colours, the layout, the first line) */
 export function describeDesign(prompt: string, variation: number, creativity: string, group: string): DesignRecord {
@@ -61,6 +64,8 @@ export function describeDesign(prompt: string, variation: number, creativity: st
 export async function planDesign(prompt: string, store: DesignStore, options: { group: string; creativity: string; temperature: number; rand?: () => number; candidates?: number; /** what people said about the texts (phraseScores.ts): texts they sent back are left out, texts they kept are preferred */ phrases?: PhraseScores }): Promise<DesignPlan> {
   const rand = options.rand ?? Math.random
   const key = businessKey(prompt)
+  // the palettes people added to the database are part of the premium set
+  await loadServerPalettes()
   const all = await store.list().catch(() => [] as DesignRecord[])
   const insights = analyse(all, key)
   // the hues of the other businesses made lately count a little too: two sites in a row should not look alike
@@ -72,6 +77,8 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
   const evaluate = (g: number) => made.flatMap((record) => {
     const free = nearestFreeHue(record.hue, insights.seenHues, g, 180)
     if (free === undefined || insights.seenAccents.has(record.accent)) return []
+    // a business that wants calm colours is not moved into yellow-green to make its colour new
+    if (shiftedIntoLime(free, record)) return []
     const shifted = hueGap(free, record.hue) > 0
     const moved = hueGap(free, record.hue)
     const design = shifted ? { ...record, hue: free, accent: toHex(free, Math.min(record.sat, 62), Math.max(record.light, 36)), paletteName: `${hueName(free)} (recoloured from ${record.paletteName})` } : record
@@ -80,7 +87,7 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
     // a design that needed no change is worth a little more than one that was recoloured; far from the other businesses made lately, a little more
     // the texts of the design: sent back by people (score under 7) it is mostly left out, kept by people it is preferred
     const words = options.phrases ? copyFactor(options.phrases, record.niche || record.theme, record.copy) : { factor: 1, dropped: [] as string[] }
-    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor * (record.fit === false ? 0.75 : 1))
+    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor * (record.fit === false ? 0.75 : 1) * pairScore(design.accent, design.alt))
     return [{ record: design, shifted, score, dropped: words.dropped }]
   })
   let scored = evaluate(gap)

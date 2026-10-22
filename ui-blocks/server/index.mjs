@@ -4,6 +4,7 @@
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
 // GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
 // GET/POST /api/edit-log, POST /api/edit-log/undo -> the chat commands and which ones were undone;  GET/POST /api/image-ratings -> picture thumbs shared by all browsers
+// GET/POST /api/palettes -> premium colour palettes that people add (on top of src/data/premiumPalettes.json)
 // GET/POST /api/phrase-events -> what people say and do about the texts of the sites (the content AI's phrase scores)
 // GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
 // GET  /api/health    -> { ok, ai }
@@ -300,6 +301,29 @@ export const server = http.createServer(async (req, res) => {
         target.undone = true
         writeAll(rows)
         return send(res, 200, { ok: true })
+      }
+    }
+    // the premium colour set: palettes that people add join the ones shipped with the generator (src/data/premiumPalettes.json); the page reads them at start
+    if (url.pathname === '/api/palettes') {
+      const file = path.join(DATA, 'premium-palettes.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      if (req.method === 'GET') return send(res, 200, { palettes: readAll().slice(-500) })
+      if (req.method === 'POST') {
+        const r = JSON.parse(await readBody(req))
+        const text = (v, n) => String(v ?? '').replace(/\p{Cc}+/gu, ' ').trim().slice(0, n)
+        const hex = (v) => (/^#[0-9a-f]{6}$/i.test(String(v)) ? String(v).toLowerCase() : '')
+        const NEUTRALS = ['ivory', 'pearl', 'sand', 'mist', 'blush', 'graphite']
+        const THEMES = ['any', 'modern_tech', 'organic_nature', 'luxury_minimal', 'playful_vibrant', 'bold_fitness', 'professional_services', 'healthcare', 'food_dining', 'education', 'creative_studio', 'general_business', 'real_estate', 'travel_tourism', 'automotive', 'beauty_wellness', 'events_wedding', 'pets_animals', 'fashion_retail', 'home_services', 'nonprofit']
+        const name = text(r.name, 40)
+        if (name.length < 3 || !hex(r.accent) || !hex(r.alt) || !NEUTRALS.includes(r.neutral)) return send(res, 400, { error: 'name (3-40 letters), accent and alt (#rrggbb) and neutral (ivory, pearl, sand, mist, blush or graphite) are needed' })
+        const id = text(r.id, 40).toLowerCase().replace(/[^a-z0-9-]+/g, '-') || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`
+        const rows = readAll()
+        if (rows.some((x) => x.id === id)) return send(res, 409, { error: 'a palette with this id exists' })
+        const palette = { id, name, accent: hex(r.accent), alt: hex(r.alt), neutral: r.neutral, themes: Array.isArray(r.themes) && r.themes.length ? r.themes.filter((t) => THEMES.includes(t)).slice(0, 8) : ['any'], tags: Array.isArray(r.tags) ? r.tags.map((t) => text(t, 20).toLowerCase()).filter(Boolean).slice(0, 8) : [] }
+        if (!palette.themes.length) palette.themes = ['any']
+        fs.mkdirSync(DATA, { recursive: true })
+        fs.appendFileSync(file, `${JSON.stringify(palette)}\n`)
+        return send(res, 200, { ok: true, id })
       }
     }
     // what people say and do about the texts of the sites (headlines, buttons ...): one line per event, the page folds them into a score per phrase

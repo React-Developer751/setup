@@ -10,6 +10,8 @@
 import { CURATED, curatedFor } from './curatedPalettes'
 import { sampleTopK, temperature } from './creativity'
 import { fromKits } from './kits'
+import { premiumFor, premiumToPalette } from './premiumPalettes'
+import type { Tier } from './designBrain'
 import { defaultMode, type ColorMode, type Palette, type PaletteMode, type ThemeKey } from './themes'
 
 export type Mood = { range: [number, number]; saturation: number; neutralSaturation: number; accentLight: number; accentDark: number }
@@ -111,7 +113,11 @@ function chooseHue(prompt: string, theme: ThemeKey, rand: () => number) {
   // not every bakery is brown: four times in ten the business clue is dropped for one of the lively hues, so each site gets its own colours
   const LIVELY = [345, 330, 285, 262, 245, 205, 165, 25, 5, 150]
   if (rand() < 0.4) {
-    const hue = LIVELY[Math.floor(rand() * LIVELY.length)]
+    // lively, but still a hue the business type can wear (a jewellery shop in lime was the case that showed it): within 70 degrees of the theme's own range
+    const [low, high] = MOODS[theme].range
+    const fits = LIVELY.filter((h) => hueGap(h, (low + high) / 2) <= (high - low) / 2 + 70)
+    const pool = fits.length ? fits : LIVELY
+    const hue = pool[Math.floor(rand() * pool.length)]
     return { hue: wrap(hue + Math.round((rand() - 0.5) * 24)), reason: 'a lively hue chosen for this site, so no two sites look alike' }
   }
 
@@ -250,10 +256,32 @@ export function evolvePalette(theme: ThemeKey, rand: () => number, temp: number,
 
 export type ColorPlan = { palette: Palette; hue: number; harmony: string; reasons: string[] }
 
-export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number): ColorPlan {
+/** how often the premium set is used: always a part of the sites, most of the premium ones (the normal colours stay beside it) */
+const PREMIUM_SHARE: Record<Tier, number> = { normal: 0.2, better: 0.4, premium: 0.7 }
+
+/** the prompt names a colour ("red", "gold"): that is the person's choice */
+export const namesColor = (prompt: string): boolean => prompt.toLowerCase().split(/[^a-z]+/).some((w) => w in COLOR_WORDS)
+
+export function thinkColors(prompt: string, theme: ThemeKey, rand: () => number, tier: Tier = 'normal'): ColorPlan {
   const mood = MOODS[theme]
   // a colour named in the prompt always wins; otherwise most sites get a hand-picked pair of colours (curatedPalettes.ts), the formula is the rest
   const named = prompt.toLowerCase().split(/[^a-z]+/).some((w) => w in COLOR_WORDS)
+  // the premium set: a deep main colour with a metal or a soft neutral, on a calm page (premiumPalettes.ts)
+  const premiumRoll = rand()
+  if (!named && premiumRoll < PREMIUM_SHARE[tier]) {
+    const options = premiumFor(theme, prompt)
+    if (options.length) {
+      let at = rand() * options.reduce((sum, o) => sum + o.weight, 0)
+      const chosen = options.find((o) => (at -= o.weight) <= 0)?.palette ?? options[0].palette
+      const palette = premiumToPalette(chosen)
+      return {
+        hue: Math.round(hexToHsl(chosen.accent).h),
+        harmony: 'premium',
+        palette,
+        reasons: [`premium colours "${chosen.name}" (${hueName(hexToHsl(chosen.accent).h)} with ${hueName(hexToHsl(chosen.alt).h)}) on a calm ${chosen.neutral} page`, `${defaultMode(theme)} first, contrast checked (WCAG AA) in both modes`],
+      }
+    }
+  }
   const temp = temperature()
   // the higher the creativity, the more often the colours are evolved instead of taken from the hand-picked list
   if (!named && rand() < 0.65 * temp) return evolvePalette(theme, rand, temp)

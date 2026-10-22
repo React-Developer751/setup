@@ -1,0 +1,664 @@
+[
+ {
+  "id": "ink-gold",
+  "name": "Ink and Gold",
+  "accent": "#8c6d1f",
+  "alt": "#1f2937",
+  "neutral": "ivory",
+  "themes": [
+   "luxury_minimal",
+   "real_estate",
+   "professional_services"
+  ],
+  "tags": [
+   "jewellery",
+   "watch",
+   "law",
+   "finance"
+  ]
+ },
+ {
+  "id": "emerald-champagne",
+  "name": "Emerald and Champagne",
+  "accent": "#0f5c4a",
+  "alt": "#c9a96e",
+  "neutral": "ivory",
+  "themes": [
+   "luxury_minimal",
+   "real_estate",
+   "travel_tourism",
+   "healthcare"
+  ],
+  "tags": [
+   "hotel",
+   "resort",
+   "spa",
+   "villa"
+  ]
+ },
+ {
+  "id": "sapphire-silver",
+  "name": "Sapphire and Silver",
+  "accent": "#1e3a6b",
+  "alt": "#9aa5b8",
+  "neutral": "pearl",
+  "themes": [
+   "professional_services",
+   "modern_tech",
+   "real_estate"
+  ],
+  "tags": [
+   "bank",
+   "consult",
+   "law",
+   "insurance"
+  ]
+ },
+ {
+  "id": "burgundy-brass",
+  "name": "Burgundy and Brass",
+  "accent": "#7a1f3a",
+  "alt": "#b08d57",
+  "neutral": "ivory",
+  "themes": [
+   "food_dining",
+   "events_wedding",
+   "luxury_minimal",
+   "fashion_retail"
+  ],
+  "tags": [
+   "wine",
+   "fine dining",
+   "bridal",
+   "boutique"
+  ]
+ },
+ {
+  "id": "plum-rosegold",
+  "name": "Plum and Rose Gold",
+  "accent": "#5b2a54",
+  "alt": "#c98f86",
+  "neutral": "blush",
+  "themes": [
+   "beauty_wellness",
+   "events_wedding",
+   "fashion_retail"
+  ],
+  "tags": [
+   "salon",
+   "makeup",
+   "bridal",
+   "skin"
+  ]
+ },
+ {
+  "id": "midnight-copper",
+  "name": "Midnight and Copper",
+  "accent": "#14284b",
+  "alt": "#b87333",
+  "neutral": "pearl",
+  "themes": [
+   "professional_services",
+   "automotive",
+   "real_estate",
+   "modern_tech"
+  ],
+  "tags": [
+   "architect",
+   "builder",
+   "car",
+   "engineering"
+  ]
+ },
+ {
+  "id": "forest-ivory",
+  "name": "Forest and Ivory",
+  "accent": "#1f4d3a",
+  "alt": "#cfc4a8",
+  "neutral": "mist",
+  "themes": [
+   "organic_nature",
+   "beauty_wellness",
+   "travel_tourism",
+   "nonprofit"
+  ],
+  "tags": [
+   "spa",
+   "organic",
+   "ayurveda",
+   "retreat"
+  ]
+ },
+ {
+  "id": "charcoal-bronze",
+  "name": "Charcoal and Bronze",
+  "accent": "#3a3a40",
+  "alt": "#a57c52",
+  "neutral": "graphite",
+  "themes": [
+   "luxury_minimal",
+   "automotive",
+   "fashion_retail",
+   "professional_services"
+  ],
+  "tags": [
+   "interior",
+   "furniture",
+   "menswear"
+  ]
+ },
+ {
+  "id": "oxblood-cream",
+  "name": "Oxblood and Cream",
+  "accent": "#6e1423",
+  "alt": "#e6d5b8",
+  "neutral": "ivory",
+  "themes": [
+   "food_dining",
+   "luxury_minimal",
+   "events_wedding"
+  ],
+  "tags": [
+   "restaurant",
+   "steakhouse",
+   "wine",
+   "bakery"
+  ]
+ },
+ {
+  "id": "teal-sand",
+  "name": "Deep Teal and Sand",
+  "accent": "#0f4c4a",
+  "alt": "#cdb48a",
+  "neutral": "sand",
+  "themes": [
+   "healthcare",
+   "travel_tourism",
+   "beauty_wellness",
+   "real_estate"
+  ],
+  "tags": [
+   "clinic",
+   "dental",
+   "resort",
+   "tour"
+  ]
+ },
+ {
+  "id": "slate-sage",
+  "name": "Slate and Sage",
+  "accent": "#3c4a56",
+  "alt": "#8aa28d",
+  "neutral": "mist",
+  "themes": [
+   "healthcare",
+   "beauty_wellness",
+   "general_business",
+   "education"
+  ],
+  "tags": [
+   "therapy",
+   "counselling",
+   "wellness",
+   "school"
+  ]
+ },
+ {
+  "id": "navy-blush",
+  "name": "Navy and Blush",
+  "accent": "#1b2a49",
+  "alt": "#dfaaa5",
+  "neutral": "blush",
+  "themes": [
+   "events_wedding",
+   "beauty_wellness",
+   "fashion_retail"
+  ],
+  "tags": [
+   "wedding",
+   "planner",
+   "florist",
+   "boutique"
+  ]
+ },
+ {
+  "id": "espresso-gold",
+  "name": "Espresso and Gold",
+  "accent": "#4a3126",
+  "alt": "#c4a047",
+  "neutral": "sand",
+  "themes": [
+   "food_dining",
+   "luxury_minimal",
+   "home_services"
+  ],
+  "tags": [
+   "coffee",
+   "cafe",
+   "chocolate",
+   "bakery"
+  ]
+ },
+ {
+  "id": "pine-mist",
+  "name": "Pine and Mist",
+  "accent": "#25533f",
+  "alt": "#a9bfb2",
+  "neutral": "mist",
+  "themes": [
+   "organic_nature",
+   "nonprofit",
+   "healthcare"
+  ],
+  "tags": [
+   "farm",
+   "garden",
+   "ngo",
+   "nursery"
+  ]
+ },
+ {
+  "id": "aubergine-champagne",
+  "name": "Aubergine and Champagne",
+  "accent": "#4a1d4f",
+  "alt": "#d4b98a",
+  "neutral": "blush",
+  "themes": [
+   "luxury_minimal",
+   "events_wedding",
+   "creative_studio"
+  ],
+  "tags": [
+   "perfume",
+   "jewellery",
+   "events",
+   "studio"
+  ]
+ },
+ {
+  "id": "terracotta-stone",
+  "name": "Terracotta and Stone",
+  "accent": "#9a4a32",
+  "alt": "#8a8176",
+  "neutral": "sand",
+  "themes": [
+   "home_services",
+   "food_dining",
+   "real_estate",
+   "travel_tourism"
+  ],
+  "tags": [
+   "pottery",
+   "homestay",
+   "kitchen",
+   "decor"
+  ]
+ },
+ {
+  "id": "graphite-mint",
+  "name": "Graphite and Mint",
+  "accent": "#2b3a42",
+  "alt": "#6fb5a0",
+  "neutral": "graphite",
+  "themes": [
+   "modern_tech",
+   "healthcare",
+   "professional_services"
+  ],
+  "tags": [
+   "saas",
+   "software",
+   "app",
+   "startup"
+  ]
+ },
+ {
+  "id": "indigo-gold",
+  "name": "Royal Indigo and Gold",
+  "accent": "#2f2a6b",
+  "alt": "#c6a24a",
+  "neutral": "pearl",
+  "themes": [
+   "education",
+   "luxury_minimal",
+   "events_wedding",
+   "creative_studio"
+  ],
+  "tags": [
+   "academy",
+   "astrology",
+   "wedding",
+   "school"
+  ]
+ },
+ {
+  "id": "mocha-rose",
+  "name": "Mocha and Rose",
+  "accent": "#5a3e36",
+  "alt": "#c4938c",
+  "neutral": "blush",
+  "themes": [
+   "beauty_wellness",
+   "food_dining",
+   "fashion_retail"
+  ],
+  "tags": [
+   "cafe",
+   "salon",
+   "bakery",
+   "gift"
+  ]
+ },
+ {
+  "id": "olive-brass",
+  "name": "Olive and Brass",
+  "accent": "#4f5d2f",
+  "alt": "#b8964f",
+  "neutral": "sand",
+  "themes": [
+   "organic_nature",
+   "food_dining",
+   "travel_tourism"
+  ],
+  "tags": [
+   "olive",
+   "farm",
+   "restaurant",
+   "resort"
+  ]
+ },
+ {
+  "id": "steel-amber",
+  "name": "Steel and Amber",
+  "accent": "#34506b",
+  "alt": "#d19a3e",
+  "neutral": "pearl",
+  "themes": [
+   "automotive",
+   "professional_services",
+   "home_services",
+   "bold_fitness"
+  ],
+  "tags": [
+   "garage",
+   "logistics",
+   "repair",
+   "gym"
+  ]
+ },
+ {
+  "id": "black-gold",
+  "name": "Black and Gold",
+  "accent": "#a07a1c",
+  "alt": "#111111",
+  "neutral": "graphite",
+  "themes": [
+   "luxury_minimal",
+   "bold_fitness",
+   "automotive",
+   "fashion_retail"
+  ],
+  "tags": [
+   "car",
+   "gym",
+   "club",
+   "jewellery"
+  ]
+ },
+ {
+  "id": "maroon-gold",
+  "name": "Maroon and Gold",
+  "accent": "#7b1e1e",
+  "alt": "#d1a54a",
+  "neutral": "ivory",
+  "themes": [
+   "events_wedding",
+   "food_dining",
+   "fashion_retail"
+  ],
+  "tags": [
+   "wedding",
+   "sweets",
+   "saree",
+   "mithai"
+  ]
+ },
+ {
+  "id": "peacock-gold",
+  "name": "Peacock and Gold",
+  "accent": "#0b5563",
+  "alt": "#c9a24d",
+  "neutral": "pearl",
+  "themes": [
+   "luxury_minimal",
+   "travel_tourism",
+   "beauty_wellness",
+   "events_wedding"
+  ],
+  "tags": [
+   "hotel",
+   "spa",
+   "banquet",
+   "travel"
+  ]
+ },
+ {
+  "id": "rosewood-pearl",
+  "name": "Rosewood and Pearl",
+  "accent": "#7d3b45",
+  "alt": "#d9cfcf",
+  "neutral": "blush",
+  "themes": [
+   "beauty_wellness",
+   "fashion_retail"
+  ],
+  "tags": [
+   "skin",
+   "salon",
+   "boutique",
+   "gift"
+  ]
+ },
+ {
+  "id": "cobalt-cream",
+  "name": "Cobalt and Cream",
+  "accent": "#254a9a",
+  "alt": "#e8dcc2",
+  "neutral": "pearl",
+  "themes": [
+   "education",
+   "professional_services",
+   "general_business",
+   "modern_tech"
+  ],
+  "tags": [
+   "school",
+   "coaching",
+   "accountant",
+   "clinic"
+  ]
+ },
+ {
+  "id": "cedar-cloud",
+  "name": "Cedar and Cloud",
+  "accent": "#7a4a2b",
+  "alt": "#9fb0bf",
+  "neutral": "sand",
+  "themes": [
+   "home_services",
+   "real_estate",
+   "luxury_minimal"
+  ],
+  "tags": [
+   "carpentry",
+   "furniture",
+   "builder",
+   "interior"
+  ]
+ },
+ {
+  "id": "moss-clay",
+  "name": "Moss and Clay",
+  "accent": "#4a5d3a",
+  "alt": "#b9795c",
+  "neutral": "mist",
+  "themes": [
+   "organic_nature",
+   "home_services",
+   "pets_animals"
+  ],
+  "tags": [
+   "pet",
+   "garden",
+   "nursery",
+   "farm"
+  ]
+ },
+ {
+  "id": "wine-slate",
+  "name": "Wine and Slate",
+  "accent": "#6b1d3e",
+  "alt": "#5d6b7a",
+  "neutral": "graphite",
+  "themes": [
+   "food_dining",
+   "fashion_retail",
+   "luxury_minimal"
+  ],
+  "tags": [
+   "bar",
+   "wine",
+   "fashion",
+   "lounge"
+  ]
+ },
+ {
+  "id": "oceandeep-sand",
+  "name": "Ocean Deep and Sand",
+  "accent": "#124559",
+  "alt": "#d9c3a0",
+  "neutral": "sand",
+  "themes": [
+   "travel_tourism",
+   "healthcare",
+   "real_estate"
+  ],
+  "tags": [
+   "beach",
+   "travel",
+   "dental",
+   "resort"
+  ]
+ },
+ {
+  "id": "garnet-silver",
+  "name": "Garnet and Silver",
+  "accent": "#8a1c2e",
+  "alt": "#b7bcc6",
+  "neutral": "graphite",
+  "themes": [
+   "automotive",
+   "fashion_retail",
+   "luxury_minimal",
+   "bold_fitness"
+  ],
+  "tags": [
+   "car",
+   "bike",
+   "fashion",
+   "gym"
+  ]
+ },
+ {
+  "id": "bottle-brass",
+  "name": "Bottle Green and Brass",
+  "accent": "#1b4332",
+  "alt": "#b5894a",
+  "neutral": "ivory",
+  "themes": [
+   "luxury_minimal",
+   "food_dining",
+   "real_estate",
+   "education"
+  ],
+  "tags": [
+   "club",
+   "restaurant",
+   "school",
+   "estate"
+  ]
+ },
+ {
+  "id": "dusk-pearl",
+  "name": "Dusk Violet and Pearl",
+  "accent": "#4b3a7a",
+  "alt": "#cfc8d8",
+  "neutral": "pearl",
+  "themes": [
+   "creative_studio",
+   "beauty_wellness",
+   "modern_tech"
+  ],
+  "tags": [
+   "design",
+   "art",
+   "music",
+   "yoga"
+  ]
+ },
+ {
+  "id": "antique-rose",
+  "name": "Antique Rose and Charcoal",
+  "accent": "#9b5a6a",
+  "alt": "#3b3b3f",
+  "neutral": "blush",
+  "themes": [
+   "beauty_wellness",
+   "events_wedding",
+   "fashion_retail"
+  ],
+  "tags": [
+   "makeup",
+   "gift",
+   "bridal",
+   "florist"
+  ]
+ },
+ {
+  "id": "petrol-copper",
+  "name": "Petrol and Copper",
+  "accent": "#0d4a5a",
+  "alt": "#b9743f",
+  "neutral": "graphite",
+  "themes": [
+   "modern_tech",
+   "automotive",
+   "professional_services"
+  ],
+  "tags": [
+   "tech",
+   "engineering",
+   "workshop",
+   "studio"
+  ]
+ },
+ {
+  "id": "saffron-ink",
+  "name": "Saffron Spice and Ink",
+  "accent": "#a8641c",
+  "alt": "#1c2740",
+  "neutral": "sand",
+  "themes": [
+   "food_dining",
+   "nonprofit",
+   "education",
+   "travel_tourism"
+  ],
+  "tags": [
+   "dhaba",
+   "sweets",
+   "temple",
+   "tour"
+  ]
+ }
+]

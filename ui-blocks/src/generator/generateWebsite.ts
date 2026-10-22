@@ -3,7 +3,8 @@
 // Every choice (colour palette, headline set, navbar, hero, features layout, optional sections)
 // comes from a seeded random generator, so the same prompt always gives the same page, while
 // different prompts - or a different `variation` number - give a different one.
-import { thinkColors } from './colorBrain'
+import { namesColor, thinkColors } from './colorBrain'
+import { harmonisePalette } from './colorHarmony'
 import { contentTemplates } from './contentTemplates'
 import { writeContent } from './creativeBrain'
 import { extractContentDetails } from './filter'
@@ -19,7 +20,7 @@ import { TARGETS, type SiteEdits, type Target } from './edit/edits'
 import { decideTheme } from './themeClassifier'
 import { fontChoiceTokens, withFont } from './fonts'
 import { onColor } from './themes'
-import { chooseMood, moodById, moodFontVars, moodPalette, moodTheme, panelColors, type Mood } from './moods'
+import { chooseMood, moodById, moodFontVars, moodFromText, moodPalette, moodTheme, panelColors, type Mood } from './moods'
 import { temperature } from './creativity'
 import { hexToRgb, rgbToHsl } from './art/color'
 import { sectionOfLayout } from './edit/applyEdits'
@@ -43,6 +44,9 @@ export { hash, seededRandom }
  * (off = the original template texts and the hand-made palettes).
  * `motionSetting`: how much the page moves; 'auto' lets the motion brain decide from the design level.
  */
+/** the moods whose look does not depend on their own colours */
+const PREMIUM_MOODS = new Set(['minimal-light', 'minimal-dark', 'editorial', 'luxe-dark'])
+
 export function planWebsite(
   userPrompt: string,
   variation = 0,
@@ -100,12 +104,18 @@ export function planWebsite(
   // business types without hand-written template texts (law firm, clinic ...) always use the brains
   const useBrains = creative || !hasTemplates(themeKey)
   const copy = useBrains ? writeContent(themeKey, brand, seededRandom(hash(`${prompt.toLowerCase()}|copy|${variation}`)), false, niche ? undefined : prompt) : undefined
-  const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}`))) : undefined
+  const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}`)), tier) : undefined
   // the design mood (moods.ts): a whole look made of rules; its colours grow from the hue the colour brain chose, so they stay unique
-  const mood: Mood | undefined = !useBrains && !edits?.mood ? undefined : edits?.mood === 'none' ? undefined : edits?.mood ? moodById(edits.mood) : chooseMood(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|mood|${variation}`)), temperature())
+  const chosenMood: Mood | undefined = !useBrains && !edits?.mood ? undefined : edits?.mood === 'none' ? undefined : edits?.mood ? moodById(edits.mood) : chooseMood(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|mood|${variation}`)), temperature())
+  // premium colours go with the calm moods (their shadows and glass are made for the mood's own colours); a mood the person asked for wins over them
+  const premiumColours = colors?.harmony === 'premium'
+  const askedMood = !!edits?.mood && edits.mood !== 'none' || !!moodFromText(prompt)
+  const mood: Mood | undefined = premiumColours && chosenMood && !askedMood && !PREMIUM_MOODS.has(chosenMood.id) ? undefined : chosenMood
   const basePalette = colors?.palette ?? presetPalette(themeKey, paletteIndex)
   const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name) : undefined
-  const palette = applyColorEdits(moodMade?.palette ?? basePalette, themeKey, edits)
+  // the colours of the brain and of the moods are checked as a pair: no neon second colour, no two loud colours of one lightness (colorHarmony.ts); what the person chooses afterwards is theirs
+  const generated = premiumColours && !askedMood ? basePalette : (moodMade?.palette ?? basePalette)
+  const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
 
   // the motion brain has its own seeded stream too; some motion needs its own sections
   const motion = thinkMotion(themeKey, tier, edits?.motion ?? motionSetting, seededRandom(hash(`${prompt.toLowerCase()}|motion|${variation}`)))
