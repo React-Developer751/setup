@@ -20,6 +20,8 @@ import { answerFor, clarify, type Choice, type Expect } from './generator/edit/c
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { coreCraftUp, type CoreSlot } from './generator/edit/corecraft'
+import CoreCraftPanel from './CoreCraftPanel'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
 import { rateScene, syncRatings } from './generator/edit/imageRatings'
 import { analyseFeedback } from './generator/memory/sentiment'
@@ -100,6 +102,7 @@ function GeneratorPage() {
   const [chatBusy, setChatBusy] = useState(false)
   const [useServer, setUseServer] = useState(false)
   const [serverReady, setServerReady] = useState(false)
+  const [coreCraftReady, setCoreCraftReady] = useState(false)
   const [projects, setProjects] = useState<Project[]>(() => listProjects())
   const [projectNote, setProjectNote] = useState('')
   // the last session of this browser: offered at the start; it is only overwritten after the person has chosen
@@ -313,6 +316,15 @@ function GeneratorPage() {
 
   // chat commands (typed or chosen) go to the edit history database; pictures and the first colour do not
   const chatting = useRef(false)
+  // Core-Craft AI (optional, npm run corecraft): its panel shows only when it runs
+  useEffect(() => {
+    let alive = true
+    void coreCraftUp().then((ok) => alive && setCoreCraftReady(ok))
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string) => {
     let logId: string | undefined
     // a text the person writes over is a text they did not want
@@ -669,6 +681,14 @@ function GeneratorPage() {
             }).filter((item) => item.thumb)}
             onRate={(i, verdict) => void ratePicture(i, verdict)}
           />
+
+          {coreCraftReady && (
+            <CoreCraftPanel
+              prompt={submitted}
+              gate={() => ({ theme: themeKey, subject: textSite.content.subject, prompt: submitted, current: { heroTitle: textSite.content.hero.title, heroSubtitle: textSite.content.hero.subtitle, heroButton: textSite.content.hero.button }, avoid: turnedDown.current })}
+              onUse={(slot: CoreSlot, text: string) => applyOps(`Core-Craft AI: ${slot}`, [{ op: 'text', field: slot, text }], 'rules', `Used a line from Core-Craft AI: "${text}". Say "undo" to get the old one back.`)}
+            />
+          )}
 
           <DesignHistory
             designs={designs}

@@ -4,6 +4,7 @@
 // POST /api/feedback  { text, ops, accepted, source } -> appended to server/data/feedback.jsonl (examples for training the offline parser)
 // GET  /api/ai-parse  ?prompt=  -> how the image engine reads a prompt;  POST /api/image-feedback -> server/data/image-feedback.jsonl
 // GET/POST /api/edit-log, POST /api/edit-log/undo -> the chat commands and which ones were undone;  GET/POST /api/image-ratings -> picture thumbs shared by all browsers
+// GET  /api/corecraft ?prompt=&n=  -> pages of copy from Core-Craft AI (npm run corecraft); /api/health says corecraft: true when it runs
 // GET/POST /api/palettes -> premium colour palettes that people add (on top of src/data/premiumPalettes.json)
 // GET/POST /api/phrase-events -> what people say and do about the texts of the sites (the content AI's phrase scores)
 // GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
@@ -24,6 +25,7 @@ const PEXELS_KEY = process.env.PEXELS_API_KEY
 const PEXELS_BASE = (process.env.PEXELS_BASE_URL ?? 'https://api.pexels.com').replace(/\/$/, '')
 const photoCache = new Map()
 // optional image engine (PixelMath, the `normal` folder: npm run images): scenes for the first screen, About and gallery
+const CORECRAFT_URL = (process.env.CORECRAFT_URL ?? 'http://127.0.0.1:8100').replace(/\/$/, '')
 const PIXELMATH_URL = (process.env.PIXELMATH_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
 const PIXELMATH_KEY = process.env.PIXELMATH_API_KEY
 const IMAGES_PER_MINUTE = Number(process.env.EDIT_IMAGES_PER_MINUTE ?? 90)
@@ -174,6 +176,18 @@ const imagesLimited = (ip) => {
 
 let engineProbe = { at: 0, up: false }
 /** is the image engine answering? (asked at most every 5 seconds) */
+let coreProbe = { at: 0, up: false }
+async function coreCraftUp() {
+  if (Date.now() - coreProbe.at < 5000) return coreProbe.up
+  let up = false
+  try {
+    up = (await fetch(`${CORECRAFT_URL}/health`, { signal: AbortSignal.timeout(1500) })).ok
+  } catch {
+    up = false
+  }
+  coreProbe = { at: Date.now(), up }
+  return up
+}
 async function imageEngineUp() {
   if (Date.now() - engineProbe.at < 5000) return engineProbe.up
   let up = false
@@ -194,7 +208,7 @@ const send = (res, status, body) => {
 export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
-    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, ai: !!KEY, photos: !!PEXELS_KEY, images: await imageEngineUp(), model: KEY ? MODEL : null })
+    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, ai: !!KEY, photos: !!PEXELS_KEY, images: await imageEngineUp(), corecraft: await coreCraftUp(), model: KEY ? MODEL : null })
     if (req.method === 'GET' && url.pathname === '/api/ai-image') {
       if (imagesLimited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
@@ -216,6 +230,25 @@ export const server = http.createServer(async (req, res) => {
       const bytes = Buffer.from(await upstream.arrayBuffer())
       res.writeHead(200, { 'content-type': upstream.headers.get('content-type'), 'content-length': bytes.length, 'cache-control': 'public, max-age=86400' })
       return res.end(bytes)
+    }
+    // Core-Craft AI (the `cont` folder, run by `npm run corecraft`): several pages of copy for a prompt; the page checks every line before it is offered
+    if (req.method === 'GET' && url.pathname === '/api/corecraft') {
+      const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+      const n = Math.max(1, Math.min(8, Number(url.searchParams.get('n')) || 4))
+      if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
+      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      try {
+        const upstream = await fetch(`${CORECRAFT_URL}/generate`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, n, seed: Number(url.searchParams.get('seed')) || undefined }), signal: AbortSignal.timeout(20_000) })
+        if (!upstream.ok) return send(res, 502, { error: `Core-Craft answered ${upstream.status}` })
+        const body = await upstream.json()
+        const text = (v, k) => String(v ?? '').slice(0, k)
+        const candidates = (Array.isArray(body.candidates) ? body.candidates : []).slice(0, 8).map((c) => ({
+          seed: Number(c.seed) || 0, niche: text(c.niche, 20), brand: text(c.brand, 60), hero_heading: text(c.hero_heading, 120), tagline: text(c.tagline, 240), cta_primary: text(c.cta_primary, 60), cta_secondary: text(c.cta_secondary, 60), cta_text: text(c.cta_text, 240),
+        }))
+        return send(res, 200, { niche: text(body.niche, 20), candidates })
+      } catch {
+        return send(res, 503, { error: 'Core-Craft is not running (npm run corecraft)' })
+      }
     }
     // the design memory: every design that was made, and what the person said about it (a small file database, one JSON line per design)
     if (url.pathname === '/api/designs' || url.pathname === '/api/designs/verdict') {
