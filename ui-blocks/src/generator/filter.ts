@@ -131,7 +131,7 @@ function inventName(subject: string, userPrompt: string, themeKey?: string, nich
 
 export function extractContentDetails(userPrompt: string, themeKey?: string, nicheLabel?: string) {
   // 1) "called/named" followed by capitalised words: "named Leafy Premium"
-  const capitalised = userPrompt.match(/\b(?:called|named)\s+([A-Z][\w&'-]*(?:\s+(?:&|[A-Z][\w&'-]*)){0,3})/)?.[1]
+  const capitalised = userPrompt.match(/\b(?:called|named)\s+([A-Z][\w&'-]*(?:\s+(?:&|and(?=\s+[A-Z])|[A-Z][\w&'-]*)){0,3})/)?.[1]
 
   // 2) otherwise up to 3 words, cut at the first filler word: "named zen yoga studio for beginners"
   const loose = userPrompt.match(/\b(?:called|named)\s+([\w&'-]+(?:\s+[\w&'-]+){0,2})/i)?.[1]

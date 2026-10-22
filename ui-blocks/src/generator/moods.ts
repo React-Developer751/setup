@@ -32,6 +32,8 @@ export type Mood = {
   affinity: Partial<Record<ThemeKey, number>>
 }
 
+/** the hue for a page tint: the second hue, but within 40 degrees of the main one (a pale blue page around a green tea cafe was the case that showed it) */
+const nearHue = (h: number, h2: number) => h + Math.max(-40, Math.min(40, ((h2 - h + 540) % 360) - 180))
 const hsl = (h: number, s: number, l: number) => `#${hslToRgb(h, s, l).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`
 
 /** lightness of the accent moves until text on it and the accent on the page both read well */
@@ -176,7 +178,7 @@ export const MOODS: Mood[] = [
       primary: 'border-2 border-(--g-text) shadow-[4px_4px_0_var(--g-text)]',
       secondary: 'border-2 border-(--g-text) shadow-[4px_4px_0_var(--g-text)]',
     },
-    colors: (h, h2, mode) => finish(mode === 'light' ? { bg: hsl(h2, 100, 95), surface: '#ffffff', border: '#111111', text: '#111111', muted: '#3a3a3a', accent: hsl(h, 92, 46), alt: hsl(h2, 92, 52) } : { bg: '#0d0d0d', surface: '#1a1a1a', border: '#f4f4f4', text: '#f4f4f4', muted: '#bdbdbd', accent: hsl(h, 95, 62), alt: hsl(h2, 95, 60) }),
+    colors: (h, h2, mode) => finish(mode === 'light' ? { bg: hsl(nearHue(h, h2), 100, 95), surface: '#ffffff', border: '#111111', text: '#111111', muted: '#3a3a3a', accent: hsl(h, 92, 46), alt: hsl(h2, 92, 52) } : { bg: '#0d0d0d', surface: '#1a1a1a', border: '#f4f4f4', text: '#f4f4f4', muted: '#bdbdbd', accent: hsl(h, 95, 62), alt: hsl(h2, 95, 60) }),
     roles: { hero: 'accent', footer: 'ink', cta: 'pop-alt', stats: 'pop-alt', testimonials: 'soft-alt', rhythm: ['plain', 'accent', 'plain', 'pop-alt'] },
     affinity: { bold_fitness: 3, creative_studio: 3, fashion_retail: 2, playful_vibrant: 2, automotive: 2, education: 1 },
   },
@@ -208,7 +210,7 @@ export const MOODS: Mood[] = [
       primary: 'shadow-[0_5px_0_color-mix(in_oklab,var(--g-accent)_60%,black)]',
       secondary: 'border-2 shadow-[0_4px_0_var(--g-border)]',
     },
-    colors: (h, h2, mode) => finish(mode === 'light' ? { bg: hsl(h2, 100, 96), surface: '#ffffff', border: hsl(h, 70, 80), text: hsl(h, 55, 16), muted: hsl(h, 25, 36), accent: hsl(h, 92, 50), alt: hsl(h2, 92, 56) } : { bg: hsl(h, 45, 12), surface: hsl(h, 40, 18), border: hsl(h, 50, 34), text: hsl(h, 30, 96), muted: hsl(h, 25, 74), accent: hsl(h, 95, 68), alt: hsl(h2, 90, 64) }),
+    colors: (h, h2, mode) => finish(mode === 'light' ? { bg: hsl(nearHue(h, h2), 100, 96), surface: '#ffffff', border: hsl(h, 70, 80), text: hsl(h, 55, 16), muted: hsl(h, 25, 36), accent: hsl(h, 92, 50), alt: hsl(h2, 92, 56) } : { bg: hsl(h, 45, 12), surface: hsl(h, 40, 18), border: hsl(h, 50, 34), text: hsl(h, 30, 96), muted: hsl(h, 25, 74), accent: hsl(h, 95, 68), alt: hsl(h2, 90, 64) }),
     roles: { hero: 'soft-alt', footer: 'ink', cta: 'accent', stats: 'pop-alt', testimonials: 'soft-alt', rhythm: ['plain', 'band', 'soft-alt'] },
     affinity: { playful_vibrant: 3, education: 3, pets_animals: 3, food_dining: 2, events_wedding: 2, nonprofit: 1, beauty_wellness: 1 },
   },
@@ -281,10 +283,11 @@ export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, 
 const bothModes = <T,>(make: (mode: ColorMode) => T) => ({ light: make('light'), dark: make('dark') })
 
 /** the palette of a mood from a base hue (the unique hue the colour planner chose) and a second hue */
-export function moodPalette(mood: Mood, hue: number, altHue0: number, baseName = ''): { palette: Palette; tokens: Record<ColorMode, Record<string, string>> } {
+export function moodPalette(mood: Mood, hue: number, altHue0: number, baseName = '', trustAlt = false): { palette: Palette; tokens: Record<ColorMode, Record<string, string>> } {
   // the second colour stays within 70 degrees of the first (a neighbour, not a clash): neon green on a maroon page was the case that showed it
   const gap = ((altHue0 - hue + 540) % 360) - 180
-  const altHue = hue + Math.sign(gap || 1) * Math.min(70, Math.max(25, Math.abs(gap)))
+  // (a pair that was chosen by a designer, curated or premium, keeps its second hue: "Emerald and Gold" must not turn into emerald and olive; colorHarmony.ts quietens it if it is loud)
+  const altHue = trustAlt && mood.id !== 'glass' ? altHue0 : hue + Math.sign(gap || 1) * Math.min(70, Math.max(25, Math.abs(gap)))
   const made = bothModes((mode) => mood.colors(hue, altHue, mode))
   const strip = (c: ReturnType<Colors>): PaletteMode => ({ bg: c.bg, surface: c.surface, border: c.border, text: c.text, muted: c.muted, accent: c.accent, alt: c.alt })
   const palette: Palette = { name: baseName ? `${mood.label}: ${baseName}` : `${mood.label}: hue ${Math.round(hue)}`, light: strip(made.light), dark: strip(made.dark) }

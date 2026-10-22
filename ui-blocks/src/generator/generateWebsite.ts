@@ -112,7 +112,7 @@ export function planWebsite(
   const askedMood = !!edits?.mood && edits.mood !== 'none' || !!moodFromText(prompt)
   const mood: Mood | undefined = premiumColours && chosenMood && !askedMood && !PREMIUM_MOODS.has(chosenMood.id) ? undefined : chosenMood
   const basePalette = colors?.palette ?? presetPalette(themeKey, paletteIndex)
-  const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name) : undefined
+  const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name, colors?.harmony === 'curated' || colors?.harmony === 'premium') : undefined
   // the colours of the brain and of the moods are checked as a pair: no neon second colour, no two loud colours of one lightness (colorHarmony.ts); what the person chooses afterwards is theirs
   const generated = premiumColours && !askedMood ? basePalette : (moodMade?.palette ?? basePalette)
   const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)

@@ -85,6 +85,12 @@ ok(/Pune/.test(pest.hero.subtitle) && pest.hero.subtitle.length <= 175, 'a niche
 ok(!pest.features.items.some((f) => /24x7|free inspection/i.test(f.title)), 'promises are not turned into services')
 ok(pest.faq.some((q) => /free/i.test(q.q)), 'the free inspection is a question')
 
+// names with "and": the whole name is kept
+const { extractContentDetails } = await loadGeneratorModule('filter.ts')
+for (const [prompt, name] of [['Create a website for a law firm called Rao and Partners in Delhi', 'Rao and Partners'], ['cafe called Tom and Jerry Cafe in Pune', 'Tom and Jerry Cafe'], ['bakery called Sweet and Salty', 'Sweet and Salty'], ['gym called Iron House and open 24x7', 'Iron House']]) {
+  ok(extractContentDetails(prompt, 'general_business').businessName === name, `the name "${name}" is kept whole (got "${extractContentDetails(prompt, 'general_business').businessName}")`)
+}
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

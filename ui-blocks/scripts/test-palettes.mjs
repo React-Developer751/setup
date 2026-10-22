@@ -49,6 +49,26 @@ for (const p of prompts) {
 ok(count.neon + count.vibrate + count.awkward + count.loud === 0, `${sites} sites x 2 modes: no neon, vibrating, awkward or loud pair (${JSON.stringify(count)})`)
 ok(readableOk === sites, 'text and the main colour stay readable after the repair')
 
+// ── the page is tinted with the colours of the site: no pale blue page around a green accent
+let clash = 0
+let tinted = 0
+for (const p of prompts) {
+  for (let v = 1; v <= 30; v += 1) {
+    const s = generateWebsite(`website for a ${p}`, v * 61)
+    for (const mode of ['light', 'dark']) {
+      const bg = hexToHsl(s.palette[mode].bg)
+      const accent = hexToHsl(s.palette[mode].accent)
+      // a tint has colour (chroma); a warm ivory or a pearl page is a neutral
+      const chroma = bg.s * (1 - Math.abs((2 * bg.l) / 100 - 1))
+      if (chroma < 6) continue
+      tinted += 1
+      const d = Math.abs(bg.h - accent.h) % 360
+      if ((d > 180 ? 360 - d : d) > 100 && s.mood?.id !== 'cyberpunk' && s.mood?.id !== 'retro') clash += 1
+    }
+  }
+}
+ok(clash === 0, `${tinted} tinted pages: none is tinted in a hue far from its main colour (${clash})`)
+
 // ── the premium set
 const set = P.premiumSet()
 ok(set.length >= 36, `the premium set has ${set.length} palettes`)
