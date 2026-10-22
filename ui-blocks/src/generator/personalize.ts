@@ -39,7 +39,7 @@ const described = (prompt: string) =>
   prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])\s+[^,.;]*?(?=\s+(?:with|for|in|at|near|selling|offering|providing|offers|which|that|who|and|including|ke liye|me|mein)(?![\p{L}])|[,.;]|$)/giu, ' ').replace(/\s+/g, ' ').trim()
 
 /** things that are promises, not services */
-const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|online\b.*|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
+const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7(?:\s+\w+)?|\d+\+?\s*(?:years?|saal)\b.*|(?:years?|saal)\s+(?:of\s+)?experience|(?:great|good|friendly|best)\s+(?:service|prices?|staff)|prices?|pricing|staff|quality|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|online\b.*|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
 
 const stem = (w: string) => w.replace(/(?:ing|ers?|es|s)$/, '')
 const significant = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 3 && !GENERIC.has(w) && !NOISE.has(w)).map(stem)
@@ -72,7 +72,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   const intro = text.replace(/^(?:please\s+)?(?:create|build|make|design|generate|i\s+(?:need|want)|need|want)\s+(?:me\s+)?(?:a|an|the)?\s*(?:[\w-]+\s+){0,2}?(?:landing\s*page|web\s*site|website|web\s*page|page|site)\s+(?:for|of)\s+(?:a|an|my|our|the)?\s*/i, '')
   const withoutPlace = intro.replace(/(?<![\p{L}])(?:in|at|near|around|based in|across)\s+[A-Z][\p{L}-]+(?:\s+[A-Z][\p{L}-]+)?/gu, ' ').replace(/\s+/g, ' ').trim()
   const lists: string[] = []
-  const after = withoutPlace.match(/(?:selling|sells|offering|offers|providing|provides|specialis(?:ing|es)\s+in|specializ(?:ing|es)\s+in|dealing\s+in|deals\s+in|including|includes|such as|known for|focus(?:ed)?\s+on|for)\s+(.+)$/i)
+  const after = withoutPlace.match(/(?:selling|sells|offering|offers|providing|provides|specialis(?:ing|es)\s+in|specializ(?:ing|es)\s+in|dealing\s+in|deals\s+in|including|includes|such as|known for|focus(?:ed)?\s+on|featuring|teaching|serving|having|that\s+has|which\s+has|with|for)\s+(.+)$/i)
   if (after) lists.push(after[1].replace(/[.,;]+$/, ''))
   // a brand name at the end ("pet shop and vet clinic Happy Paws") is not one more item of the list
   const head = withoutPlace.replace(/\s+(?:for|selling|offering|providing|with|including|that|which)\s+[\s\S]*$/i, '').replace(/(?<=[a-z])(?:\s+[A-Z][\p{L}&'-]*)+$/u, '')

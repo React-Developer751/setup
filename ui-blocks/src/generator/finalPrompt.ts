@@ -1,4 +1,5 @@
 // Builds the text content of the page from the prompt + the chosen theme.
+import { scrubForeign } from './foreignWords'
 import { contentTemplates } from './contentTemplates'
 import type { CreativeContent } from './creativeBrain'
 import { extraContent, sharedContent, type Plan } from './extraContent'
@@ -108,7 +109,9 @@ export function generateWebsiteContent(
     const avoid = shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords, ...shaping.niche.features.map((f) => f.title)] : []
     const personal = personalize(base, extractFacts(userPrompt, subject, avoid), size, shaping.rand, !!shaping.niche)
     // example numbers of the kits are claims nobody made: plain statements instead
-    return { ...personal, stats: plainStats(personal.stats, shaping.rand) }
+    const plain = { ...personal, stats: plainStats(personal.stats, shaping.rand) }
+    // no text pack: the cards of the business type next to it must not talk about another business
+    return shaping.niche ? plain : scrubForeign(plain, userPrompt)
   }
   if (!creative) return shape(content)
 

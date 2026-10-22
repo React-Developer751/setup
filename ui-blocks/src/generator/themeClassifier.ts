@@ -137,7 +137,24 @@ export type ThemeDecision = {
  *   1. a correction the person made for this exact text,
  *   2. the blend of the keyword rules, the model learned from examples, and (when switched on and ready) the embedding model.
  */
+/** the business itself, without the request, the name and what it offers: "pottery studio" from "Create a website for a pottery studio called Clay Room in Pune with workshops and mugs" */
+export function businessHead(prompt: string): string {
+  const body = prompt.replace(/^\s*(?:please\s+)?(?:create|build|make|design|generate|i\s+(?:need|want)|need|want)\s+(?:me\s+)?(?:a|an|the)?\s*(?:[\w-]+\s+){0,2}?(?:landing\s*page|web\s*site|website|web\s*page|page|site)\s+(?:for|of)\s+(?:a|an|the|my|our)?\s*/i, '').replace(/^\s*(?:a|an|the|my|our)\s+/i, '')
+  const cut = body.search(/\s+(?:called|named|naam)\b|\s+(?:with|offering|selling|providing|having|including|featuring|teaching|serving)\s|[,.;]|\s+(?:in|at|near)\s+[A-Z]/)
+  return (cut > 0 ? body.slice(0, cut) : body).trim()
+}
+
+/** the classification of the business itself first (the services it lists carry words of other businesses: "workshops" is no garage); the whole prompt when the head says nothing */
 export function decideTheme(userPrompt: string): ThemeDecision {
+  const head = businessHead(userPrompt)
+  if (head && head.length >= 3 && head.length < userPrompt.trim().length) {
+    const d = decideThemeFor(head)
+    if (d.source === 'blend' && d.confidence >= 0.3) return d
+  }
+  return decideThemeFor(userPrompt)
+}
+
+function decideThemeFor(userPrompt: string): ThemeDecision {
   const corrected = correctionFor(userPrompt)
   if (corrected) return { theme: corrected as ThemeKey, confidence: 1, source: 'correction', sources: ['correction'], probabilities: { [corrected]: 1 } }
   const learned = hasThemeModel() && userPrompt.trim() ? predictThemeText(userPrompt) : undefined

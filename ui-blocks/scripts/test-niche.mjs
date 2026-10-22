@@ -89,6 +89,35 @@ ok(pest.faq.some((q) => /free/i.test(q.q)), 'the free inspection is a question')
 ok(generateWebsite('salon called Glow Up in Lucknow with haircut, facial and bridal makeup', 3).niche === 'hair_salon_spa', 'a salon that also does bridal makeup is still a salon')
 ok(generateWebsite('bridal makeup artist called Glow in Lucknow', 3).niche === 'bridal_makeup', 'a bridal makeup artist is still one')
 
+// a business without a text pack: the cards of the business type next to it do not talk about another business
+const F = await loadGeneratorModule('foreignWords.ts')
+const noPack = ['pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 'tyre shop called Grip Point in Nagpur with tyres, alignment and batteries', 'robotics lab called Nova Bots in Chennai teaching kids arduino and drones', 'tarot reader called Mystic Sara online readings', 'hardware store called Patel Traders in Surat selling paint, pipes and tools', 'bike shop called Spoke in Bangalore selling cycles, helmets and repairs', 'furniture shop called Wood Craft in Rajkot with sofas, beds and tables', 'toy store called Funky in Indore selling puzzles, dolls and board games', 'candle maker called Glow in Jaipur', 'aquarium shop called Fishy in Pune', 'signboard maker called Neon Art in Surat', 'steel manufacturer called Iron Works in Raipur', 'packaging company called Box It in Vapi', 'tractor dealer called Kisan Motors in Karnal', 'dj service called Beat Box in Delhi', 'matrimonial site called Jodi in Pune']
+let left = []
+for (const p of noPack) {
+  for (const v of [1, 2, 3]) {
+    const c = generateWebsite(p, v).content
+    const text = [...c.features.items.map((f) => `${f.title} ${f.text}`), ...c.about.points, ...c.steps.items.map((x) => `${x.title} ${x.text}`), ...c.marquee].join(' | ')
+    const f = F.foreignIn(text, F.domainsOf(p))
+    if (f.length) left.push(`${p.slice(0, 30)}: ${f.join()}`)
+  }
+}
+ok(left.length === 0, `${noPack.length * 3} pages of businesses without a text pack: no card, step or keyword of another kind of business (${left.slice(0, 2).join(' | ')})`)
+const pot = generateWebsite('pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 3, 'premium').content
+ok(pot.features.items.length === 6 && pot.features.items.some((f) => /workshops/i.test(f.title)), 'the services are kept and the cards are still six')
+ok(F.foreignIn('Flexible Rentals and Well-Maintained Vehicles', F.domainsOf('car rental company')).length === 0 && F.foreignIn('Flexible Rentals and Well-Maintained Vehicles', F.domainsOf('pottery studio')).includes('auto'), 'the check knows whose words are whose')
+
+// services listed after "with" ("with crossfit, zumba and personal training") are services; promises after "with" are not
+const withFacts = (text, subject) => extractFacts(text, subject)
+ok(withFacts('pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 'pottery studio').services.join() === 'workshops,handmade mugs', '"with workshops and handmade mugs" lists two services')
+ok(withFacts('gym called Iron House in Delhi with crossfit, zumba and personal training', 'gym').services.join() === 'crossfit,zumba,personal training', '"with crossfit, zumba and personal training" lists three services')
+ok(withFacts('restaurant with free delivery and 24x7 service', 'restaurant').services.length === 0 && withFacts('shop with 10 years experience and free quote', 'shop').services.length === 0 && withFacts('bakery with great service and best prices', 'bakery').services.length === 0, 'promises after "with" (delivery, 24x7, years, quote, prices) are not services')
+ok(generateWebsite('pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 3, 'premium').content.features.items.slice(0, 2).map((f) => f.title).join() === 'Workshops,Handmade Mugs', 'the services of the prompt are the first service cards of the page')
+
+// the business decides the business type, not the services it lists ("workshops" in a pottery studio is no garage)
+ok(generateWebsite('pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 3).themeKey === 'creative_studio', 'a pottery studio with workshops is a creative studio, not a garage')
+const TC = await loadGeneratorModule('themeClassifier.ts')
+ok(TC.decideTheme('online store for kurtis and sarees').theme === 'fashion_retail' && TC.businessHead('Create a website for a pottery studio called Clay Room in Pune with workshops and mugs') === 'pottery studio', 'what a store sells still decides when no business noun comes first, and the head of a prompt is the business itself')
+
 // names with "and": the whole name is kept
 const { extractContentDetails } = await loadGeneratorModule('filter.ts')
 for (const [prompt, name] of [['Create a website for a law firm called Rao and Partners in Delhi', 'Rao and Partners'], ['cafe called Tom and Jerry Cafe in Pune', 'Tom and Jerry Cafe'], ['bakery called Sweet and Salty', 'Sweet and Salty'], ['gym called Iron House and open 24x7', 'Iron House']]) {

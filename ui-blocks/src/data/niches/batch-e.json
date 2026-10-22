@@ -1351,7 +1351,13 @@
       "restaurant table booking",
       "रेस्टोरेंट",
       "khana khane ki jagah",
-      "veg and non veg restaurant"
+      "veg and non veg restaurant",
+      "restaurant",
+      "pizza shop",
+      "pizzeria",
+      "burger joint",
+      "fast food",
+      "biryani"
     ],
     "heroTitles": [
       "Good Food, Shared With Good People",
@@ -2461,7 +2467,9 @@
       "physician clinic",
       "फैमिली डॉक्टर",
       "bukhar ka doctor",
-      "opd clinic"
+      "opd clinic",
+      "hospital",
+      "nursing home"
     ],
     "heroTitles": [
       "Your Family Doctor, Close To Home",
