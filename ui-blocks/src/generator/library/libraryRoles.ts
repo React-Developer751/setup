@@ -16,6 +16,7 @@ export type Role =
   | 'testimonial'
   | 'contact'
   | 'cta'
+  | 'faq'
   | 'footer'
 
 const range = (folder: string, name: string, from: number, to: number) =>
@@ -23,22 +24,24 @@ const range = (folder: string, name: string, from: number, to: number) =>
 
 export const rolePools: Record<Role, string[]> = {
   nav: [...range('navbar', 'Navbar', 1, 11), ...range('header', 'Header', 1, 11)],
-  // Hero1 needs /assets/img/hero/valley*.webp (placeholders live in public/assets/img/hero/).
-  hero: range('hero', 'Hero', 1, 17),
+  // Hero1 needs /assets/img/hero/valley*.webp (placeholders live in public/assets/img/hero/). Hero18-28 come from other kits (their pictures are replaced by the page's own).
+  hero: [...range('hero', 'Hero', 1, 17), ...range('hero', 'Hero', 18, 28)],
   about: ['content/Content2', 'content/Content5', 'content/Content7', 'content/Content8'],
-  features: ['content/Content1', 'content/Content3', 'blog/Blog2'],
+  features: ['content/Content1', 'content/Content3', 'blog/Blog2', ...range('features', 'Features', 12, 16), 'features/Features18', 'features/Features19'],
   links: ['content/Content4'],
   profile: ['content/Content6'],
-  blog: ['blog/Blog1', 'blog/Blog3', 'blog/Blog4', 'blog/Blog5'],
+  blog: [...range('blog', 'Blog', 1, 1), 'blog/Blog3', 'blog/Blog4', 'blog/Blog5', ...range('blog', 'Blog', 6, 11)],
   stats: range('statics', 'Statics', 1, 3),
   steps: range('step', 'Step', 1, 3),
-  gallery: range('gallery', 'Gallery', 1, 3),
-  pricing: range('pricing', 'Pricing', 1, 2),
-  team: range('team', 'Team', 1, 3),
-  testimonial: range('testimonial', 'Testimonial', 1, 3),
-  contact: range('contact', 'Contact', 1, 3),
-  cta: range('cta', 'Cta', 1, 4),
-  footer: range('footer', 'Footer', 1, 5),
+  gallery: [...range('gallery', 'Gallery', 1, 10), ...range('portfolio', 'Portfolio', 1, 5)],
+  pricing: range('pricing', 'Pricing', 1, 9),
+  // Teams3, 6 and 7 are four screens tall: left out
+  team: [...range('team', 'Team', 1, 3), 'teams/Teams1', 'teams/Teams2', 'teams/Teams4', 'teams/Teams5'],
+  testimonial: range('testimonial', 'Testimonial', 1, 10),
+  contact: range('contact', 'Contact', 1, 11),
+  cta: range('cta', 'Cta', 1, 10),
+  faq: range('faq', 'Faq', 1, 5),
+  footer: range('footer', 'Footer', 1, 15),
 }
 
 // features/Features1..11 are exact copies of blog / contact / content components (see componentRegistry.ts),
@@ -66,16 +69,16 @@ export const roleOf = (id: string): Role | undefined =>
 export const tierPools: Record<'normal' | 'premium', Partial<Record<Role, string[]>>> = {
   normal: {
     nav: ['navbar/Navbar1', 'navbar/Navbar2', 'navbar/Navbar3', 'navbar/Navbar6'],
-    hero: ['hero/Hero9', 'hero/Hero12', 'hero/Hero13', 'hero/Hero14'],
+    hero: ['hero/Hero9', 'hero/Hero12', 'hero/Hero13', 'hero/Hero14', 'jumbotron/Jumbotron1', 'jumbotron/Jumbotron3'],
     about: ['content/Content5', 'content/Content7'],
     features: ['content/Content1', 'blog/Blog2'],
-    cta: ['cta/Cta1'],
+    cta: ['cta/Cta1', 'cta/Cta5'],
     contact: ['contact/Contact1', 'contact/Contact3'],
     footer: ['footer/Footer1', 'footer/Footer4'],
   },
   premium: {
     nav: ['navbar/Navbar3', 'navbar/Navbar4', 'navbar/Navbar5', 'header/Header3', 'header/Header5', 'header/Header8'],
-    hero: ['hero/Hero1', 'hero/Hero2', 'hero/Hero4', 'hero/Hero6', 'hero/Hero8', 'hero/Hero10'], // Hero5 has a developer-style npm snippet
+    hero: ['hero/Hero1', 'hero/Hero2', 'hero/Hero4', 'hero/Hero6', 'hero/Hero8', 'hero/Hero10', 'hero/Hero18', 'hero/Hero20', 'hero/Hero24', 'hero/Hero26'], // Hero5 has a developer-style npm snippet
     about: ['content/Content2', 'content/Content8'],
     features: ['content/Content1', 'content/Content3'],
     stats: ['statics/Statics1', 'statics/Statics3'],

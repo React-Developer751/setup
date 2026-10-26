@@ -73,6 +73,11 @@ export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: The
     '--primary-foreground': onAccent,
   }
   for (const [shade, value] of Object.entries(accentScale)) style[`--primary-${shade}`] = value
+  // the stored components of the other kits (Meraki, Flowbite ...) use Tailwind's blue and indigo for their buttons and links: both follow the main colour
+  for (const [shade, value] of Object.entries(accentScale)) {
+    style[`--color-blue-${shade}`] = value
+    style[`--color-indigo-${shade}`] = value
+  }
 
   // Preline defines several tokens as `var(--color-white)` to mean "white text / white on dark".
   // `--color-white` is re-pointed at the surface colour above (for Tailblocks' `bg-white`), so pin those tokens.

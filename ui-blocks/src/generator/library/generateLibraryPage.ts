@@ -19,6 +19,7 @@ const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
   pricing: ['pricing'],
   team: ['team'],
   testimonials: ['testimonial'],
+  faq: ['faq'],
   blog: ['blog'],
   cta: ['cta'],
   contact: ['contact'],
@@ -61,6 +62,7 @@ export function generateLibraryPage(
     team: maybe(0.7),
     blog: maybe(0.6),
     links: maybe(0.25),
+    faq: maybe(0.55),
   }
 
   // normal = short page, premium = every optional section on
@@ -68,11 +70,11 @@ export function generateLibraryPage(
     tier === 'premium' ? role !== 'profile' && role !== 'links' : tier === 'normal' ? false : optional[role]
 
   // which parts the page has: the short page (normal), or the long one with its optional parts; then what the person removed or added
-  const FULL: Role[] = ['nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'blog', 'links', 'cta', 'contact', 'footer']
+  const FULL: Role[] = ['nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'faq', 'blog', 'links', 'cta', 'contact', 'footer']
   const visible = new Set<Role>(
     tier === 'normal'
       ? ['nav', 'hero', 'about', 'features', 'cta', 'contact', 'footer']
-      : ['nav', 'hero', 'about', 'features', 'steps', 'pricing', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'profile', 'gallery', 'team', 'blog', 'links'] as const).filter((role) => show(role))],
+      : ['nav', 'hero', 'about', 'features', 'steps', 'pricing', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'profile', 'gallery', 'team', 'blog', 'links', 'faq'] as const).filter((role) => show(role))],
   )
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   for (const section of edits?.hidden ?? []) for (const role of ROLE_OF[section] ?? []) visible.delete(role)

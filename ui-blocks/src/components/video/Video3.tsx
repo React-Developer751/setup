@@ -1,0 +1,9 @@
+// @ts-nocheck - markup of a third-party snippet kept as it is (non-standard attributes)
+export default function Video3() {
+  return (
+    <video className="w-full rounded-base" autoplay muted controls>
+      <source src="/docs/videos/flowbite.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  )
+}

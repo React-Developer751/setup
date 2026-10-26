@@ -1,3 +1,4 @@
 .claude/
 .DS_Store
 *.bak
+ui-blocks/src/devSheet.dev.js

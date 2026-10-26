@@ -6,7 +6,7 @@ import type { Role } from './libraryRoles'
 
 type Link = { href: string; label: string }
 
-const BRAND_WORDS = /^(brand|tailblocks|preline)$/i
+const BRAND_WORDS = /^(brand|tailblocks|preline|meraki|flowbite|windster)$/i
 const NUMERIC = /^[\d.,]+\s?[KkMm+%]?$/
 const PLACEHOLDER_NAMES = /^(Holden Caulfield|Alper Kamu|Henry Letham|Atticus Finch|Phoebe Caulfield|Josh Grazioso)$/i
 const PLACEHOLDER_ROLES = /^(UI Developer|Designer|Art Director|Developer|CEO|CTO|Manager|Director Payments.*)$/i
@@ -120,6 +120,15 @@ function dataFor(role: Role, c: WebsiteContent): Data {
         itemTitles: c.team.members.map((m) => m.name),
         itemTexts: about,
         itemLabels: c.team.members.map((m) => m.role),
+      }
+    case 'faq':
+      return {
+        title: 'Frequently asked questions',
+        subtitle: c.hero.subtitle,
+        eyebrow: 'FAQ',
+        itemTitles: c.faq.map((f) => f.q),
+        itemTexts: c.faq.map((f) => f.a),
+        itemLabels: ['Question', 'Answer', 'Help'],
       }
     case 'blog':
       return {
@@ -248,7 +257,7 @@ function replaceBrand(
     if (/^©\s*\d{4}/.test(text)) return `© ${new Date().getFullYear()} ${c.brandName}`
     if (/figma is live/i.test(text)) return `New: ${subject}`
     if (/npm i /i.test(text)) return `Welcome to ${c.brandName}`
-    if (/\b(preline|tailblocks)\b/i.test(text)) return text.replace(/\b(preline|tailblocks)\b/gi, c.brandName)
+    if (/\b(preline|tailblocks|meraki(?:\s?ui)?|flowbite|windster)\b/i.test(text)) return text.replace(/\b(preline|tailblocks|meraki(?:\s?ui)?|flowbite|windster)\b/gi, c.brandName)
     return undefined
   })
 }
@@ -346,6 +355,20 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
   }
 
   if (role === 'contact') {
+    // the map of the stored component shows a made-up place ("My Business Name, Izmir"): the real address of the person, or no map at all
+    root.querySelectorAll('iframe').forEach((frame) => {
+      if (!/google\.[a-z.]+\/maps/i.test(frame.getAttribute('src') ?? '')) return
+      if (c.contact.showMap && c.contact.address) frame.setAttribute('src', `https://maps.google.com/maps?q=${encodeURIComponent(c.contact.address)}&output=embed`)
+      else {
+        const panel = root.ownerDocument.createElement('div')
+        panel.className = frame.getAttribute('class') ?? ''
+        panel.setAttribute('role', 'img')
+        panel.setAttribute('aria-label', 'Map')
+        panel.style.background = 'linear-gradient(135deg, var(--g-accent, #6366f1), color-mix(in oklab, var(--g-accent, #6366f1) 60%, var(--g-alt, #a855f7)))'
+        panel.style.minHeight = '16rem'
+        frame.replaceWith(panel)
+      }
+    })
     mapTextNodes(root, (text) => (EMAIL.test(text) ? c.contact.email : PHONE.test(text) ? c.contact.phone : undefined))
     root.querySelectorAll('a[href^="mailto:"]').forEach((a) => a.setAttribute('href', `mailto:${c.contact.email}`))
     const labelOf = (el: Element) => visibleText(el).toLowerCase()
@@ -485,34 +508,78 @@ function artFor(seed: string, colors: { accent: string; alt: string }, w: number
 }
 
 const DUMMY = /dummyimage\.com\/(\d+)x(\d+)/
+/** a picture of another site (Unsplash, Flowbite ...): the stored components of the other kits come with such links, and a generated page must not depend on them */
+const REMOTE = /^https?:\/\//i
+/** the size of an <img>: its width and height, else its Tailwind size classes (size-12, w-16 h-16 ...), else a landscape picture */
+function sizeOfImage(img: Element): { w: number; h: number; small: boolean } {
+  const px = (v: string | null) => (v && /^\d+$/.test(v) ? Number(v) : undefined)
+  const cls = img.getAttribute('class') ?? ''
+  const unit = (m: RegExpMatchArray | null) => (m ? Number(m[1]) * 4 : undefined)
+  const sq = unit(cls.match(/(?:^|\s)size-(\d+)(?:\s|$)/))
+  const w = px(img.getAttribute('width')) ?? sq ?? unit(cls.match(/(?:^|\s)w-(\d+)(?:\s|$)/))
+  const h = px(img.getAttribute('height')) ?? sq ?? unit(cls.match(/(?:^|\s)h-(\d+)(?:\s|$)/))
+  const round = /rounded-full/.test(cls)
+  const width = w ?? (round ? 64 : 640)
+  const height = h ?? (round ? width : Math.round(width * 0.66))
+  return { w: width, h: height, small: Math.max(width, height) <= 96 }
+}
 const blank = (w: number, h: number) => `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"/>`)}`
 /** a round avatar with the initials of a person, in the colours of the site (for the pictures of reviews and team members) */
 const initialsOf = (name: string) => (name.replace(/[^\p{L}\s]/gu, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?')
 const avatar = (name: string, accent: string, alt: string) =>
   `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${accent}"/><stop offset="1" stop-color="${alt}"/></linearGradient></defs><rect width="200" height="200" fill="url(#g)"/><text x="100" y="100" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="78" text-anchor="middle" dominant-baseline="central">${initialsOf(name).replace(/[<>&]/g, '')}</text></svg>`)}`
 
+/** a small mark of the brand for the logos of the other kits (a rounded square with the first letter, in the colours of the site) */
+const brandMark = (name: string, accent: string, alt: string) =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${accent}"/><stop offset="1" stop-color="${alt}"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#g)"/><text x="32" y="43" text-anchor="middle" font-family="system-ui,sans-serif" font-size="32" font-weight="700" fill="#fff">${initialsOf(name).slice(0, 1).replace(/[<>&]/g, '')}</text></svg>`)}`
+
+/** backgrounds that point at a picture of another site (inline style or a bg-[url(...)] class): the page's own picture, a drawn one, or the colours of the site */
+function fillBackgrounds(root: Element, role: Role, c: WebsiteContent, colors?: { accent: string; alt: string }) {
+  const photos = c.photos
+  const own = (role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about] : role === 'gallery' ? photos?.gallery ?? [] : [photos?.about, photos?.hero]).filter((p): p is string => !!p)
+  let n = 0
+  root.querySelectorAll<HTMLElement>('[style*="url("], [class*="bg-[url("]').forEach((el) => {
+    const inline = el.style.backgroundImage
+    const fromClass = /bg-\[url\(['"]?(https?:[^)'"\]]+)/.exec(el.getAttribute('class') ?? '')
+    const remote = /url\(["']?https?:/i.test(inline) || !!fromClass
+    if (!remote) return
+    const rect = { w: 1200, h: 700 }
+    const art = own.length ? own[n++ % own.length] : colors ? artFor(`${role}|bg${n++}`, colors, rect.w, rect.h) : undefined
+    el.style.backgroundImage = art ? `url("${art}")` : 'linear-gradient(135deg, var(--g-accent, #6366f1), color-mix(in oklab, var(--g-accent, #6366f1) 70%, var(--g-alt, #a855f7)))'
+    if (art) el.style.backgroundSize = 'cover'
+    // the class that carried the address of the picture goes (the picture of the page took its place)
+    el.setAttribute('class', (el.getAttribute('class') ?? '').split(/\s+/).filter((token) => !/^bg-\[url\(/.test(token)).join(' '))
+  })
+}
+
 function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { accent: string; alt: string }) {
-  if ((role === 'testimonial' || role === 'team') && colors) {
-    const names = role === 'testimonial' ? c.testimonials.map((t) => t.author) : c.team.members.map((m) => m.name)
-    let n = 0
-    root.querySelectorAll('img').forEach((img) => {
-      if (!DUMMY.test(img.getAttribute('src') ?? '')) return
-      img.setAttribute('src', avatar(names[n++ % Math.max(1, names.length)] ?? c.brandName, colors.accent, colors.alt))
-      img.removeAttribute('srcset')
-      img.classList.add('object-cover')
-    })
-    return
-  }
   const photos = c.photos
   const gallery = photos?.gallery ?? []
+  const people = role === 'testimonial' ? c.testimonials.map((t) => t.author) : role === 'team' ? c.team.members.map((m) => m.name) : [c.brandName]
   const pool = role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about] : role === 'gallery' ? gallery : [...gallery, photos?.about, photos?.hero]
   const own = pool.filter((p): p is string => !!p)
   let next = 0
+  let person = 0
   root.querySelectorAll('img').forEach((img) => {
-    const m = DUMMY.exec(img.getAttribute('src') ?? '')
-    if (!m) return
-    const w = Number(m[1])
-    const h = Number(m[2])
+    const src = img.getAttribute('src') ?? ''
+    const dummy = DUMMY.exec(src)
+    const remote = REMOTE.test(src)
+    if (!dummy && !remote) return
+    const size = dummy ? { w: Number(dummy[1]), h: Number(dummy[2]), small: Math.max(Number(dummy[1]), Number(dummy[2])) < 200 } : sizeOfImage(img)
+    // the logo of another kit: the brand mark of this site
+    if (remote && /logo|brand/i.test(src) && colors) {
+      img.setAttribute('src', brandMark(c.brandName, colors.accent, colors.alt))
+      img.removeAttribute('srcset')
+      return
+    }
+    // a person: initials in the colours of the site (the pictures of reviews and team members, and the small round pictures of authors)
+    if (colors && (((role === 'testimonial' || role === 'team') && (dummy || size.small)) || (remote && size.small && /rounded-full|rounded-xl|rounded-lg/.test(img.getAttribute('class') ?? '')))) {
+      img.setAttribute('src', avatar(people[person++ % Math.max(1, people.length)] ?? c.brandName, colors.accent, colors.alt))
+      img.removeAttribute('srcset')
+      img.classList.add('object-cover')
+      return
+    }
+    const { w, h } = size
     if (w >= 200 && h >= 100 && own.length) {
       img.setAttribute('src', own[next++ % own.length])
       img.removeAttribute('srcset')
@@ -523,16 +590,18 @@ function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { acc
       const art = artFor(`${role}|${next++}`, colors, w, h)
       if (art) {
         img.setAttribute('src', art)
+        img.removeAttribute('srcset')
         img.classList.add('object-cover')
         return
       }
     }
     img.setAttribute('src', blank(w, h))
+    img.removeAttribute('srcset')
     img.style.background = 'linear-gradient(135deg, var(--g-accent, #6366f1), color-mix(in oklab, var(--g-accent, #6366f1) 70%, var(--g-alt, #a855f7)))'
   })
 }
 
-const TITLE_KEY: Partial<Record<Role, string>> = { features: 'features', about: 'about', profile: 'about', steps: 'steps', gallery: 'gallery', pricing: 'pricing', team: 'team', testimonial: 'testimonials', blog: 'blog' }
+const TITLE_KEY: Partial<Record<Role, string>> = { faq: 'faq', features: 'features', about: 'about', profile: 'about', steps: 'steps', gallery: 'gallery', pricing: 'pricing', team: 'team', testimonial: 'testimonials', blog: 'blog' }
 /** A heading the person asked for ("rename pricing to Our Plans") must show, also in a stored component that has no heading of its own. */
 function ensureTitle(root: Element, role: Role, c: WebsiteContent) {
   const key = TITLE_KEY[role]
@@ -548,7 +617,19 @@ function ensureTitle(root: Element, role: Role, c: WebsiteContent) {
 
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
   try {
-    if (role !== 'nav' && role !== 'footer') fillImages(root, role, c, colors)
+    // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already
+    if (role === 'hero') {
+      root.querySelectorAll('nav').forEach((bar) => bar.remove())
+      // (a header that holds the heading of the hero is the hero itself, not a menu bar)
+      root.querySelectorAll('header').forEach((bar) => bar.querySelector('h1, h2') || bar.remove())
+      // "trusted by" rows of the logos of other companies (Facebook, Amazon ...): not the logos of this business
+      root.querySelectorAll('div, ul').forEach((row) => {
+        const kids = [...row.children]
+        if (kids.length >= 3 && !visibleText(row) && kids.every((k) => k.tagName === 'svg' || k.tagName === 'IMG' || k.querySelector('svg, img'))) row.remove()
+      })
+    }
+    fillImages(root, role, c, colors)
+    fillBackgrounds(root, role, c, colors)
     if (role === 'nav') return fillNav(root, c, links)
     if (role === 'footer') return fillFooter(root, c, links)
     if (role === 'hero') fillHero(root, c)

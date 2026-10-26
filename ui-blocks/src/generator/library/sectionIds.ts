@@ -9,5 +9,6 @@ export const sectionIds: Partial<Record<Role, string>> = {
   pricing: 'pricing',
   team: 'team',
   blog: 'blog',
+  faq: 'faq',
   contact: 'contact',
 }
