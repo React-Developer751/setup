@@ -211,6 +211,8 @@ function dataFor(role: Role, c: WebsiteContent): Data {
         itemTexts: [c.hero.subtitle],
         itemLabels: [subject],
       }
+    case 'banner':
+      return { title: c.cta.title, subtitle: c.cta.title, eyebrow: subject, itemTitles: [], itemTexts: [], itemLabels: [] }
     default:
       return { title: c.hero.title, subtitle: c.hero.subtitle, eyebrow: subject, itemTitles: [], itemTexts: [], itemLabels: [] }
   }
@@ -615,6 +617,37 @@ function ensureTitle(root: Element, role: Role, c: WebsiteContent) {
   section.insertBefore(h, holder === section ? section.firstChild : holder)
 }
 
+/** The announcement bars of the other kits are fixed to the top of the screen and can be closed with a script: here a plain bar at the top of the page. */
+function fillBanner(root: Element, c: WebsiteContent) {
+  root.querySelectorAll('[data-dismiss-target], [data-dismiss], .sr-only').forEach((close) => close.remove())
+  root.querySelectorAll<HTMLElement>('.fixed, .sticky').forEach((bar) => {
+    bar.classList.remove('fixed', 'sticky', 'z-50')
+    bar.classList.add('relative')
+    ;[...bar.classList].filter((name) => /^(top|bottom|start|end|left|right|inset)-/.test(name)).forEach((name) => bar.classList.remove(name))
+  })
+  root.querySelectorAll('input').forEach((input) => input.getAttribute('type') === 'email' && input.setAttribute('placeholder', 'Your email'))
+  const heading = root.querySelector('h1,h2,h3,h4')
+  if (heading) {
+    setText(heading, c.cta.title)
+    const text = heading.nextElementSibling
+    if (text && text.tagName === 'P') setText(text, c.hero.subtitle.split(/(?<=[.!?])\s/)[0] ?? c.hero.subtitle)
+  } else {
+    // one line of text with a link: the line is the message, the link the action
+    const line = [...root.querySelectorAll('p, span')].find((el) => ownText(el) && !el.closest('a,button'))
+    if (line) setText(line, c.cta.title)
+    ;[...root.querySelectorAll('span')].filter((el) => el !== line && isLeaf(el) && visibleText(el).length > 12 && !el.closest('a,button') && !el.classList.contains('sr-only')).forEach((el) => el.remove())
+  }
+  root.querySelectorAll('a').forEach((a) => {
+    if (!a.closest('button')) {
+      setText(a, c.hero.button)
+      a.setAttribute('href', '#contact')
+    }
+  })
+  root.querySelectorAll('button').forEach((b) => {
+    if (ownText(b)) setText(b, c.hero.button)
+  })
+}
+
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
   try {
     // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already
@@ -630,6 +663,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     }
     fillImages(root, role, c, colors)
     fillBackgrounds(root, role, c, colors)
+    if (role === 'banner') return fillBanner(root, c)
     if (role === 'nav') return fillNav(root, c, links)
     if (role === 'footer') return fillFooter(root, c, links)
     if (role === 'hero') fillHero(root, c)

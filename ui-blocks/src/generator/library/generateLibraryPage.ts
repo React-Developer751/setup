@@ -63,18 +63,19 @@ export function generateLibraryPage(
     blog: maybe(0.6),
     links: maybe(0.25),
     faq: maybe(0.55),
+    banner: maybe(0.3),
   }
 
   // normal = short page, premium = every optional section on
   const show = (role: keyof typeof optional) =>
-    tier === 'premium' ? role !== 'profile' && role !== 'links' : tier === 'normal' ? false : optional[role]
+    tier === 'premium' ? role === 'banner' ? optional.banner : role !== 'profile' && role !== 'links' : tier === 'normal' ? false : optional[role]
 
   // which parts the page has: the short page (normal), or the long one with its optional parts; then what the person removed or added
-  const FULL: Role[] = ['nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'faq', 'blog', 'links', 'cta', 'contact', 'footer']
+  const FULL: Role[] = ['banner', 'nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'faq', 'blog', 'links', 'cta', 'contact', 'footer']
   const visible = new Set<Role>(
     tier === 'normal'
       ? ['nav', 'hero', 'about', 'features', 'cta', 'contact', 'footer']
-      : ['nav', 'hero', 'about', 'features', 'steps', 'pricing', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'profile', 'gallery', 'team', 'blog', 'links', 'faq'] as const).filter((role) => show(role))],
+      : ['nav', 'hero', 'about', 'features', 'steps', 'pricing', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'profile', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   for (const section of edits?.hidden ?? []) for (const role of ROLE_OF[section] ?? []) visible.delete(role)
@@ -94,7 +95,7 @@ export function generateLibraryPage(
   const auto = generated.mood ? panelColors(generated.mood, order.map((r) => r as string), base.palette, generated.initialMode, (id) => targetOfRole(id as Role)) : undefined
   let bodyIndex = 0
   const sections: LibrarySection[] = order.map((role) => {
-    const body = role !== 'nav' && role !== 'hero' && role !== 'footer'
+    const body = role !== 'banner' && role !== 'nav' && role !== 'hero' && role !== 'footer'
     const band = body && bodyIndex++ % 2 === 1 && role !== 'cta'
     const t = targetOfRole(role) as Target
     const own = edits?.sectionColors[t] ?? auto?.[t]

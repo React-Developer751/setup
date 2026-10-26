@@ -34,7 +34,7 @@ const tiers = Object.entries(R.tierPools).flatMap(([tier, p]) => Object.entries(
 ok(tiers.every(({ role, id }) => id.startsWith('jumbotron/') || R.rolePools[role].includes(id) || byId.has(id)), 'the pools of the design levels only name stored components')
 ok(['faq'].every((role) => R.rolePools[role]?.length >= 5), 'a page has a FAQ role with 5 components')
 // components in a pool are page parts: no fixed bars, no JavaScript-only widgets
-const fixed = all.filter(({ role, id }) => role !== 'nav' && byId.get(id)?.fixed)
+const fixed = all.filter(({ role, id }) => role !== 'nav' && role !== 'banner' && byId.get(id)?.fixed)
 ok(fixed.length === 0, `no pool component is a fixed bar (${fixed.slice(0, 3).map((x) => x.id)})`)
 const headings = all.filter(({ role, id }) => !['nav', 'footer', 'gallery', 'hero'].includes(role) && byId.get(id).headings === 0)
 ok(headings.length <= 2, `a page part has a heading (${headings.slice(0, 4).map((x) => x.id)})`)
@@ -46,6 +46,7 @@ globalThis.document = { styleSheets: [] }
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
 const seen = new Set()
 let faqPages = 0
+let bannerPages = 0
 for (const prompt of ['Create a website for a dental clinic called Smile Care in Pune', 'pizza shop called Slice Hub in Mumbai', 'law firm called Rao and Partners', 'bike shop called Spoke selling cycles and helmets', 'yoga studio called Zen Flow in Goa']) {
   for (let v = 1; v <= 12; v += 1) {
     for (const tier of ['better', 'premium']) {
@@ -55,6 +56,7 @@ for (const prompt of ['Create a website for a dental clinic called Smile Care in
         ok(byId.has(s.componentId), `a page uses a stored component (${s.componentId})`)
       }
       if (page.sections.some((s) => s.role === 'faq')) faqPages += 1
+      if (page.sections.some((s) => s.role === 'banner')) bannerPages += 1
     }
   }
 }
@@ -63,6 +65,16 @@ ok(faqPages >= 20, `a long page has a FAQ (${faqPages} of 120 pages)`)
 ok(JSON.stringify(generateLibraryPage('bakery called Crumb', 4, 'better').sections) === JSON.stringify(generateLibraryPage('bakery called Crumb', 4, 'better').sections), 'the same prompt gives the same library page')
 const normal = generateLibraryPage('bakery called Crumb', 4, 'normal')
 ok(!normal.sections.some((s) => s.role === 'faq' || s.role === 'team' || s.role === 'pricing'), 'the short page has no FAQ, team or pricing')
+
+// ── every group has a decision: a part of a page (in the pools) or a widget (not)
+const U = await loadGeneratorModule('library/componentUse.ts')
+const inPool = new Set([...all.map(({ id }) => id), ...tiers.map(({ id }) => id)].map((id) => id.split('/')[0]))
+ok([...groups].every((g) => U.componentUse[g]), `every stored group is listed in componentUse.ts (${[...groups].filter((g) => !U.componentUse[g]).join(', ')})`)
+ok(Object.entries(U.componentUse).every(([g, { use }]) => (use === 'page') === inPool.has(g)), `page groups are in the pools and widgets are not (${Object.entries(U.componentUse).filter(([g, { use }]) => (use === 'page') !== inPool.has(g)).map(([g]) => g)})`)
+ok(all.length >= 170, `the pools hold ${all.length} components`)
+ok(R.rolePools.banner.length >= 3 && !R.tierPools.normal.banner, 'announcement bars are a role of the long pages only')
+ok([...seen].some((id) => id.startsWith('cardgrid/')) && [...seen].some((id) => id.startsWith('stepsection/')), 'pages use the card sections and the stepper sections')
+ok(bannerPages >= 10, `announcement bars appear on the long pages (${bannerPages} of 120)`)
 
 console.log(`components: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) {

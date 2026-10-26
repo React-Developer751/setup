@@ -20,3 +20,14 @@ Four source snippets are not converted (malformed HTML): clipboard/Clipboard6, d
    (Unsplash, Flowbite, dummyimage, `background-image` urls, logos of other kits) by a picture of the page, a drawn one, an avatar with initials or the brand mark.
    Menu bars inside a hero, "trusted by" rows of other companies' logos and the names of the kits ("Meraki", "Flowbite") are removed or replaced.
 3. In the component library ("Show in the style of a site") every group can be previewed this way.
+
+## What the generator uses (src/generator/library/componentUse.ts)
+
+Every group of stored components has a decision, checked by `scripts/test-components.mjs`:
+
+- **Page parts** (in the pools of `libraryRoles.ts`, 173 components + the jumbotrons of the short page): hero, jumbotron, navbar, header, features, content, blog, statics, step, gallery, portfolio, pricing, team, teams, testimonial, contact, cta, faq, footer, and
+  - `banner` (new role): an announcement bar above the menu on the long pages, made a plain bar (the originals are fixed to the screen and closed by a script),
+  - `cardgrid/CardGrid1,3,4,9` (blog): a single card from `card/` shown three times under a heading,
+  - `stepsection/StepSection3,6` (how it works): the two steppers that carry text, with a heading.
+  `node scripts/make-cardgrids.mjs` writes `cardgrid/` and `stepsection/`.
+- **Widgets** (stay in the Component Library, not drawn into a page): the rest of the 560 (alerts, avatars, badges, buttons, inputs, modals, tables, tabs, carousels ...). They are parts of an application: they need a script to work, or hold the data of an app (products, users, wallets). Where a group has a few pieces that do work as page parts they were wrapped (see above); the 20 other cards are shop, wallet, course, profile or login cards that would put the wrong content on a business site.
