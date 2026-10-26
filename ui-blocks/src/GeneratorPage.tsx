@@ -89,7 +89,7 @@ function GeneratorPage() {
   const [engine, setEngine] = useState<'templates' | 'library'>('library')
   const [view, setView] = useState<'preview' | 'code' | 'json'>('preview')
   const [copied, setCopied] = useState(false)
-  const [pages, setPages] = useState<'multi' | 'single'>('multi')
+  const [pages, setPages] = useState<'multi' | 'single'>('single')
   const [route, setRoute] = useState('/')
   const [fileIndex, setFileIndex] = useState(0)
   // the preview starts as a phone
@@ -846,7 +846,7 @@ function GeneratorPage() {
             <Setting label="Built with">
               <Segmented
                 value={shownEngine}
-                options={[['library', 'My 92 components'], ['templates', 'Built-in templates']]}
+                options={[['library', 'My 560 components'], ['templates', 'Built-in templates']]}
                 onChange={(e) => {
                   setEngine(e)
                   if (e === 'library') setPages('single')

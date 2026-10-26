@@ -62,14 +62,14 @@ export function Section({ role, paint, fit, band, children }: { role: Role; /** 
     const own = { bg: t['--g-bg'], surface: t['--g-surface'], border: t['--g-border'], text: t['--g-text'], muted: t['--g-muted'], accent: t['--g-accent'], alt: t['--g-accent'] }
     const { style, dark } = libraryThemeStyle({ name: 'part', light: own, dark: own }, 'light')
     return (
-      <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...style, ...fitStyle }} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
+      <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...style, ...fitStyle, overflowX: 'clip' }} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
         {buttonCss && <style>{buttonCss}</style>}
         {children}
       </div>
     )
   }
   return (
-    <div ref={box} id={sectionIds[role]} data-role={role} style={bandStyle || fitStyle ? { ...bandStyle, ...fitStyle } : undefined}>
+    <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...bandStyle, ...fitStyle, overflowX: 'clip' }}>
       {buttonCss && <style>{buttonCss}</style>}
       {children}
     </div>

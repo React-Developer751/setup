@@ -99,9 +99,15 @@ export function gateCandidates(candidates: CoreCandidate[], ctx: GateContext): {
 }
 
 /** pages of copy from Core-Craft through the server of this project; undefined when it is not running */
+/** Core-Craft finds the place in English prompts ("... in Pune" at the end): "Pune mein" is moved there for it */
+const forCore = (prompt: string) => {
+  const found = /\b([A-Z][\p{L}]+(?: [A-Z][\p{L}]+)?)\s+(?:mein|me|main)\b/u.exec(prompt)
+  return found ? `${prompt.replace(found[0], '').replace(/\s{2,}/g, ' ').trim()} in ${found[1]}` : prompt
+}
+
 export async function askCoreCraft(prompt: string, n = 8): Promise<CoreCandidate[] | undefined> {
   try {
-    const res = await fetch(`/api/corecraft?prompt=${encodeURIComponent(prompt)}&n=${n}`, { signal: AbortSignal.timeout(25_000) })
+    const res = await fetch(`/api/corecraft?prompt=${encodeURIComponent(forCore(prompt))}&n=${n}`, { signal: AbortSignal.timeout(25_000) })
     if (!res.ok) return undefined
     return ((await res.json()) as { candidates: CoreCandidate[] }).candidates
   } catch {
@@ -155,7 +161,7 @@ const HI_LABELS = { learnMore: 'और जानें', welcome: 'आपका 
 /** a page of Core-Craft AI for one prompt (undefined when it is not running or cannot write one) */
 export async function askCorePage(prompt: string): Promise<CorePage | undefined> {
   try {
-    const res = await fetch(`/api/corecraft/page?prompt=${encodeURIComponent(prompt)}`, { signal: AbortSignal.timeout(25_000) })
+    const res = await fetch(`/api/corecraft/page?prompt=${encodeURIComponent(forCore(prompt))}`, { signal: AbortSignal.timeout(25_000) })
     return res.ok ? ((await res.json()) as { page: CorePage }).page : undefined
   } catch {
     return undefined

@@ -253,6 +253,7 @@ function replaceBrand(
   mapTextNodes(root, (text) => {
     if (BRAND_WORDS.test(text)) return c.brandName
     if (/^placeholder$/i.test(text)) return 'Your email'
+    if (/^company name$/i.test(text)) return 'Your name'
     if (PLACEHOLDER_NAMES.test(text)) return take(people, person++, people[0]).name
     if (PLACEHOLDER_ROLES.test(text)) return take(people, personRole++, people[0]).role
     if (text.startsWith('@')) return handle
@@ -414,7 +415,7 @@ function fillHero(root: Element, c: WebsiteContent) {
 
 function fillNav(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   const links = pageLinks.length ? pageLinks : DEFAULT_LINKS
-  root.querySelectorAll<HTMLElement>('.hs-dropdown-menu, [role="menu"]').forEach((menu) => (menu.style.display = 'none'))
+  root.querySelectorAll<HTMLElement>('.hs-dropdown-menu, [role="menu"]').forEach((menu) => menu.remove())
   const inMenu = (el: Element) => !!el.closest('.hs-dropdown-menu, [role="menu"]')
 
   const candidates = [...root.querySelectorAll<HTMLElement>('a, button, .hs-dropdown-toggle')].filter(
@@ -467,8 +468,10 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   const subject = sentence(c.subject) || c.hero.subtitle
   const orderWord = /^(first|second|third|fourth|fifth|sixth|seventh|eighth) link$/i
 
-  root.querySelectorAll('h1,h2,h3,h4').forEach((h) => {
-    if (/^categories$/i.test(visibleText(h))) setText(h, columnTitles[column++ % columnTitles.length])
+  // the titles of the link columns ("Industries", "Solutions" ...) belong to the other kit
+  const titleWord = /^(categories|industries|solutions|products?|resources|company|quick links?|use cases|services|support|legal|contact us|explore|about us|navigation|links|platform|developers)$/i
+  root.querySelectorAll('h1,h2,h3,h4,h5,h6,p,span').forEach((h) => {
+    if (isLeaf(h) && titleWord.test(visibleText(h))) setText(h, ['Quick links', 'What we offer', 'Support', 'Contact'][column++ % 4])
   })
   root.querySelectorAll('a').forEach((a) => {
     if (orderWord.test(ownText(a))) {
@@ -476,6 +479,31 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
       setText(a, link.label)
       a.setAttribute('href', link.href)
     }
+  })
+  // the link columns: the pages of this site, then what it offers, then the small print (the names of the other kit's links go)
+  const own = (a: Element) => ownText(a)
+  const keep = /^(privacy|terms|cookies?|©|brand)/i
+  const columns = new Map<Element, Element[]>()
+  root.querySelectorAll('a').forEach((a) => {
+    const text = own(a)
+    if (!text || text.length > 32 || keep.test(text) || a.querySelector('img') || text === c.brandName) return
+    if (/^(view demo|get started|start free|sign up|sign in|log in|try for free|download|learn more)/i.test(text)) {
+      setText(a, c.hero.button)
+      a.setAttribute('href', '#contact')
+      return
+    }
+    const column = a.parentElement?.tagName === 'LI' ? a.parentElement.parentElement : a.parentElement
+    if (column) columns.set(column, [...(columns.get(column) ?? []), a])
+  })
+  const sets: Link[][] = [links, c.features.items.slice(0, 5).map((f) => ({ href: '#features', label: f.title })), [{ href: '#contact', label: 'Contact' }, { href: '#', label: 'Privacy Policy' }, { href: '#', label: 'Terms' }]]
+  ;[...columns.values()].filter((group) => group.length >= 2).forEach((group, k) => {
+    const set = sets[Math.min(k, sets.length - 1)]
+    group.forEach((a, i) => {
+      if (i < set.length) {
+        setText(a, set[i].label)
+        a.setAttribute('href', set[i].href)
+      } else (a.parentElement?.tagName === 'LI' ? a.parentElement : a).remove()
+    })
   })
   root.querySelectorAll('p, span, div').forEach((p) => {
     if (isLeaf(p) && visibleText(p).length > 30) setText(p, subject)
@@ -617,6 +645,59 @@ function ensureTitle(root: Element, role: Role, c: WebsiteContent) {
   section.insertBefore(h, holder === section ? section.firstChild : holder)
 }
 
+
+const LOGO_WORDS = /^(google|forbes|amazon|microsoft|spotify|airbnb|slack|stripe|netflix|uber|shopify|notion|meta|facebook|twitter|linkedin|paypal|adobe|oracle|ibm|intel|dropbox|zoom|github|figma|vercel|tesla|apple|samsung|mailchimp|hubspot|salesforce|asana|trello)$/i
+const PLACEHOLDER_CATEGORY = /^(web design|app design|branding|animation|ui\/ux|ui ux|illustration|graphic design|photography|development|seo|marketing|mobile apps?|templates?)$/i
+
+/** What the components of the other kits leave behind: names of well-known companies in "trusted by" lines, the filter words of a design portfolio, billing switches. */
+function cleanLeftovers(root: Element, role: Role, c: WebsiteContent) {
+  // app-store badges and "sign in with Google" of the other kits: this business has no app and no account
+  root.querySelectorAll('a, button').forEach((el) => {
+    if (/(google play|app store|play store|download on|get it on|(sign|log) ?(in|up) with|continue with (google|github|facebook|apple))/i.test(visibleText(el))) el.remove()
+  })
+  // a company name that stands alone ("Google", "Forbes") is a logo of another business
+  root.querySelectorAll('*').forEach((el) => {
+    if (el.children.length === 0 && LOGO_WORDS.test(visibleText(el))) {
+      const parent = el.parentElement
+      el.remove()
+      if (parent && parent !== root && !visibleText(parent) && !parent.querySelector('img,svg,input')) parent.remove()
+    }
+  })
+  const d = dataFor(role, c)
+  let k = 0
+  mapTextNodes(root, (text) => (PLACEHOLDER_CATEGORY.test(text) ? take(role === 'gallery' ? c.gallery.captions : d.itemTitles.length ? d.itemTitles : [d.eyebrow], k++, d.eyebrow) : undefined))
+  if (role === 'pricing') {
+    // a billing switch (monthly / annually, "save 20%") means nothing next to the prices of this business
+    root.querySelectorAll('button, span, label').forEach((el) => {
+      if (!el.isConnected || !/^(monthly|annually|biannually|yearly|billed)/i.test(visibleText(el))) return
+      let box: Element | null = el.parentElement
+      while (box && box !== root && !/monthly/i.test(visibleText(box))) box = box.parentElement
+      let bar: Element | null = el
+      while (bar?.parentElement && bar.parentElement !== root && visibleText(bar.parentElement).length < 90 && !bar.parentElement.querySelector('h1,h2,h3,h4,li')) bar = bar.parentElement
+      if (bar && bar !== root && visibleText(bar).length < 90) bar.remove()
+    })
+    // the check-list of a plan: its own perks, not "5 exclusive widgets"
+    const perkSpans = [...root.querySelectorAll('span')].filter((el) => isLeaf(el) && visibleText(el) && el.previousElementSibling?.tagName.toLowerCase() === 'svg')
+    const seen = new Map<Element, number>()
+    perkSpans.forEach((el) => {
+      const card = repeatedAncestor(el, root) ?? root
+      const n = seen.get(card) ?? 0
+      seen.set(card, n + 1)
+      const index = [...seen.keys()].indexOf(card)
+      const plan = take(c.pricing.plans, index, c.pricing.plans[0])
+      setText(el, take(plan.perks, n, plan.perks[0] ?? 'Included'))
+    })
+    // the same line twice in one plan: once is enough
+    root.querySelectorAll('p').forEach((p) => {
+      const key = visibleText(p)
+      const card = repeatedAncestor(p, root) ?? root
+      const done = ((card as unknown as { __seen?: Set<string> }).__seen ??= new Set())
+      if (done.has(key)) p.remove()
+      else done.add(key)
+    })
+  }
+}
+
 /** The announcement bars of the other kits are fixed to the top of the screen and can be closed with a script: here a plain bar at the top of the page. */
 function fillBanner(root: Element, c: WebsiteContent) {
   root.querySelectorAll('[data-dismiss-target], [data-dismiss], .sr-only').forEach((close) => close.remove())
@@ -669,6 +750,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     if (role === 'hero') fillHero(root, c)
     else fillSection(root, role, c)
     fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button)
+    cleanLeftovers(root, role, c)
     setPlaceholders(root)
     ensureTitle(root, role, c)
     replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members)
