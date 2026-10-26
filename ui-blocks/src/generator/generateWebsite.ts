@@ -5,6 +5,7 @@
 // different prompts - or a different `variation` number - give a different one.
 import { namesColor, thinkColors } from './colorBrain'
 import { harmonisePalette } from './colorHarmony'
+import { GOOD_ENOUGH, judgePalette } from './colorJudge'
 import { contentTemplates } from './contentTemplates'
 import { writeContent } from './creativeBrain'
 import { extractContentDetails } from './filter'
@@ -104,20 +105,34 @@ export function planWebsite(
   // business types without hand-written template texts (law firm, clinic ...) always use the brains
   const useBrains = creative || !hasTemplates(themeKey)
   const copy = useBrains ? writeContent(themeKey, brand, seededRandom(hash(`${prompt.toLowerCase()}|copy|${variation}`)), false, niche ? undefined : prompt) : undefined
-  const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}`)), tier) : undefined
-  // the design mood (moods.ts): a whole look made of rules; its colours grow from the hue the colour brain chose, so they stay unique
-  const chosenMood: Mood | undefined = !useBrains && !edits?.mood ? undefined : edits?.mood === 'none' ? undefined : edits?.mood ? moodById(edits.mood) : chooseMood(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|mood|${variation}`)), temperature())
-  // premium colours go with the calm moods (their shadows and glass are made for the mood's own colours); a mood the person asked for wins over them
-  const premiumColours = colors?.harmony === 'premium'
-  const askedMood = !!edits?.mood && edits.mood !== 'none' || !!moodFromText(prompt)
-  const mood: Mood | undefined = premiumColours && chosenMood && !askedMood && !PREMIUM_MOODS.has(chosenMood.id) ? undefined : chosenMood
-  const basePalette = colors?.palette ?? presetPalette(themeKey, paletteIndex)
-  const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name, colors?.harmony === 'curated' || colors?.harmony === 'premium') : undefined
-  // the colours of the brain and of the moods are checked as a pair: no neon second colour, no two loud colours of one lightness (colorHarmony.ts); what the person chooses afterwards is theirs
-  const trustedPair = colors?.harmony === 'curated' || colors?.harmony === 'premium'
-  // a designer's pair keeps its own second colour inside a mood (a charcoal second colour must not turn into the mood's blue)
-  const generated = premiumColours && !askedMood ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
-  const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
+  // the colours are judged (colorJudge.ts): a palette a designer would not keep is replaced by the best of several others; what the person chose themselves is never replaced
+  const personChoseColours = !!(edits?.accent || edits?.alt || edits?.harmony?.length || edits?.tones?.length || (edits?.mood && edits.mood !== 'none')) || namesColor(prompt) || !!moodFromText(prompt)
+  const makeLook = (attempt: number) => {
+    const tag = attempt ? `|retry${attempt}` : ''
+    const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}${tag}`)), tier) : undefined
+    // the design mood (moods.ts): a whole look made of rules; its colours grow from the hue the colour brain chose, so they stay unique
+    const chosenMood: Mood | undefined = !useBrains && !edits?.mood ? undefined : edits?.mood === 'none' ? undefined : edits?.mood ? moodById(edits.mood) : chooseMood(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|mood|${variation}${tag}`)), temperature())
+    // premium colours go with the calm moods (their shadows and glass are made for the mood's own colours); a mood the person asked for wins over them
+    const premiumColours = colors?.harmony === 'premium'
+    const askedMood = !!edits?.mood && edits.mood !== 'none' || !!moodFromText(prompt)
+    const mood: Mood | undefined = premiumColours && chosenMood && !askedMood && !PREMIUM_MOODS.has(chosenMood.id) ? undefined : chosenMood
+    const basePalette = colors?.palette ?? presetPalette(themeKey, paletteIndex)
+    const moodMade = mood ? moodPalette(mood, colors?.hue ?? rgbToHsl(hexToRgb(basePalette.light.accent)).h, rgbToHsl(hexToRgb(basePalette.light.alt)).h, basePalette.name, colors?.harmony === 'curated' || colors?.harmony === 'premium') : undefined
+    // the colours of the brain and of the moods are checked as a pair: no neon second colour, no two loud colours of one lightness (colorHarmony.ts); what the person chooses afterwards is theirs
+    const trustedPair = colors?.harmony === 'curated' || colors?.harmony === 'premium'
+    // a designer's pair keeps its own second colour inside a mood (a charcoal second colour must not turn into the mood's blue)
+    const generated = premiumColours && !askedMood ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
+    const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
+    return { colors, mood, moodMade, palette, judgement: judgePalette(palette, themeKey, prompt) }
+  }
+  let look = makeLook(0)
+  if (useBrains && !personChoseColours && look.judgement.score < GOOD_ENOUGH) {
+    for (let attempt = 1; attempt <= 10 && look.judgement.score < GOOD_ENOUGH; attempt += 1) {
+      const other = makeLook(attempt)
+      if (other.judgement.score > look.judgement.score) look = other
+    }
+  }
+  const { colors, mood, moodMade, palette, judgement } = look
 
   // the motion brain has its own seeded stream too; some motion needs its own sections
   const motion = thinkMotion(themeKey, tier, edits?.motion ?? motionSetting, seededRandom(hash(`${prompt.toLowerCase()}|motion|${variation}`)))
@@ -160,7 +175,7 @@ export function planWebsite(
     copy,
     brand,
     brainsForced: !creative && useBrains,
-    colorReasons: colors?.reasons ?? [],
+    colorReasons: [...(colors?.reasons ?? []), `Colour check: ${Math.round(judgement.score * 100)}/100${judgement.problems.length ? ` (${judgement.problems.slice(0, 2).join('; ')})` : ''}`],
     /** what the drawn pictures are made from: different per prompt and per variation */
     visuals: { themeKey, seed: hash(`${prompt.toLowerCase()}|${variation}|art`) },
   }

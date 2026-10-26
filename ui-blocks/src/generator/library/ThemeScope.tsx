@@ -7,7 +7,7 @@ import type { MotionPlan } from '../motionBrain'
 import { initMotion } from '../motionRuntime'
 import { defaultMode, presetPalette, type ColorMode, type Palette, type ThemeKey } from '../themes'
 import { fillContent } from './fillContent'
-import { libraryThemeStyle } from './libraryTheme'
+import { LIBRARY_CSS, artColors, libraryThemeStyle } from './libraryTheme'
 import { sectionIds } from './sectionIds'
 import type { Role } from './libraryRoles'
 
@@ -108,7 +108,7 @@ export function ThemeScope({
       // React StrictMode runs effects twice in development; fill each section only once
       if (el.dataset.filled) return
       el.dataset.filled = '1'
-      fillContent(el, el.dataset.role as Role, content, links, { accent: pagePalette[mode].accent, alt: pagePalette[mode].alt })
+      fillContent(el, el.dataset.role as Role, content, links, artColors(pagePalette[mode].accent, pagePalette[mode].alt))
     })
     // Preline wires up collapse / dropdown behaviour of the navigation blocks
     import('preline').then(({ HSStaticMethods }) => HSStaticMethods.autoInit()).catch(() => {})
@@ -121,6 +121,7 @@ export function ThemeScope({
 
   return (
     <div ref={ref} data-gen-theme={theme} className={`overflow-x-clip ${dark ? 'dark' : ''}`} style={style}>
+      <style>{LIBRARY_CSS}</style>
       <PaletteContext.Provider value={pagePalette}>{children}</PaletteContext.Provider>
       {/* light / dark switch: sticks to the bottom-right corner of the screen on every device */}
       <div className="pointer-events-none sticky bottom-4 z-50 flex h-0 justify-end px-4">

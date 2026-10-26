@@ -17,6 +17,7 @@ import finalPromptSource from './finalPrompt.ts?raw'
 import fillContentSource from './library/fillContent.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
 import { libraryComponents } from './library/libraryComponents'
+import { repairContrast } from './library/pageAudit'
 import libraryRolesSource from './library/libraryRoles.ts?raw'
 import libraryThemeSource from './library/libraryTheme.ts?raw'
 import { libraryThemeStyle } from './library/libraryTheme'
@@ -257,10 +258,34 @@ function renderLibrary(lib: Library) {
       </ThemeScope>,
     ),
   )
+  const styles = Object.fromEntries((['light', 'dark'] as ColorMode[]).map((mode) => [mode, cssText(libraryThemeStyle(lib.palette, mode, lib.themeKey).style)]))
+  // the finished page is looked at in a browser, in both modes: a text that cannot be read on what is behind it gets a readable colour (pageAudit.ts)
+  const page = host.firstElementChild as HTMLElement | null
+  if (page && typeof document !== 'undefined' && document.body) {
+    host.style.cssText = 'position:absolute;left:-9999px;top:0;width:1280px'
+    document.body.appendChild(host)
+    // colours that are fading to another mode would be measured half way
+    const still = document.createElement('style')
+    still.textContent = '*{transition:none!important;animation:none!important}'
+    document.head.appendChild(still)
+    try {
+      const first = defaultMode(lib.themeKey)
+      repairContrast(page, (mode) => {
+        page.setAttribute('style', styles[mode])
+        page.classList.toggle('dark', mode === 'dark')
+      }, [first, first === 'light' ? 'dark' : 'light'])
+      page.setAttribute('style', styles[first])
+      page.classList.toggle('dark', first === 'dark')
+    } catch {
+      // the repair is a help: a page that cannot be checked is used as it is
+    } finally {
+      still.remove()
+      host.remove()
+    }
+  }
   const html = host.innerHTML
   root.unmount()
 
-  const styles = Object.fromEntries((['light', 'dark'] as ColorMode[]).map((mode) => [mode, cssText(libraryThemeStyle(lib.palette, mode, lib.themeKey).style)]))
   const needsPreline = /data-hs-|\bhs-/.test(html)
   const css = usedCss([html], false)
   return { html, styles, needsPreline, css }

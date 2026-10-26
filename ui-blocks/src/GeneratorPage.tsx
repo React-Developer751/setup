@@ -45,6 +45,7 @@ import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
+import { pagesWanted } from './generator/edit/pagesIntent'
 import { scoreThemes } from './generator/themeClassifier'
 import type { Tier } from './generator/designBrain'
 import type { MotionSetting } from './generator/motionBrain'
@@ -266,6 +267,12 @@ function GeneratorPage() {
     if (!text.trim()) return
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
     await understand(text)
+    // "a single page" / "landing page" in the prompt is an order: it wins over what was set before
+    const wanted = pagesWanted(text)
+    if (wanted) {
+      setPages(wanted)
+      if (wanted === 'single') setEngine('library')
+    }
     setSubmitted(text)
     setHistory([])
     setUndone([])

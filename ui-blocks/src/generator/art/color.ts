@@ -2,7 +2,8 @@
 // never picked at random. A ramp of five colours goes from deep to light, so a number between 0 and 1 can be turned into a colour.
 export type RGB = readonly [number, number, number]
 export type Scheme = 'complementary' | 'analogous' | 'triadic' | 'split' | 'mono'
-export const SCHEMES: Scheme[] = ['complementary', 'analogous', 'triadic', 'split', 'mono']
+// the pictures of a page stay in the colours of the page: one hue, its neighbours, or the second colour softened (a triad or a split would make a rainbow)
+export const SCHEMES: Scheme[] = ['complementary', 'analogous', 'analogous', 'mono', 'mono']
 
 export function hexToRgb(hex: string): RGB {
   const n = parseInt(/^#[0-9a-f]{6}$/i.test(hex) ? hex.slice(1) : '6366f1', 16)
