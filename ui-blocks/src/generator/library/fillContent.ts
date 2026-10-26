@@ -462,7 +462,6 @@ function fillNav(root: Element, c: WebsiteContent, pageLinks: Link[]) {
 
 function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   const links = pageLinks.length ? pageLinks : DEFAULT_LINKS
-  const columnTitles = ['Company', 'Explore', 'Support', 'Legal']
   let column = 0
   let linkIndex = 0
   const subject = sentence(c.subject) || c.hero.subtitle
