@@ -391,6 +391,13 @@ function fillHero(root: Element, c: WebsiteContent) {
   if (title) setText(title, c.hero.title)
   const subtitle = [...root.querySelectorAll('p')].find((p) => !p.closest('a,button') && visibleText(p).length > 30)
   if (subtitle) setText(subtitle, c.hero.subtitle)
+  // the same line twice (a component that shows its text in two places): once
+  const lines = new Set<string>()
+  root.querySelectorAll('p').forEach((p) => {
+    const text = visibleText(p)
+    if (text.length > 30 && lines.has(text)) p.remove()
+    else lines.add(text)
+  })
 
   // announcement pill above the title ("We just raised $20M")
   if (title) {
@@ -510,6 +517,13 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   fillGenericButtons(root, 'Subscribe')
   setPlaceholders(root)
   replaceBrand(root, c)
+  // a footer always says whose it is
+  if (!visibleText(root).includes(c.brandName)) {
+    const line = root.ownerDocument.createElement('div')
+    line.className = 'px-6 py-4 text-center text-sm opacity-70'
+    line.textContent = `© ${new Date().getFullYear()} ${c.brandName}`
+    root.appendChild(line)
+  }
 }
 
 // The components bring grey placeholder pictures (dummyimage.com). The pictures the person added (or drew with the image AI) take their place;
@@ -585,9 +599,11 @@ function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { acc
   const photos = c.photos
   const gallery = photos?.gallery ?? []
   const people = role === 'testimonial' ? c.testimonials.map((t) => t.author) : role === 'team' ? c.team.members.map((m) => m.name) : [c.brandName]
-  const pool = role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about] : role === 'gallery' ? gallery : [...gallery, photos?.about, photos?.hero]
+  const pool = role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about, ...gallery.slice(0, 3)] : role === 'gallery' ? gallery : [...gallery, photos?.about, photos?.hero]
   const own = pool.filter((p): p is string => !!p)
-  let next = 0
+  // every part starts at another picture, so the same scene is not on the page four times
+  const START: Partial<Record<Role, number>> = { features: 1, steps: 2, team: 2, testimonial: 3, blog: 3, pricing: 4, cta: 5, faq: 1 }
+  let next = START[role] ?? 0
   let person = 0
   root.querySelectorAll('img').forEach((img) => {
     const src = img.getAttribute('src') ?? ''
@@ -602,7 +618,7 @@ function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { acc
       return
     }
     // a person: initials in the colours of the site (the pictures of reviews and team members, and the small round pictures of authors)
-    if (colors && (((role === 'testimonial' || role === 'team') && (dummy || size.small)) || (remote && size.small && /rounded-full|rounded-xl|rounded-lg/.test(img.getAttribute('class') ?? '')))) {
+    if (colors && (role === 'team' || (role === 'testimonial' && (dummy || size.small)) || (remote && size.small && /rounded-full|rounded-xl|rounded-lg/.test(img.getAttribute('class') ?? '')))) {
       img.setAttribute('src', avatar(people[person++ % Math.max(1, people.length)] ?? c.brandName, colors.accent, colors.alt))
       img.removeAttribute('srcset')
       img.classList.add('object-cover')

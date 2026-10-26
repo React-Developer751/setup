@@ -55,29 +55,35 @@ export function generateLibraryPage(
 
   // draw everything in a fixed order so the same prompt always gives the same page
   const chosen = Object.fromEntries((Object.keys(rolePools) as Role[]).map((role) => [role, pickFrom(role)])) as Record<Role, string>
+  // the parts a page may have besides the always-there ones; a page that is too long is not read
   const optional = {
-    stats: maybe(0.8),
-    profile: maybe(0.25),
-    gallery: maybe(0.7),
-    team: maybe(0.7),
-    blog: maybe(0.6),
-    links: maybe(0.25),
-    faq: maybe(0.55),
+    stats: maybe(0.7),
+    profile: false,
+    gallery: maybe(0.5),
+    team: maybe(0.4),
+    blog: maybe(0.35),
+    links: maybe(0.1),
+    faq: maybe(0.5),
+    steps: maybe(0.6),
+    pricing: maybe(0.5),
     banner: maybe(0.3),
   }
 
-  // normal = short page, premium = every optional section on
+  // normal = short page, premium = the rich parts on (the team and the blog by turns)
+  const premiumOn = new Set<keyof typeof optional>(['stats', 'steps'])
   const show = (role: keyof typeof optional) =>
-    tier === 'premium' ? role === 'banner' ? optional.banner : role !== 'profile' && role !== 'links' : tier === 'normal' ? false : optional[role]
+    tier === 'normal' ? false : tier === 'premium' ? premiumOn.has(role) || (role === 'gallery' || role === 'faq' || role === 'pricing' ? optional[role] || maybe(0.6) : role === 'banner' ? optional.banner : role === 'team' || role === 'blog' ? optional[role] || maybe(0.3) : false) : optional[role]
 
   // which parts the page has: the short page (normal), or the long one with its optional parts; then what the person removed or added
   const FULL: Role[] = ['banner', 'nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'faq', 'blog', 'links', 'cta', 'contact', 'footer']
   const visible = new Set<Role>(
     tier === 'normal'
       ? ['nav', 'hero', 'about', 'features', 'cta', 'contact', 'footer']
-      : ['nav', 'hero', 'about', 'features', 'steps', 'pricing', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'profile', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
+      : ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
+  // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
+  for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)
   for (const section of edits?.hidden ?? []) for (const role of ROLE_OF[section] ?? []) visible.delete(role)
   const sectionOfRole = (role: Role): SectionKey | undefined => (role === 'profile' ? 'about' : (Object.keys(ROLE_OF) as SectionKey[]).find((key) => ROLE_OF[key]?.includes(role)))
   const order: Role[] = reorder(FULL.filter((role) => visible.has(role)), edits?.moves ?? [], sectionOfRole)
