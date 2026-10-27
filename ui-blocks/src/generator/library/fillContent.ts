@@ -545,6 +545,29 @@ function dropMadeUpContact(root: Element, c: WebsiteContent) {
   gone.forEach((el) => el.remove())
 }
 
+/**
+ * An accordion of the kit shows an answer under its first question only (the others are drawn closed, with no script to open them): every question
+ * here gets its answer shown, and a question the page has no text for is not repeated.
+ */
+function fillFaqAnswers(root: Element, c: WebsiteContent) {
+  const items = [...root.querySelectorAll('button')].filter((b) => b.querySelector('h1,h2,h3,h4,h5,h6') && b.parentElement && b.parentElement !== root)
+    .map((b) => b.parentElement as Element)
+  if (items.length < 2) return
+  const model = items.map((i) => i.querySelector(':scope > p')).find(Boolean)
+  if (!model) return
+  items.forEach((item, i) => {
+    const faq = c.faq[i]
+    if (!faq) return item.remove()
+    let answer = item.querySelector(':scope > p')
+    if (!answer) {
+      answer = item.ownerDocument.createElement('p')
+      answer.setAttribute('class', model.getAttribute('class') ?? '')
+      item.appendChild(answer)
+    }
+    setText(answer, faq.a)
+  })
+}
+
 /** a list of short links on the side of a part ("General, Billing, Office Cleaning" in an FAQ): they name what this business does */
 function fillSideLinks(root: Element, c: WebsiteContent) {
   const labels = ['General', ...c.features.items.map((f) => f.title)]
@@ -1081,7 +1104,7 @@ function scrubLeftovers(root: Element, before: Set<string>, role: Role, c: Websi
       continue
     }
     // a one- or two-word label of the kit on the first screen (a product name, a logo word) is not the business's
-    if (role === 'hero' && words <= 2 && !el.closest('a, button, nav, header') && !/^(previous|next|prev)$/i.test(text)) {
+    if (role === 'hero' && words <= 2 && !el.closest('a, button, nav') && !/^(previous|next|prev)$/i.test(text)) {
       el.remove()
       continue
     }
@@ -1144,7 +1167,10 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   step('buttons', () => fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button))
   step('leftovers', () => cleanLeftovers(root, role, c))
   step('kit text', () => scrubLeftovers(root, original, role, c))
-  if (role === 'faq') step('side links', () => fillSideLinks(root, c))
+  if (role === 'faq') {
+    step('side links', () => fillSideLinks(root, c))
+    step('answers', () => fillFaqAnswers(root, c))
+  }
   step('made-up contact', () => dropMadeUpContact(root, c))
   step('fields', () => setPlaceholders(root))
   step('title', () => ensureTitle(root, role, c))
