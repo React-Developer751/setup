@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const dir = path.resolve(process.env.PIXELMATH_DIR ?? '../normal')
+const dir = path.resolve(process.env.PIXELMATH_DIR ?? ['../normal', '../../normal'].find((d) => fs.existsSync(path.join(d, 'serve.py'))) ?? '../normal')
 const port = process.env.PIXELMATH_PORT ?? '8000'
 if (!fs.existsSync(path.join(dir, 'serve.py'))) {
   console.error(`The image engine was not found in ${dir} (serve.py is missing). Set PIXELMATH_DIR to the folder of the engine.`)

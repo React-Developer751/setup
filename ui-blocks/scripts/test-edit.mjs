@@ -1,7 +1,6 @@
 // Tests of the edit chat: (1) operations change all three engines the way they say, undo = fewer operations, (2) the server (no external AI)
 // (against a fake model server: no key and no network needed), (3) the server's tool schema matches edits.ts.
 import fs from 'node:fs'
-import http from 'node:http'
 import { spawn } from 'node:child_process'
 import { loadGeneratorModule } from './lib/load-generator.mjs'
 

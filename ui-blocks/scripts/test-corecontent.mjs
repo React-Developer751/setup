@@ -52,12 +52,13 @@ ok(multi.pages.find((p) => p.id === 'contact')?.label === 'संपर्क' &
 // ── the decision
 let d = C.decideCore(page(), ours)
 ok(d.use && /Cycles|cycles/.test(d.reason), 'a business without a pack that names 3 services: Core-Craft writes it')
-ok(!d.blocks.cta && !d.blocks.titles && !d.blocks.navLabels, 'in English the names of the sections and the buttons stay with the built-in AI')
-ok(!C.decideCore(page(), { ...ours, niche: 'dental_clinic' }).use && /text pack/.test(C.decideCore(page(), { ...ours, niche: 'dental_clinic' }).reason), 'a business with a hand-written text pack keeps it')
+ok(d.blocks.cta?.button === 'Shop Now' && d.blocks.steps.title === 'How It Works' && !d.blocks.navLabels, 'in English Core-Craft writes the buttons and section titles, the menu stays')
+ok(d.hide.map((h) => h.section).join() === 'blog,testimonials,team,pricing', 'its general blog notes and sample reviews stay out')
+ok(C.decideCore(page(), { ...ours, niche: 'dental_clinic' }).use, 'a business with a hand-written text pack: Core-Craft still writes it when it named 2+ services (the pack padded restaurants with thali)')
 ok(!C.decideCore(page({ generated_by: { business_type: 'cafe', mode: 'typical offerings', items_from_prompt: ['arduino', 'drones'] } }), ours).use, 'a page that is not tied to the services is not used')
 ok(!C.decideCore(page({ generated_by: { business_type: 'shop', mode: 'strict (your phrases only)', items_from_prompt: ['cycles'] } }), ours).use, 'one service is too little to write a page about')
 ok(d.review.length === 1, 'what Core-Craft says to check is passed on')
-ok(!d.blocks.hero, 'the heading of the built-in AI stays when it already names the business')
+ok(d.blocks.hero.title === 'Cycles without the hassle' && d.blocks.hero.button === 'Shop Now', 'the first screen is Core-Craft\'s too')
 ok(C.decideCore(page({ hero_heading: 'Paint without the hassle', generated_by: { business_type: 'shop', mode: 'strict (your phrases only)', items_from_prompt: ['paint', 'pipes', 'tools'] } }), { ...ours, subject: 'hardware store', heroTitle: 'Where Reliable Services And Trusted Projects Come Together', theme: 'general_business' }).blocks.hero?.title === 'Paint without the hassle', 'a heading that does not name the business is replaced by one that names a service')
 const hindi = C.decideCore(page({ lang: 'hi', brand: 'स्माइल केयर', hero_heading: 'इम्प्लांट में भरोसेमंद मदद', features_title: 'हमारी सेवाएं', ui: { about: 'हमारे बारे में', pricing: 'कीमतें', team: 'हमारी टीम', faq: 'सवाल-जवाब', faq_title: 'अक्सर पूछे जाने वाले सवाल', contact: 'संपर्क', testimonials: 'ग्राहकों की राय' }, generated_by: { business_type: 'clinic', mode: 'strict (your phrases only)', items_from_prompt: ['इम्प्लांट', 'ब्रेसेज़'] } }), { ...ours, niche: 'dental_clinic', brand: 'Oak Care' })
 ok(hindi.use && hindi.rename === 'स्माइल केयर' && hindi.blocks.lang === 'hi' && hindi.blocks.navLabels.contact === 'संपर्क' && hindi.blocks.titles.faq === 'अक्सर पूछे जाने वाले सवाल', 'a Hindi prompt is always written by Core-Craft, with the name, the menu and the headings in Hindi (even where a text pack exists)')
@@ -98,8 +99,18 @@ try {
   fs.rmSync(dir, { recursive: true, force: true })
 }
 
+// ── broken frames of the content AI are caught before they reach a page
+{
+  const shop = C.decideCore(page({ features: [{ title: 'Kurtis', text: 'a' }, { title: 'Sarees', text: 'b' }, { title: 'Free shipping above 999', text: 'c' }, { title: 'Online Store', text: 'd' }], about: ['Rang Mahal sells free shipping above 999 and kurtis.'], generated_by: { business_type: 'shop', mode: 'strict (your phrases only)', items_from_prompt: ['kurtis', 'sarees', 'free shipping above 999'] } }), ours)
+  ok(shop.use && shop.blocks.features.items.map((f) => f.title).join().startsWith('Kurtis,Sarees') && !/shipping/i.test(JSON.stringify(shop.blocks.features.items.slice(0, 2))), 'an offer ("free shipping above 999") is not a service card')
+  ok(!shop.blocks.features.items.some((f) => f.title === 'Online Store') && !shop.blocks.about, 'the type of the business is not a service, and a paragraph that sells an offer is left to the built-in text')
+  ok(shop.hide.some((h) => h.section === 'pricing'), 'no prices given: the price list of the kit is left out')
+  const hi = C.decideCore(page({ lang: 'hi', brand: 'स्माइल केयर', hero_heading: 'इम्प्लांट — दिल्ली में ब्रेसेज़ और नाम — दिल्ली में', features: [{ title: 'इम्प्लांट', text: 'क' }, { title: 'नाम', text: 'ख' }] }), ours)
+  ok(hi.blocks.hero.title.startsWith('स्माइल केयर') && !hi.blocks.features.items.some((f) => f.title === 'नाम'), 'a garbled Hindi heading and the word "नाम" as a service are fixed')
+}
+
 // ── the real bridge on real prompts
-const cont = path.resolve(process.env.CORECRAFT_DIR ?? '../../cont')
+const cont = path.resolve(process.env.CORECRAFT_DIR ?? ['../cont', '../../cont'].find((d) => fs.existsSync(path.join(d, 'corecraft'))) ?? '../cont')
 if (fs.existsSync(path.join(cont, 'corecraft', 'business_types.py'))) {
   const BP = 9700 + Math.floor(Math.random() * 90)
   const bridge = spawn(process.env.PYTHON ?? 'python3', ['scripts/corecraft_bridge.py', '--port', String(BP)], { env: { ...process.env, CORECRAFT_DIR: cont, PYTHONDONTWRITEBYTECODE: '1' }, stdio: 'ignore' })
@@ -140,7 +151,7 @@ if (fs.existsSync(path.join(cont, 'corecraft', 'business_types.py'))) {
       ok(paddedAfter === 0 && paddedAfter <= paddedBefore, `no padding of another business type on the services (before ${paddedBefore}, after ${paddedAfter})`)
       // Hindi
       const hp = await ask('दिल्ली में दांतों का क्लिनिक, इम्प्लांट, ब्रेसेज़ और सफाई। नाम "स्माइल केयर"')
-      ok(hp.lang === 'hi' && hp.brand === 'स्माइल केयर' && hp.features.map((f) => f.title).join() === 'इम्प्लांट,ब्रेसेज़,सफाई', 'a Hindi prompt: Hindi page, the name and the three services of the prompt')
+      ok(hp.lang === 'hi' && hp.brand === 'स्माइल केयर' && hp.features.map((f) => f.title).filter((t) => t !== 'नाम').join() === 'इम्प्लांट,ब्रेसेज़,सफाई', 'a Hindi prompt: Hindi page, the name and the three services of the prompt')
       const hd = C.decideCore(hp, { niche: undefined, heroTitle: 'x', subject: 'x', theme: 'healthcare', prompt: 'x', brand: 'Oak Care' })
       const hsite = generateWebsite('दिल्ली में दांतों का क्लिनिक', 3, 'premium', true, 'auto', E.editsFrom([{ op: 'core', data: hd.blocks }, ...(hd.rename ? [{ op: 'rename', name: hd.rename }] : []), ...(hd.hide ?? [])]))
       ok(hsite.content.brandName === 'स्माइल केयर' && !/[A-Za-z]{4,}/.test(hsite.content.hero.title + hsite.content.hero.subtitle + hsite.content.features.items.map((f) => f.title + f.text).join('')), 'the Hindi site has no English words in its heading, subheading and service cards')

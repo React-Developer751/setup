@@ -73,7 +73,49 @@ type Data = {
   extraTexts?: string[]
 }
 
+/** the words "a, b and c" */
+const andList = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : (items[0] ?? ''))
+
+/**
+ * The line under the title of a part. Every part gets its own, built from what the page says about it: the hero line under the title of five parts
+ * (and again in every spare text of a part) is the same sentence over and over.
+ */
+function leadFor(role: Role, c: WebsiteContent): string | undefined {
+  const brand = c.brandName
+  const lower = (t: string) => t.charAt(0).toLowerCase() + t.slice(1)
+  switch (role) {
+    case 'features':
+    case 'links':
+      return `${sentence(andList(c.features.items.slice(0, 4).map((f) => lower(f.title))))}.`
+    case 'steps':
+      return `${sentence(andList(c.steps.items.slice(0, 4).map((s) => lower(s.title))))}.`
+    case 'faq':
+      return `Short answers to what guests ask ${brand} most.`
+    case 'blog':
+      return `Notes from ${brand}.`
+    case 'pricing':
+      return `What it costs at ${brand}.`
+    case 'team':
+      return `The people behind ${brand}.`
+    case 'testimonial':
+      return `What people say about ${brand}.`
+    case 'gallery':
+      return `A look at ${brand}.`
+    case 'cta':
+      return c.contact.hoursText ? `${brand}: ${c.contact.hoursText}.` : `Get in touch with ${brand}.`
+    default:
+      return undefined
+  }
+}
+
 function dataFor(role: Role, c: WebsiteContent): Data {
+  const data = rawDataFor(role, c)
+  const lead = leadFor(role, c)
+  if (!lead) return data
+  return { ...data, subtitle: lead, ...(role === 'cta' ? { itemTexts: [lead] } : {}) }
+}
+
+function rawDataFor(role: Role, c: WebsiteContent): Data {
   const features = c.features.items
   const subject = sentence(c.subject) || c.brandName
   const about = c.about.paragraphs
@@ -339,6 +381,8 @@ function fillContactRows(root: Element, c: WebsiteContent) {
     const kind = row.hint ?? kinds.find((k) => !taken.has(k))
     if (!kind) return row.card.remove()
     taken.add(kind)
+    // nothing real to show for this kind (the person gave no phone, e-mail or address): the row is left out
+    if (!facts[kind]) return row.card.remove()
     setText(row.heading, labels[kind])
     // one line with the fact; the kit's other lines (a description, a second number) go
     let placed = false
@@ -484,6 +528,30 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
   }
 }
 
+/** e-mails and phone numbers of the kit that are not the business's: their line (or link) goes */
+function dropMadeUpContact(root: Element, c: WebsiteContent) {
+  const mine = new Set([c.contact.email, c.contact.phone, c.contact.whatsapp].filter(Boolean) as string[])
+  root.querySelectorAll('a[href^="mailto:"], a[href^="tel:"]').forEach((a) => {
+    const value = (a.getAttribute('href') ?? '').replace(/^(mailto:|tel:)/, '')
+    if (!mine.has(value) && !mine.has(visibleText(a))) a.remove()
+  })
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  const gone: Element[] = []
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text
+    const text = (node.textContent ?? '').trim()
+    if (text && (EMAIL.test(text) || PHONE.test(text)) && text.length <= 40 && !mine.has(text) && node.parentElement) gone.push(node.parentElement.closest('li') ?? node.parentElement)
+  }
+  gone.forEach((el) => el.remove())
+}
+
+/** a list of short links on the side of a part ("General, Billing, Office Cleaning" in an FAQ): they name what this business does */
+function fillSideLinks(root: Element, c: WebsiteContent) {
+  const labels = ['General', ...c.features.items.map((f) => f.title)]
+  const links = [...root.querySelectorAll('a[href="#"]')].filter((a) => a.parentElement && [...a.parentElement.children].filter((x) => x.tagName === 'A').length >= 3 && visibleText(a).length <= 24)
+  links.forEach((a, i) => setText(a, labels[i] ?? labels[labels.length - 1]))
+}
+
 /** A contact part that shows no e-mail, phone or address of its own (a form only) still tells the visitor how to reach the business: a line with the details, also the ones the person typed. */
 function ensureContactFacts(root: Element, c: WebsiteContent) {
   const text = visibleText(root)
@@ -569,6 +637,9 @@ function fillHero(root: Element, c: WebsiteContent) {
 }
 
 function fillNav(root: Element, c: WebsiteContent, pageLinks: Link[]) {
+  // a kit file that shows two example bars one under the other (a dark one and a light one) is one bar on a site
+  const bars = [...root.querySelectorAll('header')]
+  if (bars.length > 1 && bars.every((bar) => bar.parentElement === bars[0].parentElement)) bars.slice(1).forEach((bar) => bar.remove())
   const links = pageLinks.length ? pageLinks : DEFAULT_LINKS
   root.querySelectorAll<HTMLElement>('.hs-dropdown-menu, [role="menu"]').forEach((menu) => menu.remove())
   const inMenu = (el: Element) => !!el.closest('.hs-dropdown-menu, [role="menu"]')
@@ -1005,7 +1076,12 @@ function scrubLeftovers(root: Element, before: Set<string>, role: Role, c: Websi
     const el = node.parentElement
     if (!text || !el || !before.has(text) || known.has(text) || el.closest('.sr-only, svg, script, style')) continue
     const words = text.split(' ').length
-    if (/placeholder/i.test(text)) {
+    if (/placeholder/i.test(text) || /^(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) link$/i.test(text)) {
+      el.remove()
+      continue
+    }
+    // a one- or two-word label of the kit on the first screen (a product name, a logo word) is not the business's
+    if (role === 'hero' && words <= 2 && !el.closest('a, button, nav, header') && !/^(previous|next|prev)$/i.test(text)) {
       el.remove()
       continue
     }
@@ -1068,6 +1144,8 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   step('buttons', () => fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button))
   step('leftovers', () => cleanLeftovers(root, role, c))
   step('kit text', () => scrubLeftovers(root, original, role, c))
+  if (role === 'faq') step('side links', () => fillSideLinks(root, c))
+  step('made-up contact', () => dropMadeUpContact(root, c))
   step('fields', () => setPlaceholders(root))
   step('title', () => ensureTitle(root, role, c))
   step('names', () => replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members))

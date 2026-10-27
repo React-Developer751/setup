@@ -147,6 +147,28 @@ export const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': upstream.headers.get('content-type'), 'content-length': bytes.length, 'cache-control': 'public, max-age=86400' })
       return res.end(bytes)
     }
+    // the studio of the image engine: 3-8 pictures of one site in one style (hero, about, tiles), already judged by the engine
+    if (req.method === 'GET' && url.pathname === '/api/ai-set') {
+      if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
+      const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+      const count = Number(url.searchParams.get('count') ?? 6)
+      const seed = Number(url.searchParams.get('seed') ?? 1)
+      const accent = /^#[0-9a-f]{6}$/i.test(url.searchParams.get('accent') ?? '') ? url.searchParams.get('accent') : undefined
+      const mood = ['warm', 'cool', 'dark', 'light'].includes(url.searchParams.get('mood')) ? url.searchParams.get('mood') : undefined
+      if (prompt.length < 2 || !Number.isInteger(count) || count < 3 || count > 8 || !Number.isInteger(seed) || seed < 0 || seed > 999999) return send(res, 400, { error: 'prompt (2-200 letters), count (3-8) and seed (0-999999) are needed' })
+      let upstream
+      try {
+        upstream = await fetch(`${PIXELMATH_URL}/set`, { method: 'POST', headers: { 'content-type': 'application/json', ...(PIXELMATH_KEY ? { 'x-api-key': PIXELMATH_KEY } : {}) }, body: JSON.stringify({ prompt, count, seed, ...(accent ? { accent } : {}), ...(mood ? { mood } : {}), text_zone: 'left', response: 'base64' }), signal: AbortSignal.timeout(90_000) })
+      } catch {
+        return send(res, 503, { error: 'the image engine is not running (npm run images)' })
+      }
+      if (!upstream.ok) return send(res, 502, { error: `the image engine answered ${upstream.status}` })
+      const body = await upstream.json()
+      const images = (Array.isArray(body.images) ? body.images : []).slice(0, 8).filter((i) => /^image\/(jpeg|png)$/.test(i?.mime) && typeof i.image_base64 === 'string' && /^[A-Za-z0-9+/=]+$/.test(i.image_base64) && i.image_base64.length < 400_000)
+        .map((i) => ({ role: String(i.role ?? '').slice(0, 12), width: Number(i.width) || 0, height: Number(i.height) || 0, mime: i.mime, image_base64: i.image_base64 }))
+      const r = body.report ?? {}
+      return send(res, 200, { report: { niche: r.niche ?? null, title: String(r.title ?? '').slice(0, 60), fallback: r.fallback === true, redrawn: Number(r.redrawn) || 0, min_distance: Number(r.min_distance) || 0, hero_contrast: Number(r.hero_contrast) || 0, text_color: typeof r.text_color === 'string' ? r.text_color.slice(0, 9) : undefined }, images })
+    }
     // Core-Craft AI (the `cont` folder, run by `npm run corecraft`): several pages of copy for a prompt; the page checks every line before it is offered
     if (req.method === 'GET' && url.pathname === '/api/corecraft') {
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)

@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const dir = path.resolve(process.env.CORECRAFT_DIR ?? '../../cont')
+const dir = path.resolve(process.env.CORECRAFT_DIR ?? ['../cont', '../../cont'].find((d) => fs.existsSync(path.join(d, 'corecraft'))) ?? '../cont')
 if (!fs.existsSync(path.join(dir, 'corecraft', 'content_engine.py'))) {
   console.error(`Core-Craft was not found in ${dir}. Set CORECRAFT_DIR to the folder that holds corecraft/.`)
   process.exit(1)

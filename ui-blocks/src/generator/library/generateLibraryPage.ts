@@ -47,6 +47,11 @@ export function generateLibraryPage(
   // your own data (src/data/dataPool.json) first, the generated text for what it does not cover
   const poolRand = seededRandom(hash(`${userPrompt.trim().toLowerCase()}|pool|${variation}`))
   const base = { ...generated, content: applyPoolToContent(generated.content, generated.themeKey, userPrompt, poolRand) }
+  // the e-mail, phone and street of the kit ("hello@example.com", "+1 (555) 000-0000", "123 Sample Street") are not the business's: they are left out, the city stays
+  const MADE_UP = /example\.com|\(555\)|Sample Street|Your City/i
+  const own = (value: string) => (MADE_UP.test(value) ? '' : value)
+  const place = base.content.contact.address.replace(/^123 Sample Street,?\s*/i, '')
+  base.content = { ...base.content, contact: { ...base.content.contact, email: own(base.content.contact.email), phone: own(base.content.contact.phone), address: MADE_UP.test(place) ? '' : place } }
   const tier = base.tier
   const rand = seededRandom(hash(`${userPrompt.trim().toLowerCase()}|library|${variation}`))
   const poolFor = (role: Role) => (tier === 'better' ? undefined : tierPools[tier][role]) ?? rolePools[role]

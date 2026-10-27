@@ -5,7 +5,6 @@
 //   - the line must name the business of the prompt (a line that could be on any page is no use),
 //   - sizes, no numbers or links, no corporate button texts ("Learn more", "Download the app"), no lines that end on a group of people without "for".
 import type { CoreBlocks, EditOp, TextField } from './edits'
-import { fitsBusiness } from '../memory/phraseScores'
 import type { ThemeKey } from '../themes'
 
 export type CoreCandidate = { seed: number; niche: string; brand: string; hero_heading: string; tagline: string; cta_primary: string; cta_secondary: string; cta_text: string }
@@ -147,6 +146,12 @@ export type CorePage = {
   cta_primary: string
   cta_secondary: string
   cta_title: string
+  faq_title?: string
+  /** what Core-Craft did not invent (prices, phone, e-mail, address ...) */
+  missing?: string[]
+  prices?: { name: string; price: string }[]
+  offers?: { id: string; text: string }[]
+  hours?: string
   ui: Record<string, string>
   generated_by: { business_type: string; mode: string; items_from_prompt: string[] }
   needs_review: string[]
@@ -168,13 +173,22 @@ export async function askCorePage(prompt: string): Promise<CorePage | undefined>
   }
 }
 
-const cards = (page: CorePage) => [...page.features, ...page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase()))].slice(0, 6)
+/** words that mark a name in a prompt (नाम "X", called X): Core-Craft sometimes takes them for a service */
+const NAME_MARKERS = new Set(['नाम', 'naam', 'name', 'named', 'called', 'brand'])
+/** a line that repeats a word group ("... में ब्रेसेज़ ... — दिल्ली में") or holds a name marker is a broken frame: the built-in line stays */
+const garbled = (line: string) => {
+  const words = line.toLowerCase().split(/[^\p{L}\p{M}]+/u).filter((w) => w.length > 1)
+  return words.some((w) => NAME_MARKERS.has(w)) || /(.{6,}?)\s*—\s*.*\1/u.test(line)
+}
+/** an offer or a condition ("free shipping above 999", "7 day returns") is not a service: Core-Craft sometimes lists it as one */
+const OFFER = /free (?:shipping|delivery|trial)|cash on delivery|\bcod\b|\d+[- ]?day|returns?\b|% off|above \d|over \d|discount/i
+const cards = (page: CorePage) => [...page.features.filter((f) => !NAME_MARKERS.has(f.title.trim().toLowerCase()) && !OFFER.test(f.title) && !(page.type_label && page.type_label.trim().toLowerCase() === f.title.trim().toLowerCase())), ...page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase()))].slice(0, 6)
 
 export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   const review = page.needs_review ?? []
   const hindi = page.lang === 'hi'
   const strict = /^strict/i.test(page.generated_by?.mode ?? '')
-  const items = page.generated_by?.items_from_prompt ?? []
+  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i))
   if (!page.features?.length || !page.about?.length) return { use: false, reason: 'Core-Craft returned an incomplete page', review }
   if (hindi) {
     const t = (en: string, hi: string) => (hi ? hi : en)
@@ -182,7 +196,7 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
     const blocks: CoreBlocks = {
       lang: 'hi',
       labels: HI_LABELS,
-      hero: { title: page.hero_heading, subtitle: page.tagline, button: page.cta_primary },
+      hero: { title: garbled(page.hero_heading) ? [page.brand, page.location].filter(Boolean).join(' — ') : page.hero_heading, subtitle: garbled(page.tagline) ? [cards(page).slice(0, 4).map((f) => f.title).join(', '), page.location].filter(Boolean).join(' — ') : page.tagline, button: page.cta_primary },
       features: { title: page.features_title, items: cards(page) },
       about: { title: page.about_title, paragraphs: page.about, points: page.highlights.map((h) => h.title).slice(0, 3) },
       steps: { title: page.steps_title, items: page.steps },
@@ -196,17 +210,23 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
     const hide: EditOp[] = [...(['stats', 'gallery', 'pricing', 'team', 'testimonials', 'blog'] as const).map((section) => ({ op: 'remove', section }) as EditOp), ...(['pricing', 'team', 'gallery', 'blog'] as const).map((page) => ({ op: 'removePage', page }) as EditOp)]
     return { use: true, reason: 'the prompt is in Hindi: Core-Craft writes the page in Hindi', blocks, rename: named, hide, review }
   }
-  if (ours.niche) return { use: false, reason: `this business has a hand-written text pack (${ours.niche}), which is better than Core-Craft's frames`, review }
+  // the newer Core-Craft writes about the services the person named, in the voice of the kind of business (a restaurant serves, a clinic treats), and says
+  // what it did not invent: it writes the page whenever it could tie it to the person's own words; the built-in texts are the fallback
   if (!strict || items.length < 2) return { use: false, reason: 'Core-Craft could not tie the page to at least two services you named, so its text would be general', review }
+  const ui = page.ui ?? {}
   const blocks: CoreBlocks = {
     lang: 'en',
+    hero: { title: page.hero_heading, subtitle: page.tagline, button: page.cta_primary },
     features: { title: page.features_title, items: cards(page) },
-    about: { paragraphs: page.about, points: page.highlights.map((h) => h.title).slice(0, 3) },
+    // a paragraph that treats an offer as a thing sold ("sells free shipping above 999") is a broken frame: the built-in paragraph stays
+    ...(page.about.some((p) => OFFER.test(p)) ? {} : { about: { title: page.about_title, paragraphs: page.about, points: page.highlights.map((h) => h.title).slice(0, 3) } }),
     steps: { title: page.steps_title, items: page.steps },
     faq: page.faq,
+    cta: { title: page.cta_title, button: page.cta_primary },
+    ...((page.faq_title ?? ui.faq_title) ? { titles: { faq: page.faq_title ?? ui.faq_title } } : {}),
   }
-  // the heading too, when the one of this project does not speak about the business
-  // (a line that names one of the person's own services is about the business)
-  if (!fitsBusiness(ours.heroTitle, ours.subject, ours.brand) && !refuse('heroTitle', page.hero_heading, { theme: ours.theme, subject: `${ours.subject} ${items.join(' ')}`, prompt: ours.prompt, current: { heroTitle: ours.heroTitle } })) blocks.hero = { title: page.hero_heading }
-  return { use: true, reason: `no text pack for this business: Core-Craft writes about your own services (${items.slice(0, 4).join(', ')}) and nothing else`, blocks, review }
+  // its blog notes are general ("How long things really take"), and sample reviews and a team would carry invented names: they stay out
+  // the prices of the kit would be made up too: a price list stays only when the person gave prices
+  const hide: EditOp[] = ([...['blog', 'testimonials', 'team'], ...(page.prices?.length ? [] : ['pricing'])] as const).map((section) => ({ op: 'remove', section }) as EditOp)
+  return { use: true, reason: `Core-Craft writes about your own services (${items.slice(0, 4).join(', ')}) in the voice of ${page.type_label || page.business_type}, and invents nothing${page.missing?.length ? ` (not given: ${page.missing.join(', ')})` : ''}`, blocks, hide, review }
 }

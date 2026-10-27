@@ -156,8 +156,39 @@ export async function redrawScene(scene: UsedScene, options: { accent?: string; 
   }
 }
 
+/**
+ * The studio of the image engine draws the pictures of one site together (hero with calm space for the headline, About, gallery tiles) in one style and
+ * judges them itself. undefined when the engine is not running or the business fits none of its niches (it then answers with a neutral picture: the
+ * scenes of the plan are drawn instead, as before).
+ */
+async function studioSet(prompt: string, accent: string | undefined, seed: number): Promise<{ ops: EditOp[]; report: PictureReport } | undefined> {
+  try {
+    const query = new URLSearchParams({ prompt, count: '6', seed: String(Math.abs(Math.round(seed)) % 999_999) })
+    if (accent && /^#[0-9a-f]{6}$/i.test(accent)) query.set('accent', accent)
+    const res = await fetch(`/api/ai-set?${query}`, { signal: AbortSignal.timeout(100_000) })
+    if (!res.ok) return undefined
+    const body = (await res.json()) as { report?: { niche?: string | null; title?: string; fallback?: boolean; redrawn?: number }; images?: { role: string; mime: string; image_base64: string }[] }
+    if (!body.report || body.report.fallback || !body.report.niche) return undefined
+    const pictures = (body.images ?? []).map((i) => `data:${i.mime};base64,${i.image_base64}`)
+    if (pictures.length < 3) return undefined
+    return {
+      ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }],
+      report: { pictures: pictures.length, redrawn: body.report.redrawn ?? 0, otherScene: 0, directed: 0, notes: [`one set of ${pictures.length} pictures in the style of ${body.report.title || body.report.niche}, judged by the image engine`] },
+    }
+  } catch {
+    return undefined
+  }
+}
+
 /** the picture of every scene, two at a time; `onProgress(done, total)` tells how far it is */
 export async function makePictures(basePlan: ScenePlan, onProgress: (done: number, total: number) => void, options: { accent?: string; /** the words of the person: the pictures must show this business */ prompt?: string } = {}): Promise<ImageAiResult> {
+  if (options.prompt) {
+    const set = await studioSet(options.prompt, options.accent, basePlan.hero.seed)
+    if (set) {
+      onProgress(set.report.pictures, set.report.pictures)
+      return { ops: set.ops, report: set.report }
+    }
+  }
   let plan = basePlan
   let directed = 0
   const directNotes: string[] = []

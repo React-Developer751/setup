@@ -46,3 +46,9 @@ A switch in the Core-Craft panel turns this off. The panel also keeps "Ask Core-
 * The fixed words of the templates (footer, "Privacy Policy", some buttons) stay English on a Hindi page; the first-screen words ("Learn more", "Welcome to") are Hindi.
 * A business Core-Craft takes for another type, with only two services, stays with the built-in AI (the padding of the business type next to it stays).
 * Hinglish (Roman letters) prompts are read by the built-in AI; Core-Craft's Hindi mode needs Devanagari.
+
+
+## Update (new Core-Craft + PixelMath Studio)
+* English pages: Core-Craft now writes the page whenever it could tie it to 2+ services the person named (hero, services, about, steps, FAQ, buttons). Its blog notes, and the sample reviews, team and price list of the kit (made-up names and prices) are left out unless the person gave real ones. Offers ("free shipping above 999") are not shown as services; a garbled Hindi heading or the word "नाम" taken as a service is repaired.
+* Pictures: `/api/ai-set` asks the image engine's Studio for one set of 6 pictures of the business (`/set`), judged by the engine (subject, text contrast, no near-duplicates); when it answers with a fallback, the scenes of the plan are drawn as before.
+* The folders `cont` and `normal` may sit next to `ui-blocks` (`../cont`) or one level higher (`../../cont`); `CORECRAFT_DIR` / `PIXELMATH_DIR` override.

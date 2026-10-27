@@ -17,8 +17,8 @@ npm run app          # the app, the API server, the image engine and the content
 |---|---|---|---|---|
 | App | `npm run dev` | 5173 | the generator page (Vite) | - |
 | API server | `npm run server` | 8787 | edit log, design memory, proxies to the two engines below | the site is still made; memory is kept in the browser |
-| Image engine (PixelMath, folder `../normal`) | `npm run images` | 8000 | flat illustrations of scenes for the first screen, About and the gallery | maths art is used instead |
-| Content AI (Core-Craft, folder `../cont`) | `npm run corecraft` | 8100 | texts about the services in the prompt, Hindi pages | the built-in texts are used |
+| Image engine (PixelMath, folder `../normal`) | `npm run images` | 8000 | one coherent set of pictures per site (hero with calm space for the headline, About, gallery tiles) from its Studio, judged by the engine; falls back to single scenes | maths art is used instead |
+| Content AI (Core-Craft, folder `../cont`) | `npm run corecraft` | 8100 | the texts of the page (hero, services, about, steps, FAQ, buttons) about the services in the prompt, in the voice of the kind of business; Hindi pages | the built-in texts are used |
 
 Both engine folders are only run, never changed. Python 3 is needed for them.
 

@@ -260,7 +260,11 @@ function GeneratorPage() {
     const decision = decideCore(page, { niche: preview.niche, heroTitle: preview.content.hero.title, subject: preview.content.subject, theme: preview.themeKey, prompt: text, brand: preview.content.brandName })
     setCoreNote(`${decision.use ? 'Core-Craft AI' : 'Built-in AI'} wrote this page: ${decision.reason}.`)
     if (decision.review.length) say({ role: 'ai', text: `Core-Craft AI says to check: ${decision.review.slice(0, 3).join(' ')}` })
-    if (!decision.use || !decision.blocks) return
+    if (!decision.use || !decision.blocks) {
+      // reviews with a made-up name ("Sample Customer") are not shown either
+      if (preview.content.testimonials.length && preview.content.testimonials.every((t) => /sample/i.test(t.author))) applyOps('Reviews with made-up names removed', [{ op: 'remove', section: 'testimonials' }, { op: 'remove', section: 'team' }], 'rules', 'The sample reviews and the made-up team were left out: add your own real ones in the chat.')
+      return
+    }
     const ops: EditOp[] = [{ op: 'core', data: decision.blocks }, ...(decision.rename ? [{ op: 'rename' as const, name: decision.rename }] : []), ...(decision.hide ?? [])]
     applyOps('Texts from Core-Craft AI', ops, 'rules', `Core-Craft AI wrote the texts of this page about what you said (${decision.reason}). Say "undo" to go back to the built-in texts.`)
   }

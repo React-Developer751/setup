@@ -83,7 +83,7 @@ try {
 }
 
 // ── the real bridge (only when Python and the cont folder are here)
-const cont = path.resolve(process.env.CORECRAFT_DIR ?? '../../cont')
+const cont = path.resolve(process.env.CORECRAFT_DIR ?? ['../cont', '../../cont'].find((d) => fs.existsSync(path.join(d, 'corecraft'))) ?? '../cont')
 if (fs.existsSync(path.join(cont, 'corecraft', 'content_engine.py'))) {
   const BP = 9800 + Math.floor(Math.random() * 90)
   const bridge = spawn(process.env.PYTHON ?? 'python3', ['scripts/corecraft_bridge.py', '--port', String(BP)], { env: { ...process.env, CORECRAFT_DIR: cont, PYTHONDONTWRITEBYTECODE: '1' }, stdio: 'ignore' })

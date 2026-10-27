@@ -77,6 +77,8 @@ function mergeCore(content: WebsiteContent, core: NonNullable<SiteEdits['core']>
   let next = content
   if (core.hero) next = { ...next, hero: { title: core.hero.title ?? next.hero.title, subtitle: core.hero.subtitle ?? next.hero.subtitle, button: core.hero.button ?? next.hero.button } }
   if (core.features) next = { ...next, features: { title: core.features.title ?? next.features.title, items: core.features.items }, marquee: core.features.items.map((i) => i.title.slice(0, 16)).slice(0, 8) }
+  // the captions of the gallery name what the business does (the pack's own would talk about another cuisine or trade)
+  if (core.features) next = { ...next, gallery: { ...next.gallery, captions: next.gallery.captions.map((_, n) => core.features!.items[n % core.features!.items.length].title) } }
   if (core.about) next = { ...next, about: { title: core.about.title ?? next.about.title, paragraphs: core.about.paragraphs, points: core.about.points?.length ? core.about.points : next.about.points } }
   if (core.steps) next = { ...next, steps: { title: core.steps.title ?? next.steps.title, items: core.steps.items } }
   if (core.faq) next = { ...next, faq: core.faq }

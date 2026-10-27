@@ -16,7 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = Path(os.environ.get("CORECRAFT_DIR", HERE.parent.parent.parent / "cont")).resolve()
+ROOT = Path(os.environ.get("CORECRAFT_DIR") or next((d for d in (HERE.parent.parent / "cont", HERE.parent.parent.parent / "cont") if (d / "corecraft").exists()), HERE.parent.parent / "cont")).resolve()
 sys.dont_write_bytecode = True
 if not (ROOT / "corecraft" / "content_engine.py").exists():
     sys.exit("Core-Craft was not found in %s (set CORECRAFT_DIR to the folder that holds corecraft/)" % ROOT)
