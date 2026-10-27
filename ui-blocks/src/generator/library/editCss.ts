@@ -14,6 +14,9 @@ const BUTTON_BG = [...FAMILIES.flatMap((f) => [500, 600, 700].map((n) => `.bg-${
 
 const scopes = (target: FitTarget): string[] => (target === 'page' ? ['[data-gen-theme]'] : (ROLES_OF[target] ?? []).map((role) => `[data-role="${role}"]`))
 const under = (scope: string, selector: string) => selector.split(',').map((part) => `${scope} ${part.trim()}`).join(',')
+/** Tailwind's type scale (rem): a browser without CSS zoom gets the sizes scaled through these variables instead (all text of that size, not only headings) */
+const TYPE_SCALE: Record<string, number> = { xs: 0.75, sm: 0.875, base: 1, lg: 1.125, xl: 1.25, '2xl': 1.5, '3xl': 1.875, '4xl': 2.25, '5xl': 3, '6xl': 3.75, '7xl': 4.5, '8xl': 6, '9xl': 8 }
+const sizeVars = (names: string[], factor: string) => names.map((n) => `--text-${n}:${(TYPE_SCALE[n] * Number(factor)).toFixed(3)}rem`).join(';')
 const scale = (step: string) => (1 + 0.12 * Number(step)).toFixed(2)
 
 /** the CSS for the looks the person chose; '' when there is none */
@@ -33,8 +36,14 @@ export function editCss(edits: SiteEdits | undefined): string {
       if (style.radius === 'square') rules.push(`${under(scope, '*')}{border-radius:0!important}`)
       if (style.radius === 'pill') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select')}{border-radius:9999px!important}`)
       if (style.radius === 'rounded') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,[class*="rounded"]:not(.rounded-full):not(img)')}{border-radius:.75rem!important}`)
-      if (style.headingSize) rules.push(`${under(scope, 'h1,h2,h3,h4')}{zoom:${scale(style.headingSize)}}`)
-      if (style.textSize) rules.push(`${under(scope, 'p,li,label,td,th,dd')}{zoom:${scale(style.textSize)}}`)
+      if (style.headingSize) {
+        rules.push(`@supports (zoom:1){${under(scope, 'h1,h2,h3,h4')}{zoom:${scale(style.headingSize)}}}`)
+        rules.push(`@supports not (zoom:1){${scope}{${sizeVars(['xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'], scale(style.headingSize))}}}`)
+      }
+      if (style.textSize) {
+        rules.push(`@supports (zoom:1){${under(scope, 'p,li,label,td,th,dd')}{zoom:${scale(style.textSize)}}}`)
+        rules.push(`@supports not (zoom:1){${scope}{${sizeVars(['xs', 'sm', 'base', 'lg'], scale(style.textSize))}}}`)
+      }
     }
   }
   return rules.join('\n')

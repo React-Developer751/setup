@@ -52,6 +52,10 @@ export const COLOR_HEX: Record<string, string> = {
   'baby pink': '#f9a8d4', 'light pink': '#f9a8d4', rose: '#f43f5e', blush: '#fda4af', fuchsia: '#d946ef', plum: '#7e22ce', 'dark purple': '#6b21a8', orchid: '#c084fc', lilac: '#c4b5fd', 'light purple': '#c4b5fd',
   chocolate: '#78350f', coffee: '#78350f', 'dark brown': '#78350f', sand: '#d4a373', khaki: '#a3a380', apricot: '#fdba74', lemon: '#facc15', 'light orange': '#fb923c', 'dark orange': '#c2410c', 'light yellow': '#fde047',
   peacock: '#0f766e', 'peacock blue': '#0f766e', 'bright blue': '#3b82f6', 'electric blue': '#2563eb', 'neon green': '#22c55e',
+  // shades: "dark blue", "light yellow", "gehra neela" (a shade of a basic colour is the shade, not the basic colour)
+  'dark blue': '#1e3a8a', 'deep blue': '#1e3a8a', 'dark teal': '#115e59', 'dark pink': '#be185d', 'dark yellow': '#a16207', 'dark violet': '#5b21b6', 'dark cyan': '#0e7490', 'dark indigo': '#3730a3', 'dark black': '#000000',
+  'light red': '#fca5a5', 'light teal': '#5eead4', 'light violet': '#c4b5fd', 'light cyan': '#a5f3fc', 'light indigo': '#a5b4fc', 'light brown': '#d6a97a', 'light gold': '#fde68a', 'pastel blue': '#bfdbfe', 'pastel green': '#bbf7d0', 'pastel pink': '#fbcfe8', 'pastel yellow': '#fef08a',
+  'gehra neela': '#1e3a8a', 'gehra hara': '#166534', 'gehra lal': '#991b1b', 'gehra gulabi': '#be185d', 'gehra peela': '#a16207', 'halka hara': '#4ade80', 'halka peela': '#fde68a', 'halka gulabi': '#f9a8d4', 'halka lal': '#fca5a5', 'halka neela': '#93c5fd', 'halki neeli': '#93c5fd',
   // more names (Hinglish)
   haldi: '#eab308', mehendi: '#65a30d', gerua: '#ea580c', pista: '#86efac', tota: '#22c55e', badami: '#a16207', firozi: '#06b6d4', rani: '#db2777', sindoori: '#dc2626', neelam: '#1d4ed8', mor: '#0f766e',
   // Hindi

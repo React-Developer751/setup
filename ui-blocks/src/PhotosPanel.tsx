@@ -47,10 +47,27 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
     } else setProblem(answer.problem ?? '')
   }
 
-  const useFound = () => {
+  const applyFound = async () => {
     if (!result) return
-    const urls = result.photos.map((p) => p.url)
-    onApply([{ op: 'photos', hero: urls[0], about: urls[1], gallery: urls.slice(2, 9), credit: `Photos: ${result.source}` }], 'Photos from the search')
+    setBusy(true)
+    setProblem('')
+    // the photos are copied into the page (scaled down), so the finished site does not depend on the photo service; one that cannot be read is skipped
+    const copies = await Promise.all(
+      result.photos.map(async (p) => {
+        try {
+          const blob = await (await fetch(p.url, { signal: AbortSignal.timeout(20_000) })).blob()
+          return await readPicture(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }), 1400)
+        } catch {
+          return undefined
+        }
+      }),
+    )
+    const pictures = copies.filter((c): c is string => !!c)
+    setBusy(false)
+    if (pictures.length < 2) return setProblem('The photos could not be copied (the photo service did not send them). Try again or upload your own.')
+    // the credit line names the photographers, as the licences ask
+    const credits = [...new Set(result.photos.map((p) => p.credit).filter(Boolean))].slice(0, 6).join('; ')
+    onApply([{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2, 9), credit: `Photos: ${result.source}${credits ? ` - ${credits}` : ''}`.slice(0, 400) }], 'Photos from the search')
   }
 
   const draw = async () => {
@@ -122,7 +139,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
           </button>
         </div>
         <div className="space-y-1">
-          <span className="font-medium text-gray-700">Or search free photos (needs the server with a Pexels key)</span>
+          <span className="font-medium text-gray-700">Or search real photos (free licences; the credit goes in the footer)</span>
           <div className="flex gap-2">
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={defaultQuery || 'bakery'} className={field} aria-label="What the photos should show" />
             <button type="button" onClick={() => void search(1)} disabled={busy} className="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
@@ -139,7 +156,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
               ))}
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={useFound} className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
+              <button type="button" onClick={() => void applyFound()} className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
                 Use these photos
               </button>
               <button type="button" onClick={() => void search(page + 1)} disabled={busy} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50">

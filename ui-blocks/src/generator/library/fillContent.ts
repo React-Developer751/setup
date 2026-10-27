@@ -703,6 +703,13 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   fillGenericButtons(root, 'Subscribe')
   setPlaceholders(root)
   replaceBrand(root, c)
+  // the photographers of the photos on the page, as the licences ask
+  if (c.photos?.credit) {
+    const credit = root.ownerDocument.createElement('div')
+    credit.className = 'px-6 pb-4 text-center text-xs opacity-70'
+    credit.textContent = c.photos.credit
+    root.appendChild(credit)
+  }
   // a footer always says whose it is
   if (!visibleText(root).includes(c.brandName)) {
     const line = root.ownerDocument.createElement('div')

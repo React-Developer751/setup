@@ -90,6 +90,22 @@ ok(again('bakery called Crumb') === again('bakery called Crumb'), 'the same prom
 ok(!generateLibraryPage('bakery called Crumb', 4, 'better').pages, 'a one-page site has no pages list')
 ok(generateLibraryPage('bakery called Crumb', 4, 'better').sections.every((x) => !x.page && x.role !== 'pagehead'), 'a one-page site has no inner page parts')
 
+// ── the looks and the mode the person asks for reach the page made from the stored components
+{
+  const { editsFrom } = await loadGeneratorModule('edit/edits.ts')
+  const make = (ops, multi = false) => generateLibraryPage('dental clinic called Smile Care in Pune', 3, 'better', true, 'auto', editsFrom(ops), multi)
+  ok(make([{ op: 'style', target: 'page', prop: 'buttonColor', value: '#16a34a' }]).css.includes('#16a34a'), 'library: a button colour becomes CSS')
+  ok(/border-radius:9999px/.test(make([{ op: 'style', target: 'page', prop: 'radius', value: 'pill' }]).css), 'library: round buttons become CSS')
+  ok(/zoom:1\.24/.test(make([{ op: 'style', target: 'page', prop: 'headingSize', value: '+2' }]).css), 'library: a heading size becomes CSS')
+  ok(/data-role="hero"/.test(make([{ op: 'style', target: 'hero', prop: 'textColor', value: '#6b7280' }]).css), 'library: a look for one part stays in that part')
+  ok(make([{ op: 'style', target: 'page', prop: 'font', value: 'serif' }]).fontTokens?.['--font-sans']?.includes('Playfair'), 'library: a typeface choice reaches the page')
+  ok(make([{ op: 'mode', mode: 'dark' }]).initialMode === 'dark' && make([{ op: 'mode', mode: 'light' }]).initialMode === 'light', 'library: light and dark mode choices open the page in that mode')
+  ok(make([{ op: 'style', target: 'page', prop: 'buttonColor', value: '#16a34a' }]).code.includes('css={css}'), 'library: the code of the page carries the looks')
+  const renamed = make([{ op: 'title', target: 'pricing', text: 'Rates' }], true)
+  ok(renamed.pages?.some((p) => p.label === 'Rates'), 'library: renaming the pricing heading renames its page in the menu')
+  ok(make([{ op: 'sectionColor', target: 'gallery', hex: '#bbf7d0' }]).sections.length === make([]).sections.length, 'library: a colour does not add parts to the page')
+}
+
 // ── every group has a decision: a part of a page (in the pools) or a widget (not)
 const U = await loadGeneratorModule('library/componentUse.ts')
 const inPool = new Set([...all.map(({ id }) => id), ...tiers.map(({ id }) => id)].map((id) => id.split('/')[0]))

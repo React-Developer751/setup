@@ -22,6 +22,9 @@ const HOST = process.env.HOST ?? '127.0.0.1'
 const TOKEN = process.env.EDIT_SERVER_TOKEN
 // optional photo search (Pexels): the key stays on the server, the page only gets picture addresses and who took them
 const PEXELS_KEY = process.env.PEXELS_API_KEY
+// without a Pexels key the photo search uses Wikimedia Commons (free licences, no key); PHOTO_FALLBACK=off switches that off
+const COMMONS_BASE = (process.env.COMMONS_BASE_URL ?? 'https://commons.wikimedia.org').replace(/\/$/, '')
+const COMMONS_ON = process.env.PHOTO_FALLBACK !== 'off'
 const PEXELS_BASE = (process.env.PEXELS_BASE_URL ?? 'https://api.pexels.com').replace(/\/$/, '')
 const photoCache = new Map()
 // optional image engine (PixelMath, the `normal` folder: npm run images): scenes for the first screen, About and gallery
@@ -208,7 +211,7 @@ const send = (res, status, body) => {
 export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
-    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, ai: !!KEY, photos: !!PEXELS_KEY, images: await imageEngineUp(), corecraft: await coreCraftUp(), model: KEY ? MODEL : null })
+    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, ai: !!KEY, photos: !!PEXELS_KEY || COMMONS_ON, images: await imageEngineUp(), corecraft: await coreCraftUp(), model: KEY ? MODEL : null })
     if (req.method === 'GET' && url.pathname === '/api/ai-image') {
       if (imagesLimited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
@@ -448,13 +451,31 @@ export const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/api/photos') {
       if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
-      if (!PEXELS_KEY) return send(res, 503, { error: 'PEXELS_API_KEY is not set' })
+      if (!PEXELS_KEY && !COMMONS_ON) return send(res, 503, { error: 'PEXELS_API_KEY is not set' })
       const query = (url.searchParams.get('q') ?? '').replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80)
       if (query.length < 2) return send(res, 400, { error: 'q is required' })
       const page = Math.max(1, Math.min(10, Number(url.searchParams.get('page')) || 1))
       const key = `${query}|${page}`
       const hit = photoCache.get(key)
       if (hit && Date.now() - hit.at < 600_000) return send(res, 200, hit.body)
+      // without a Pexels key the photos come from Wikimedia Commons (free licences, no key): only pictures whose licence allows use on a business site with a credit
+      if (!PEXELS_KEY) {
+        const api = new URL(`${COMMONS_BASE}/w/api.php`)
+        for (const [k, v] of Object.entries({ action: 'query', format: 'json', generator: 'search', gsrnamespace: '6', gsrsearch: `${query} filetype:bitmap`, gsrlimit: '40', gsroffset: String((page - 1) * 40), prop: 'imageinfo', iiprop: 'url|size|mime|extmetadata', iiurlwidth: '1280' })) api.searchParams.set(k, v)
+        const upstream = await fetch(api, { headers: { 'user-agent': 'ui-blocks-website-generator/1.0 (local tool)' }, signal: AbortSignal.timeout(15_000) }).catch(() => undefined)
+        if (!upstream?.ok) return send(res, 502, { error: 'the photo service did not answer' })
+        const found = await upstream.json()
+        const strip = (html) => String(html ?? '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+        const photos = Object.values(found.query?.pages ?? {})
+          .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+          .map((p) => ({ p, info: p.imageinfo?.[0] }))
+          .filter(({ p, info }) => info && info.mime === 'image/jpeg' && info.width >= 1000 && info.height >= 600 && info.width > info.height && /^(CC0|CC BY|CC BY-SA|Public domain|PD)/i.test(info.extmetadata?.LicenseShortName?.value ?? '') && !/-NC|-ND/i.test(info.extmetadata?.LicenseShortName?.value ?? '') && !/logo|map|diagram|icon|flag|screenshot|poster|cover|painting|drawing|stamp|coin/i.test(p.title))
+          .slice(0, 9)
+          .map(({ p, info }) => ({ id: p.pageid, url: info.thumburl, thumb: String(info.thumburl).replace(/\/\d+px-/, '/400px-'), alt: strip(p.title.replace(/^File:/, '').replace(/\.\w+$/, '')).slice(0, 140), credit: `${strip(info.extmetadata?.Artist?.value).slice(0, 60) || 'Wikimedia Commons'} (${info.extmetadata?.LicenseShortName?.value})`, creditUrl: info.descriptionurl ?? '', pageUrl: info.descriptionurl ?? '' }))
+        const body = { photos, source: 'Wikimedia Commons (CC licences)', sourceUrl: 'https://commons.wikimedia.org' }
+        photoCache.set(key, { at: Date.now(), body })
+        return send(res, 200, body)
+      }
       const upstream = await fetch(`${PEXELS_BASE}/v1/search?query=${encodeURIComponent(query)}&per_page=9&page=${page}&orientation=landscape`, { headers: { Authorization: PEXELS_KEY }, signal: AbortSignal.timeout(15_000) })
       if (!upstream.ok) return send(res, 502, { error: `the photo service answered ${upstream.status}` })
       const found = await upstream.json()

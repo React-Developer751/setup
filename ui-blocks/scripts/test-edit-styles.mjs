@@ -102,6 +102,18 @@ for (const [text, want] of keep) {
   ok(got === want || (want === 'mood' && (got === 'tier' || got === 'tone')), `"${text}" still gives ${want} (got ${got})`)
 }
 
+// ── backgrounds, shades and menu words
+{
+  const bg = ops('page ka background light green karo')
+  ok(bg.length === 13 && bg.every((o) => o.op === 'sectionColor' && o.hex === '#4ade80'), 'page background: every part between the menu and the footer gets the colour')
+  ok(!bg.some((o) => o.target === 'footer' || o.target === 'header'), 'page background: the menu and the footer keep their own colour')
+  ok(ops('make the background dark blue')[0]?.hex === '#1e3a8a', 'a shade ("dark blue") is the shade, not the plain blue')
+  ok(ops('background gehra neela karo')[0]?.hex === '#1e3a8a', 'Hinglish shade (gehra neela)')
+  ok(ops('footer ko dark karo').length === 1 && ops('footer ko dark karo')[0].op === 'sectionColor' && ops('footer ko dark karo')[0].target === 'footer', '"footer ko dark karo" paints the footer (not a text replacement)')
+  ok(ops('nav me About ko Hamare Bare Me rename karo')[0]?.text === 'Hamare Bare Me', 'the verb that ends the sentence is not part of the menu label')
+  ok(ops('buttons ko round karo')[0]?.prop === 'radius', 'round buttons are a style')
+}
+
 console.log(`edit-styles: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) {
   console.log(fail.map((f) => ` - ${f}`).join('\n'))
