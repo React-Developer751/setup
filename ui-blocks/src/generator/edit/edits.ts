@@ -302,7 +302,7 @@ export function cleanOp(raw: unknown): EditOp | undefined {
     case 'photos': {
       const url = (v: unknown) => (typeof v === 'string' && (/^https:\/\/[^\s"'<>]{4,600}$/i.test(v) || /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=]{20,450000}$/.test(v)) ? v : undefined)
       const gallery = (Array.isArray(o.gallery) ? o.gallery : []).map(url).filter((x): x is string => !!x).slice(0, 8)
-      const out: PhotoSet = { ...(url(o.hero) ? { hero: url(o.hero) } : {}), ...(url(o.about) ? { about: url(o.about) } : {}), ...(gallery.length ? { gallery } : {}), ...(clean(o.credit, 400) ? { credit: clean(o.credit, 400) } : {}) }
+      const out: PhotoSet = { ...(url(o.hero) ? { hero: url(o.hero) } : {}), ...(url(o.about) ? { about: url(o.about) } : {}), ...(gallery.length ? { gallery } : {}), ...(clean(o.credit, 900) ? { credit: clean(o.credit, 900) } : {}) }
       return out.hero || out.about || out.gallery ? { op: 'photos', ...out } : undefined
     }
     case 'clearPhotos':

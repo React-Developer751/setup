@@ -201,7 +201,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pal-'))
 const PORT = 9500 + Math.floor(Math.random() * 90)
 const srv = spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), EDIT_DATA_DIR: dir }, stdio: 'ignore' })
 for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); break } catch { await new Promise((r) => setTimeout(r, 100)) } }
-const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', body: JSON.stringify(body) } : undefined).then(async (r) => ({ status: r.status, ...(await r.json()) }))
+const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined).then(async (r) => ({ status: r.status, ...(await r.json()) }))
 try {
   const added = await call('/api/palettes', { name: 'Lagoon And Pearl', accent: '#0b5a63', alt: '#d8d2c4', neutral: 'mist', themes: ['travel_tourism', 'bogus'], tags: ['Resort', 'Spa'] })
   ok(added.ok && added.id, 'a palette is stored in the database')

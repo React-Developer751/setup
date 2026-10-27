@@ -192,7 +192,7 @@ const upstreamPort = upstream.address().port
 const PORT = 8800 + Math.floor(Math.random() * 100)
 const start = (env) => spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), ...env }, stdio: 'ignore' })
 const wait = async () => { for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); return } catch { await new Promise((r) => setTimeout(r, 100)) } } }
-const post = (path, body) => fetch(`http://127.0.0.1:${PORT}${path}`, { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body) })
+const post = (path, body, headers = {}) => fetch(`http://127.0.0.1:${PORT}${path}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) })
 
 let server = start({ ANTHROPIC_API_KEY: '', ANTHROPIC_BASE_URL: `http://127.0.0.1:${upstreamPort}` })
 await wait()
@@ -264,6 +264,24 @@ if (fs.existsSync(cmdFile)) {
     if (e.control ? got.kind === 'control' && got.control === e.control : e.newSite ? got.kind === 'newSite' : got.kind === 'ops' ? text(got.ops) === text(e.ops) : e.ops.length === 0) right += 1
   }
   ok(right / rows.length >= 0.97, `parser accuracy on ${rows.length} commands is at least 97% (now ${((100 * right) / rows.length).toFixed(1)}%)`)
+}
+
+// ── the server guards what writes and what reads stored data: token, rate limit, origin, content type (checked before any handler runs)
+{
+  const dataDir = fs.mkdtempSync('/tmp/guard-data-')
+  const guarded = start({ EDIT_SERVER_TOKEN: 'secret', EDIT_RATE_PER_MINUTE: '6', EDIT_DATA_DIR: dataDir, ANTHROPIC_API_KEY: '' })
+  await wait()
+  const designs = (headers = {}, body = '{}') => fetch(`http://127.0.0.1:${PORT}/api/designs`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body })
+  ok((await designs()).status === 401, 'guard: a write without the token is refused')
+  ok((await fetch(`http://127.0.0.1:${PORT}/api/designs?limit=5`)).status === 401, 'guard: stored designs are not read without the token')
+  ok((await fetch(`http://127.0.0.1:${PORT}/api/health`)).status === 200, 'guard: health needs no token')
+  ok((await designs({ 'x-edit-token': 'secret', origin: 'https://evil.example' })).status === 403, 'guard: a page of another site is refused')
+  ok((await designs({ 'x-edit-token': 'secret', 'content-type': 'text/plain' })).status === 415, 'guard: a cross-site form (text/plain) is refused')
+  ok((await designs({ 'x-edit-token': 'secret', origin: 'http://localhost:5173' })).status !== 401 && (await designs({ 'x-edit-token': 'secret', origin: 'http://localhost:5173' })).status !== 403, 'guard: the local page with the token is let in')
+  for (let i = 0; i < 6; i += 1) await designs({ 'x-edit-token': 'secret' })
+  ok((await designs({ 'x-edit-token': 'secret' })).status === 429, 'guard: too many writes in a minute are slowed down')
+  guarded.kill()
+  fs.rmSync(dataDir, { recursive: true, force: true })
 }
 
 console.log(`${pass} passed, ${fail.length} failed`)

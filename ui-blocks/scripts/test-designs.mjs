@@ -97,7 +97,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'designs-'))
 const PORT = 9200 + Math.floor(Math.random() * 90)
 const srv = spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), EDIT_DATA_DIR: dir }, stdio: 'ignore' })
 for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); break } catch { await new Promise((r) => setTimeout(r, 100)) } }
-const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', body: JSON.stringify(body) } : undefined).then((r) => r.json())
+const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined).then((r) => r.json())
 const ids = []
 for (const d of rows.slice(0, 3)) ids.push((await call('/api/designs', d)).id)
 const listed = await call('/api/designs?key=yoga%20studio')

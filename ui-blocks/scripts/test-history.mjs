@@ -45,7 +45,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hist-'))
 const PORT = 9300 + Math.floor(Math.random() * 90)
 const srv = spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), EDIT_DATA_DIR: dir }, stdio: 'ignore' })
 for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); break } catch { await new Promise((r) => setTimeout(r, 100)) } }
-const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', body: JSON.stringify(body) } : undefined).then(async (r) => ({ status: r.status, ...(await r.json()) }))
+const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined).then(async (r) => ({ status: r.status, ...(await r.json()) }))
 try {
   const a = H.logRow('menu left', 'yoga', 'single', ['align'], 'rules')
   ok((await call('/api/edit-log', a)).ok, 'a command is stored')

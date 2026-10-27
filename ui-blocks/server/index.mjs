@@ -43,6 +43,27 @@ const DATA = process.env.EDIT_DATA_DIR ?? path.join(here, 'data')
 const PHOTO_DIR = path.join(DATA, 'photo-cache')
 const PHOTO_HOSTS = new Set(['upload.wikimedia.org', 'thumb.wikimedia.org', 'images.pexels.com', new URL(COMMONS_BASE).host, new URL(PEXELS_BASE).host, ...String(process.env.PHOTO_FILE_HOSTS ?? '').split(',').filter(Boolean)])
 const MAX_BODY = 20_000
+const PHOTO_MAX_BYTES = 4_000_000
+/** a file is written whole or not at all (a crash in the middle leaves no half photo that would be served for ever) */
+function writeAtomic(file, data) {
+  const temp = `${file}.${process.pid}.tmp`
+  fs.writeFileSync(temp, data)
+  fs.renameSync(temp, file)
+}
+/** the photo cache keeps the newest files (searches and photos); the oldest are deleted */
+function prunePhotoCache() {
+  try {
+    // the newest files that fit in 400 files and 300 MB stay
+    const files = fs.readdirSync(PHOTO_DIR).filter((name) => !name.endsWith('.tmp')).map((name) => { const st = fs.statSync(path.join(PHOTO_DIR, name)); return { name, at: st.mtimeMs, size: st.size } }).sort((a, b) => b.at - a.at)
+    let total = 0
+    files.forEach(({ name, size }, i) => {
+      total += size
+      if (i >= 400 || total > 300_000_000) fs.rmSync(path.join(PHOTO_DIR, name), { force: true })
+    })
+  } catch {
+    // the cache is optional
+  }
+}
 
 const SECTIONS = ['stats', 'marquee', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact']
 const PAGES = ['about', 'services', 'pricing', 'team', 'gallery', 'blog', 'faq']
@@ -162,6 +183,20 @@ async function askModel(text, state) {
   return block.input
 }
 
+/** the address of the caller; behind a reverse proxy (TRUST_PROXY=1) the first address of X-Forwarded-For */
+const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || 'unknown'
+const STORED_READS = new Set(['/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events'])
+const EXTRA_ORIGINS = new Set(String(process.env.EDIT_ALLOWED_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean))
+/** this machine's own pages (any port: Vite, preview), the page the server itself was reached from, and what the operator listed */
+function originAllowed(origin, host) {
+  if (EXTRA_ORIGINS.has(origin)) return true
+  try {
+    const u = new URL(origin)
+    return ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname) || u.host === host
+  } catch {
+    return false
+  }
+}
 const hits = new Map()
 /** at most RATE_PER_MINUTE requests a minute for one address: a stolen link cannot burn the whole API budget */
 const limited = (ip) => {
@@ -171,6 +206,16 @@ const limited = (ip) => {
   hits.set(ip, recent)
   if (hits.size > 5000) for (const [key, list] of hits) if (!list.some((t) => now - t < 60_000)) hits.delete(key)
   return recent.length > RATE_PER_MINUTE
+}
+
+// copying the photos of one choice is 7 requests at once: a limit of its own
+const photoFileHits = new Map()
+const photoFilesLimited = (ip) => {
+  const now = Date.now()
+  const recent = (photoFileHits.get(ip) ?? []).filter((t) => now - t < 60_000)
+  recent.push(now)
+  photoFileHits.set(ip, recent)
+  return recent.length > 120
 }
 
 const imageHits = new Map()
@@ -217,8 +262,20 @@ export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
     if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, ai: !!KEY, photos: !!PEXELS_KEY || COMMONS_ON, images: await imageEngineUp(), corecraft: await coreCraftUp(), model: KEY ? MODEL : null })
+    // every request that writes (or reads what people wrote) passes these checks first, before any handler runs
+    const ip = clientIp(req)
+    if (req.method === 'POST' && url.pathname.startsWith('/api/')) {
+      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      // a web page of another site cannot post here: its Origin is not one of ours, and a cross-site form cannot send JSON
+      const origin = req.headers.origin
+      if (origin && !originAllowed(origin, req.headers.host)) return send(res, 403, { error: 'this origin is not allowed' })
+      if (!/^application\/json\b/i.test(String(req.headers['content-type'] ?? ''))) return send(res, 415, { error: 'send application/json' })
+      if (TOKEN && req.headers['x-edit-token'] !== TOKEN) return send(res, 401, { error: 'missing or wrong token' })
+    }
+    // the stored prompts, designs and opinions are read with the token as well (the pictures and the photo search are not: an <img> cannot send a header)
+    if (req.method === 'GET' && TOKEN && STORED_READS.has(url.pathname) && req.headers['x-edit-token'] !== TOKEN) return send(res, 401, { error: 'missing or wrong token' })
     if (req.method === 'GET' && url.pathname === '/api/ai-image') {
-      if (imagesLimited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
+      if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
       const num = (name, min, max, fallback) => {
         const v = Number(url.searchParams.get(name) ?? fallback)
@@ -244,7 +301,7 @@ export const server = http.createServer(async (req, res) => {
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
       const n = Math.max(1, Math.min(8, Number(url.searchParams.get('n')) || 4))
       if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
-      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
       try {
         const upstream = await fetch(`${CORECRAFT_URL}/generate`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, n, seed: Number(url.searchParams.get('seed')) || undefined }), signal: AbortSignal.timeout(20_000) })
         if (!upstream.ok) return send(res, 502, { error: `Core-Craft answered ${upstream.status}` })
@@ -262,7 +319,7 @@ export const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/corecraft/page') {
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'"&\-;:\u0964\u0965]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
       if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
-      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
       try {
         const upstream = await fetch(`${CORECRAFT_URL}/page`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, seed: Number(url.searchParams.get('seed')) || 1 }), signal: AbortSignal.timeout(20_000) })
         if (upstream.status === 422) return send(res, 422, { error: 'Core-Craft could not write a page for this prompt' })
@@ -455,7 +512,7 @@ export const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true })
     }
     if (req.method === 'GET' && url.pathname === '/api/photos') {
-      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
       if (!PEXELS_KEY && !COMMONS_ON) return send(res, 503, { error: 'PEXELS_API_KEY is not set' })
       const query = (url.searchParams.get('q') ?? '').replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80)
       if (query.length < 2) return send(res, 400, { error: 'q is required' })
@@ -477,7 +534,8 @@ export const server = http.createServer(async (req, res) => {
         if (photoCache.size > 200) photoCache.delete(photoCache.keys().next().value)
         try {
           fs.mkdirSync(PHOTO_DIR, { recursive: true })
-          fs.writeFileSync(diskKey, JSON.stringify(body))
+          writeAtomic(diskKey, JSON.stringify(body))
+          prunePhotoCache()
         } catch {
           // the cache is optional
         }
@@ -507,34 +565,54 @@ export const server = http.createServer(async (req, res) => {
     }
     // a photo of a search result, copied through the server: the first time from its host, later from the disk (so a chosen photo can be used again without the internet)
     if (req.method === 'GET' && url.pathname === '/api/photo-file') {
-      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (photoFilesLimited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
       let target
       try {
         target = new URL(url.searchParams.get('u') ?? '')
       } catch {
         return send(res, 400, { error: 'u is required' })
       }
-      if (!PHOTO_HOSTS.has(target.host)) return send(res, 400, { error: 'this host is not a photo service' })
+      // only the hosts of the photo services, only https (plain http only for the hosts the operator named for tests), no credentials, no other ports
+      const named = new Set([new URL(COMMONS_BASE).host, new URL(PEXELS_BASE).host, ...String(process.env.PHOTO_FILE_HOSTS ?? '').split(',').filter(Boolean)])
+      if (!PHOTO_HOSTS.has(target.host) || target.username || target.password || !(target.protocol === 'https:' || (target.protocol === 'http:' && named.has(target.host)))) return send(res, 400, { error: 'this address is not a photo service' })
       const file = path.join(PHOTO_DIR, `file-${crypto.createHash('sha1').update(target.href).digest('hex')}.jpg`)
-      if (fs.existsSync(file)) {
-        res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'max-age=86400', 'access-control-allow-origin': '*' })
-        return res.end(fs.readFileSync(file))
+      const reply = (bytes) => {
+        res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'max-age=86400', 'x-content-type-options': 'nosniff' })
+        res.end(bytes)
       }
-      const upstream = await fetch(target, { headers: { 'user-agent': 'ui-blocks-website-generator/1.0 (local tool)' }, signal: AbortSignal.timeout(20_000) }).catch(() => undefined)
+      try {
+        return reply(fs.readFileSync(file))
+      } catch {
+        // not saved yet (or deleted a moment ago): it is loaded from the host
+      }
+      // a redirect is not followed: it could lead anywhere
+      const upstream = await fetch(target, { headers: { 'user-agent': 'ui-blocks-website-generator/1.0 (local tool)' }, redirect: 'manual', signal: AbortSignal.timeout(20_000) }).catch(() => undefined)
       if (!upstream?.ok || !(upstream.headers.get('content-type') ?? '').startsWith('image/')) return send(res, 502, { error: 'the photo could not be loaded (no internet?)' })
-      const bytes = Buffer.from(await upstream.arrayBuffer())
-      if (bytes.length > 6_000_000) return send(res, 502, { error: 'the photo is too big' })
+      if (Number(upstream.headers.get('content-length') ?? 0) > PHOTO_MAX_BYTES) {
+        await upstream.body?.cancel().catch(() => undefined)
+        return send(res, 502, { error: 'the photo is too big' })
+      }
+      // read it piece by piece: a host that sends more than it said is cut off
+      const chunks = []
+      let size = 0
+      for await (const chunk of upstream.body) {
+        size += chunk.length
+        if (size > PHOTO_MAX_BYTES) {
+          await upstream.body?.cancel().catch(() => undefined)
+          return send(res, 502, { error: 'the photo is too big' })
+        }
+        chunks.push(chunk)
+      }
+      const bytes = Buffer.concat(chunks)
       try {
         fs.mkdirSync(PHOTO_DIR, { recursive: true })
-        fs.writeFileSync(file, bytes)
+        writeAtomic(file, bytes)
+        prunePhotoCache()
       } catch {
         // the cache is optional
       }
-      res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'max-age=86400', 'access-control-allow-origin': '*' })
-      return res.end(bytes)
+      return reply(bytes)
     }
-    if (req.method === 'POST' && url.pathname.startsWith('/api/') && limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
-    if (req.method === 'POST' && TOKEN && req.headers['x-edit-token'] !== TOKEN) return send(res, 401, { error: 'missing or wrong token' })
     if (req.method === 'POST' && url.pathname === '/api/edit') {
       if (!KEY) return send(res, 503, { error: 'ANTHROPIC_API_KEY is not set' })
       const { text, state } = JSON.parse(await readBody(req))
@@ -550,7 +628,10 @@ export const server = http.createServer(async (req, res) => {
     }
     send(res, 404, { error: 'not found' })
   } catch (error) {
-    send(res, error?.status ?? 500, { error: error instanceof Error ? error.message : 'failed' })
+    // a problem of ours is not described to the caller (file names, internals); a refusal with a status (too large, bad request) is
+    const status = error?.status ?? 500
+    if (status === 500) console.error('request failed:', error)
+    send(res, status, { error: status === 500 ? 'internal error' : error instanceof Error ? error.message : 'failed' })
   }
 })
 
@@ -570,5 +651,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   compact()
   setInterval(compact, 86_400_000).unref()
+  // the lists of recent requests of callers that went quiet are dropped
+  setInterval(() => {
+    const now = Date.now()
+    for (const map of [hits, imageHits, photoFileHits]) for (const [key, list] of map) if (!list.some((t) => now - t < 60_000)) map.delete(key)
+  }, 60_000).unref()
+  // a rejection nobody caught is logged, not a reason to stop the server; a stop signal closes it cleanly
+  process.on('unhandledRejection', (reason) => console.error('unhandled rejection:', reason))
+  for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => {
+    server.close(() => process.exit(0))
+    setTimeout(() => process.exit(0), 3000).unref()
+  })
   server.listen(PORT, HOST, () => console.log(`edit server on http://${HOST}:${PORT}  (AI: ${KEY ? MODEL : 'OFF: set ANTHROPIC_API_KEY'})`))
 }

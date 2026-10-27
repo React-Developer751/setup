@@ -66,7 +66,7 @@ const parsed = await (await get('/api/ai-parse?prompt=' + encodeURIComponent('a 
 ok(parsed.entities?.[0]?.name === 'bakery' && Array.isArray(parsed.not_in_lexicon), 'the server returns how the engine reads a prompt')
 ok((await (await get('/api/ai-parse?prompt=zxqv')).json()).not_in_lexicon[0] === 'zxqv', 'unknown words are reported')
 ok((await get('/api/ai-parse?prompt=')).status === 400, 'an empty prompt is refused')
-const post = (body) => fetch(`http://127.0.0.1:${PORT}/api/image-feedback`, { method: 'POST', body: JSON.stringify(body) })
+const post = (body) => fetch(`http://127.0.0.1:${PORT}/api/image-feedback`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
 for (let i = 0; i < 4; i += 1) await post({ prompt: 'bad scene', seed: i, attempt: i + 1, accepted: false, score: 0.1, reasons: ['the picture is flat (one tone)'], stage: 'pixels' })
 for (let i = 0; i < 4; i += 1) await post({ prompt: 'good scene', seed: i, attempt: 1, accepted: true, score: 0.8, reasons: [], stage: 'pixels' })
 const file = path.join(dir, 'image-feedback.jsonl')

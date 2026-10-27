@@ -17,7 +17,10 @@ import finalPromptSource from './finalPrompt.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
 import { libraryComponents } from './library/libraryComponents'
 import { repairContrast } from './library/pageAudit'
+import { libraryWithDetails, safeSiteUrl, xmlEscape } from './library/exportDetails'
 import { contentTypesFrom, libraryProjectEntries } from './library/projectBuilder'
+
+export { libraryWithDetails }
 import motionBrainSource from './motionBrain.ts?raw'
 import { libraryThemeStyle } from './library/libraryTheme'
 import { deployFiles } from './deploy'
@@ -29,19 +32,6 @@ import { onColor, type ColorMode } from './themes'
 import { createZip, type ZipEntry } from './zip'
 
 type Library = ReturnType<typeof generateLibraryPage>
-
-/** The person's own email, phone and address instead of the placeholders (in the text and in the code). */
-export function libraryWithDetails(lib: Library, details: ExportDetails): Library {
-  const contact = { ...lib.content.contact }
-  let code = lib.code
-  for (const key of ['email', 'phone', 'address'] as const) {
-    const to = details[key]?.trim()
-    if (!to || to === contact[key]) continue
-    code = code.split(contact[key]).join(to)
-    contact[key] = to
-  }
-  return { ...lib, code, content: { ...lib.content, contact } }
-}
 
 const componentSources = import.meta.glob<string>('../components/*/*.tsx', { query: '?raw', import: 'default' })
 
@@ -116,20 +106,28 @@ function renderLibrary(lib: Library) {
   // draw the page once in memory: the components, then ThemeScope fills their text and sets the colours
   const host = document.createElement('div')
   const root = createRoot(host)
-  flushSync(() =>
-    root.render(
-      <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages} mode={lib.initialMode} css={lib.css} fontTokens={lib.fontTokens}>
-        {lib.sections.map(({ role, componentId, paint, fit, band, page, head }, index) => {
-          const Component = libraryComponents[componentId]
-          return (
-            <Section key={`${role}-${index}`} role={role} paint={paint} fit={fit} band={band} page={page} head={head}>
-              <Component />
-            </Section>
-          )
-        })}
-      </ThemeScope>,
-    ),
-  )
+  try {
+    flushSync(() =>
+      root.render(
+        <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages} mode={lib.initialMode} css={lib.css} fontTokens={lib.fontTokens}>
+          {lib.sections.map(({ role, componentId, paint, fit, band, page, head }, index) => {
+            const Component = libraryComponents[componentId]
+            // a part whose component is not known is left out, not a reason to lose the whole page
+            if (!Component) return null
+            return (
+              <Section key={`${role}-${index}`} role={role} paint={paint} fit={fit} band={band} page={page} head={head}>
+                <Component />
+              </Section>
+            )
+          })}
+        </ThemeScope>,
+      ),
+    )
+  } catch (error) {
+    // a part that throws while it is drawn: the drawing is taken down, the caller decides what to show
+    root.unmount()
+    throw error
+  }
   const styles = Object.fromEntries((['light', 'dark'] as ColorMode[]).map((mode) => [mode, cssText(libraryThemeStyle(lib.palette, mode, lib.themeKey, lib.fontTokens).style)]))
   // the finished page is looked at in a browser, in both modes: a text that cannot be read on what is behind it gets a readable colour (pageAudit.ts)
   const page = host.firstElementChild as HTMLElement | null
@@ -230,7 +228,7 @@ export function buildLibraryStaticFiles(lib: Library, details: ExportDetails = {
   const { html, styles, needsPreline, css } = renderLibrary(lib)
   const brand = lib.content.brandName
   const description = lib.content.hero.subtitle
-  const siteUrl = details.siteUrl?.trim().replace(/\/+$/, '') || PLACEHOLDER_URL
+  const siteUrl = safeSiteUrl(details.siteUrl, PLACEHOLDER_URL)
   const mode = lib.initialMode
   const palette = lib.palette[mode]
   const favicon = faviconSvg(lib.themeKey, brand, seededRandom(lib.content.brandName.length + 17), palette.accent, onColorOf(palette.accent))
@@ -275,7 +273,7 @@ ${pagesScript(lib)}`
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(brand)}</title>
 <meta name="description" content="${escapeHtml(description)}" />
-<link rel="canonical" href="${siteUrl}/" />
+<link rel="canonical" href="${escapeHtml(siteUrl)}/" />
 <meta property="og:title" content="${escapeHtml(brand)}" />
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:type" content="website" />
@@ -300,15 +298,15 @@ ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src=
     { path: 'assets/site.js', content: script },
     { path: 'assets/favicon.svg', content: favicon + '\n' },
     ...(needsPreline ? [{ path: 'assets/preline.js', content: prelineScript }] : []),
-    { path: 'sitemap.xml', content: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${siteUrl}/</loc><lastmod>${today}</lastmod></url>\n</urlset>\n` },
-    { path: 'robots.txt', content: `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n` },
+    { path: 'sitemap.xml', content: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${xmlEscape(siteUrl)}/</loc><lastmod>${today}</lastmod></url>\n</urlset>\n` },
+    { path: 'robots.txt', content: `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl.replace(/\s/g, '')}/sitemap.xml\n` },
     ...deployFiles(brand),
     {
       path: 'README.txt',
       content: `${brand}: ${lib.pages && lib.pages.length > 1 ? `a static website with ${lib.pages.length} pages (${lib.pages.map((p) => p.label).join(', ')}) in plain HTML, CSS and JavaScript. The pages are switched by the address (index.html#/about), so no server rules are needed.` : 'a one-page static website (plain HTML, CSS and JavaScript).'}
 
   1. Upload everything in this folder to any web host, or open index.html by double-click.
-  2. ${details.siteUrl ? `The address ${siteUrl} is already in the sitemap, robots.txt and the canonical link.` : `Replace ${PLACEHOLDER_URL} with your real address in sitemap.xml, robots.txt and index.html.`}
+  2. ${siteUrl !== PLACEHOLDER_URL ? `The address ${siteUrl} is already in the sitemap, robots.txt and the canonical link.` : `Replace ${PLACEHOLDER_URL} with your real address in sitemap.xml, robots.txt and index.html.`}
   3. Check the email, phone number and address (they are placeholders unless you filled them in).
   4. The form layouts come from the stored components and are not connected to anything yet: connect them to a form service
      such as Formspree or Netlify Forms.

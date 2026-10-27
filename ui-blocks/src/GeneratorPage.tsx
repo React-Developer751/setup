@@ -279,7 +279,8 @@ function GeneratorPage() {
     designGroup.current = newId()
     turnedDown.current = []
     exported.current = false
-    const plan = await newDesign(text)
+    // the design memory (the server's database or the browser's) can fail: the site is then made without it, not left half made
+    const plan: Awaited<ReturnType<typeof newDesign>> = await newDesign(text).catch(() => ({ reasons: ['Made without the design memory (it could not be read).'], ops: [], variation: 1 + Math.floor(Math.random() * 9000) }) as unknown as Awaited<ReturnType<typeof newDesign>>)
     messageId.current += 1
     setMessages([{ id: messageId.current, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
     setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])

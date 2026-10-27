@@ -56,18 +56,20 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
     setProblem('')
     // the photos are copied into the page (scaled down: the first screen a little bigger, the rest smaller), so the finished site does not depend on the photo service
     // and stays light (six photos are about 0.6 MB); one that cannot be read is skipped
+    const photos = result.photos.slice(0, 7)
     const copies = await Promise.all(
-      result.photos.slice(0, 7).map(async (p, i) => {
+      photos.map(async (p, i) => {
         const blob = await loadPhoto(p.url)
         return blob ? readPicture(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }), SIZES(i).side, false, SIZES(i).chars).catch(() => undefined) : undefined
       }),
     )
-    const pictures = copies.filter((c): c is string => !!c)
+    const copied = photos.map((photo, i) => ({ photo, picture: copies[i] })).filter((x): x is { photo: (typeof photos)[number]; picture: string } => !!x.picture)
+    const pictures = copied.map((x) => x.picture)
     setBusy(false)
     if (pictures.length < 2) return setProblem('The photos could not be copied (the photo service did not send them). Try again or upload your own.')
-    // the credit line names the photographers, as the licences ask
-    const credits = [...new Set(result.photos.map((p) => p.credit).filter(Boolean))].slice(0, 6).join('; ')
-    onApply([{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2, 7), credit: `Photos: ${result.source}${credits ? ` - ${credits}` : ''}`.slice(0, 400) }], 'Photos from the search')
+    // the credit line names the photographers of the photos that are on the page, all of them, as the licences ask
+    const credits = [...new Set(copied.map((x) => x.photo.credit).filter(Boolean))].join('; ')
+    onApply([{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2, 7), credit: `Photos: ${result.source}${credits ? ` - ${credits}` : ''}`.slice(0, 900) }], 'Photos from the search')
   }
 
   const draw = async () => {
@@ -156,7 +158,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
               ))}
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={() => void applyFound()} className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
+              <button type="button" onClick={() => void applyFound()} disabled={busy} className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
                 Use these photos
               </button>
               <button type="button" onClick={() => void search(page + 1)} disabled={busy} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50">

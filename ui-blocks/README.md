@@ -1,35 +1,58 @@
-# React + TypeScript + Vite
+# Website generator (offline rule-based, React + TypeScript + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+One prompt ("dental clinic called Smile Care in Pune, single page" / "... multiple page website") gives a finished, static website: texts, colours,
+pictures, animations, light / dark mode. No AI key is needed; the optional AI parts are marked below.
 
-Currently, two official plugins are available:
+## Run it
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run app          # the app, the API server, the image engine and the content AI, all four
+# open http://localhost:5173
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+`npm run app` starts four things (each also on its own):
+
+| Part | Command | Port | What it does | If it is not running |
+|---|---|---|---|---|
+| App | `npm run dev` | 5173 | the generator page (Vite) | - |
+| API server | `npm run server` | 8787 | edit log, design memory, photo search, proxies to the two engines below | the site is still made; memory is kept in the browser |
+| Image engine (PixelMath, folder `../normal`) | `npm run images` | 8000 | flat illustrations of scenes for the first screen, About and the gallery | maths art is used instead |
+| Content AI (Core-Craft, folder `../cont`) | `npm run corecraft` | 8100 | texts about the services in the prompt, Hindi pages | the built-in texts are used |
+
+Both engine folders are only run, never changed. Python 3 is needed for them.
+
+## What it makes
+
+* **One page or several**: the prompt decides ("single page", "landing page", "ek page" / "multi-page", "5 pages", "pages wali website"). Both are made
+  from 560 stored components (`src/components`, listed in `COMPONENTS.md`; `src/generator/library/componentUse.ts` says which become page parts).
+* **Colours** are judged before a site uses them (`colorJudge.ts`) and the finished page is checked in light and dark mode: a text that cannot be read
+  on what is behind it gets a readable colour (`library/pageAudit.ts`).
+* **Pictures**: the image AI, your own photos, or real photos from the search (Pexels with a key, else Wikimedia Commons: free licences, a credit line goes into the footer).
+* **Edit chat**: "FAQ hatao", "background light green karo", "buttons ko round karo", "pricing ko Rates rename karo", "phone 98765 43210" ... (see below).
+* **Export**: one `.html` file, a folder of static files (sitemap, robots.txt, deploy files) or a Vite project. Pages of a multi-page site are switched by the address (`#/about`), so no server rules are needed.
+
+## Settings (environment variables of the API server)
+
+`PORT` (8787), `HOST` (127.0.0.1: local only), `EDIT_SERVER_TOKEN` (needed when HOST is not local), `ANTHROPIC_API_KEY` + `EDIT_MODEL` (optional AI for the edit chat),
+`PEXELS_API_KEY` (optional photo search; without it Wikimedia Commons is used, `PHOTO_FALLBACK=off` switches that off), `EDIT_DATA_DIR` (server/data),
+`CORECRAFT_URL`, `PIXELMATH_URL`, `PIXELMATH_API_KEY`, `EDIT_RATE_PER_MINUTE`, `EDIT_IMAGES_PER_MINUTE`. Nothing is sent anywhere unless you set a key.
+
+## Checks
+
+```bash
+npm test                      # everything: parsers, generators, colours, components, exports, server, photo search, ML (about 6 minutes)
+ALL_PROJECTS=1 node scripts/test-project.mjs   # builds 14 exported Vite projects (slow)
+npm run build                 # type check + production build
+npm run lint
+```
+
+## Limits
+
+* The pictures of the image AI are flat illustrations, not photographs; real photos come from the search or your uploads.
+* The generator page is a large single bundle (about 7.6 MB, 1.4 MB gzip: the trained models are inside); it is made to run locally or as an internal tool.
+* Forms of the generated sites only show a layout until you connect a form service.
+* The Privacy and Terms pages of a multi-page site are templates, not legal advice.
 
 ## Edit chat (change a generated website by talking to it)
 

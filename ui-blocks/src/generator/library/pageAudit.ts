@@ -16,6 +16,8 @@ function parse(css: string): Rgba | undefined {
   canvas.clearRect(0, 0, 1, 1)
   canvas.fillStyle = '#010203'
   canvas.fillStyle = css
+  // a colour the canvas cannot read leaves the marker colour: it is not measured (near-black would be a wrong answer)
+  if (canvas.fillStyle === '#010203' && !/^#010203$/i.test(css.trim())) return undefined
   canvas.fillRect(0, 0, 1, 1)
   const d = canvas.getImageData(0, 0, 1, 1).data
   return [d[0], d[1], d[2], d[3] / 255]

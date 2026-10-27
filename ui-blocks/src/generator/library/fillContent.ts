@@ -117,9 +117,9 @@ function dataFor(role: Role, c: WebsiteContent): Data {
       }
     case 'profile':
       return {
-        title: c.team.members[0].name,
+        title: c.team.members[0]?.name ?? c.brandName,
         subtitle: about[0],
-        eyebrow: c.team.members[0].role,
+        eyebrow: c.team.members[0]?.role ?? '',
         itemTitles: c.team.members.map((m) => m.name),
         itemTexts: about,
         itemLabels: c.team.members.map((m) => m.role),
@@ -230,7 +230,7 @@ function mapTextNodes(root: Element, fn: (text: string, node: Text) => string | 
     const raw = node.textContent ?? ''
     if (!raw.trim()) return
     const replaced = fn(raw.trim(), node)
-    if (replaced !== undefined) node.textContent = raw.replace(raw.trim(), replaced)
+    if (replaced !== undefined) node.textContent = raw.replace(raw.trim(), () => replaced)
   })
 }
 
@@ -257,13 +257,13 @@ function replaceBrand(
     if (BRAND_WORDS.test(text)) return c.brandName
     if (/^placeholder$/i.test(text)) return 'Your email'
     if (/^company name$/i.test(text)) return 'Your name'
-    if (PLACEHOLDER_NAMES.test(text)) return take(people, person++, people[0]).name
-    if (PLACEHOLDER_ROLES.test(text)) return take(people, personRole++, people[0]).role
+    if (PLACEHOLDER_NAMES.test(text) && people.length) return take(people, person++, people[0]).name
+    if (PLACEHOLDER_ROLES.test(text) && people.length) return take(people, personRole++, people[0]).role
     if (text.startsWith('@')) return handle
     if (/^©\s*\d{4}/.test(text)) return `© ${new Date().getFullYear()} ${c.brandName}`
     if (/figma is live/i.test(text)) return `New: ${subject}`
     if (/npm i /i.test(text)) return `Welcome to ${c.brandName}`
-    if (/\b(preline|tailblocks|meraki(?:\s?ui)?|flowbite|windster)\b/i.test(text)) return text.replace(/\b(preline|tailblocks|meraki(?:\s?ui)?|flowbite|windster)\b/gi, c.brandName)
+    if (/\b(preline|tailblocks|meraki(?:\s?ui)?|flowbite|windster)\b/i.test(text)) return text.replace(/\b(preline|tailblocks|meraki(?:\s?ui)?|flowbite|windster)\b/gi, () => c.brandName)
     return undefined
   })
 }
@@ -363,6 +363,7 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
       (el) => el.children.length === 0 && NUMERIC.test(visibleText(el)),
     )
     values.forEach((el, i) => {
+      if (!c.stats.length) return
       const stat = take(c.stats, i, c.stats[0])
       el.textContent = stat.value
       el.setAttribute('data-count', '')
@@ -447,7 +448,7 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
     const items = [...root.querySelectorAll('li')].filter((li) => visibleText(li))
     items.forEach((li, i) => setText(li, take(d.itemTexts, i, 'Included')))
     let n = 0
-    mapTextNodes(root, (text) => (PRICE.test(text) ? take(c.pricing.plans, n++, c.pricing.plans[0]).price.replace(/^\$/, '') : undefined))
+    mapTextNodes(root, (text) => (PRICE.test(text) && c.pricing.plans.length ? take(c.pricing.plans, n++, c.pricing.plans[0]).price.replace(/^\$/, '') : undefined))
   }
 
   if (role === 'contact') {
@@ -906,6 +907,7 @@ function cleanLeftovers(root: Element, role: Role, c: WebsiteContent) {
       const n = seen.get(card) ?? 0
       seen.set(card, n + 1)
       const index = [...seen.keys()].indexOf(card)
+      if (!c.pricing.plans.length) return
       const plan = take(c.pricing.plans, index, c.pricing.plans[0])
       setText(el, take(plan.perks, n, plan.perks[0] ?? 'Included'))
     })
@@ -1026,11 +1028,20 @@ function scrubLeftovers(root: Element, before: Set<string>, role: Role, c: Websi
 }
 
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
-  try {
-    if (role === 'pagehead') return fillPageHead(root)
-    const original = new Set(textsOf(root))
-    // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already
-    if (role === 'hero') {
+  // every step is guarded on its own: one that throws on unusual markup or content must not leave the names and numbers of the kit in the finished page
+  const step = (name: string, fn: () => void) => {
+    try {
+      fn()
+    } catch (error) {
+      console.warn(`fillContent(${role}) ${name} skipped:`, error)
+    }
+  }
+  if (role === 'pagehead') return step('title block', () => fillPageHead(root))
+  let original = new Set<string>()
+  step('read', () => (original = new Set(textsOf(root))))
+  // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already
+  if (role === 'hero') {
+    step('hero clean-up', () => {
       root.querySelectorAll('nav').forEach((bar) => bar.remove())
       // (a header that holds the heading of the hero is the hero itself, not a menu bar)
       root.querySelectorAll('header').forEach((bar) => bar.querySelector('h1, h2') || bar.remove())
@@ -1039,26 +1050,22 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
         const kids = [...row.children]
         if (kids.length >= 3 && !visibleText(row) && kids.every((k) => k.tagName === 'svg' || k.tagName === 'IMG' || k.querySelector('svg, img'))) row.remove()
       })
-    }
-    fillImages(root, role, c, colors)
-    fillBackgrounds(root, role, c, colors)
-    if (role === 'banner') return fillBanner(root, c)
-    if (role === 'nav') {
-      fillNav(root, c, links)
-      // a made-up sentence of the kit inside the menu ("Some text as placeholder")
-      root.querySelectorAll('p, div, span').forEach((el) => isLeaf(el) && /placeholder/i.test(visibleText(el)) && el.remove())
-      return
-    }
-    if (role === 'footer') return fillFooter(root, c, links)
-    if (role === 'hero') fillHero(root, c)
-    else fillSection(root, role, c)
-    fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button)
-    cleanLeftovers(root, role, c)
-    scrubLeftovers(root, original, role, c)
-    setPlaceholders(root)
-    ensureTitle(root, role, c)
-    replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members)
-  } catch (error) {
-    console.warn(`fillContent(${role}) skipped:`, error)
+    })
   }
+  step('pictures', () => fillImages(root, role, c, colors))
+  step('backgrounds', () => fillBackgrounds(root, role, c, colors))
+  if (role === 'banner') return step('banner', () => fillBanner(root, c))
+  if (role === 'nav') {
+    step('menu', () => fillNav(root, c, links))
+    // a made-up sentence of the kit inside the menu ("Some text as placeholder")
+    return step('menu clean-up', () => root.querySelectorAll('p, div, span').forEach((el) => isLeaf(el) && /placeholder/i.test(visibleText(el)) && el.remove()))
+  }
+  if (role === 'footer') return step('footer', () => fillFooter(root, c, links))
+  step('text', () => (role === 'hero' ? fillHero(root, c) : fillSection(root, role, c)))
+  step('buttons', () => fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button))
+  step('leftovers', () => cleanLeftovers(root, role, c))
+  step('kit text', () => scrubLeftovers(root, original, role, c))
+  step('fields', () => setPlaceholders(root))
+  step('title', () => ensureTitle(root, role, c))
+  step('names', () => replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members))
 }
