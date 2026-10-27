@@ -76,7 +76,7 @@ export const LIBRARY_CSS = `img[data-avatar]{border-radius:9999px;aspect-ratio:1
 [data-gen-theme] [data-fx]{color:var(--fx-l)!important}
 [data-gen-theme].dark [data-fx]{color:var(--fx-d,var(--fx-l))!important}`
 
-export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: ThemeKey) {
+export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: ThemeKey, fontTokens?: Record<string, string>) {
   const dark = mode === 'dark'
   const { bg, surface, text, accent, alt } = palette[mode]
   const onAccent = onColor(accent)
@@ -103,7 +103,7 @@ export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: The
 
   const style: Record<string, string> = {
     // the typeface of this business type (Tailwind's font-sans / font-serif read these variables)
-    ...(theme ? { ...fontVars(theme), fontFamily: Object.values(fontVars(theme))[0] } : {}),
+    ...(fontTokens ? { '--font-sans': fontTokens['--font-sans'], '--font-serif': fontTokens['--font-serif'], '--font-mono': fontTokens['--font-mono'], fontFamily: fontTokens['--font-sans'] } : theme ? { ...fontVars(theme), fontFamily: Object.values(fontVars(theme))[0] } : {}),
     background: bg,
     color: text,
     // native controls (scrollbars, form fields) follow the mode
@@ -145,6 +145,8 @@ export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: The
     '--primary-checked': accent,
     '--primary-foreground': onAccent,
   }
+  // Preline's chart colours (a gradient from the main colour to --chart-5 on a hero label) are purple and orange by default: here they are the colours of the page
+  ;(['1', '2', '3', '4', '5'] as const).forEach((n, i) => (style[`--chart-${n}`] = [accent, accentScale[400], alt ?? accent, accentScale[300], accentScale[600]][i]))
   for (const [shade, value] of Object.entries(accentScale)) style[`--primary-${shade}`] = value
   // the stored components of the other kits (Meraki, Flowbite ...) use Tailwind's blue and indigo for their buttons and links: both follow the main colour
   for (const [shade, value] of Object.entries(accentScale)) {

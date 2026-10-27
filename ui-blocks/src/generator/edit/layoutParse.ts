@@ -210,7 +210,8 @@ export function layoutOps(clause: string, context: 'single' | 'multi', quotes: s
 
   // ── a new name: the heading of a section, or the label of a page in the menu
   // The words of the new name itself ("Our Menu", "Team Fitness") never decide what is renamed: they are cut out first.
-  const value0 = newName(text, quotes, 0)
+  // the verb that ends the sentence ("... rename karo", "... likho") is not a part of the new name
+  const value0 = newName(text, quotes, 0)?.replace(/(?:\s+(?:rename|renamed|karo|kar\s?do|kardo|likho|likh\s?do|rakho|rakh\s?do))+\s*$/iu, '').trim() || undefined
   const frame = value0 ? (text.includes(value0) ? text.slice(0, text.lastIndexOf(value0)) + ' ' + text.slice(text.lastIndexOf(value0) + value0.length) : text).replace(/§\d+§/g, ' ') : text.replace(/§\d+§/g, ' ')
   const realMents = mentions(frame, true)
   if (!realMents.length && lastTarget && (has(NAV_WORDS, frame) || has(HEADING_WORD, frame)) && /(?<![\p{L}\p{M}])(?:it|its|isko|usko|ise|use|इसे|उसे)(?![\p{L}\p{M}])/iu.test(frame) && !['header', 'hero', 'footer'].includes(lastTarget)) realMents.push({ value: lastTarget, at: 0, end: 0 })

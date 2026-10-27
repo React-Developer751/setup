@@ -796,7 +796,6 @@ function GeneratorPage() {
           <PhotosPanel
             defaultQuery={active.content.subject || brandName}
             hasPhotos={!!edits.photos}
-            supported={shownEngine === 'templates'}
             planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
             accent={palette.light.accent}
             alt={palette.light.alt}

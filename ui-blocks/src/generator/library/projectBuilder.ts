@@ -1,6 +1,6 @@
 // The Vite project of a page made from the stored components: package.json, the page, the components it uses, and the runtime around them (found by
 // following the imports of ThemeScope: see projectFiles.ts). Pure: the files are read through `env`, so the browser (Vite) and a script (disk) build the same project.
-import { fontLinks } from '../fonts'
+import { fontLinksFor } from '../fonts'
 import type { generateLibraryPage } from './generateLibraryPage'
 import { closureOf } from './projectFiles'
 
@@ -84,7 +84,7 @@ export async function libraryProjectEntries(lib: Library, env: ProjectEnv): Prom
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${escapeHtml(lib.content.brandName)}</title>
     <meta name="description" content="${escapeHtml(lib.content.hero.subtitle)}" />
-    ${fontLinks(lib.themeKey).replace(/\n/g, '\n    ')}
+    ${fontLinksFor(lib.themeKey, lib.fontTokens).replace(/\n/g, '\n    ')}
   </head>
   <body>
     <div id="root"></div>

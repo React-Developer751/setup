@@ -8,6 +8,7 @@ import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/e
 import { fitsFrom, reorder } from '../edit/fit'
 import { rolePools, tierPools, type Role } from './libraryRoles'
 import { panelColors } from '../moods'
+import { chosenFont, editCss } from './editCss'
 
 /** the part of a page that a library component fills, for each section a person can ask to remove or add */
 const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
@@ -91,8 +92,8 @@ export function generateLibraryPage(
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)
-  // a part the person resizes, aligns, paints or renames is a part they expect to see
-  for (const key of [...Object.keys(edits?.sizes ?? {}), ...Object.keys(edits?.aligns ?? {}), ...Object.keys(edits?.buttonAligns ?? {}), ...Object.keys(edits?.sectionColors ?? {}), ...Object.keys(edits?.titles ?? {})]) for (const role of ROLE_OF[key as SectionKey] ?? []) if (role !== 'profile') visible.add(role)
+  // a part the person resizes, aligns or renames is a part they expect to see (a colour is not asked for one part: "background green" paints them all)
+  for (const key of [...Object.keys(edits?.sizes ?? {}), ...Object.keys(edits?.aligns ?? {}), ...Object.keys(edits?.buttonAligns ?? {}), ...Object.keys(edits?.titles ?? {})]) for (const role of ROLE_OF[key as SectionKey] ?? []) if (role !== 'profile') visible.add(role)
   for (const section of edits?.hidden ?? []) for (const role of ROLE_OF[section] ?? []) visible.delete(role)
   const sectionOfRole = (role: Role): SectionKey | undefined => (role === 'profile' ? 'about' : (Object.keys(ROLE_OF) as SectionKey[]).find((key) => ROLE_OF[key]?.includes(role)))
   const order: Role[] = reorder(FULL.filter((role) => visible.has(role)), edits?.moves ?? [], sectionOfRole)
@@ -112,7 +113,9 @@ export function generateLibraryPage(
 
   // the pages of a multi-page site: the parts are grouped by page, an inner page starts with its title block; the menu and the footer are on every page
   const PAGE_OF: Partial<Record<Role, string>> = { hero: '/', stats: '/', features: '/', links: '/', testimonial: '/', cta: '/', about: '/about', profile: '/about', team: '/about', steps: '/about', pricing: '/pricing', faq: '/pricing', gallery: '/gallery', blog: '/blog', contact: '/contact' }
-  const nl = base.content.navLabels ?? {}
+  // the label of a page in the menu: the one the person gave it, else the heading they gave its section ("rename pricing to Rates" renames both)
+  const edited = base.content.titles ?? {}
+  const nl = { ...Object.fromEntries((['about', 'pricing', 'gallery', 'blog', 'contact'] as const).filter((key) => edited[key] && edited[key]!.length <= 24).map((key) => [key, edited[key]])), ...(base.content.navLabels ?? {}) } as Partial<Record<string, string>>
   const brand = base.content.brandName
   const PAGES: { path: string; label: string; text: string }[] = [
     { path: '/', label: nl.home ?? 'Home', text: base.content.hero.subtitle },
@@ -143,6 +146,8 @@ export function generateLibraryPage(
     return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
+  const css = editCss(edits)
+  const fontTokens = chosenFont(edits)
   const imports = [...new Set(sections.map(({ componentId }) => componentId))]
     .map((componentId) => `import ${componentName(componentId)} from './components/${componentId}'`)
     .join('\n')
@@ -158,7 +163,12 @@ const content = ${JSON.stringify(base.content, null, 2)}
 
 // Colours made for this prompt (both light and dark mode)
 const palette = ${JSON.stringify(base.palette, null, 2)}
-${multi ? `
+${css ? `
+// The looks you asked for (buttons, headings, text, corners ...)
+const css = ${JSON.stringify(css)}
+` : ''}${fontTokens ? `
+const fontTokens = ${JSON.stringify(fontTokens, null, 2)}
+` : ''}${multi ? `
 // The pages of the site: #/about style addresses switch between them (the parts of the other pages are hidden)
 const pages = ${JSON.stringify(pagesInfo, null, 2)}
 ` : ''}${
@@ -171,12 +181,12 @@ const motion: MotionPlan = ${JSON.stringify(base.motion, null, 2)}
   }
 export default function GeneratedLandingPage() {
   return (
-    <ThemeScope theme="${base.themeKey}" palette={palette} content={content}${multi ? ' pages={pages}' : ''}${base.motion.level === 'off' ? '' : ' motion={motion}'}>
+    <ThemeScope theme="${base.themeKey}" palette={palette} content={content}${multi ? ' pages={pages}' : ''} mode="${base.initialMode}"${css ? ' css={css}' : ''}${fontTokens ? ' fontTokens={fontTokens}' : ''}${base.motion.level === 'off' ? '' : ' motion={motion}'}>
 ${body}
     </ThemeScope>
   )
 }
 `
 
-  return { multi, pages: multi ? pagesInfo : undefined, themeKey: base.themeKey, niche: generated.niche, palette: base.palette, content: base.content, sections, code, tier, brain: base.brain, motion: base.motion, copy: base.copy, brainsForced: base.brainsForced, colorReasons: base.colorReasons }
+  return { multi, pages: multi ? pagesInfo : undefined, initialMode: base.initialMode, css, fontTokens, themeKey: base.themeKey, niche: generated.niche, palette: base.palette, content: base.content, sections, code, tier, brain: base.brain, motion: base.motion, copy: base.copy, brainsForced: base.brainsForced, colorReasons: base.colorReasons }
 }

@@ -427,7 +427,7 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
     }
   }
   const koKar = clause.match(/^(?:(?:sab|har)\s+jagah\s+|सब जगह\s+|हर जगह\s+)?(§\d+§|[\p{L}\p{M}]+(?:\s+[\p{L}\p{M}]+){0,2})(?:\s+word)?\s+ko\s+(§\d+§|[\p{L}\p{M}]+(?:\s+[\p{L}\p{M}]+){0,2})\s+(?:likho|kar do|karo|kardo|bana do|rakho|कर दो|करो|लिखो)$/iu)
-  if (koKar && !/^(?:design|dizain|look|site|website|page|colou?rs?|theme|rang|it|isko|ise)$/i.test(koKar[1]) && !COLOR_RE.test(koKar[1]) && !COLOR_RE.test(koKar[2]) && !anySection(koKar[1]) && !FIELD_RE.some((f) => f.re.test(koKar[1]))) {
+  if (koKar && !/^(?:design|dizain|look|site|website|page|colou?rs?|theme|rang|it|isko|ise)$/i.test(koKar[1]) && !COLOR_RE.test(koKar[1]) && !COLOR_RE.test(koKar[2]) && !anySection(koKar[1]) && !partMentions(koKar[1]).length && !FIELD_RE.some((f) => f.re.test(koKar[1]))) {
     push({ op: 'replace', from: cleanFrom(koKar[1]), to: cleanTo(koKar[2]) })
     return { ops, notes }
   }
@@ -548,6 +548,15 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
 
   // the look of one kind of thing: the colour of buttons, headings or text, round or sharp corners, the typeface ─────────
   const parts = partMentions(clause)
+  // "background green", "page ka background blue": the background of the page, which is the background of every part between the menu and the footer
+  if (!parts.length && /(?<![\p{L}])(?:background|bg)(?![\p{L}])/iu.test(clause) && !/(?<![\p{L}])(?:buttons?|btns?|accent|links?|text|font|heading|headings)(?![\p{L}])/iu.test(clause)) {
+    const colours = colorMentions(clause)
+    if (colours.length) {
+      for (const target of ['hero', 'stats', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact'] as Target[]) push({ op: 'sectionColor', target, hex: colours[0].value })
+      notes.push('Every part of the page (the menu and the footer keep their own colour) now has that background. Say "header green" or "footer dark" to colour those as well.')
+      return { ops, notes }
+    }
+  }
   {
     const quoted = hasQuote(clause)
     const targets = parts.length ? parts.map((p) => p.value as FitTarget) : (['page'] as FitTarget[])

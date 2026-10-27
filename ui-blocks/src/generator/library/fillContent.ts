@@ -405,6 +405,12 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
       setText(h, position === 0 ? take(d.itemTitles, index, d.title) : take(d.itemLabels, index, d.eyebrow))
     })
 
+  // more cards than things to show (three services in a part made for four): the extra cards go, instead of repeating the first one
+  if (['features', 'steps', 'team', 'blog', 'testimonial'].includes(role) && d.itemTitles.length >= 2 && cardIndex.size > d.itemTitles.length) {
+    const cards = [...cardIndex.keys()]
+    if (new Set(cards.map((card) => card.parentElement)).size === 1) cards.filter((card) => (cardIndex.get(card) ?? 0) >= d.itemTitles.length).forEach((card) => card.remove())
+  }
+
   const longLeaf = (el: Element) => isLeaf(el) && visibleText(el).length > 40
   const paragraphs = [...root.querySelectorAll('p, div, span')].filter(
     (p) => (p.tagName === 'P' ? !!visibleText(p) : longLeaf(p)) && !p.closest('button,a') && !statElements.has(p) && !p.closest('[data-crow]'),
@@ -472,7 +478,40 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
       if (labelOf(h) === 'address' && h.nextElementSibling?.tagName === 'P') h.nextElementSibling.textContent = c.contact.address
     })
     fillGenericButtons(root, 'Send message')
+    ensureContactFacts(root, c)
   }
+}
+
+/** A contact part that shows no e-mail, phone or address of its own (a form only) still tells the visitor how to reach the business: a line with the details, also the ones the person typed. */
+function ensureContactFacts(root: Element, c: WebsiteContent) {
+  const text = visibleText(root)
+  const has = (value: string | undefined) => !!value && text.includes(value)
+  if (has(c.contact.email) || has(c.contact.phone) || has(c.contact.address)) return
+  const doc = root.ownerDocument
+  const strip = doc.createElement('div')
+  strip.className = 'mx-auto flex max-w-3xl flex-wrap justify-center gap-x-8 gap-y-2 px-6 py-8 text-center text-sm text-gray-700 dark:text-gray-300'
+  const add = (label: string, value: string | undefined, href?: string) => {
+    if (!value) return
+    const item = doc.createElement('p')
+    const name = doc.createElement('span')
+    name.className = 'font-medium text-gray-900 dark:text-white'
+    name.textContent = `${label}: `
+    item.appendChild(name)
+    if (href) {
+      const a = doc.createElement('a')
+      a.className = 'text-blue-600 hover:underline dark:text-blue-400'
+      a.setAttribute('href', href)
+      a.textContent = value
+      item.appendChild(a)
+    } else item.appendChild(doc.createTextNode(value))
+    strip.appendChild(item)
+  }
+  add('Phone', c.contact.phone, `tel:${c.contact.phone.replace(/[^\d+]/g, '')}`)
+  add('Email', c.contact.email, `mailto:${c.contact.email}`)
+  add('Address', c.contact.address)
+  add('Hours', c.contact.hoursText)
+  if (c.contact.whatsapp) add('WhatsApp', c.contact.whatsapp, `https://wa.me/${c.contact.whatsapp.replace(/[^\d]/g, '')}`)
+  if (strip.childElementCount) root.appendChild(strip)
 }
 
 function fillHero(root: Element, c: WebsiteContent) {
@@ -570,12 +609,20 @@ function fillNav(root: Element, c: WebsiteContent, pageLinks: Link[]) {
       setText(el, c.hero.button)
       el.setAttribute('href', '#contact')
     } else if (isSecondaryAction) {
-      el.style.display = 'none'
+      el.remove()
     } else if (linkIndex < shown.length) {
       const link = shown[linkIndex++]
       setText(el, link.label)
       el.setAttribute('href', link.href)
       if (el.hasAttribute('aria-label')) el.setAttribute('aria-label', link.label)
+      // a menu item that was a drop-down button ("About v"): its menu is gone, so it becomes a plain link to its page
+      if (el.tagName === 'BUTTON' || el.classList.contains('hs-dropdown-toggle')) {
+        const anchor = el.ownerDocument.createElement('a')
+        anchor.className = el.className.replace(/\bhs-dropdown-toggle\b/g, '').trim()
+        anchor.setAttribute('href', link.href)
+        anchor.textContent = link.label
+        el.replaceWith(anchor)
+      }
     } else {
       // more links than we have sections: hide the extra ones
       ;(el.closest('.hs-dropdown') as HTMLElement | null ?? el).style.display = 'none'

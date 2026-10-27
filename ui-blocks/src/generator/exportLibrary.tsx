@@ -21,11 +21,11 @@ import { contentTypesFrom, libraryProjectEntries } from './library/projectBuilde
 import motionBrainSource from './motionBrain.ts?raw'
 import { libraryThemeStyle } from './library/libraryTheme'
 import { deployFiles } from './deploy'
-import { fontLinks } from './fonts'
+import { fontLinksFor } from './fonts'
 import { Section, ThemeScope } from './library/ThemeScope'
 import { MOTION_RUNTIME_JS } from './motionRuntimeJs'
 import siteTypesSource from './siteTypes.ts?raw'
-import { defaultMode, onColor, type ColorMode } from './themes'
+import { onColor, type ColorMode } from './themes'
 import { createZip, type ZipEntry } from './zip'
 
 type Library = ReturnType<typeof generateLibraryPage>
@@ -118,7 +118,7 @@ function renderLibrary(lib: Library) {
   const root = createRoot(host)
   flushSync(() =>
     root.render(
-      <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages}>
+      <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages} mode={lib.initialMode} css={lib.css} fontTokens={lib.fontTokens}>
         {lib.sections.map(({ role, componentId, paint, fit, band, page, head }, index) => {
           const Component = libraryComponents[componentId]
           return (
@@ -130,7 +130,7 @@ function renderLibrary(lib: Library) {
       </ThemeScope>,
     ),
   )
-  const styles = Object.fromEntries((['light', 'dark'] as ColorMode[]).map((mode) => [mode, cssText(libraryThemeStyle(lib.palette, mode, lib.themeKey).style)]))
+  const styles = Object.fromEntries((['light', 'dark'] as ColorMode[]).map((mode) => [mode, cssText(libraryThemeStyle(lib.palette, mode, lib.themeKey, lib.fontTokens).style)]))
   // the finished page is looked at in a browser, in both modes: a text that cannot be read on what is behind it gets a readable colour (pageAudit.ts)
   const page = host.firstElementChild as HTMLElement | null
   if (page && typeof document !== 'undefined' && document.body) {
@@ -141,7 +141,7 @@ function renderLibrary(lib: Library) {
     still.textContent = '*{transition:none!important;animation:none!important}'
     document.head.appendChild(still)
     try {
-      const first = defaultMode(lib.themeKey)
+      const first = lib.initialMode
       // every page is looked at, also the ones that are hidden now
       const inner = [...page.querySelectorAll<HTMLElement>('[data-page]')]
       const hiddenBefore = inner.map((el) => el.hidden)
@@ -177,7 +177,7 @@ export function buildLibraryStandalone(lib: Library): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(lib.content.brandName)}</title>
 <meta name="description" content="${escapeHtml(lib.content.hero.subtitle)}" />
-${fontLinks(lib.themeKey)}
+${fontLinksFor(lib.themeKey, lib.fontTokens)}
 <style>${css}
 html{scroll-behavior:smooth;scroll-padding-top:5rem}body{margin:0}</style>
 </head>
@@ -192,7 +192,7 @@ const MOON = ${jsString(MOON)};
 ${MOTION_RUNTIME_JS}
 
 const page = document.querySelector('[data-gen-theme]');
-let mode = ${jsString(defaultMode(lib.themeKey))};
+let mode = ${jsString(lib.initialMode)};
 
 document.addEventListener('click', (event) => {
   // inside the generator's preview frame a "#..." link would be resolved against the generator's own address: handle it here
@@ -231,7 +231,7 @@ export function buildLibraryStaticFiles(lib: Library, details: ExportDetails = {
   const brand = lib.content.brandName
   const description = lib.content.hero.subtitle
   const siteUrl = details.siteUrl?.trim().replace(/\/+$/, '') || PLACEHOLDER_URL
-  const mode = defaultMode(lib.themeKey)
+  const mode = lib.initialMode
   const palette = lib.palette[mode]
   const favicon = faviconSvg(lib.themeKey, brand, seededRandom(lib.content.brandName.length + 17), palette.accent, onColorOf(palette.accent))
   const business = {
@@ -279,7 +279,7 @@ ${pagesScript(lib)}`
 <meta property="og:title" content="${escapeHtml(brand)}" />
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:type" content="website" />
-${fontLinks(lib.themeKey)}
+${fontLinksFor(lib.themeKey, lib.fontTokens)}
 <meta property="og:site_name" content="${escapeHtml(brand)}" />
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="${palette.bg}" />

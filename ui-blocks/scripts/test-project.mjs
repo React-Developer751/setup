@@ -29,7 +29,13 @@ const env = {
 }
 
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'lib-project-'))
-for (const [label, multi, prompt] of [['one page', false, 'dental clinic called Smile Care in Pune'], ['pages', true, 'pizza shop called Slice Hub in Mumbai']]) {
+const CASES = [['one page', false, 'dental clinic called Smile Care in Pune'], ['pages', true, 'pizza shop called Slice Hub in Mumbai']]
+// ALL_PROJECTS=1 builds a project for many kinds of business (slow: one Vite build each)
+if (process.env.ALL_PROJECTS) {
+  const prompts = ['law firm called Rao and Partners', 'yoga studio in Goa', 'online store for kurtis and sarees', 'gym called Iron Pulse in Delhi', 'bakery called Crumb', 'kids school in Jaipur', 'plumber in Delhi', 'real estate agency Skyline', 'hair salon Glow', 'pest control company in Pune', 'SaaS startup for invoicing', 'NGO for children']
+  prompts.forEach((prompt, i) => CASES.push([`case-${i}${i % 2 ? '-pages' : ''}`, i % 2 === 1, prompt]))
+}
+for (const [label, multi, prompt] of CASES) {
   const lib = generateLibraryPage(prompt, 3, 'better', true, 'auto', undefined, multi)
   const entries = await libraryProjectEntries(lib, env)
   const dir = path.join(work, label.replace(' ', '-'))

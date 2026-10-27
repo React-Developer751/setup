@@ -13,7 +13,6 @@ type Props = {
   onApply: (ops: EditOp[], label: string, used?: UsedScene[]) => void
   onClear: () => void
   /** the photos are put on the pages of the built-in templates; the 92-components page keeps its own pictures */
-  supported: boolean
   /** the scenes the image engine would draw for this business (another number = other scenes) */
   planFor: (offset: number) => ScenePlan
   /** the main colour of the site: the check of a picture prefers pictures in its hues */
@@ -27,7 +26,7 @@ type Props = {
 }
 
 /** The first screen, the about picture and the gallery get real photos: from the photo search of the server (Pexels) or from the person's own files. */
-function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, planFor, accent, alt, dark, prompt }: Props) {
+function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accent, alt, dark, prompt }: Props) {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [result, setResult] = useState<PhotoResult>()
@@ -103,7 +102,6 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, supported, pla
     <details className="rounded-xl border border-gray-200 bg-white">
       <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-gray-900 [&::-webkit-details-marker]:hidden">Real photos ▾</summary>
       <div className="space-y-2.5 px-3 pb-3 text-xs text-gray-600">
-        {!supported && <p className="rounded-lg bg-amber-50 p-2 text-amber-800">The 92-components page keeps its own pictures. Switch "Built with" to Built-in templates (or Multi-page) to use real photos.</p>}
         <p>Real pictures make a site look finished. Use your own (the first one is the main picture, the second goes in the About section, the rest in the gallery), or search free photos.</p>
         <label className="block space-y-1">
           <span className="font-medium text-gray-700">Your own photos (up to 8)</span>

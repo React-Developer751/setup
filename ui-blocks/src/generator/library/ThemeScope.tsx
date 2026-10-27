@@ -20,6 +20,7 @@ const linkLabels: [string, string][] = [
   ['pricing', 'Pricing'],
   ['team', 'Team'],
   ['blog', 'Blog'],
+  ['faq', 'FAQ'],
   ['contact', 'Contact'],
 ]
 
@@ -86,6 +87,9 @@ export function ThemeScope({
   content,
   motion,
   pages,
+  mode: startMode,
+  css,
+  fontTokens,
   children,
 }: {
   theme: ThemeKey
@@ -98,18 +102,26 @@ export function ThemeScope({
   motion?: MotionPlan
   /** the pages of a multi-page site ("/", "/about" ...): the parts with another data-page are hidden, the menu links to the pages */
   pages?: { path: string; label: string; title: string }[]
+  /** light or dark when the page opens (the person's choice or the look's own); the theme's usual one when left out */
+  mode?: ColorMode
+  /** the looks the person asked for (editCss.ts) */
+  css?: string
+  /** the typeface the person chose (editCss.ts) */
+  fontTokens?: Record<string, string>
   children: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [mode, setMode] = useState<ColorMode>(() => defaultMode(theme))
+  const [mode, setMode] = useState<ColorMode>(() => startMode ?? defaultMode(theme))
   const pagePalette = palette ?? presetPalette(theme, accent)
-  const { style, dark } = libraryThemeStyle(pagePalette, mode, theme)
+  const { style, dark } = libraryThemeStyle(pagePalette, mode, theme, fontTokens)
 
   useLayoutEffect(() => {
     const root = ref.current
     if (!root) return
     const present = new Set([...root.querySelectorAll('[data-role]')].map((el) => el.id).filter(Boolean))
-    const links = pages ? pages.map((p) => ({ href: `#${p.path}`, label: p.label })) : linkLabels.filter(([id]) => present.has(id)).map(([id, label]) => ({ href: `#${id}`, label }))
+    // the labels the person gave to the menu ("About -> Our Story") are in content.navLabels
+    const labelOf = (id: string, fallback: string) => content.navLabels?.[id === 'features' ? 'services' : id] ?? fallback
+    const links = pages ? pages.map((p) => ({ href: `#${p.path}`, label: p.label })) : linkLabels.filter(([id]) => present.has(id)).map(([id, label]) => ({ href: `#${id}`, label: labelOf(id, label) }))
     root.querySelectorAll<HTMLElement>('[data-role]').forEach((el) => {
       // React StrictMode runs effects twice in development; fill each section only once
       if (el.dataset.filled) return
@@ -150,6 +162,7 @@ export function ThemeScope({
   return (
     <div ref={ref} data-gen-theme={theme} className={`overflow-x-clip ${dark ? 'dark' : ''}`} style={style}>
       <style>{LIBRARY_CSS}</style>
+      {css ? <style>{css}</style> : null}
       <PaletteContext.Provider value={pagePalette}>{children}</PaletteContext.Provider>
       {/* light / dark switch: sticks to the bottom-right corner of the screen; the strip under the page keeps it off the last lines (a form, the footer links) */}
       <div aria-hidden="true" className="h-14" />
