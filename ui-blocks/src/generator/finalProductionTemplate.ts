@@ -201,7 +201,7 @@ const navLinks = (ctx: Ctx, gap: string) =>
 // ───────────── drawn pictures (see artBrain.ts) ─────────────
 /** One picture, as markup in the preview and as JSX in the React export. '' when the page has no `visuals`. */
 export const picture = (ctx: Ctx, kind: ArtKind, n = 0) => {
-  // a real photo (from the photo search or an upload) wins over the drawing
+  // a real photo (an upload) wins over the drawing
   const photos = ctx.c.photos
   const photo = kind === 'hero' ? photos?.hero : kind === 'about' ? photos?.about : kind === 'tile' && photos?.gallery?.length ? photos.gallery[n % photos.gallery.length] : undefined
   if (photo) {

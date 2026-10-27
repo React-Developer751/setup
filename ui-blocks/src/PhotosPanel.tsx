@@ -5,7 +5,6 @@ import { makePictures, type UsedScene } from './generator/edit/imageAiClient'
 import { artPictures } from './generator/edit/artPictures'
 import { temperature } from './generator/creativity'
 import { readPicture } from './generator/edit/imageFile'
-import { loadPhoto, searchPhotos, type PhotoResult } from './generator/edit/serverEdit'
 
 type Props = {
   defaultQuery: string
@@ -28,49 +27,13 @@ type Props = {
 /** how big a photo is kept: the first screen the biggest; the others are tiles (about 100 KB each) */
 const SIZES = (index: number) => (index === 0 ? { side: 1280, chars: 170_000 } : index === 1 ? { side: 1000, chars: 130_000 } : { side: 800, chars: 100_000 })
 
-/** The first screen, the about picture and the gallery get real photos: from the photo search of the server (Pexels) or from the person's own files. */
+/** The first screen, the about picture and the gallery get real photos: from the person's own files or drawn by the project's own engines. */
 function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accent, alt, dark, prompt }: Props) {
-  const [query, setQuery] = useState('')
-  const [page, setPage] = useState(1)
-  const [result, setResult] = useState<PhotoResult>()
   const [problem, setProblem] = useState('')
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState('')
   const [round, setRound] = useState(0)
   const [artRound, setArtRound] = useState(0)
-
-  const search = async (nextPage: number) => {
-    setBusy(true)
-    setProblem('')
-    const answer = await searchPhotos((query || defaultQuery).trim(), nextPage)
-    setBusy(false)
-    if (answer.result) {
-      setResult(answer.result)
-      setPage(nextPage)
-    } else setProblem(answer.problem ?? '')
-  }
-
-  const applyFound = async () => {
-    if (!result) return
-    setBusy(true)
-    setProblem('')
-    // the photos are copied into the page (scaled down: the first screen a little bigger, the rest smaller), so the finished site does not depend on the photo service
-    // and stays light (six photos are about 0.6 MB); one that cannot be read is skipped
-    const photos = result.photos.slice(0, 7)
-    const copies = await Promise.all(
-      photos.map(async (p, i) => {
-        const blob = await loadPhoto(p.url)
-        return blob ? readPicture(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }), SIZES(i).side, false, SIZES(i).chars).catch(() => undefined) : undefined
-      }),
-    )
-    const copied = photos.map((photo, i) => ({ photo, picture: copies[i] })).filter((x): x is { photo: (typeof photos)[number]; picture: string } => !!x.picture)
-    const pictures = copied.map((x) => x.picture)
-    setBusy(false)
-    if (pictures.length < 2) return setProblem('The photos could not be copied (the photo service did not send them). Try again or upload your own.')
-    // the credit line names the photographers of the photos that are on the page, all of them, as the licences ask
-    const credits = [...new Set(copied.map((x) => x.photo.credit).filter(Boolean))].join('; ')
-    onApply([{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2, 7), credit: `Photos: ${result.source}${credits ? ` - ${credits}` : ''}`.slice(0, 900) }], 'Photos from the search')
-  }
 
   const draw = async () => {
     setBusy(true)
@@ -116,12 +79,11 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
     setBusy(false)
   }
 
-  const field = 'w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200'
   return (
     <details className="rounded-xl border border-gray-200 bg-white">
       <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-gray-900 [&::-webkit-details-marker]:hidden">Real photos ▾</summary>
       <div className="space-y-2.5 px-3 pb-3 text-xs text-gray-600">
-        <p>Real pictures make a site look finished. Use your own (the first one is the main picture, the second goes in the About section, the rest in the gallery), or search free photos.</p>
+        <p>Real pictures make a site look finished. Use your own (the first one is the main picture, the second goes in the About section, the rest in the gallery).</p>
         <label className="block space-y-1">
           <span className="font-medium text-gray-700">Your own photos (up to 8)</span>
           <input type="file" accept="image/*" multiple onChange={(e) => void upload(e.target.files)} className="block w-full text-xs" />
@@ -140,40 +102,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
             {artRound ? 'Make other art' : 'Make abstract art'}
           </button>
         </div>
-        <div className="space-y-1">
-          <span className="font-medium text-gray-700">Or search real photos (free licences, best matches first; needs the internet the first time, a photo that was loaded once works offline too)</span>
-          <div className="flex gap-2">
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={defaultQuery || 'bakery'} className={field} aria-label="What the photos should show" />
-            <button type="button" onClick={() => void search(1)} disabled={busy} className="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
-              {busy ? '...' : 'Search'}
-            </button>
-          </div>
-        </div>
         {problem && <p className="text-amber-700">{problem}</p>}
-        {result && (
-          <div className="space-y-2">
-            <div className="grid grid-cols-3 gap-1.5">
-              {result.photos.map((p, i) => (
-                <img key={p.id} src={p.thumb} alt={p.alt || `photo ${i + 1}`} loading="lazy" className="aspect-[4/3] w-full rounded-md object-cover ring-1 ring-gray-200" />
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => void applyFound()} disabled={busy} className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
-                Use these photos
-              </button>
-              <button type="button" onClick={() => void search(page + 1)} disabled={busy} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50">
-                Another set
-              </button>
-            </div>
-            <p className="text-[11px] text-gray-500">
-              Photos from{' '}
-              <a href={result.sourceUrl} target="_blank" rel="noreferrer" className="underline">
-                {result.source}
-              </a>
-              : free to use; a thank-you line is added to the footer.
-            </p>
-          </div>
-        )}
         {hasPhotos && (
           <button type="button" onClick={onClear} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">
             Remove the photos

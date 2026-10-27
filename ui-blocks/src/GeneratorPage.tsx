@@ -19,7 +19,7 @@ import EditChat, { type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
-import { askBlueprint, askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
@@ -265,15 +265,6 @@ function GeneratorPage() {
     applyOps('Texts from Core-Craft AI', ops, 'rules', `Core-Craft AI wrote the texts of this page about what you said (${decision.reason}). Say "undo" to go back to the built-in texts.`)
   }
 
-  /** the AI of the server (when it is switched on in the chat and has a key) writes the texts of the page from the prompt: what the person listed becomes the cards, the line under the headline, the FAQ */
-  const applyBlueprint = async (text: string, run: number) => {
-    if (!useServer || !serverReady) return
-    const blocks = await askBlueprint(text)
-    if (run !== coreRun.current) return
-    if (!blocks) return say({ role: 'ai', text: 'The AI did not write the texts this time; the built-in texts are used.' })
-    applyOps('Texts written by the AI', [{ op: 'core', data: blocks }], 'server', 'The AI wrote the texts of this page from what you said (every text is checked again). Say "undo" to go back to the built-in texts.')
-  }
-
   const generate = async (text: string) => {
     if (!text.trim()) return
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
@@ -298,7 +289,6 @@ function GeneratorPage() {
     coreRun.current += 1
     setCoreNote('')
     void applyCoreContent(text, plan.variation, coreRun.current)
-    void applyBlueprint(text, coreRun.current)
     autoMade.current = false
     setDrawn([])
     setRated({})
@@ -591,35 +581,7 @@ function GeneratorPage() {
         say({ role: 'ai', text: answer.reply ?? parsed.reason })
         return
       }
-      // the rules did not understand: the AI server may
-      if (useServer && serverReady) {
-        const answer = await askServer(text, {
-          brand: active.content.brandName,
-          context,
-          sections: [...edits.hidden.map((k) => `-${k}`), ...edits.added.map((k) => `+${k}`)],
-          pages: tplMulti ? multi.pages.map((p) => p.path) : [],
-        })
-        if (answer?.control) {
-          if (answer.control === 'undo') undo()
-          else if (answer.control === 'redo') redo()
-          else reset()
-          return
-        }
-        if (answer?.newSite) {
-          setPrompt(text)
-          await generate(text)
-          return
-        }
-        if (answer && answer.ops.length) {
-          applyOps(text, answer.ops, 'server', answer.reply)
-          return
-        }
-        if (answer?.reply) {
-          say({ role: 'ai', text: answer.reply })
-          return
-        }
-      }
-      // no rule and no server: what kind of request is it? then ask for the missing detail
+      // no rule matched: what kind of request is it? then ask for the missing detail
       const guess = await guessIntent(text, smartStatus().status === 'ready')
       if ((guess.intent === 'undo' || guess.intent === 'redo' || guess.intent === 'reset') && guess.probability >= 0.55) {
         if (guess.intent === 'undo') undo()

@@ -1,7 +1,7 @@
 // Turns what a person types ("remove the FAQ and rename it to Zen Cafe", "buttons ko neela karo") into EditOps.
 // Rule based, offline, in English, Hinglish and Hindi: the text is split into commands, and every command is read for its
 // subject (section, page, colour, text field, contact detail ...) and what to do with it. The result is only a list of
-// operations (see edits.ts); the learned model (intent.ts) and the optional AI server (serverEdit.ts) produce the same thing.
+// operations (see edits.ts); the learned model (intent.ts) produce the same thing.
 import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
 import { decideTheme, isBusinessWord } from '../themeClassifier'

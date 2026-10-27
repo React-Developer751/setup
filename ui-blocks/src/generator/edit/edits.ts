@@ -2,7 +2,7 @@
 // A change is a small, plain JSON operation (EditOp). Operations are checked here (`cleanOp`), added up into one state
 // (`SiteEdits`) and applied by the generators while they build the site, so a site is always: the prompt + the list of changes.
 // That makes every change reversible (undo = drop the last operation), repeatable, and the same for the page, the exports and the
-// understanding layers (rules, learned model, the optional AI server), which all only have to produce these operations.
+// understanding layers (rules, learned model), which all only have to produce these operations.
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { THEME_KEYS, type ThemeKey } from '../themes'

@@ -1,4 +1,4 @@
-// Tests of the edit chat: (1) operations change all three engines the way they say, undo = fewer operations, (2) the AI server
+// Tests of the edit chat: (1) operations change all three engines the way they say, undo = fewer operations, (2) the server (no external AI)
 // (against a fake model server: no key and no network needed), (3) the server's tool schema matches edits.ts.
 import fs from 'node:fs'
 import http from 'node:http'
@@ -163,115 +163,34 @@ const hostile = all(E({ op: "contact", field: "email", value: nasty }, { op: 're
 const evilPages = [hostile.single.html, ...Object.values(hostile.multi.pagesHtml)]
 ok(evilPages.every((h) => !/ onmouseover="alert/.test(h) && h.includes('&quot;')), 'a quote in a value is escaped in attributes (single and multi-page)')
 
-// ── 2. the server, against a fake model server
-const upstreamRequests = []
-const upstream = http.createServer((req, res) => {
-  let body = ''
-  req.on('data', (c) => (body += c))
-  req.on('end', () => {
-    const parsed = JSON.parse(body)
-    upstreamRequests.push({ headers: req.headers, body: parsed, url: req.url })
-    const asked = parsed.messages[0].content
-    if (parsed.tools?.[0]?.name === 'write_site') {
-      res.writeHead(200, { 'content-type': 'application/json' })
-      return res.end(JSON.stringify({ content: [{ type: 'tool_use', id: 'y', name: 'write_site', input: { hero: { title: 'Wood-fired pizza, <b>made</b> for sharing', subtitle: 'Forno Rosso in Mumbai.', button: 'Book a table' }, features: { title: 'On the menu', items: [{ title: '<Wood Fired Pizza>', text: 'Baked in a real oven.' }, { title: 'Fresh Pasta', text: 'Made every morning.' }, { title: 'Tiramisu', text: 'Our dessert.' }, { title: 'Weekend Brunch', text: 'Saturday and Sunday.' }] }, about: { title: 'About', paragraphs: ['A family kitchen in Mumbai.'] }, steps: { title: 'How it works', items: [{ title: 'Book', text: 'Pick a time.' }, { title: 'Arrive', text: 'We hold your table.' }, { title: 'Eat', text: 'Enjoy.' }] }, faq: [{ q: 'Do I need to book?', a: 'Please call to confirm.' }, { q: 'Is there brunch?', a: 'Yes, at weekends.' }, { q: 'Where are you?', a: 'Mumbai.' }, { q: 'Vegetarian?', a: 'Please call to confirm.' }], cta: { title: 'Hungry?', button: 'Book now' } } }] }))
-    }
-    const answer = /FAIL/.test(asked)
-      ? null
-      : /undo/i.test(asked)
-        ? { ops: [], control: 'undo', reply: 'Undone.' }
-        : /EVIL/.test(asked)
-          ? { ops: [{ op: 'remove', section: 'etc/passwd' }, { op: 'rename', name: 'Fine Name' }], reply: 'ok' }
-          : { ops: [{ op: 'accent', hex: '#dc2626' }], reply: 'Made the buttons red.' }
-    if (!answer) {
-      res.writeHead(500)
-      return res.end('{}')
-    }
-    res.writeHead(200, { 'content-type': 'application/json' })
-    res.end(JSON.stringify({ content: [{ type: 'text', text: 'ok' }, { type: 'tool_use', id: 'x', name: 'apply_edits', input: answer }] }))
-  })
-})
-await new Promise((r) => upstream.listen(0, '127.0.0.1', r))
-const upstreamPort = upstream.address().port
+// ── 2. the server calls no external AI, model or API
 const PORT = 8800 + Math.floor(Math.random() * 100)
 const start = (env) => spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), ...env }, stdio: 'ignore' })
 const wait = async () => { for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); return } catch { await new Promise((r) => setTimeout(r, 100)) } } }
 const post = (path, body, headers = {}) => fetch(`http://127.0.0.1:${PORT}${path}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) })
 
-let server = start({ ANTHROPIC_API_KEY: '', ANTHROPIC_BASE_URL: `http://127.0.0.1:${upstreamPort}` })
-await wait()
-ok((await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).ai === false, 'health says no AI without a key')
-ok((await post('/api/edit', { text: 'make it red' })).status === 503, 'no key: edit answers 503')
-server.kill()
-await new Promise((r) => setTimeout(r, 300))
+const src = fs.readFileSync('server/index.mjs', 'utf8')
+ok(!/anthropic|openai|pexels|wikimedia|api\.[a-z]+\.com/i.test(src), 'server: no external AI or API is named in the server')
+ok(!fs.existsSync('server/commons.mjs'), 'server: the Wikimedia photo search is gone')
 
-server = start({ ANTHROPIC_API_KEY: 'test-key', ANTHROPIC_BASE_URL: `http://127.0.0.1:${upstreamPort}`, EDIT_MODEL: 'claude-haiku-5-5' })
+const server = start({ ANTHROPIC_API_KEY: 'test-key', PEXELS_API_KEY: 'test-key' })
 await wait()
-ok((await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).ai === true, 'health says AI is on with a key')
-const res = await post('/api/edit', { text: 'make the call button red please', state: { brand: 'Zen', context: 'single' } })
-const body = await res.json()
-ok(res.status === 200 && body.ops[0]?.hex === '#dc2626' && body.reply, 'edit returns the operations of the model')
-const sent = upstreamRequests[0]
-ok(sent?.url === '/v1/messages' && sent.headers['x-api-key'] === 'test-key' && sent.headers['anthropic-version'] === '2023-06-01', 'request goes to /v1/messages with the key and version headers')
-ok(sent?.body.model === 'claude-haiku-5-5' && sent.body.tool_choice?.name === 'apply_edits' && sent.body.tools?.[0]?.input_schema, 'request forces the apply_edits tool')
-ok(/make the call button red/.test(sent?.body.messages[0].content), 'the request text reaches the model')
-ok(!JSON.stringify(sent?.body).includes('test-key'), 'the key is not sent in the body')
-ok((await (await post('/api/edit', { text: 'undo that' })).json()).control === 'undo', 'control answers pass through')
-// whatever the model says is checked by the page again: the same cleanOp used here
-const evil = await (await post('/api/edit', { text: 'EVIL' })).json()
-const cleaned = evil.ops.map(edits.cleanOp).filter(Boolean)
-ok(cleaned.length === 1 && cleaned[0].name === 'Fine Name', 'invalid operations of the model are dropped by cleanOp')
-ok((await post('/api/edit', { text: 'FAIL' })).status === 500, 'a failing model gives an error, not a crash')
-ok((await post('/api/edit', 'not json')).status === 500, 'bad JSON gives an error')
-ok((await post('/api/edit', { text: '' })).status === 400, 'empty text is refused')
-ok((await post('/api/edit', 'x'.repeat(30000))).status === 413, 'an oversized body is refused')
+const health = await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()
+ok(health.ok === true && !('ai' in health) && !('photos' in health), 'health reports only the own engines')
+ok((await post('/api/edit', { text: 'make it red' })).status === 404, 'there is no external-AI edit route')
+ok((await post('/api/blueprint', { prompt: 'Italian restaurant in Mumbai' })).status === 404, 'there is no external-AI blueprint route')
+ok((await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)).status === 404, 'there is no external photo search route')
 ok((await fetch(`http://127.0.0.1:${PORT}/api/nothing`)).status === 404, 'unknown path is 404')
 const feedbackFile = 'server/data/feedback.jsonl'
 const before = fs.existsSync(feedbackFile) ? fs.readFileSync(feedbackFile, 'utf8').split('\n').filter(Boolean).length : 0
 await post('/api/feedback', { text: 'make it red', ops: [{ op: 'accent', hex: '#dc2626' }], accepted: true, source: 'rules' })
 const after = fs.readFileSync(feedbackFile, 'utf8').split('\n').filter(Boolean)
 ok(after.length === before + 1 && JSON.parse(after.at(-1)).text === 'make it red', 'feedback is appended to the file')
-// ── the AI writes the texts of a page from the prompt (against the fake model): the answer is cleaned by the page like every other text
-{
-  const { cleanCore } = await loadGeneratorModule('edit/edits.ts')
-  const before = upstreamRequests.length
-  const answer = await post('/api/blueprint', { prompt: 'Italian restaurant Forno Rosso in Mumbai with wood fired pizza, fresh pasta, tiramisu and weekend brunch' })
-  const body = await answer.json()
-  const sent = upstreamRequests[before]
-  ok(answer.status === 200 && sent?.body.tools[0].name === 'write_site' && sent.body.tool_choice.name === 'write_site', 'blueprint: the model is asked for the whole page through one forced tool call')
-  ok(/Never invent numbers/.test(sent?.body.system ?? '') && /exactly those things/.test(sent?.body.system ?? ''), 'blueprint: the model is told to use only the facts and to show everything the person listed')
-  const blocks = cleanCore(body.blocks)
-  ok(blocks?.features?.items.map((f) => f.title).join('|') === 'Wood Fired Pizza|Fresh Pasta|Tiramisu|Weekend Brunch', 'blueprint: the cards are the things the person listed (markup is stripped from the texts)')
-  ok(!JSON.stringify(blocks).includes('<'), 'blueprint: no markup gets into the page')
-  ok(blocks?.hero?.button === 'Book a table' && blocks.faq.length === 4, 'blueprint: the hero button and the FAQ come through')
-  ok((await post('/api/blueprint', { prompt: 'x' })).status === 400, 'blueprint: a too short prompt is refused')
-}
-
 // rate limit: the 31st request within a minute from one address is refused
 let limit = 0
 for (let i = 0; i < 40; i += 1) if ((await post('/api/feedback', { text: 'x', ops: [] })).status === 429) limit += 1
 ok(limit > 0, 'too many requests are refused with 429')
 server.kill()
-upstream.close()
-
-// ── 3. the tool schema equals the code
-const src = fs.readFileSync('server/index.mjs', 'utf8')
-const list = (name) => JSON.parse(src.match(new RegExp(`const ${name} = (\\[[^\\]]*\\])`))[1].replace(/'/g, '"'))
-ok(text(list('SECTIONS')) === text(edits.SECTIONS), 'server SECTIONS equal edits.ts')
-ok(text(list('PAGES')) === text(edits.PAGES), 'server PAGES equal edits.ts')
-ok(text(list('FIELDS')) === text(edits.TEXT_FIELDS), 'server FIELDS equal edits.ts')
-ok(text(list('TONES')) === text(edits.TONES), 'server TONES equal edits.ts')
-ok(text(list('CONTACT_FIELDS')) === text(edits.CONTACT_FIELDS), 'server CONTACT_FIELDS equal edits.ts')
-ok(text(list('HARMONIES')) === text(edits.HARMONIES), 'server HARMONIES equal edits.ts')
-ok(text(['header', 'hero', 'footer', ...list('SECTIONS')]) === text(edits.TARGETS), 'server TARGETS equal edits.ts')
-ok(text(list('TITLE_SECTIONS')) === text(edits.TITLE_SECTIONS), 'server TITLE_SECTIONS equal edits.ts')
-ok(text(list('NAV_PAGES')) === text(edits.NAV_PAGES), 'server NAV_PAGES equal edits.ts')
-ok(text(list('MOVES')) === text(edits.MOVES), 'server MOVES equal edits.ts')
-ok(text(list('MOOD_CHOICES')) === text(edits.MOOD_CHOICES), 'server MOOD_CHOICES equal edits.ts')
-ok(text(list('STYLE_PROPS')) === text(edits.STYLE_PROPS), 'server STYLE_PROPS equal edits.ts')
-ok(text(['page', 'header', 'hero', 'footer', ...list('SECTIONS')]) === text(edits.FIT_TARGETS), 'server FIT_TARGETS equal edits.ts')
-const { THEME_KEYS } = await loadGeneratorModule('themes.ts')
-ok(text([...list('THEMES')].sort()) === text([...THEME_KEYS].sort()), 'server THEMES equal themes.ts')
 
 // ── 4. the parser on the labelled command sets: it must not get worse
 const cmdFile = 'src/data/training/edit-commands.test.jsonl'
@@ -289,7 +208,7 @@ if (fs.existsSync(cmdFile)) {
 // ── the server guards what writes and what reads stored data: token, rate limit, origin, content type (checked before any handler runs)
 {
   const dataDir = fs.mkdtempSync('/tmp/guard-data-')
-  const guarded = start({ EDIT_SERVER_TOKEN: 'secret', EDIT_RATE_PER_MINUTE: '6', EDIT_DATA_DIR: dataDir, ANTHROPIC_API_KEY: '' })
+  const guarded = start({ EDIT_SERVER_TOKEN: 'secret', EDIT_RATE_PER_MINUTE: '6', EDIT_DATA_DIR: dataDir })
   await wait()
   const designs = (headers = {}, body = '{}') => fetch(`http://127.0.0.1:${PORT}/api/designs`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body })
   ok((await designs()).status === 401, 'guard: a write without the token is refused')

@@ -1,8 +1,5 @@
 // Tests of the business details: WhatsApp button, map, opening hours, services and prices, fonts, deploy files.
 globalThis.document = { styleSheets: [] }
-import fs from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
 import { loadGeneratorModule } from './lib/load-generator.mjs'
 
 let pass = 0
@@ -86,8 +83,6 @@ ok(/X-Content-Type-Options: nosniff/.test(headers) && /Referrer-Policy/.test(hea
 
 
 // ── photos
-import http from 'node:http'
-import { spawn } from 'node:child_process'
 const J = 'https://images.pexels.com/photos/1/a.jpeg'
 ok(cleanOp({ op: 'photos', hero: J })?.hero === J, 'cleanOp: an https photo is accepted')
 ok(cleanOp({ op: 'photos', hero: 'http://x.com/a.jpg' }) === undefined, 'cleanOp: plain http is refused')
@@ -115,89 +110,6 @@ let centred
 for (let v = 0; v < 12 && !centred; v += 1) { const g = generateWebsite('bakery in Jaipur', v, undefined, true, 'auto', E({ op: 'photos', hero: J })); if (g.choice.hero === 'hero-centered') centred = g }
 ok(!centred || centred.html.includes('opacity-30'), 'the centred hero has the photo behind its text')
 
-// ── the photo search of the server, against a fake Pexels
-let pexelsCalls = 0
-const pexels = http.createServer((req, res) => {
-  pexelsCalls += 1
-  const url = new URL(req.url, 'http://x')
-  res.writeHead(req.headers.authorization === 'pex-key' ? 200 : 401, { 'content-type': 'application/json' })
-  res.end(JSON.stringify({ photos: Array.from({ length: 9 }, (_, i) => ({ id: i + 1, alt: `photo of ${url.searchParams.get('query')}`, photographer: 'Ana', photographer_url: 'https://www.pexels.com/@ana', url: `https://www.pexels.com/photo/${i + 1}/`, src: { large2x: `https://images.pexels.com/photos/${i + 1}/big.jpeg`, large: `https://images.pexels.com/photos/${i + 1}/l.jpeg`, medium: `https://images.pexels.com/photos/${i + 1}/m.jpeg` } })) }))
-})
-await new Promise((r) => pexels.listen(0, '127.0.0.1', r))
-const PORT = 8900 + Math.floor(Math.random() * 90)
-const run = (env) => spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), ...env }, stdio: 'ignore' })
-const ready = async () => { for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); return } catch { await new Promise((r) => setTimeout(r, 100)) } } }
-let srv = run({ PEXELS_API_KEY: '', PHOTO_FALLBACK: 'off' })
-await ready()
-const none = await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)
-ok(none.status === 503 && (await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).photos === false, 'photos: no key -> 503 and health says so')
-srv.kill()
-await new Promise((r) => setTimeout(r, 300))
-// without a key: Wikimedia Commons (a fake one here): only big landscape JPEGs with a free licence, the best matches first, at most two of one photographer
-const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=', 'base64')
-let commonsCalls = 0
-const commons = http.createServer((req, res) => {
-  if (req.url.startsWith('/img.jpg')) {
-    res.writeHead(200, { 'content-type': 'image/jpeg' })
-    return res.end(JPEG)
-  }
-  commonsCalls += 1
-  const page = (id, title, mime, w, h, licence, description, artist = 'Bo') => ({ pageid: id, index: id, title, imageinfo: [{ mime, width: w, height: h, thumburl: `http://127.0.0.1:${commons.address().port}/img.jpg?id=${id}`, descriptionurl: `https://commons.wikimedia.org/wiki/${title}`, extmetadata: { LicenseShortName: { value: licence }, Artist: { value: `<a href="//x">${artist}</a>` }, ImageDescription: { value: description } } }] })
-  res.writeHead(200, { 'content-type': 'application/json' })
-  res.end(JSON.stringify({ query: { pages: {
-    a: page(1, 'File:Bread.jpg', 'image/jpeg', 3000, 2000, 'CC BY-SA 4.0', 'fresh bread in a bakery window'),
-    b: page(2, 'File:Noncommercial bakery.jpg', 'image/jpeg', 3000, 2000, 'CC BY-NC 4.0', 'bakery'),
-    c: page(3, 'File:Bakery portrait.jpg', 'image/jpeg', 2000, 3000, 'CC BY 4.0', 'bakery'),
-    d: page(4, 'File:Bakery logo.jpg', 'image/jpeg', 3000, 2000, 'CC0', 'bakery'),
-    e: page(5, 'File:Tiny bakery.jpg', 'image/jpeg', 300, 200, 'CC0', 'bakery'),
-    f: page(6, 'File:Bakery drawing.png', 'image/png', 3000, 2000, 'CC0', 'bakery'),
-    g: page(7, 'File:Bakery counter.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'a bakery counter', 'Ann'),
-    h: page(8, 'File:Mountain lake.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'a lake in the mountains', 'Cy'),
-    i: page(9, 'File:Bakery shelf 1.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'bakery shelf', 'Ann'),
-    j: page(10, 'File:Bakery shelf 2.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'bakery shelf', 'Ann'),
-  } } }))
-})
-await new Promise((r) => commons.listen(0, '127.0.0.1', r))
-const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'photo-cache-'))
-srv = run({ PEXELS_API_KEY: '', COMMONS_BASE_URL: `http://127.0.0.1:${commons.address().port}`, EDIT_DATA_DIR: cacheDir })
-await ready()
-const viaCommons = await (await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)).json()
-const alts = viaCommons.photos.map((p) => p.alt)
-ok(/Wikimedia/.test(viaCommons.source) && alts.includes('Bread') && alts.includes('Bakery counter'), 'photos: without a key Wikimedia Commons answers')
-ok(!alts.some((a) => /Noncommercial|portrait|logo|Tiny|drawing|Mountain/i.test(a)), 'photos: no NC licence, no portrait, no logo, no tiny file, no PNG, nothing that does not match the words')
-ok(alts.filter((a) => /shelf|counter/.test(a)).length <= 2, 'photos: at most two photos of one photographer')
-ok(alts[0].startsWith('Bakery') || alts[0] === 'Bread', 'photos: the best match comes first')
-ok(viaCommons.photos[0].credit.includes('('), 'photos: the photographer and the licence are named')
-ok((await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).photos === true, 'photos: health says the search is on')
-// a photo copied through the server is kept on the disk
-const file = await fetch(`http://127.0.0.1:${PORT}/api/photo-file?u=${encodeURIComponent(viaCommons.photos[0].url)}`)
-ok(file.status === 200 && file.headers.get('content-type') === 'image/jpeg', 'photos: a photo is copied through the server')
-ok((await fetch(`http://127.0.0.1:${PORT}/api/photo-file?u=${encodeURIComponent('https://evil.example.com/a.jpg')}`)).status === 400, 'photos: only the hosts of the photo services can be copied')
-srv.kill()
-commons.close()
-await new Promise((r) => setTimeout(r, 300))
-// the internet is gone: the same search and the same photo come from the disk
-srv = run({ PEXELS_API_KEY: '', COMMONS_BASE_URL: 'http://127.0.0.1:9', EDIT_DATA_DIR: cacheDir, PHOTO_FILE_HOSTS: new URL(viaCommons.photos[0].url).host })
-await ready()
-const offline = await (await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)).json()
-ok(offline.offline === true && offline.photos.length === viaCommons.photos.length, 'photos: a search that was made before is answered without the internet')
-const offlineFile = await fetch(`http://127.0.0.1:${PORT}/api/photo-file?u=${encodeURIComponent(viaCommons.photos[0].url)}`)
-ok(offlineFile.status === 200, 'photos: a photo that was loaded before is answered without the internet')
-ok((await fetch(`http://127.0.0.1:${PORT}/api/photos?q=never+searched+before`)).status === 502, 'photos: a new search without the internet says so')
-fs.rmSync(cacheDir, { recursive: true, force: true })
-srv.kill()
-await new Promise((r) => setTimeout(r, 300))
-srv = run({ PEXELS_API_KEY: 'pex-key', PEXELS_BASE_URL: `http://127.0.0.1:${pexels.address().port}` })
-await ready()
-ok((await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).photos === true, 'photos: health says the photo search is on')
-const found = await (await fetch(`http://127.0.0.1:${PORT}/api/photos?q=${encodeURIComponent('pest control <script>')}`)).json()
-ok(found.photos.length === 9 && found.photos[0].url.startsWith('https://images.pexels.com/') && found.photos[0].credit === 'Ana' && found.source === 'Pexels', 'photos: the answer is cleaned and normalised')
-ok(found.photos[0].alt === 'photo of pest control script', 'photos: the query is sanitised before it goes upstream')
-await fetch(`http://127.0.0.1:${PORT}/api/photos?q=${encodeURIComponent('pest control <script>')}`)
-ok(pexelsCalls === 1, 'photos: the same search is answered from the cache')
-ok((await fetch(`http://127.0.0.1:${PORT}/api/photos`)).status === 400, 'photos: a missing query is refused')
-srv.kill()
-pexels.close()
 
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)

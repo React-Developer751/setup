@@ -16,7 +16,7 @@ npm run app          # the app, the API server, the image engine and the content
 | Part | Command | Port | What it does | If it is not running |
 |---|---|---|---|---|
 | App | `npm run dev` | 5173 | the generator page (Vite) | - |
-| API server | `npm run server` | 8787 | edit log, design memory, photo search, proxies to the two engines below | the site is still made; memory is kept in the browser |
+| API server | `npm run server` | 8787 | edit log, design memory, proxies to the two engines below | the site is still made; memory is kept in the browser |
 | Image engine (PixelMath, folder `../normal`) | `npm run images` | 8000 | flat illustrations of scenes for the first screen, About and the gallery | maths art is used instead |
 | Content AI (Core-Craft, folder `../cont`) | `npm run corecraft` | 8100 | texts about the services in the prompt, Hindi pages | the built-in texts are used |
 
@@ -28,20 +28,20 @@ Both engine folders are only run, never changed. Python 3 is needed for them.
   from 560 stored components (`src/components`, listed in `COMPONENTS.md`; `src/generator/library/componentUse.ts` says which become page parts).
 * **Colours** are judged before a site uses them (`colorJudge.ts`) and the finished page is checked in light and dark mode: a text that cannot be read
   on what is behind it gets a readable colour (`library/pageAudit.ts`).
-* **Pictures**: the image AI, your own photos, or real photos from the search (Pexels with a key, else Wikimedia Commons: free licences, a credit line goes into the footer).
+* **Pictures**: the image AI (PixelMath), maths art, or your own photos. No external photo service is called.
 * **Edit chat**: "FAQ hatao", "background light green karo", "buttons ko round karo", "pricing ko Rates rename karo", "phone 98765 43210" ... (see below).
 * **Export**: one `.html` file, a folder of static files (sitemap, robots.txt, deploy files) or a Vite project. Pages of a multi-page site are switched by the address (`#/about`), so no server rules are needed.
 
 ## Settings (environment variables of the API server)
 
-`PORT` (8787), `HOST` (127.0.0.1: local only), `EDIT_SERVER_TOKEN` (needed when HOST is not local), `ANTHROPIC_API_KEY` + `EDIT_MODEL` (optional AI for the edit chat),
-`PEXELS_API_KEY` (optional photo search; without it Wikimedia Commons is used, `PHOTO_FALLBACK=off` switches that off), `EDIT_DATA_DIR` (server/data),
+`PORT` (8787), `HOST` (127.0.0.1: local only), `EDIT_SERVER_TOKEN` (needed when HOST is not local),
+`EDIT_DATA_DIR` (server/data),
 `CORECRAFT_URL`, `PIXELMATH_URL`, `PIXELMATH_API_KEY`, `EDIT_RATE_PER_MINUTE`, `EDIT_IMAGES_PER_MINUTE`. Nothing is sent anywhere unless you set a key.
 
 ## Checks
 
 ```bash
-npm test                      # everything: parsers, generators, colours, components, exports, server, photo search, ML (about 6 minutes)
+npm test                      # everything: parsers, generators, colours, components, exports, server, ML (about 6 minutes)
 ALL_PROJECTS=1 node scripts/test-project.mjs   # builds 14 exported Vite projects (slow)
 npm run build                 # type check + production build
 npm run lint
@@ -66,9 +66,7 @@ How it works (all in `src/generator/edit/`):
   engines, the preview and every export show the same result. `cleanOp` validates every operation, whoever produced it.
 * **Understanding**, in this order:
   1. `understand.ts`: offline rules (word lists in `lexicon.ts`; splits compound commands, fixes small typos, keeps quoted texts and capitals).
-  2. Optional **AI server** (Path C, `server/index.mjs`, no dependencies): `ANTHROPIC_API_KEY=... npm run server`, then tick
-     "Also ask the AI server" in the chat. It asks the model for operations through one forced tool call (`apply_edits`); the page checks the
-     answer with `cleanOp` again. Model: `EDIT_MODEL` (default `claude-haiku-5-5`). With `ANTHROPIC_BASE_URL` it can point to any compatible server.
+  2. No external AI, model or API is used. (The old optional Anthropic server and the Pexels/Wikimedia photo search were removed.)
      Accepted/undone changes are appended to `server/data/feedback.jsonl` (git-ignored) as training examples.
   3. `intent.ts` + `clarify.ts`: when nothing else understood, a learned intent model (words; plus the embedding model when "Smart understanding" is on)
      guesses what the person wants and the chat asks the missing detail with buttons ("Simpler / Better / Premium", "Which part should go?").
@@ -81,7 +79,7 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
 
 `buttons marigold`, `theme like Spotify`, `ocean jaisa`, `trustworthy colours` (about 120 colour names + ~150 things, places, brands and moods, see `THING_COLORS`),
 `header red footer green` / `header lal, footer hara` (one part gets its own background; its text adapts), `complementary colour`, `second colour orange`,
-`surprise me`, plus a colour picker and "colour from my logo / photo" (main + second colour) in the chat. Unknown names: the chat shows colour buttons, the AI server knows every name.
+`surprise me`, plus a colour picker and "colour from my logo / photo" (main + second colour) in the chat. Unknown names: the chat shows colour buttons.
 
 ## Niche packs and personal details
 
@@ -100,8 +98,7 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
 * **Your business details** (left panel): WhatsApp number (a round WhatsApp button on every page), opening hours, address (a real Google map on the contact page),
   and your own services and prices (they become the feature cards and the price list). The same things can be typed in the chat:
   `services: haircut 300, facial 800`, `whatsapp 98765 43210`, `timings: Mon-Sat 9am-7pm, Sun closed`.
-* **Real photos**: upload your own (first = main picture, second = About, the rest = gallery), or search free photos: `PEXELS_API_KEY=... npm run server`
-  (free key at pexels.com/api). The key stays on the server; the page only receives picture addresses; a thank-you line goes to the footer.
+* **Real photos**: upload your own (first = main picture, second = About, the rest = gallery).
   Photos are used by the built-in templates (multi-page and single page), not by the "92 components" page.
 * **Typography**: every business type has its own Google web font (`src/generator/fonts.ts`); without a network the system fonts are used.
   The exports say that visitors' browsers contact Google Fonts and how to turn that off.
@@ -113,7 +110,7 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
 ## Pictures from the image AI (PixelMath, the `normal` folder)
 
 The folder `../normal` holds PixelMath, a text-to-image engine in pure Python with an HTTP API (its own README explains it). It is used as a second
-source of pictures, next to uploads and the Pexels photo search:
+source of pictures, next to uploads:
 
 ```bash
 npm run images      # starts the engine (python3 ../normal/serve.py, port 8000); the folder is only run, never changed

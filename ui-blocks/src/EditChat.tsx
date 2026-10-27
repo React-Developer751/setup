@@ -8,7 +8,7 @@ export type ChatMessage = {
   role: 'user' | 'ai'
   text: string
   ops?: EditOp[]
-  /** where the understanding came from: the offline rules or the AI server */
+  /** where the understanding came from: the offline rules */
   via?: 'rules' | 'server' | 'guess'
   /** buttons that answer a question of the chat (the last message's buttons are the live ones) */
   choices?: Choice[]
@@ -93,7 +93,7 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, serverReady, useS
                   ))}
                 </ul>
               )}
-              {m.via === 'server' && <p className="mt-0.5 text-[10px] text-gray-500">understood by the AI server</p>}
+              {m.via === 'server' && <p className="mt-0.5 text-[10px] text-gray-500">understood by the local server</p>}
               {m.choices && m.choices.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {m.choices.map((choice) => (
@@ -155,10 +155,10 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, serverReady, useS
         {note && <span className="text-amber-700">{note}</span>}
       </div>
 
-      <label className="flex items-start gap-2 text-[11px] text-gray-500" title="Optional: a small server (npm run server) asks an AI model to read the request. Without it everything works offline.">
+      <label className="flex items-start gap-2 text-[11px] text-gray-500" title="Optional: your own local server (npm run server) keeps your feedback and picture ratings. No external AI is used. Without it everything works offline.">
         <input type="checkbox" checked={useServer} onChange={(e) => onUseServer(e.target.checked)} className="mt-0.5" />
         <span>
-          Also ask the AI server for hard requests{' '}
+          Save my feedback and picture ratings on my own server{' '}
           <b className={serverReady ? 'text-emerald-700' : 'text-gray-400'}>{serverReady ? '(connected)' : '(not running: works offline)'}</b>
         </span>
       </label>
