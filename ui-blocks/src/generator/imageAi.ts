@@ -36,9 +36,9 @@ export function scenePlan(theme: ThemeKey, niche: string | undefined, variation 
   const seen = new Set([hero])
   const about = usable([set.about, ...base.hero, base.about]).find((p) => !seen.has(p)) ?? base.about
   seen.add(about)
-  // six different gallery scenes: the set's own first, the business type's after them when something repeats
+  // nine different gallery scenes (the tiles of the gallery, the blog and the cards each take other ones): the set's own first, the business type's after them when something repeats
   const pool = usable([...set.gallery, ...base.gallery, ...base.hero])
-  const gallery = pool.filter((p) => !seen.has(p) && !!seen.add(p)).slice(0, 6)
+  const gallery = pool.filter((p) => !seen.has(p) && !!seen.add(p)).slice(0, 9)
   const spare = pool.filter((p) => !gallery.includes(p) && p !== hero && p !== about)
   return { hero: make(hero, 'hero', variation, [...heroes, ...spare]), about: make(about, 'about', variation, [...usable(base.hero), ...spare]), gallery: gallery.map((p, i) => make(p, 'tile', i + variation, spare)), ...(own ? { fromNiche: true } : {}) }
 }

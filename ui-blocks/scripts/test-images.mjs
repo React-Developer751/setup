@@ -16,7 +16,7 @@ const { NICHES } = await loadGeneratorModule('niche/niches.ts')
 for (const theme of THEME_KEYS) {
   const plan = scenePlan(theme, undefined, 0)
   const all = [plan.hero, plan.about, ...plan.gallery]
-  ok(plan.gallery.length === 6 && new Set(all.map((s) => s.prompt)).size === 8, `${theme}: eight different scenes`)
+  ok(plan.gallery.length >= 7 && new Set(all.map((s) => s.prompt)).size === all.length, `${theme}: at least nine different scenes, none twice (${all.length})`)
   ok(plan.hero.width === 1024 && plan.hero.height === 640 && plan.about.width === 800 && plan.gallery.every((s) => s.width === 640 && s.height === 480), `${theme}: sizes`)
   ok(all.every((s) => s.seed >= 1 && s.seed <= 997 && s.prompt.length >= 3 && s.prompt.length <= 80), `${theme}: seeds and prompts are sane`)
   ok(JSON.stringify(plan) === JSON.stringify(scenePlan(theme, undefined, 0)), `${theme}: the same plan every time`)
@@ -26,7 +26,7 @@ let withScenes = 0
 for (const n of NICHES) {
   const plan = scenePlan(n.theme, n.id, 0)
   const all = [plan.hero, plan.about, ...plan.gallery]
-  ok(new Set(all.map((s) => s.prompt)).size === 8, `niche ${n.id}: eight different scenes`)
+  ok(plan.gallery.length >= 7 && new Set(all.map((s) => s.prompt)).size === all.length, `niche ${n.id}: at least nine different scenes, none twice`)
   if (scenePlan(n.theme, n.id, 0).hero.prompt !== scenePlan(n.theme, undefined, 0).hero.prompt) withScenes += 1
 }
 ok(withScenes >= 50, `most niches have scenes of their own (${withScenes} of ${NICHES.length})`)

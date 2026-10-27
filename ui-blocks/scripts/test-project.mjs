@@ -50,6 +50,8 @@ for (const [label, multi, prompt] of [['one page', false, 'dental clinic called 
   ok(js.includes(lib.content.brandName), `${label}: the built page has the name of the business`)
   if (multi) ok(js.includes('data-page') && js.includes('hashchange'), `${label}: the built site switches its pages`)
 }
+// KEEP_PROJECT=folder keeps the built projects there (to open the finished site in a browser)
+if (process.env.KEEP_PROJECT) fs.cpSync(work, path.resolve(process.env.KEEP_PROJECT), { recursive: true })
 fs.rmSync(work, { recursive: true, force: true })
 console.log(`project: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) { console.log(fail.map((f) => ` - ${f}`).join('\n')); process.exit(1) }

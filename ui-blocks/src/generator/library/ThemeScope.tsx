@@ -138,6 +138,9 @@ export function ThemeScope({
         el.hidden = !(el.dataset.page === '*' || el.dataset.page === path)
       })
       root.querySelectorAll('a').forEach((a) => (a.getAttribute('href') === `#${path}` ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')))
+      // the title of the browser tab, when this is the real page (the exporter draws the page detached from the document)
+      const info = pages.find((p) => p.path === path)
+      if (info && root.isConnected) document.title = info.title
     }
     apply()
     window.addEventListener('hashchange', apply)

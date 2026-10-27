@@ -482,8 +482,16 @@ function fillHero(root: Element, c: WebsiteContent) {
   // title and subtitle are always the first heading / first paragraph of a hero
   const title = root.querySelector('h1') ?? root.querySelector('h2')
   if (title) setText(title, c.hero.title)
-  const subtitle = [...root.querySelectorAll('p')].find((p) => !p.closest('a,button') && visibleText(p).length > 30)
+  // the subtitle is the paragraph after the title; a short line before the title is the small label above it
+  const after = (el: Element) => !title || !!(title.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+  const subtitle = [...root.querySelectorAll('p')].find((p) => !p.closest('a,button') && after(p) && visibleText(p).length > 20) ?? [...root.querySelectorAll('p')].find((p) => !p.closest('a,button') && visibleText(p).length > 30)
   if (subtitle) setText(subtitle, c.hero.subtitle)
+  ;[...root.querySelectorAll('p, span')].filter((el) => el !== subtitle && isLeaf(el) && !after(el) && !el.closest('a,button,h1,h2') && visibleText(el).length > 12).forEach((el) => setText(el, subject))
+  // the logo of another product inside a button (Figma, Google ...): drawn in several fixed colours
+  root.querySelectorAll('a svg, button svg').forEach((svg) => {
+    const fills = new Set([...svg.querySelectorAll('[fill]')].map((n) => n.getAttribute('fill')).filter((f) => f && /^#/.test(f)))
+    if (fills.size >= 3) svg.remove()
+  })
   // the same line twice (a component that shows its text in two places): once
   const lines = new Set<string>()
   root.querySelectorAll('p').forEach((p) => {
@@ -701,7 +709,7 @@ const blank = (w: number, h: number) => `data:image/svg+xml;utf8,${encodeURIComp
 /** a round avatar with the initials of a person, in the colours of the site (for the pictures of reviews and team members) */
 const initialsOf = (name: string) => (name.replace(/[^\p{L}\s]/gu, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?')
 const avatar = (name: string, accent: string, alt: string) =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${accent}"/><stop offset="1" stop-color="${alt}"/></linearGradient></defs><rect width="200" height="200" fill="url(#g)"/><text x="100" y="100" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="78" text-anchor="middle" dominant-baseline="central">${initialsOf(name).replace(/[<>&]/g, '')}</text></svg>`)}`
+  `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${accent}"/><stop offset="1" stop-color="${alt}"/></linearGradient></defs><rect width="200" height="200" fill="url(#g)"/><circle cx="165" cy="35" r="75" fill="#fff" fill-opacity="0.13"/><circle cx="25" cy="185" r="65" fill="#fff" fill-opacity="0.10"/><text x="100" y="100" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="78" text-anchor="middle" dominant-baseline="central">${initialsOf(name).replace(/[<>&]/g, '')}</text></svg>`)}`
 
 /** a small mark of the brand for the logos of the other kits (a rounded square with the first letter, in the colours of the site) */
 const brandMark = (name: string, accent: string, alt: string) =>
@@ -751,6 +759,7 @@ function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { acc
     // a person: initials in the colours of the site (the pictures of reviews and team members, and the small round pictures of authors)
     if (colors && (role === 'team' || (role === 'testimonial' && (dummy || size.small)) || (remote && size.small && /rounded-full|rounded-xl|rounded-lg/.test(img.getAttribute('class') ?? '')))) {
       img.setAttribute('src', avatar(people[person++ % Math.max(1, people.length)] ?? c.brandName, colors.accent, colors.alt))
+      img.setAttribute('data-avatar', '')
       img.removeAttribute('srcset')
       img.classList.add('object-cover')
       return

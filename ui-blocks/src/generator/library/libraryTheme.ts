@@ -60,7 +60,9 @@ function readableAccent(accent: string, bg: string, surface: string, dark: boole
 }
 
 /** rules the Tailwind classes of the stored components cannot express: `text-white` is the colour of the cards here (see --color-white), so text on a button, on a dark panel or in dark mode is set by these */
-export const LIBRARY_CSS = `[data-gen-theme].dark .text-white{color:#fff}
+export const LIBRARY_CSS = `img[data-avatar]{border-radius:9999px;aspect-ratio:1/1;object-fit:cover}
+@media (max-width:639px){[data-role="team"] img[data-avatar]{width:8.5rem!important;height:8.5rem!important;max-width:100%;margin-inline:auto}}
+[data-gen-theme].dark .text-white{color:#fff}
 [data-gen-theme] :is(.bg-indigo-500,.bg-indigo-600,.bg-indigo-700,.bg-blue-500,.bg-blue-600,.bg-blue-700,.bg-primary,.bg-brand,.bg-brand-strong).text-white{color:var(--g-on-accent)}
 [data-gen-theme].dark :is(.bg-gray-800,.bg-gray-900).text-white{color:var(--background)}
 @media (max-width:639px){
@@ -148,6 +150,8 @@ export function libraryThemeStyle(palette: Palette, mode: ColorMode, theme?: The
   for (const [shade, value] of Object.entries(accentScale)) {
     style[`--color-blue-${shade}`] = value
     style[`--color-indigo-${shade}`] = value
+    // the other colour families the kits use for their buttons, links and gradients (a purple heading, a pink badge, a green tick): all follow the main colour, so the page keeps one set of colours
+    for (const family of ['purple', 'violet', 'fuchsia', 'pink', 'rose', 'sky', 'cyan', 'teal', 'emerald', 'green', 'lime', 'amber', 'yellow', 'orange']) style[`--color-${family}-${shade}`] = value
   }
 
   // Preline defines several tokens as `var(--color-white)` to mean "white text / white on dark".
