@@ -240,17 +240,36 @@ const cssText = (style: object) =>
     .map(([key, value]) => `${key.startsWith('--') ? key : key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}:${value}`)
     .join(';')
 
+/** the script of a site with pages: the parts of the page in the address (#/about) are shown, the others hidden; the first page is the home page */
+const pagesScript = (lib: Library) =>
+  lib.pages && lib.pages.length > 1
+    ? `
+const PAGES = ${jsString(lib.pages)};
+function route() {
+  const raw = location.hash.replace(/^#/, '') || '/';
+  const known = PAGES.some((p) => p.path === raw) ? raw : '/';
+  document.querySelectorAll('[data-page]').forEach((el) => { el.hidden = !(el.dataset.page === '*' || el.dataset.page === known); });
+  const info = PAGES.find((p) => p.path === known);
+  if (info) document.title = info.title;
+  document.querySelectorAll('a').forEach((a) => { if (a.getAttribute('href') === '#' + known) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if (window.parent !== window) { try { window.parent.postMessage({ site: 'preview-route', path: known }, '*'); } catch (e) {} }
+}
+window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); });
+route();
+`
+    : ''
+
 function renderLibrary(lib: Library) {
   // draw the page once in memory: the components, then ThemeScope fills their text and sets the colours
   const host = document.createElement('div')
   const root = createRoot(host)
   flushSync(() =>
     root.render(
-      <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content}>
-        {lib.sections.map(({ role, componentId, paint, fit, band }) => {
+      <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages}>
+        {lib.sections.map(({ role, componentId, paint, fit, band, page, head }) => {
           const Component = libraryComponents[componentId]
           return (
-            <Section key={role} role={role} paint={paint} fit={fit} band={band}>
+            <Section key={role} role={role} paint={paint} fit={fit} band={band} page={page} head={head}>
               <Component />
             </Section>
           )
@@ -270,12 +289,17 @@ function renderLibrary(lib: Library) {
     document.head.appendChild(still)
     try {
       const first = defaultMode(lib.themeKey)
+      // every page is looked at, also the ones that are hidden now
+      const inner = [...page.querySelectorAll<HTMLElement>('[data-page]')]
+      const hiddenBefore = inner.map((el) => el.hidden)
+      inner.forEach((el) => (el.hidden = false))
       repairContrast(page, (mode) => {
         page.setAttribute('style', styles[mode])
         page.classList.toggle('dark', mode === 'dark')
       }, [first, first === 'light' ? 'dark' : 'light'])
       page.setAttribute('style', styles[first])
       page.classList.toggle('dark', first === 'dark')
+      inner.forEach((el, i) => (el.hidden = hiddenBefore[i]))
     } catch {
       // the repair is a help: a page that cannot be checked is used as it is
     } finally {
@@ -340,7 +364,7 @@ document.addEventListener('click', (event) => {
 });
 
 ${needsPreline ? 'if (window.HSStaticMethods) window.HSStaticMethods.autoInit();\n' : ''}initMotion(page, MOTION);
-</script>
+${pagesScript(lib)}</script>
 </body>
 </html>
 `
@@ -390,7 +414,7 @@ document.addEventListener('click', (event) => {
 });
 if (window.HSStaticMethods) window.HSStaticMethods.autoInit();
 initMotion(page, MOTION);
-`
+${pagesScript(lib)}`
   const index = `<!doctype html>
 <html lang="en">
 <head>
@@ -428,7 +452,7 @@ ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src=
     ...deployFiles(brand),
     {
       path: 'README.txt',
-      content: `${brand}: a one-page static website (plain HTML, CSS and JavaScript).
+      content: `${brand}: ${lib.pages && lib.pages.length > 1 ? `a static website with ${lib.pages.length} pages (${lib.pages.map((p) => p.label).join(', ')}) in plain HTML, CSS and JavaScript. The pages are switched by the address (index.html#/about), so no server rules are needed.` : 'a one-page static website (plain HTML, CSS and JavaScript).'}
 
   1. Upload everything in this folder to any web host, or open index.html by double-click.
   2. ${details.siteUrl ? `The address ${siteUrl} is already in the sitemap, robots.txt and the canonical link.` : `Replace ${PLACEHOLDER_URL} with your real address in sitemap.xml, robots.txt and index.html.`}

@@ -101,7 +101,7 @@ export function gateCandidates(candidates: CoreCandidate[], ctx: GateContext): {
 /** pages of copy from Core-Craft through the server of this project; undefined when it is not running */
 /** Core-Craft finds the place in English prompts ("... in Pune" at the end): "Pune mein" is moved there for it */
 const forCore = (prompt: string) => {
-  const found = /\b([A-Z][\p{L}]+(?: [A-Z][\p{L}]+)?)\s+(?:mein|me|main)\b/u.exec(prompt)
+  const found = /\b([A-Z][\p{L}]+(?: [A-Z][\p{L}]+)?)\s+(?:mein|me|main|mai|ke\s+liye|ke\s+lie)\b/u.exec(prompt)
   return found ? `${prompt.replace(found[0], '').replace(/\s{2,}/g, ' ').trim()} in ${found[1]}` : prompt
 }
 

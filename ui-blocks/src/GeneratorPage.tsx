@@ -131,16 +131,18 @@ function GeneratorPage() {
   const site = useMemo(() => generateWebsite(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits, creativityLevel])
   const scores = useMemo(() => scoreThemes(submitted), [submitted])
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool and the creativity level are read inside the generators
-  const library = useMemo(() => generateLibraryPage(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel])
-  // the multi-page site is made with the built-in templates (the 92-components engine is single-page for now)
+  const library = useMemo(() => generateLibraryPage(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits, pages === 'multi'), [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel, pages])
+  // one page or a site with pages: both can be made from the stored components (engine 'library') or from the built-in templates
   const isMulti = pages === 'multi'
-  const shownEngine = isMulti ? 'templates' : engine
+  const shownEngine = engine
+  // a multi-page site of the built-in templates has its own pages and posts; the components' site keeps its pages in `library.pages`
+  const tplMulti = isMulti && shownEngine === 'templates'
   const multi = useMemo(
     () => generateSite(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits),
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool is read inside the generators
     [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel],
   )
-  const active = isMulti ? multi : shownEngine === 'library' ? library : site
+  const active = tplMulti ? multi : shownEngine === 'library' ? library : site
   // the site as a JSON document (the page version of the site)
   const blueprint = useMemo(() => blueprintOf(site, edits), [site, edits])
   const { themeKey, tier, motion, brain, brainsForced, palette, colorReasons, niche } = active
@@ -148,7 +150,7 @@ function GeneratorPage() {
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool is read inside the generators
   const pool = useMemo(() => poolSummary(), [poolVersion])
 
-  const files = isMulti
+  const files = tplMulti
     ? multi.files
     : [{ path: 'GeneratedLandingPage.tsx', code: shownEngine === 'library' ? library.code : site.code }]
   const file = files[Math.min(fileIndex, files.length - 1)]
@@ -158,7 +160,7 @@ function GeneratorPage() {
   const buildDocument = () =>
     shownEngine === 'library'
       ? buildLibraryStandalone(libraryWithDetails(library, details))
-      : buildStandalone(applyDetails(isMulti ? sourceFromSite(multi) : sourceFromPage(site), details))
+      : buildStandalone(applyDetails(tplMulti ? sourceFromSite(multi) : sourceFromPage(site), details))
   const previewHtml = usePreviewDocument(buildDocument, [shownEngine, isMulti, multi, site, library, details, poolVersion])
 
   const openPreview = () => {
@@ -182,7 +184,7 @@ function GeneratorPage() {
   // ───────────── the design memory ─────────────
   const DESIGN_COLOUR = 'A colour that was not used yet'
   // ───────────── what the person says about the texts (the content AI's phrase scores) ─────────────
-  const textSite = isMulti ? multi : site
+  const textSite = tplMulti ? multi : site
   const phraseCtx = () => ({ session: sessionId(), group: groupOf(site), content: textSite.content })
   const learn = (slots: readonly PhraseSlot[], delta: 1 | -1 | 0, reason: Parameters<typeof eventsFor>[3], extra: Parameters<typeof eventsFor>[4] = {}) => void recordPhrases(eventsFor(phraseCtx(), slots, delta, reason, extra))
   const turnedDown = useRef<string[]>([])
@@ -269,10 +271,7 @@ function GeneratorPage() {
     await understand(text)
     // "a single page" / "landing page" in the prompt is an order: it wins over what was set before
     const wanted = pagesWanted(text)
-    if (wanted) {
-      setPages(wanted)
-      if (wanted === 'single') setEngine('library')
-    }
+    if (wanted) setPages(wanted)
     setSubmitted(text)
     setHistory([])
     setUndone([])
@@ -366,7 +365,7 @@ function GeneratorPage() {
     // a text the person writes over is a text they did not want
     if (chatting.current) for (const o of ops) if (o.op === 'text' && (PHRASE_SLOTS as readonly string[]).includes(o.field)) learn([o.field as PhraseSlot], -1, 'replaced')
     if (chatting.current) {
-      const row = logRow(text, businessKey(submitted), isMulti ? 'multi' : 'single', ops.map(describeOp), via)
+      const row = logRow(text, businessKey(submitted), tplMulti ? 'multi' : 'single', ops.map(describeOp), via)
       logId = row.id
       void openEditLog().then((store) => store.add(row)).catch(() => undefined)
     }
@@ -527,7 +526,7 @@ function GeneratorPage() {
     setChatBusy(true)
     chatting.current = true
     try {
-      const parsed = parseEdit(text, isMulti ? 'multi' : 'single')
+      const parsed = parseEdit(text, tplMulti ? 'multi' : 'single')
       // an opinion ("heading boring hai", "this is not good") is answered and learned from; the edit parser would turn it into a command
       const feedback = pending.current ? undefined : analyseFeedback(text)
       if (feedback && parsed.kind !== 'newSite' && treatAsOpinion(feedback, text, parsed.kind === 'ops' ? parsed.ops : undefined)) {
@@ -569,7 +568,7 @@ function GeneratorPage() {
         say({ role: 'ai', text: parsed.notes.join(' ') })
         return
       }
-      const context = isMulti ? 'multi' : 'single'
+      const context = tplMulti ? 'multi' : 'single'
       // a question was waiting for a value: this message may be the answer
       if (pending.current) {
         const answer = answerFor(pending.current, text, context)
@@ -587,7 +586,7 @@ function GeneratorPage() {
           brand: active.content.brandName,
           context,
           sections: [...edits.hidden.map((k) => `-${k}`), ...edits.added.map((k) => `+${k}`)],
-          pages: isMulti ? multi.pages.map((p) => p.path) : [],
+          pages: tplMulti ? multi.pages.map((p) => p.path) : [],
         })
         if (answer?.control) {
           if (answer.control === 'undo') undo()
@@ -649,8 +648,8 @@ function GeneratorPage() {
     URL.revokeObjectURL(url)
   }
 
-  const pageTabs = isMulti ? multi.pages.filter((p) => !p.slug) : []
-  const onPost = isMulti && !!multi.pages.find((p) => p.path === route)?.slug
+  const pageTabs: { path: string; label: string }[] = tplMulti ? multi.pages.filter((p) => !p.slug) : isMulti && shownEngine === 'library' ? (library.pages ?? []) : []
+  const onPost = tplMulti && !!multi.pages.find((p) => p.path === route)?.slug
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
@@ -856,7 +855,6 @@ function GeneratorPage() {
                 options={[['library', 'My 560 components'], ['templates', 'Built-in templates']]}
                 onChange={(e) => {
                   setEngine(e)
-                  if (e === 'library') setPages('single')
                 }}
               />
             </Setting>
@@ -920,7 +918,7 @@ function GeneratorPage() {
               </div>
               <p className="text-gray-400">
                 {isMulti
-                  ? `${multi.pages.length} pages · ${pageTabs.map((p) => p.label).join(' · ')}`
+                  ? `${pageTabs.length} pages · ${pageTabs.map((p) => p.label).join(' · ')}`
                   : shownEngine === 'library'
                     ? library.sections.map((x) => x.componentId.split('/')[1]).join(' · ')
                     : `${site.layoutIds.length} sections · palette ${site.paletteIndex + 1}`}{' '}
@@ -1010,7 +1008,7 @@ function GeneratorPage() {
           </button>
         </header>
 
-        {view === 'preview' && isMulti && (
+        {view === 'preview' && isMulti && pageTabs.length > 0 && (
           <nav className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap border-b border-gray-200 bg-white px-3 py-2 text-sm" aria-label="Pages of the site">
             {pageTabs.map((p) => (
               <button

@@ -66,6 +66,30 @@ ok(JSON.stringify(generateLibraryPage('bakery called Crumb', 4, 'better').sectio
 const normal = generateLibraryPage('bakery called Crumb', 4, 'normal')
 ok(!normal.sections.some((s) => s.role === 'faq' || s.role === 'team' || s.role === 'pricing'), 'the short page has no FAQ, team or pricing')
 
+// ── a site with pages made from the stored components
+let multiOk = 0
+for (const prompt of ['dental clinic called Smile Care in Pune', 'pizza shop called Slice Hub in Mumbai', 'law firm called Rao and Partners', 'yoga studio in Goa']) {
+  for (let v = 1; v <= 6; v += 1) {
+    for (const tier of ['normal', 'better', 'premium']) {
+      const lib = generateLibraryPage(prompt, v, tier, true, 'auto', undefined, true)
+      const pages = lib.pages ?? []
+      const okPages = pages.length >= 3 && pages[0].path === '/' && pages.every((p) => p.title && p.label)
+      const shared = lib.sections.filter((x) => x.page === '*').map((x) => x.role)
+      const inner = pages.filter((p) => p.path !== '/')
+      const heads = inner.every((p) => lib.sections.find((x) => x.page === p.path)?.role === 'pagehead')
+      const bodies = pages.every((p) => lib.sections.some((x) => x.page === p.path && x.role !== 'pagehead'))
+      const homeHero = lib.sections.some((x) => x.page === '/' && x.role === 'hero')
+      const frame = shared.includes('nav') && shared.includes('footer') && lib.sections[lib.sections.length - 1].role === 'footer'
+      if (okPages && heads && bodies && homeHero && frame) multiOk += 1
+    }
+  }
+}
+ok(multiOk === 72, `a site with pages has a home with a hero, inner pages that start with a title, the menu and the footer on every page (${multiOk}/72)`)
+const again = (p) => JSON.stringify(generateLibraryPage(p, 4, 'better', true, 'auto', undefined, true).sections)
+ok(again('bakery called Crumb') === again('bakery called Crumb'), 'the same prompt gives the same site with pages')
+ok(!generateLibraryPage('bakery called Crumb', 4, 'better').pages, 'a one-page site has no pages list')
+ok(generateLibraryPage('bakery called Crumb', 4, 'better').sections.every((x) => !x.page && x.role !== 'pagehead'), 'a one-page site has no inner page parts')
+
 // ── every group has a decision: a part of a page (in the pools) or a widget (not)
 const U = await loadGeneratorModule('library/componentUse.ts')
 const inPool = new Set([...all.map(({ id }) => id), ...tiers.map(({ id }) => id)].map((id) => id.split('/')[0]))

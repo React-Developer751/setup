@@ -7,6 +7,7 @@ import type { MotionPlan } from '../motionBrain'
 import { initMotion } from '../motionRuntime'
 import { defaultMode, presetPalette, type ColorMode, type Palette, type ThemeKey } from '../themes'
 import { fillContent } from './fillContent'
+import { rewritePageLinks } from './pageLinks'
 import { LIBRARY_CSS, artColors, libraryThemeStyle } from './libraryTheme'
 import { sectionIds } from './sectionIds'
 import type { Role } from './libraryRoles'
@@ -49,9 +50,11 @@ function useHeightFactor(ref: React.RefObject<HTMLDivElement | null>, factor: nu
   }, [ref, factor])
 }
 
-export function Section({ role, paint, fit, band, children }: { role: Role; /** a soft band of the main colour behind this part (every other part), so the page has colour */ band?: boolean; /** background colour of this part only */ paint?: string; /** size and alignment of this part */ fit?: { buttons?: 'left' | 'center' | 'right'; minHeight?: number; heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }; children: ReactNode }) {
+export function Section({ role, paint, fit, band, page, head, children }: { role: Role; /** a soft band of the main colour behind this part (every other part), so the page has colour */ band?: boolean; /** background colour of this part only */ paint?: string; /** size and alignment of this part */ fit?: { buttons?: 'left' | 'center' | 'right'; minHeight?: number; heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }; /** the page of a multi-page site this part belongs to ('*' = every page) */ page?: string; /** the title block of an inner page: its name, its line, the label of the way home */ head?: { title: string; text: string; home: string }; children: ReactNode }) {
   const palette = useContext(PaletteContext)
   const box = useRef<HTMLDivElement>(null)
+  // which page of a multi-page site this part is on, and the title block of an inner page
+  const extra = { ...(page ? { 'data-page': page } : {}), ...(head ? { 'data-title': head.title, 'data-text': head.text, 'data-home': head.home } : {}) }
   useHeightFactor(box, fit?.heightFactor)
   // the rows of buttons (a flex row that starts with a link or a button) move to the side that was asked for
   const buttonCss = fit?.buttons ? `[data-role="${role}"] .flex:has(> a):has(> a), [data-role="${role}"] .flex:has(> button) { justify-content: ${{ left: 'flex-start', center: 'center', right: 'flex-end' }[fit.buttons]} !important; }` : undefined
@@ -62,14 +65,14 @@ export function Section({ role, paint, fit, band, children }: { role: Role; /** 
     const own = { bg: t['--g-bg'], surface: t['--g-surface'], border: t['--g-border'], text: t['--g-text'], muted: t['--g-muted'], accent: t['--g-accent'], alt: t['--g-accent'] }
     const { style, dark } = libraryThemeStyle({ name: 'part', light: own, dark: own }, 'light')
     return (
-      <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...style, ...fitStyle, overflowX: 'clip' }} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
+      <div ref={box} id={sectionIds[role]} data-role={role} {...extra} style={{ ...style, ...fitStyle, overflowX: 'clip' }} className={dark || own.text === '#f9fafb' ? 'dark' : undefined}>
         {buttonCss && <style>{buttonCss}</style>}
         {children}
       </div>
     )
   }
   return (
-    <div ref={box} id={sectionIds[role]} data-role={role} style={{ ...bandStyle, ...fitStyle, overflowX: 'clip' }}>
+    <div ref={box} id={sectionIds[role]} data-role={role} {...extra} style={{ ...bandStyle, ...fitStyle, overflowX: 'clip' }}>
       {buttonCss && <style>{buttonCss}</style>}
       {children}
     </div>
@@ -82,6 +85,7 @@ export function ThemeScope({
   palette,
   content,
   motion,
+  pages,
   children,
 }: {
   theme: ThemeKey
@@ -92,6 +96,8 @@ export function ThemeScope({
   content: WebsiteContent
   /** how the page moves; leave out for no animation */
   motion?: MotionPlan
+  /** the pages of a multi-page site ("/", "/about" ...): the parts with another data-page are hidden, the menu links to the pages */
+  pages?: { path: string; label: string; title: string }[]
   children: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -103,13 +109,14 @@ export function ThemeScope({
     const root = ref.current
     if (!root) return
     const present = new Set([...root.querySelectorAll('[data-role]')].map((el) => el.id).filter(Boolean))
-    const links = linkLabels.filter(([id]) => present.has(id)).map(([id, label]) => ({ href: `#${id}`, label }))
+    const links = pages ? pages.map((p) => ({ href: `#${p.path}`, label: p.label })) : linkLabels.filter(([id]) => present.has(id)).map(([id, label]) => ({ href: `#${id}`, label }))
     root.querySelectorAll<HTMLElement>('[data-role]').forEach((el) => {
       // React StrictMode runs effects twice in development; fill each section only once
       if (el.dataset.filled) return
       el.dataset.filled = '1'
       fillContent(el, el.dataset.role as Role, content, links, artColors(pagePalette[mode].accent, pagePalette[mode].alt))
     })
+    if (pages) rewritePageLinks(root)
     // Preline wires up collapse / dropdown behaviour of the navigation blocks
     import('preline').then(({ HSStaticMethods }) => HSStaticMethods.autoInit()).catch(() => {})
 
@@ -118,6 +125,24 @@ export function ThemeScope({
     // the avatars are drawn once, in the colours of the first mode; switching light / dark must not fill or restart the page again
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [content, motion])
+
+  // the page of a multi-page site that is shown: the one of the address (#/about); the others are hidden (the exported site does the same with its own script)
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root || !pages) return
+    const known = new Set(pages.map((p) => p.path))
+    const apply = () => {
+      const raw = location.hash.replace(/^#/, '') || '/'
+      const path = known.has(raw) ? raw : '/'
+      root.querySelectorAll<HTMLElement>('[data-page]').forEach((el) => {
+        el.hidden = !(el.dataset.page === '*' || el.dataset.page === path)
+      })
+      root.querySelectorAll('a').forEach((a) => (a.getAttribute('href') === `#${path}` ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')))
+    }
+    apply()
+    window.addEventListener('hashchange', apply)
+    return () => window.removeEventListener('hashchange', apply)
+  }, [pages, content])
 
   return (
     <div ref={ref} data-gen-theme={theme} className={`overflow-x-clip ${dark ? 'dark' : ''}`} style={style}>

@@ -537,18 +537,28 @@ function fillNav(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   }
 
   let linkIndex = 0
+  const kindOf = (el: HTMLElement) => {
+    const classes = el.getAttribute('class') ?? ''
+    // a business page has no accounts: "Log in", "Sign in", "Register" of the kit are hidden
+    if (/^(sign in|log in|login|signin|register|my account|account)\b/i.test(ownText(el))) return 'secondary'
+    if (/sign in|log in|login|account|signin/i.test(ownText(el)) && /rounded-/.test(classes) && /border|bg-layer/.test(classes)) return 'secondary'
+    if (/\bbg-primary\b/.test(classes) || /^(get started|sign up|start|try|book)/i.test(ownText(el))) return 'action'
+    return 'link'
+  }
+  // a menu with fewer places than the site has pages keeps the first ones and always the last (the contact page)
+  const places = candidates.filter((el) => el !== brand && kindOf(el) === 'link').length
+  const shown = places > 0 && links.length > places ? [...links.slice(0, places - 1), links[links.length - 1]] : links
   candidates.forEach((el) => {
     if (el === brand) return
-    const classes = el.getAttribute('class') ?? ''
-    const isAction = /\bbg-primary\b/.test(classes) || /^(get started|sign up|start|try|book)/i.test(ownText(el))
-    const isSecondaryAction = /sign in|log in|login|account|signin/i.test(ownText(el)) && /rounded-/.test(classes) && /border|bg-layer/.test(classes)
+    const isAction = kindOf(el) === 'action'
+    const isSecondaryAction = kindOf(el) === 'secondary'
     if (isAction) {
       setText(el, c.hero.button)
       el.setAttribute('href', '#contact')
     } else if (isSecondaryAction) {
       el.style.display = 'none'
-    } else if (linkIndex < links.length) {
-      const link = links[linkIndex++]
+    } else if (linkIndex < shown.length) {
+      const link = shown[linkIndex++]
       setText(el, link.label)
       el.setAttribute('href', link.href)
       if (el.hasAttribute('aria-label')) el.setAttribute('aria-label', link.label)
@@ -583,6 +593,9 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   const own = (a: Element) => ownText(a)
   const keep = /^(privacy|terms|cookies?|©|brand)/i
   const columns = new Map<Element, Element[]>()
+  root.querySelectorAll('button').forEach((b) => {
+    if (/^(view demo|get started|start free|sign up|try for free|learn more)/i.test(own(b))) setText(b, c.hero.button)
+  })
   root.querySelectorAll('a').forEach((a) => {
     const text = own(a)
     if (!text || text.length > 32 || keep.test(text) || a.querySelector('img') || text === c.brandName) return
@@ -611,7 +624,9 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
       } else (a.parentElement?.tagName === 'LI' ? a.parentElement : a).remove()
     })
     // the title of the column
-    const head = column.previousElementSibling ?? column.parentElement?.previousElementSibling
+    // the title is the first thing in the column, or the element before it
+    const inside = column.firstElementChild && !column.firstElementChild.querySelector('a') && column.firstElementChild.tagName !== 'A' && isLeaf(column.firstElementChild) ? column.firstElementChild : undefined
+    const head = inside ?? column.previousElementSibling ?? column.parentElement?.previousElementSibling
     if (head && !head.querySelector('a') && isLeaf(head) && visibleText(head) && visibleText(head).length < 32) setText(head, titles[k])
   })
   root.querySelectorAll('p, span, div').forEach((p) => {
@@ -852,8 +867,28 @@ function fillBanner(root: Element, c: WebsiteContent) {
   })
 }
 
+/** The title block of an inner page: its name, a line about it, the way back home. The title and the line are on the part itself (data-title, data-text). */
+function fillPageHead(root: Element) {
+  const el = root as HTMLElement
+  const title = el.dataset.title ?? ''
+  const text = el.dataset.text ?? ''
+  const h = root.querySelector('h1')
+  if (h) setText(h, title)
+  const lines = [...root.querySelectorAll('p')].filter((p) => !p.querySelector('a'))
+  const intro = lines.find((p) => /text-gray-500|text-gray-300/.test(p.getAttribute('class') ?? '') && visibleText(p).length > 12)
+  if (intro) setText(intro, text)
+  root.querySelectorAll('p').forEach((p) => {
+    if (p === intro) return
+    if (p.querySelector('a')) {
+      const last = [...p.querySelectorAll('span')].pop()
+      if (last) setText(last, title)
+    } else if (/^home$/i.test(visibleText(p))) setText(p, el.dataset.home ?? 'Home')
+  })
+}
+
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
   try {
+    if (role === 'pagehead') return fillPageHead(root)
     // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already
     if (role === 'hero') {
       root.querySelectorAll('nav').forEach((bar) => bar.remove())

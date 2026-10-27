@@ -27,7 +27,7 @@ const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
 
 /** size and alignment of one part (a minimum height and a maximum width in pixels, a text alignment) */
 export type LibraryFit = { /** the buttons alone */ buttons?: 'left' | 'center' | 'right'; minHeight?: number; /** scales the roomy parts (padding) of the component */ heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }
-export type LibrarySection = { role: Role; componentId: string; /** a soft band of the main colour behind this part */ band?: boolean; /** background colour of this part only ("footer green") */ paint?: string; fit?: LibraryFit }
+export type LibrarySection = { role: Role; componentId: string; /** the page of a multi-page site this part is on ('*' = every page) */ page?: string; /** the title block of an inner page */ head?: { title: string; text: string; home: string }; /** a soft band of the main colour behind this part */ band?: boolean; /** background colour of this part only ("footer green") */ paint?: string; fit?: LibraryFit }
 
 const componentName = (id: string) => id.split('/')[1]
 
@@ -39,6 +39,8 @@ export function generateLibraryPage(
   motionSetting: MotionSetting = 'auto',
   /** changes the person asked for (see edit/edits.ts) */
   edits?: SiteEdits,
+  /** a site with pages (Home, About, Pricing ...) instead of one long page */
+  multi = false,
 ) {
   const generated = generateWebsite(userPrompt, variation, tierOverride, creative, motionSetting, edits)
   // your own data (src/data/dataPool.json) first, the generated text for what it does not cover
@@ -69,6 +71,9 @@ export function generateLibraryPage(
     banner: maybe(0.3),
   }
 
+  // a site with pages has most of the parts: each page needs something to show
+  const multiOn = multi ? Object.fromEntries((['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'faq'] as const).map((role) => [role, maybe(tier === 'normal' ? 0.7 : 0.92)])) : undefined
+
   // normal = short page, premium = the rich parts on (the team and the blog by turns)
   const premiumOn = new Set<keyof typeof optional>(['stats', 'steps'])
   const show = (role: keyof typeof optional) =>
@@ -77,13 +82,17 @@ export function generateLibraryPage(
   // which parts the page has: the short page (normal), or the long one with its optional parts; then what the person removed or added
   const FULL: Role[] = ['banner', 'nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'faq', 'blog', 'links', 'cta', 'contact', 'footer']
   const visible = new Set<Role>(
-    tier === 'normal'
+    multiOn
+      ? ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'faq'] as const).filter((role) => multiOn[role]), ...(tier !== 'normal' && optional.banner ? (['banner'] as const) : [])]
+      : tier === 'normal'
       ? ['nav', 'hero', 'about', 'features', 'cta', 'contact', 'footer']
       : ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)
+  // a part the person resizes, aligns, paints or renames is a part they expect to see
+  for (const key of [...Object.keys(edits?.sizes ?? {}), ...Object.keys(edits?.aligns ?? {}), ...Object.keys(edits?.buttonAligns ?? {}), ...Object.keys(edits?.sectionColors ?? {}), ...Object.keys(edits?.titles ?? {})]) for (const role of ROLE_OF[key as SectionKey] ?? []) if (role !== 'profile') visible.add(role)
   for (const section of edits?.hidden ?? []) for (const role of ROLE_OF[section] ?? []) visible.delete(role)
   const sectionOfRole = (role: Role): SectionKey | undefined => (role === 'profile' ? 'about' : (Object.keys(ROLE_OF) as SectionKey[]).find((key) => ROLE_OF[key]?.includes(role)))
   const order: Role[] = reorder(FULL.filter((role) => visible.has(role)), edits?.moves ?? [], sectionOfRole)
@@ -100,19 +109,45 @@ export function generateLibraryPage(
   // the colour of each part: the mood's rules for the panels, then what the person asked for ('' = none)
   const auto = generated.mood ? panelColors(generated.mood, order.map((r) => r as string), base.palette, generated.initialMode, (id) => targetOfRole(id as Role)) : undefined
   let bodyIndex = 0
-  const sections: LibrarySection[] = order.map((role) => {
-    const body = role !== 'banner' && role !== 'nav' && role !== 'hero' && role !== 'footer'
+
+  // the pages of a multi-page site: the parts are grouped by page, an inner page starts with its title block; the menu and the footer are on every page
+  const PAGE_OF: Partial<Record<Role, string>> = { hero: '/', stats: '/', features: '/', links: '/', testimonial: '/', cta: '/', about: '/about', profile: '/about', team: '/about', steps: '/about', pricing: '/pricing', faq: '/pricing', gallery: '/gallery', blog: '/blog', contact: '/contact' }
+  const nl = base.content.navLabels ?? {}
+  const brand = base.content.brandName
+  const PAGES: { path: string; label: string; text: string }[] = [
+    { path: '/', label: nl.home ?? 'Home', text: base.content.hero.subtitle },
+    { path: '/about', label: nl.about ?? 'About', text: base.content.about.paragraphs[0] ?? base.content.hero.subtitle },
+    { path: '/pricing', label: nl.pricing ?? 'Pricing', text: base.content.pricing.title },
+    { path: '/gallery', label: nl.gallery ?? 'Gallery', text: base.content.gallery.title },
+    { path: '/blog', label: nl.blog ?? 'Blog', text: base.content.blog.title },
+    { path: '/contact', label: nl.contact ?? 'Contact', text: base.content.contact.text },
+  ]
+  const usedPages = multi ? PAGES.filter((page) => order.some((role) => PAGE_OF[role] === page.path)) : []
+  const pagesInfo = usedPages.map((page) => ({ path: page.path, label: page.label, title: page.path === '/' ? brand : `${page.label} | ${brand}` }))
+  const arranged: { role: Role; page?: string; head?: LibrarySection['head'] }[] = multi
+    ? [
+        ...order.filter((role) => role === 'banner').map((role) => ({ role, page: '*' })),
+        ...order.filter((role) => role === 'nav').map((role) => ({ role, page: '*' })),
+        ...usedPages.flatMap((page) => [
+          ...(page.path === '/' ? [] : [{ role: 'pagehead' as Role, page: page.path, head: { title: page.label, text: page.text, home: nl.home ?? 'Home' } }]),
+          ...order.filter((role) => PAGE_OF[role] === page.path).map((role) => ({ role, page: page.path })),
+        ]),
+        ...order.filter((role) => role === 'footer').map((role) => ({ role, page: '*' })),
+      ]
+    : order.map((role) => ({ role }))
+  const sections: LibrarySection[] = arranged.map(({ role, page, head }) => {
+    const body = role !== 'banner' && role !== 'nav' && role !== 'hero' && role !== 'footer' && role !== 'pagehead'
     const band = body && bodyIndex++ % 2 === 1 && role !== 'cta'
     const t = targetOfRole(role) as Target
     const own = edits?.sectionColors[t] ?? auto?.[t]
-    return { role, componentId: chosen[role], paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
+    return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
   const imports = sections
     .map(({ componentId }) => `import ${componentName(componentId)} from './components/${componentId}'`)
     .join('\n')
   const body = sections
-      .map(({ role, componentId, paint, fit, band }) => `      <Section role="${role}"${band ? ' band' : ''}${paint ? ` paint="${paint}"` : ''}${fit && Object.keys(fit).length ? ` fit={${JSON.stringify(fit)}}` : ''}>\n        <${componentName(componentId)} />\n      </Section>`)
+      .map(({ role, componentId, paint, fit, band, page, head }) => `      <Section role="${role}"${page ? ` page="${page}"` : ''}${head ? ` head={${JSON.stringify(head)}}` : ''}${band ? ' band' : ''}${paint ? ` paint="${paint}"` : ''}${fit && Object.keys(fit).length ? ` fit={${JSON.stringify(fit)}}` : ''}>\n        <${componentName(componentId)} />\n      </Section>`)
     .join('\n')
 
   const code = `// Page assembled from the stored components. Save as src/GeneratedLandingPage.tsx
@@ -123,7 +158,10 @@ const content = ${JSON.stringify(base.content, null, 2)}
 
 // Colours made for this prompt (both light and dark mode)
 const palette = ${JSON.stringify(base.palette, null, 2)}
-${
+${multi ? `
+// The pages of the site: #/about style addresses switch between them (the parts of the other pages are hidden)
+const pages = ${JSON.stringify(pagesInfo, null, 2)}
+` : ''}${
     base.motion.level === 'off'
       ? ''
       : `
@@ -133,12 +171,12 @@ const motion: MotionPlan = ${JSON.stringify(base.motion, null, 2)}
   }
 export default function GeneratedLandingPage() {
   return (
-    <ThemeScope theme="${base.themeKey}" palette={palette} content={content}${base.motion.level === 'off' ? '' : ' motion={motion}'}>
+    <ThemeScope theme="${base.themeKey}" palette={palette} content={content}${multi ? ' pages={pages}' : ''}${base.motion.level === 'off' ? '' : ' motion={motion}'}>
 ${body}
     </ThemeScope>
   )
 }
 `
 
-  return { themeKey: base.themeKey, niche: generated.niche, palette: base.palette, content: base.content, sections, code, tier, brain: base.brain, motion: base.motion, copy: base.copy, brainsForced: base.brainsForced, colorReasons: base.colorReasons }
+  return { multi, pages: multi ? pagesInfo : undefined, themeKey: base.themeKey, niche: generated.niche, palette: base.palette, content: base.content, sections, code, tier, brain: base.brain, motion: base.motion, copy: base.copy, brainsForced: base.brainsForced, colorReasons: base.colorReasons }
 }

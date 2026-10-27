@@ -2,6 +2,7 @@
 // The generator's "component library" engine picks one component per role.
 export type Role =
   | 'banner'
+  | 'pagehead'
   | 'nav'
   | 'hero'
   | 'about'
@@ -49,6 +50,8 @@ export const rolePools: Record<Role, string[]> = {
   footer: range('footer', 'Footer', 1, 15),
   // an announcement bar above the menu (drawn last so the other parts of a page stay as they were)
   banner: ['banner/Banner1', 'banner/Banner2', 'banner/Banner5'],
+  // the title of a page of a multi-page site (the home page has the hero instead)
+  pagehead: ['pagehead/PageHead1', 'pagehead/PageHead2'],
 }
 
 // features/Features1..11 are exact copies of blog / contact / content components (see componentRegistry.ts),

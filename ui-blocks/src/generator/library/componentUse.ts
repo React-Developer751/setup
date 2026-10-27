@@ -27,6 +27,7 @@ export const componentUse: Record<string, GroupUse> = {
   cta: { use: 'page', note: 'call to action' },
   faq: { use: 'page', note: 'questions' },
   footer: { use: 'page', note: 'footer' },
+  pagehead: { use: 'page', note: 'the title of the inner pages of a multi-page site' },
   banner: { use: 'page', note: 'announcement bar above the menu (made a plain bar; 3 is a floating pop-up: left out)' },
   card: { use: 'widget', note: 'single cards; only the four that suit any business became a section (cardgrid/), the others are shop, wallet, course, profile or login cards' },
   carousel: { use: 'widget', note: 'slides are moved by a script: static they show nothing' },
