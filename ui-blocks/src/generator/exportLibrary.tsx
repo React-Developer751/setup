@@ -11,25 +11,21 @@ import packageJson from '../../package.json?raw'
 import prelineScript from '../../node_modules/preline/dist/preline.js?raw'
 import extraContentSource from './extraContent.ts?raw'
 import { faviconSvg } from './artBrain'
-import { escapeHtml, jsString, motionFile, slugify, usedCss, type ExportDetails } from './exportSite'
+import { escapeHtml, jsString, slugify, usedCss, type ExportDetails } from './exportSite'
 import { seededRandom } from './random'
 import finalPromptSource from './finalPrompt.ts?raw'
-import fillContentSource from './library/fillContent.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
 import { libraryComponents } from './library/libraryComponents'
 import { repairContrast } from './library/pageAudit'
-import libraryRolesSource from './library/libraryRoles.ts?raw'
-import libraryThemeSource from './library/libraryTheme.ts?raw'
+import { contentTypesFrom, libraryProjectEntries } from './library/projectBuilder'
+import motionBrainSource from './motionBrain.ts?raw'
 import { libraryThemeStyle } from './library/libraryTheme'
-import sectionIdsSource from './library/sectionIds.ts?raw'
 import { deployFiles } from './deploy'
 import { fontLinks } from './fonts'
 import { Section, ThemeScope } from './library/ThemeScope'
-import themeScopeSource from './library/ThemeScope.tsx?raw'
 import { MOTION_RUNTIME_JS } from './motionRuntimeJs'
 import siteTypesSource from './siteTypes.ts?raw'
 import { defaultMode, onColor, type ColorMode } from './themes'
-import themesSource from './themes.ts?raw'
 import { createZip, type ZipEntry } from './zip'
 
 type Library = ReturnType<typeof generateLibraryPage>
@@ -51,22 +47,6 @@ const componentSources = import.meta.glob<string>('../components/*/*.tsx', { que
 
 export const libraryProjectName = (lib: Library) => slugify(lib.content.brandName)
 
-/** The text type of the generated content, cut out of the generator's own files so it cannot drift. */
-function contentTypes() {
-  const quote = finalPromptSource.match(/^type Quote = .*$/m)![0]
-  const plan = extraContentSource.match(/^export type Plan = .*$/m)![0]
-  const shared = siteTypesSource.slice(siteTypesSource.indexOf('export type Milestone'))
-  const start = finalPromptSource.indexOf('export type WebsiteContent')
-  const content = finalPromptSource.slice(start, finalPromptSource.indexOf('\n}\n', start) + 3)
-  return `// The shape of the text that fills the page.\n${quote}\n${plan}\n${shared}\n${content}`
-}
-
-const relink = (code: string) =>
-  code
-    .replace(/'\.\.\/finalPrompt'/g, "'./content'")
-    .replace(/'\.\.\/(?:motionBrain|motionRuntime)'/g, "'./motion'")
-    .replace(/'\.\.\/themes'/g, "'./themes'")
-
 /** images that the used components point at (assets/img/...), read from the running app */
 async function assetFiles(sources: string[]): Promise<ZipEntry[]> {
   const paths = new Set(sources.flatMap((code) => [...code.matchAll(/assets\/[\w\-./]+\.(?:webp|png|jpe?g|svg|gif|avif)/g)].map((m) => m[0])))
@@ -83,150 +63,23 @@ async function assetFiles(sources: string[]): Promise<ZipEntry[]> {
   return found
 }
 
+const generatorSources = import.meta.glob<string>('./{*,library/*,edit/*,art/*,kits/*}.{ts,tsx}', { query: '?raw', import: 'default' })
+const dataSources = import.meta.glob<string>('../data/premiumPalettes.json', { query: '?raw', import: 'default' })
+
 export async function buildLibraryProject(lib: Library): Promise<ZipEntry[]> {
-  const pkg = JSON.parse(packageJson) as { dependencies: Record<string, string>; devDependencies: Record<string, string> }
-  const name = libraryProjectName(lib)
-  const ids = [...new Set(lib.sections.map((s) => s.componentId))]
-  const sources = await Promise.all(ids.map((id) => componentSources[`../components/${id}.tsx`]()))
-
-  const files: ZipEntry[] = [
-    {
-      path: 'package.json',
-      content:
-        JSON.stringify(
-          {
-            name,
-            private: true,
-            version: '1.0.0',
-            type: 'module',
-            scripts: { dev: 'vite', build: 'tsc -b && vite build', preview: 'vite preview' },
-            dependencies: { preline: pkg.dependencies.preline, react: pkg.dependencies.react, 'react-dom': pkg.dependencies['react-dom'] },
-            devDependencies: {
-              '@tailwindcss/forms': pkg.dependencies['@tailwindcss/forms'],
-              '@tailwindcss/vite': pkg.dependencies['@tailwindcss/vite'],
-              '@types/react': pkg.devDependencies['@types/react'],
-              '@types/react-dom': pkg.devDependencies['@types/react-dom'],
-              '@vitejs/plugin-react': pkg.devDependencies['@vitejs/plugin-react'],
-              tailwindcss: pkg.dependencies.tailwindcss,
-              typescript: pkg.devDependencies.typescript,
-              vite: pkg.devDependencies.vite,
-            },
-          },
-          null,
-          2,
-        ) + '\n',
+  const entries = await libraryProjectEntries(lib, {
+    packageJson,
+    indexCss,
+    readSource: async (path) => {
+      const load = path.startsWith('data/') ? dataSources[`../${path}`] : generatorSources[`./${path.replace(/^generator\//, '')}`]
+      return load ? load() : undefined
     },
-    {
-      path: 'index.html',
-      content: `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(lib.content.brandName)}</title>
-    <meta name="description" content="${escapeHtml(lib.content.hero.subtitle)}" />
-    ${fontLinks(lib.themeKey).replace(/\n/g, '\n    ')}
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-`,
-    },
-    {
-      path: 'vite.config.ts',
-      content: `import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { defineConfig } from 'vite'
-
-// base './' lets the built site live in any folder or sub-path of a web server
-export default defineConfig({
-  base: './',
-  plugins: [react(), tailwindcss()],
-})
-`,
-    },
-    {
-      path: 'tsconfig.json',
-      content:
-        JSON.stringify(
-          {
-            compilerOptions: {
-              target: 'ES2022',
-              lib: ['ES2023', 'DOM', 'DOM.Iterable'],
-              module: 'ESNext',
-              moduleResolution: 'bundler',
-              types: ['vite/client'],
-              jsx: 'react-jsx',
-              strict: true,
-              skipLibCheck: true,
-              noEmit: true,
-              isolatedModules: true,
-              allowImportingTsExtensions: true,
-            },
-            include: ['src'],
-          },
-          null,
-          2,
-        ) + '\n',
-    },
-    { path: '.gitignore', content: 'node_modules\ndist\n' },
-    { path: 'src/index.css', content: indexCss },
-    { path: 'src/vite-env.d.ts', content: '/// <reference types="vite/client" />\n' },
-    {
-      path: 'src/main.tsx',
-      content: `import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './GeneratedLandingPage'
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
-`,
-    },
-    {
-      path: 'src/GeneratedLandingPage.tsx',
-      content: lib.code.replace("'./generator/library/ThemeScope'", "'./library/ThemeScope'").replace("'./generator/motionBrain'", "'./library/motion'"),
-    },
-    { path: 'src/library/ThemeScope.tsx', content: relink(themeScopeSource) },
-    { path: 'src/library/fillContent.ts', content: relink(fillContentSource) },
-    { path: 'src/library/libraryTheme.ts', content: relink(libraryThemeSource) },
-    { path: 'src/library/libraryRoles.ts', content: libraryRolesSource },
-    { path: 'src/library/sectionIds.ts', content: sectionIdsSource },
-    { path: 'src/library/themes.ts', content: themesSource },
-    { path: 'src/library/content.ts', content: contentTypes() },
-    { path: 'src/library/motion.ts', content: motionFile() },
-    ...ids.map((id, i) => ({ path: `src/components/${id}.tsx`, content: sources[i] })),
-    ...(await assetFiles(sources)),
-    {
-      path: 'README.md',
-      content: `# ${lib.content.brandName}
-
-A one-page website assembled from ready-made components (React + Vite + Tailwind CSS + Preline). It is fully static: no server, no database.
-
-## Run it
-
-\`\`\`bash
-npm install
-npm run dev      # open the address it prints
-npm run build    # the finished site is in dist/
-\`\`\`
-
-## Edit it
-
-- \`src/GeneratedLandingPage.tsx\` the page: the text, the colours and the list of sections (each one is a file in \`src/components/\`).
-- \`src/components/\` the components themselves. Their markup is untouched; the text comes from the \`content\` object, the colours from \`palette\`.
-- \`src/library/\` the small runtime that fills the text, applies the colours and the light / dark switch.
-
-The contact and newsletter forms only show the layout: connect them to a form service before you publish.
-`,
-    },
-  ]
-  return files.map((file) => ({ ...file, path: `${name}/${file.path}` }))
+    readComponent: (id) => componentSources[`../components/${id}.tsx`](),
+    contentTypes: () => contentTypesFrom(finalPromptSource, extraContentSource, siteTypesSource),
+    motionTypes: () => motionBrainSource.slice(motionBrainSource.indexOf('export type MotionSetting'), motionBrainSource.indexOf('const STYLE_BY_THEME')).trim() + '\n',
+    assets: (sources) => assetFiles(sources),
+  })
+  return entries as ZipEntry[]
 }
 
 export const buildLibraryZip = async (lib: Library) => createZip(await buildLibraryProject(lib))
@@ -266,10 +119,10 @@ function renderLibrary(lib: Library) {
   flushSync(() =>
     root.render(
       <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages}>
-        {lib.sections.map(({ role, componentId, paint, fit, band, page, head }) => {
+        {lib.sections.map(({ role, componentId, paint, fit, band, page, head }, index) => {
           const Component = libraryComponents[componentId]
           return (
-            <Section key={role} role={role} paint={paint} fit={fit} band={band} page={page} head={head}>
+            <Section key={`${role}-${index}`} role={role} paint={paint} fit={fit} band={band} page={page} head={head}>
               <Component />
             </Section>
           )

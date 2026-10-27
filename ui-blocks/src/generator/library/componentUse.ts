@@ -5,7 +5,7 @@
 export type GroupUse = { use: 'page' | 'widget'; note: string }
 
 export const componentUse: Record<string, GroupUse> = {
-  hero: { use: 'page', note: 'hero (Hero11 is a sign-up box and Hero29 a login box: left out)' },
+  hero: { use: 'page', note: 'hero (Hero5 is an install snippet, Hero11 a sign-up box and Hero29 a login box: left out)' },
   jumbotron: { use: 'page', note: 'hero of the short page (1-3); 4-6 hold forms' },
   navbar: { use: 'page', note: 'menu bar' },
   header: { use: 'page', note: 'menu bar' },
@@ -19,7 +19,7 @@ export const componentUse: Record<string, GroupUse> = {
   stepsection: { use: 'page', note: 'how it works' },
   gallery: { use: 'page', note: 'gallery' },
   portfolio: { use: 'page', note: 'gallery' },
-  pricing: { use: 'page', note: 'plans' },
+  pricing: { use: 'page', note: 'plans (2 is a table of internet plans, 3 has no names for its plans: left out)' },
   team: { use: 'page', note: 'team' },
   teams: { use: 'page', note: 'team (3, 6, 7 are four screens tall: left out)' },
   testimonial: { use: 'page', note: 'reviews (11 is a fixed pop-up: left out)' },

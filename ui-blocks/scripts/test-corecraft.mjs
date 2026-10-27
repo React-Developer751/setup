@@ -109,6 +109,11 @@ if (fs.existsSync(path.join(cont, 'corecraft', 'content_engine.py'))) {
 
 console.log(`corecraft: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) {
-  console.log(fail.map((f) => ` - ${f}`).join('\n'))
+  // "Pune mein" / "Pune ke liye" is moved to the end the way Core-Craft finds a place ("... in Pune")
+ok(G.forCore('Mumbai mein ek Italian pizza restaurant, naam Slice Hub') === 'ek Italian pizza restaurant, naam Slice Hub in Mumbai', 'Hinglish "X mein" gives "in X"')
+ok(G.forCore('Mujhe Pune ke liye ek website chahiye dental clinic ki') === 'Mujhe ek website chahiye dental clinic ki in Pune', '"X ke liye" gives "in X" (a pronoun before it stays)')
+ok(G.forCore('dental clinic Smile Care Pune main') === 'dental clinic Smile Care in Pune', 'only the one word before "main" is the place')
+ok(G.forCore('dental clinic in Pune') === 'dental clinic in Pune', 'an English prompt is not touched')
+console.log(fail.map((f) => ` - ${f}`).join('\n'))
   process.exit(1)
 }

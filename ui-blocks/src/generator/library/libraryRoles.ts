@@ -30,8 +30,8 @@ const PICTURE_CARDS = [1, 3, 4, 9]
 export const rolePools: Record<Role, string[]> = {
   nav: [...range('navbar', 'Navbar', 1, 11), ...range('header', 'Header', 1, 11)],
   // Hero1 needs /assets/img/hero/valley*.webp (placeholders live in public/assets/img/hero/). Hero18-28 come from other kits (their pictures are replaced by the page's own).
-  // Hero11 is a sign-up box (passwords, terms): it does not belong on the page of a business
-  hero: [...range('hero', 'Hero', 1, 10), ...range('hero', 'Hero', 12, 17), ...range('hero', 'Hero', 18, 28)],
+  // Hero5 is an install snippet (npm i preline) and Hero11 a sign-up box (passwords, terms): they do not belong on the page of a business
+  hero: [...range('hero', 'Hero', 1, 4), ...range('hero', 'Hero', 6, 10), ...range('hero', 'Hero', 12, 17), ...range('hero', 'Hero', 18, 28)],
   about: ['content/Content2', 'content/Content5', 'content/Content7', 'content/Content8'],
   features: ['content/Content1', 'content/Content3', 'blog/Blog2', ...range('features', 'Features', 12, 16), 'features/Features18', 'features/Features19'],
   links: ['content/Content4'],
@@ -40,7 +40,8 @@ export const rolePools: Record<Role, string[]> = {
   stats: range('statics', 'Statics', 1, 3),
   steps: [...range('step', 'Step', 1, 3), 'stepsection/StepSection3', 'stepsection/StepSection6'],
   gallery: [...range('gallery', 'Gallery', 1, 10), ...range('portfolio', 'Portfolio', 1, 5)],
-  pricing: range('pricing', 'Pricing', 1, 9),
+  // Pricing2 is a table of internet plans (speed, storage) and Pricing3 names its plans "Popular" and "Pricing": left out
+  pricing: ['pricing/Pricing1', ...range('pricing', 'Pricing', 4, 9)],
   // Teams3, 6 and 7 are four screens tall: left out
   team: [...range('team', 'Team', 1, 3), 'teams/Teams1', 'teams/Teams2', 'teams/Teams4', 'teams/Teams5'],
   testimonial: range('testimonial', 'Testimonial', 1, 10),

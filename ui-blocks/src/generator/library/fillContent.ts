@@ -501,6 +501,12 @@ function fillHero(root: Element, c: WebsiteContent) {
     if (pillText) setText(pillText, subject)
   }
 
+  // a list of selling points of the kit ("From US glasses dealers", "Fast shipping") is the list of what this business offers
+  const points = c.features.items.map((f) => f.title)
+  root.querySelectorAll('li').forEach((li, i) => {
+    if (!li.closest('nav') && visibleText(li) && visibleText(li).length < 60 && (isLeaf(li) || [...li.children].every((ch) => /^(svg|span|p|div)$/i.test(ch.tagName)))) setText(li, take(points, i, points[0] ?? c.hero.title))
+  })
+
   // call-to-action buttons / links
   const actions = [...root.querySelectorAll('a, button')].filter(
     (el) => ownText(el) && ownText(el).length < 40 && !el.closest('nav') && !el.querySelector('p'),
@@ -594,7 +600,9 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
   const keep = /^(privacy|terms|cookies?|©|brand)/i
   const columns = new Map<Element, Element[]>()
   root.querySelectorAll('button').forEach((b) => {
-    if (/^(view demo|get started|start free|sign up|try for free|learn more)/i.test(own(b))) setText(b, c.hero.button)
+    const text = visibleText(b)
+    if (/^(view demo|learn more|watch demo)/i.test(text)) setText(b, 'Contact us')
+    else if (/^(get started|start free|sign up|try for free)/i.test(text)) setText(b, c.hero.button)
   })
   root.querySelectorAll('a').forEach((a) => {
     const text = own(a)
@@ -789,6 +797,19 @@ const PLACEHOLDER_CATEGORY = /^(web design|app design|branding|animation|ui\/ux|
 
 /** What the components of the other kits leave behind: names of well-known companies in "trusted by" lines, the filter words of a design portfolio, billing switches. */
 function cleanLeftovers(root: Element, role: Role, c: WebsiteContent) {
+  // the wordmarks of other companies, drawn as wide pictures (Google, Forbes ... next to a review or under a hero): a wide, flat drawing with no words around it
+  root.querySelectorAll('svg').forEach((svg) => {
+    const box = (svg.getAttribute('viewBox') ?? '').split(/[\s,]+/).map(Number)
+    const classes = svg.getAttribute('class') ?? ''
+    const height = Number(classes.match(/(?:^|\s)h-(\d+)(?:\s|$)/)?.[1] ?? NaN)
+    // a wordmark is a wide drawing with a small fixed height (h-8); a wave that divides two parts is as wide as the page
+    const wordmark = (box[2] <= 220 && !Number.isNaN(box[2])) || (height <= 14 && !/\babsolute\b|\bw-full\b/.test(classes))
+    if (box.length === 4 && box[3] > 0 && box[2] / box[3] >= 2.2 && box[2] >= 60 && wordmark && !svg.closest('button, a, nav, form')) {
+      const parent = svg.parentElement
+      svg.remove()
+      if (parent && parent !== root && !visibleText(parent) && !parent.querySelector('img,svg,input')) parent.remove()
+    }
+  })
   // app-store badges and "sign in with Google" of the other kits: this business has no app and no account
   root.querySelectorAll('a, button').forEach((el) => {
     if (/(google play|app store|play store|download on|get it on|(sign|log) ?(in|up) with|continue with (google|github|facebook|apple))/i.test(visibleText(el))) el.remove()
@@ -886,9 +907,65 @@ function fillPageHead(root: Element) {
   })
 }
 
+const norm = (text: string) => text.replace(/\s+/g, ' ').trim()
+function textsOf(root: Element): string[] {
+  const out: string[] = []
+  const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  while (walker.nextNode()) {
+    const text = norm(walker.currentNode.textContent ?? '')
+    if (text) out.push(text)
+  }
+  return out
+}
+
+/**
+ * What the filling did not reach: a sentence that is still the kit's own ("Top 10 Ui kit you can get on Blox's collection", "From US glasses dealers", "CEO, Jeny Consultency").
+ * Such a text is replaced by the text of this business that belongs there (a heading by a title, a line by a description) or taken away (a date).
+ */
+function scrubLeftovers(root: Element, before: Set<string>, role: Role, c: WebsiteContent) {
+  const d = dataFor(role, c)
+  const known = new Set([d.title, d.subtitle, d.eyebrow, ...d.itemTitles, ...d.itemTexts, ...d.itemLabels, ...(d.extraTexts ?? []), c.hero.button, c.hero.title, c.hero.subtitle, c.contact.email, c.contact.phone, c.contact.address, c.contact.text, c.brandName, ...c.testimonials.flatMap((t) => [t.author, t.role, t.quote]), ...c.faq.flatMap((f) => [f.q, f.a])].filter(Boolean).map(norm))
+  const roles = c.testimonials.map((t) => t.role).filter(Boolean)
+  let title = 0
+  let line = 0
+  let person = 0
+  const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  const nodes: Text[] = []
+  while (walker.nextNode()) nodes.push(walker.currentNode as Text)
+  for (const node of nodes) {
+    const text = norm(node.textContent ?? '')
+    const el = node.parentElement
+    if (!text || !el || !before.has(text) || known.has(text) || el.closest('.sr-only, svg, script, style')) continue
+    const words = text.split(' ').length
+    if (/placeholder/i.test(text)) {
+      el.remove()
+      continue
+    }
+    if (words < 3) continue
+    if (/^(on:?\s)?\d{1,2}\s\w{3,9}\.?\s\d{4}$/i.test(text) || /^\w{3,9}\.?\s\d{1,2},\s\d{4}$/.test(text) || /^on:/i.test(text)) {
+      el.remove()
+      continue
+    }
+    if (/consult|manager at|(?:ceo|cto|cfo|founder|designer|developer),/i.test(text)) {
+      node.textContent = take(roles, person++, roles[0] ?? 'Customer')
+      continue
+    }
+    if (el.closest('a, button')) {
+      node.textContent = role === 'contact' ? 'Send message' : c.hero.button
+      continue
+    }
+    if (/^h[1-6]$/i.test(el.tagName)) {
+      node.textContent = take(d.itemTitles, title++, d.title)
+      continue
+    }
+    node.textContent = words > 8 ? take(d.itemTexts.length ? d.itemTexts : [d.subtitle], line++, d.subtitle) : take(d.itemTitles.length ? d.itemTitles : [d.title], title++, d.title)
+  }
+}
+
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
   try {
     if (role === 'pagehead') return fillPageHead(root)
+    const original = new Set(textsOf(root))
     // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already
     if (role === 'hero') {
       root.querySelectorAll('nav').forEach((bar) => bar.remove())
@@ -903,12 +980,18 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     fillImages(root, role, c, colors)
     fillBackgrounds(root, role, c, colors)
     if (role === 'banner') return fillBanner(root, c)
-    if (role === 'nav') return fillNav(root, c, links)
+    if (role === 'nav') {
+      fillNav(root, c, links)
+      // a made-up sentence of the kit inside the menu ("Some text as placeholder")
+      root.querySelectorAll('p, div, span').forEach((el) => isLeaf(el) && /placeholder/i.test(visibleText(el)) && el.remove())
+      return
+    }
     if (role === 'footer') return fillFooter(root, c, links)
     if (role === 'hero') fillHero(root, c)
     else fillSection(root, role, c)
     fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button)
     cleanLeftovers(root, role, c)
+    scrubLeftovers(root, original, role, c)
     setPlaceholders(root)
     ensureTitle(root, role, c)
     replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members)

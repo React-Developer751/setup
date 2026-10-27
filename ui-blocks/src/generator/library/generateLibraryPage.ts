@@ -143,8 +143,8 @@ export function generateLibraryPage(
     return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
-  const imports = sections
-    .map(({ componentId }) => `import ${componentName(componentId)} from './components/${componentId}'`)
+  const imports = [...new Set(sections.map(({ componentId }) => componentId))]
+    .map((componentId) => `import ${componentName(componentId)} from './components/${componentId}'`)
     .join('\n')
   const body = sections
       .map(({ role, componentId, paint, fit, band, page, head }) => `      <Section role="${role}"${page ? ` page="${page}"` : ''}${head ? ` head={${JSON.stringify(head)}}` : ''}${band ? ' band' : ''}${paint ? ` paint="${paint}"` : ''}${fit && Object.keys(fit).length ? ` fit={${JSON.stringify(fit)}}` : ''}>\n        <${componentName(componentId)} />\n      </Section>`)
