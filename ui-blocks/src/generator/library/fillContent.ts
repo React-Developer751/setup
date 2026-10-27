@@ -34,6 +34,9 @@ function setText(el: Element, text: string) {
     return
   }
   const nodes = ownTextNodes(el)
+  // an icon next to one element that holds the words (<p><svg/><span>text</span></p>): the words are in that element
+  const holders = [...el.children].filter((child) => !/^(svg|img|input|textarea|br)$/i.test(child.tagName) && child.textContent?.trim())
+  if (!nodes.length && holders.length === 1) return setText(holders[0], text)
   if (nodes.length) {
     nodes[0].textContent = text + ' '
     nodes.slice(1).forEach((n) => (n.textContent = ''))
@@ -265,12 +268,20 @@ function replaceBrand(
   })
 }
 
+const DUMMY_FIELD = /^(placeholder|john doe|jane doe|johndoe@example\.com|you@example\.com|name@example\.com|name@company\.com|your company|company name|full name|first name|last name|email address|email|message|phone number|name)$/i
+/** the fields of a form say what they are for ("Your name"), never a made-up person ("John Doe") */
 function setPlaceholders(root: Element) {
-  root.querySelectorAll('input[placeholder]').forEach((input) => {
-    const type = input.getAttribute('type')
-    if (/^placeholder$/i.test(input.getAttribute('placeholder') ?? '')) {
-      input.setAttribute('placeholder', type === 'email' ? 'Your email' : 'Your name')
+  root.querySelectorAll('input, textarea').forEach((field) => {
+    const type = (field.getAttribute('type') ?? 'text').toLowerCase()
+    if (['checkbox', 'radio', 'submit', 'button', 'hidden', 'file'].includes(type)) return
+    const holder = field.getAttribute('placeholder') ?? ''
+    const label = (field.getAttribute('name') ?? field.getAttribute('id') ?? '').toLowerCase()
+    const area = field.tagName === 'TEXTAREA'
+    if (holder && (DUMMY_FIELD.test(holder) || /example|john|jane|doe/i.test(holder))) {
+      field.setAttribute('placeholder', area ? 'How can we help you?' : type === 'email' ? 'Your email' : type === 'tel' || /phone|mobile/.test(label) ? 'Your phone number' : /last/.test(label) ? 'Last name' : /first/.test(label) ? 'First name' : 'Your name')
     }
+    // a value that is already in the field would be sent as it is
+    if (field.hasAttribute('value') && /example|john|jane|doe|placeholder/i.test(field.getAttribute('value') ?? '')) field.removeAttribute('value')
   })
 }
 
@@ -281,8 +292,69 @@ function fillGenericButtons(root: Element, label: string) {
   })
 }
 
+/** a line of a contact part: its e-mail, its phone, its address; a long line is the kit's own description (the blurb is already there) */
+function contactFact(was: string, c: WebsiteContent): string | undefined {
+  if (EMAIL.test(was)) return c.contact.email
+  if (PHONE.test(was)) return c.contact.phone
+  return was.length <= 45 && /\d|,/.test(was) ? c.contact.address : undefined
+}
+
+/**
+ * The rows of a contact part (an icon, a label and the e-mail, the phone or the address): each row keeps the kind of fact it had, so the label always
+ * fits the line next to it ("Phone" over the phone number), and the kit's own descriptions are dropped. Rows that were handled are marked data-crow.
+ */
+function fillContactRows(root: Element, c: WebsiteContent) {
+  const cards = new Set<Element>()
+  root.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((h) => {
+    const card = repeatedAncestor(h, root)
+    if (card) cards.add(card)
+  })
+  const kinds = ['email', 'phone', 'address'] as const
+  type Kind = (typeof kinds)[number]
+  const labels: Record<Kind, string> = { email: 'Email', phone: 'Phone', address: 'Address' }
+  const facts: Record<Kind, string> = { email: c.contact.email, phone: c.contact.phone, address: c.contact.address }
+  const rows: { card: Element; heading: Element; leaves: Element[]; hint?: Kind }[] = []
+  cards.forEach((card) => {
+    const heading = card.querySelector('h1,h2,h3,h4,h5,h6')
+    if (!heading || card.querySelector('form,input,textarea')) return
+    const leaves = [...card.querySelectorAll('p,span,a,div,li')].filter((e) => isLeaf(e) && visibleText(e) && !heading.contains(e) && !e.closest('button'))
+    const values = leaves.filter((e) => visibleText(e).length <= 60)
+    if (!values.length) return
+    const said = visibleText(heading)
+    // what the row is about: its own label, its value, its icon
+    const icon = card.querySelector('svg path')?.getAttribute('d') ?? ''
+    const hint: Kind | undefined = /mail/i.test(said) ? 'email' : /phone|call|mobile|tel\b/i.test(said) ? 'phone' : /address|location|office|visit|find us|where/i.test(said) ? 'address'
+      : values.some((e) => EMAIL.test(visibleText(e))) ? 'email' : values.some((e) => PHONE.test(visibleText(e))) ? 'phone'
+      : /^M3 8l7\.89|^M21 8|M3 8l7\.89 5\.26/.test(icon) ? 'email' : /^M3 5a2 2 0 012-2h3\.28|^M2 3/.test(icon) ? 'phone' : /^M17\.657 16\.657|^M12 2C|^M15 11a3/.test(icon) ? 'address' : undefined
+    rows.push({ card, heading, leaves, hint })
+  })
+  const taken = new Set<Kind>()
+  // rows that know what they are keep it (once); the rest take what is left, in order
+  rows.forEach((row) => {
+    if (row.hint && !taken.has(row.hint)) taken.add(row.hint)
+    else row.hint = undefined
+  })
+  rows.forEach((row) => {
+    const kind = row.hint ?? kinds.find((k) => !taken.has(k))
+    if (!kind) return row.card.remove()
+    taken.add(kind)
+    setText(row.heading, labels[kind])
+    // one line with the fact; the kit's other lines (a description, a second number) go
+    let placed = false
+    row.leaves.forEach((e) => {
+      if (!row.card.contains(e)) return
+      if (!placed && visibleText(e).length <= 60) {
+        setText(e, facts[kind])
+        placed = true
+      } else e.remove()
+    })
+    row.card.setAttribute('data-crow', '')
+  })
+}
+
 function fillSection(root: Element, role: Role, c: WebsiteContent) {
   const d = dataFor(role, c)
+  if (role === 'contact') fillContactRows(root, c)
 
   // numbers + their labels (stats); remember what was replaced so the heading / paragraph pass skips it
   const statElements = new Set<Element>()
@@ -304,11 +376,15 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
   }
 
   const numericHeading = (el: Element) => statElements.has(el)
-  const headings = [...root.querySelectorAll('h1,h2,h3,h4')].filter((h) => visibleText(h) && !numericHeading(h))
+  const headings = [...root.querySelectorAll('h1,h2,h3,h4')].filter((h) => visibleText(h) && !numericHeading(h) && !h.closest('[data-crow]'))
   const sectionHeadings = headings.filter((h) => !isLabel(h) && !inRepeatedGroup(h, root))
   const eyebrows = headings.filter((h) => isLabel(h) && !inRepeatedGroup(h, root))
 
-  sectionHeadings.forEach((h, i) => setText(h, i === 0 ? d.title : take(d.itemTitles, i - 1, d.title)))
+  sectionHeadings.forEach((h, i) => {
+    // "Follow us" above the social icons stays what it is
+    if (role === 'contact' && /follow|social|connect/i.test(visibleText(h))) return
+    setText(h, i === 0 ? d.title : take(d.itemTitles, i - 1, d.title))
+  })
   eyebrows.forEach((h) => setText(h, d.eyebrow))
 
   // Cards: every card gets its own index so a name and its role always belong together.
@@ -331,14 +407,25 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
 
   const longLeaf = (el: Element) => isLeaf(el) && visibleText(el).length > 40
   const paragraphs = [...root.querySelectorAll('p, div, span')].filter(
-    (p) => (p.tagName === 'P' ? !!visibleText(p) : longLeaf(p)) && !p.closest('button,a') && !statElements.has(p),
+    (p) => (p.tagName === 'P' ? !!visibleText(p) : longLeaf(p)) && !p.closest('button,a') && !statElements.has(p) && !p.closest('[data-crow]'),
   )
   const sectionParas = paragraphs.filter((p) => !inRepeatedGroup(p, root))
   const itemParas = paragraphs.filter((p) => inRepeatedGroup(p, root))
-  sectionParas.forEach((p, i) => setText(p, i === 0 ? d.subtitle : take(d.extraTexts ?? [d.subtitle], i, d.subtitle)))
+  sectionParas.forEach((p, i) => {
+    if (role === 'contact' && i > 0) {
+      // a line with an icon in front of it is a row (the pin, the phone, the envelope): it keeps a fact even when its text had no digits
+      const fact = contactFact(visibleText(p), c) ?? (p.querySelector('svg') ? c.contact.address : undefined)
+      return fact ? setText(p, fact) : p.remove()
+    }
+    setText(p, i === 0 ? d.subtitle : take(d.extraTexts ?? [d.subtitle], i, d.subtitle))
+  })
   const seenParas = new Map<Element, number>()
   itemParas.forEach((p) => {
     if (role === 'stats' && visibleText(p).length < 40) return
+    if (role === 'contact') {
+      const fact = contactFact(visibleText(p), c)
+      return fact ? setText(p, fact) : p.remove()
+    }
     const { card, index } = cardOf(p)
     const position = seenParas.get(card) ?? 0
     seenParas.set(card, position + 1)
@@ -371,6 +458,12 @@ function fillSection(root: Element, role: Role, c: WebsiteContent) {
         panel.style.minHeight = '16rem'
         frame.replaceWith(panel)
       }
+    })
+    root.querySelectorAll('form').forEach((form) => {
+      // the kit's headline inside the form card ("Phone", "Contact us") is the title of the form
+      const card = form.parentElement
+      const head = card && [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')].find((h) => !form.contains(h) && /^(email|phone|address|get in touch|contact us)$/i.test(visibleText(h)))
+      if (head && card?.querySelectorAll('h1,h2,h3,h4,h5,h6').length) setText(head, 'Send us a message')
     })
     mapTextNodes(root, (text) => (EMAIL.test(text) ? c.contact.email : PHONE.test(text) ? c.contact.phone : undefined))
     root.querySelectorAll('a[href^="mailto:"]').forEach((a) => a.setAttribute('href', `mailto:${c.contact.email}`))
@@ -502,18 +595,33 @@ function fillFooter(root: Element, c: WebsiteContent, pageLinks: Link[]) {
     if (column) columns.set(column, [...(columns.get(column) ?? []), a])
   })
   const sets: Link[][] = [links, c.features.items.slice(0, 5).map((f) => ({ href: '#features', label: f.title })), [{ href: '#contact', label: 'Contact' }, { href: '#', label: 'Privacy Policy' }, { href: '#', label: 'Terms' }]]
-  ;[...columns.values()].filter((group) => group.length >= 2).forEach((group, k) => {
-    const set = sets[Math.min(k, sets.length - 1)]
+  const titles = ['Quick links', 'What we offer', 'Support']
+  ;[...columns.entries()].filter(([, group]) => group.length >= 2).forEach(([column, group], k) => {
+    // three columns at most: a fourth would repeat the third
+    if (k >= sets.length) {
+      const head = column.previousElementSibling
+      if (head && !head.querySelector('a') && visibleText(head).length < 30) head.remove()
+      return column.remove()
+    }
+    const set = sets[k]
     group.forEach((a, i) => {
       if (i < set.length) {
         setText(a, set[i].label)
         a.setAttribute('href', set[i].href)
       } else (a.parentElement?.tagName === 'LI' ? a.parentElement : a).remove()
     })
+    // the title of the column
+    const head = column.previousElementSibling ?? column.parentElement?.previousElementSibling
+    if (head && !head.querySelector('a') && isLeaf(head) && visibleText(head) && visibleText(head).length < 32) setText(head, titles[k])
   })
   root.querySelectorAll('p, span, div').forEach((p) => {
     if (isLeaf(p) && visibleText(p).length > 30) setText(p, subject)
   })
+  // a newsletter line of the kit ("Join 31,000+ others ..."), the made-up phone and e-mail, the year of the kit's copyright
+  root.querySelectorAll('h1,h2,h3,h4,h5,h6,p,span,div').forEach((el) => {
+    if (isLeaf(el) && /\d{2},\d{3}\+|never miss out/i.test(visibleText(el))) setText(el, 'Stay in touch with ' + c.brandName)
+  })
+  mapTextNodes(root, (text) => (EMAIL.test(text) ? c.contact.email : PHONE.test(text) ? c.contact.phone : /^(©|copyright)/i.test(text) && text.length < 90 ? `© ${new Date().getFullYear()} ${c.brandName}. All rights reserved.` : undefined))
   fillGenericButtons(root, 'Subscribe')
   setPlaceholders(root)
   replaceBrand(root, c)
@@ -684,7 +792,7 @@ function cleanLeftovers(root: Element, role: Role, c: WebsiteContent) {
   if (role === 'pricing') {
     // a billing switch (monthly / annually, "save 20%") means nothing next to the prices of this business
     root.querySelectorAll('button, span, label').forEach((el) => {
-      if (!el.isConnected || !/^(monthly|annually|biannually|yearly|billed)/i.test(visibleText(el))) return
+      if (!root.contains(el) || !/^(monthly|annually|biannually|yearly|billed)/i.test(visibleText(el))) return
       let box: Element | null = el.parentElement
       while (box && box !== root && !/monthly/i.test(visibleText(box))) box = box.parentElement
       let bar: Element | null = el

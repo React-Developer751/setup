@@ -123,13 +123,14 @@ export function ThemeScope({
     <div ref={ref} data-gen-theme={theme} className={`overflow-x-clip ${dark ? 'dark' : ''}`} style={style}>
       <style>{LIBRARY_CSS}</style>
       <PaletteContext.Provider value={pagePalette}>{children}</PaletteContext.Provider>
-      {/* light / dark switch: sticks to the bottom-right corner of the screen on every device */}
-      <div className="pointer-events-none sticky bottom-4 z-50 flex h-0 justify-end px-4">
+      {/* light / dark switch: sticks to the bottom-right corner of the screen; the strip under the page keeps it off the last lines (a form, the footer links) */}
+      <div aria-hidden="true" className="h-14" />
+      <div className="pointer-events-none sticky bottom-3 z-50 flex h-0 justify-end px-3 sm:bottom-4 sm:px-4">
         <button
           type="button"
           aria-label="Toggle dark mode"
           onClick={() => setMode((current) => (current === 'dark' ? 'light' : 'dark'))}
-          className="pointer-events-auto flex size-11 -translate-y-full items-center justify-center rounded-full bg-indigo-500 text-white shadow-lg ring-1 ring-black/10 transition hover:scale-105"
+          className="pointer-events-auto flex size-10 -translate-y-full opacity-90 sm:size-11 items-center justify-center rounded-full bg-indigo-500 text-white shadow-lg ring-1 ring-black/10 transition hover:scale-105"
         >
           <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {dark ? (

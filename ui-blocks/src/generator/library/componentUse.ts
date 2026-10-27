@@ -5,7 +5,7 @@
 export type GroupUse = { use: 'page' | 'widget'; note: string }
 
 export const componentUse: Record<string, GroupUse> = {
-  hero: { use: 'page', note: 'hero (Hero29 is a login box: left out)' },
+  hero: { use: 'page', note: 'hero (Hero11 is a sign-up box and Hero29 a login box: left out)' },
   jumbotron: { use: 'page', note: 'hero of the short page (1-3); 4-6 hold forms' },
   navbar: { use: 'page', note: 'menu bar' },
   header: { use: 'page', note: 'menu bar' },

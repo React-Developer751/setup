@@ -29,7 +29,8 @@ const PICTURE_CARDS = [1, 3, 4, 9]
 export const rolePools: Record<Role, string[]> = {
   nav: [...range('navbar', 'Navbar', 1, 11), ...range('header', 'Header', 1, 11)],
   // Hero1 needs /assets/img/hero/valley*.webp (placeholders live in public/assets/img/hero/). Hero18-28 come from other kits (their pictures are replaced by the page's own).
-  hero: [...range('hero', 'Hero', 1, 17), ...range('hero', 'Hero', 18, 28)],
+  // Hero11 is a sign-up box (passwords, terms): it does not belong on the page of a business
+  hero: [...range('hero', 'Hero', 1, 10), ...range('hero', 'Hero', 12, 17), ...range('hero', 'Hero', 18, 28)],
   about: ['content/Content2', 'content/Content5', 'content/Content7', 'content/Content8'],
   features: ['content/Content1', 'content/Content3', 'blog/Blog2', ...range('features', 'Features', 12, 16), 'features/Features18', 'features/Features19'],
   links: ['content/Content4'],

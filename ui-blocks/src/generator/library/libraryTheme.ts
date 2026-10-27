@@ -63,6 +63,14 @@ function readableAccent(accent: string, bg: string, surface: string, dark: boole
 export const LIBRARY_CSS = `[data-gen-theme].dark .text-white{color:#fff}
 [data-gen-theme] :is(.bg-indigo-500,.bg-indigo-600,.bg-indigo-700,.bg-blue-500,.bg-blue-600,.bg-blue-700,.bg-primary,.bg-brand,.bg-brand-strong).text-white{color:var(--g-on-accent)}
 [data-gen-theme].dark :is(.bg-gray-800,.bg-gray-900).text-white{color:var(--background)}
+@media (max-width:639px){
+[data-gen-theme] :is(div,form):has(> input:not([type=checkbox]):not([type=radio])):has(> :is(button,a)),[data-gen-theme] :is(div,form):has(> :is(div,label) > input:not([type=checkbox]):not([type=radio])):has(> button){flex-direction:column!important;align-items:stretch!important;gap:.5rem}
+[data-gen-theme] .flex:has(> :is(div,label) > :is(input,textarea)){flex-direction:column!important;gap:.75rem}
+[data-gen-theme] .grid:has(> :is(div,label) > :is(input,textarea)){grid-template-columns:minmax(0,1fr)!important}
+[data-gen-theme] .flex:has(> :is(div,label) > :is(input,textarea)) > *{width:100%!important;max-width:none!important}
+[data-gen-theme] :is(div,form) > input:not([type=checkbox]):not([type=radio]),[data-gen-theme] :is(div,form) > :is(div,label):has(> input){width:100%!important;min-width:0!important;max-width:none!important}
+[data-gen-theme] :is(div,form):has(> input:not([type=checkbox]):not([type=radio])) > :is(button,a){width:100%!important;margin-left:0!important}
+}
 [data-gen-theme] [data-fx]{color:var(--fx-l)!important}
 [data-gen-theme].dark [data-fx]{color:var(--fx-d,var(--fx-l))!important}`
 
