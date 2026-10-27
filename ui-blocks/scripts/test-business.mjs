@@ -1,5 +1,8 @@
 // Tests of the business details: WhatsApp button, map, opening hours, services and prices, fonts, deploy files.
 globalThis.document = { styleSheets: [] }
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { loadGeneratorModule } from './lib/load-generator.mjs'
 
 let pass = 0
@@ -130,20 +133,59 @@ const none = await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)
 ok(none.status === 503 && (await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).photos === false, 'photos: no key -> 503 and health says so')
 srv.kill()
 await new Promise((r) => setTimeout(r, 300))
-// without a key: Wikimedia Commons (a fake one here): only big landscape JPEGs with a free licence, with the photographer named
+// without a key: Wikimedia Commons (a fake one here): only big landscape JPEGs with a free licence, the best matches first, at most two of one photographer
+const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=', 'base64')
+let commonsCalls = 0
 const commons = http.createServer((req, res) => {
-  const page = (id, title, mime, w, h, licence, artist = '<a href="//x">Bo</a>') => ({ pageid: id, index: id, title, imageinfo: [{ mime, width: w, height: h, thumburl: `https://upload.wikimedia.org/thumb/${id}/1280px-${id}.jpg`, descriptionurl: `https://commons.wikimedia.org/wiki/${title}`, extmetadata: { LicenseShortName: { value: licence }, Artist: { value: artist } } }] })
+  if (req.url.startsWith('/img.jpg')) {
+    res.writeHead(200, { 'content-type': 'image/jpeg' })
+    return res.end(JPEG)
+  }
+  commonsCalls += 1
+  const page = (id, title, mime, w, h, licence, description, artist = 'Bo') => ({ pageid: id, index: id, title, imageinfo: [{ mime, width: w, height: h, thumburl: `http://127.0.0.1:${commons.address().port}/img.jpg?id=${id}`, descriptionurl: `https://commons.wikimedia.org/wiki/${title}`, extmetadata: { LicenseShortName: { value: licence }, Artist: { value: `<a href="//x">${artist}</a>` }, ImageDescription: { value: description } } }] })
   res.writeHead(200, { 'content-type': 'application/json' })
-  res.end(JSON.stringify({ query: { pages: { a: page(1, 'File:Bread.jpg', 'image/jpeg', 3000, 2000, 'CC BY-SA 4.0'), b: page(2, 'File:Noncommercial.jpg', 'image/jpeg', 3000, 2000, 'CC BY-NC 4.0'), c: page(3, 'File:Portrait.jpg', 'image/jpeg', 2000, 3000, 'CC BY 4.0'), d: page(4, 'File:Logo.jpg', 'image/jpeg', 3000, 2000, 'CC0'), e: page(5, 'File:Tiny.jpg', 'image/jpeg', 300, 200, 'CC0'), f: page(6, 'File:Drawing.png', 'image/png', 3000, 2000, 'CC0') } } }))
+  res.end(JSON.stringify({ query: { pages: {
+    a: page(1, 'File:Bread.jpg', 'image/jpeg', 3000, 2000, 'CC BY-SA 4.0', 'fresh bread in a bakery window'),
+    b: page(2, 'File:Noncommercial bakery.jpg', 'image/jpeg', 3000, 2000, 'CC BY-NC 4.0', 'bakery'),
+    c: page(3, 'File:Bakery portrait.jpg', 'image/jpeg', 2000, 3000, 'CC BY 4.0', 'bakery'),
+    d: page(4, 'File:Bakery logo.jpg', 'image/jpeg', 3000, 2000, 'CC0', 'bakery'),
+    e: page(5, 'File:Tiny bakery.jpg', 'image/jpeg', 300, 200, 'CC0', 'bakery'),
+    f: page(6, 'File:Bakery drawing.png', 'image/png', 3000, 2000, 'CC0', 'bakery'),
+    g: page(7, 'File:Bakery counter.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'a bakery counter', 'Ann'),
+    h: page(8, 'File:Mountain lake.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'a lake in the mountains', 'Cy'),
+    i: page(9, 'File:Bakery shelf 1.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'bakery shelf', 'Ann'),
+    j: page(10, 'File:Bakery shelf 2.jpg', 'image/jpeg', 3000, 2000, 'CC BY 4.0', 'bakery shelf', 'Ann'),
+  } } }))
 })
 await new Promise((r) => commons.listen(0, '127.0.0.1', r))
-srv = run({ PEXELS_API_KEY: '', COMMONS_BASE_URL: `http://127.0.0.1:${commons.address().port}` })
+const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'photo-cache-'))
+srv = run({ PEXELS_API_KEY: '', COMMONS_BASE_URL: `http://127.0.0.1:${commons.address().port}`, EDIT_DATA_DIR: cacheDir })
 await ready()
 const viaCommons = await (await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)).json()
-ok(viaCommons.photos.length === 1 && viaCommons.photos[0].alt === 'Bread' && viaCommons.photos[0].credit === 'Bo (CC BY-SA 4.0)' && /Wikimedia/.test(viaCommons.source), 'photos: without a key Wikimedia Commons answers; only a big landscape JPEG with a free licence is kept (no NC, no portrait, no logo, no tiny file, no PNG)')
+const alts = viaCommons.photos.map((p) => p.alt)
+ok(/Wikimedia/.test(viaCommons.source) && alts.includes('Bread') && alts.includes('Bakery counter'), 'photos: without a key Wikimedia Commons answers')
+ok(!alts.some((a) => /Noncommercial|portrait|logo|Tiny|drawing|Mountain/i.test(a)), 'photos: no NC licence, no portrait, no logo, no tiny file, no PNG, nothing that does not match the words')
+ok(alts.filter((a) => /shelf|counter/.test(a)).length <= 2, 'photos: at most two photos of one photographer')
+ok(alts[0].startsWith('Bakery') || alts[0] === 'Bread', 'photos: the best match comes first')
+ok(viaCommons.photos[0].credit.includes('('), 'photos: the photographer and the licence are named')
 ok((await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()).photos === true, 'photos: health says the search is on')
+// a photo copied through the server is kept on the disk
+const file = await fetch(`http://127.0.0.1:${PORT}/api/photo-file?u=${encodeURIComponent(viaCommons.photos[0].url)}`)
+ok(file.status === 200 && file.headers.get('content-type') === 'image/jpeg', 'photos: a photo is copied through the server')
+ok((await fetch(`http://127.0.0.1:${PORT}/api/photo-file?u=${encodeURIComponent('https://evil.example.com/a.jpg')}`)).status === 400, 'photos: only the hosts of the photo services can be copied')
 srv.kill()
 commons.close()
+await new Promise((r) => setTimeout(r, 300))
+// the internet is gone: the same search and the same photo come from the disk
+srv = run({ PEXELS_API_KEY: '', COMMONS_BASE_URL: 'http://127.0.0.1:9', EDIT_DATA_DIR: cacheDir, PHOTO_FILE_HOSTS: new URL(viaCommons.photos[0].url).host })
+await ready()
+const offline = await (await fetch(`http://127.0.0.1:${PORT}/api/photos?q=bakery`)).json()
+ok(offline.offline === true && offline.photos.length === viaCommons.photos.length, 'photos: a search that was made before is answered without the internet')
+const offlineFile = await fetch(`http://127.0.0.1:${PORT}/api/photo-file?u=${encodeURIComponent(viaCommons.photos[0].url)}`)
+ok(offlineFile.status === 200, 'photos: a photo that was loaded before is answered without the internet')
+ok((await fetch(`http://127.0.0.1:${PORT}/api/photos?q=never+searched+before`)).status === 502, 'photos: a new search without the internet says so')
+fs.rmSync(cacheDir, { recursive: true, force: true })
+srv.kill()
 await new Promise((r) => setTimeout(r, 300))
 srv = run({ PEXELS_API_KEY: 'pex-key', PEXELS_BASE_URL: `http://127.0.0.1:${pexels.address().port}` })
 await ready()

@@ -5,7 +5,7 @@ import { makePictures, type UsedScene } from './generator/edit/imageAiClient'
 import { artPictures } from './generator/edit/artPictures'
 import { temperature } from './generator/creativity'
 import { readPicture } from './generator/edit/imageFile'
-import { searchPhotos, type PhotoResult } from './generator/edit/serverEdit'
+import { loadPhoto, searchPhotos, type PhotoResult } from './generator/edit/serverEdit'
 
 type Props = {
   defaultQuery: string
@@ -24,6 +24,9 @@ type Props = {
   /** what the person asked for: the pictures must show this business */
   prompt?: string
 }
+
+/** how big a photo is kept: the first screen the biggest; the others are tiles (about 100 KB each) */
+const SIZES = (index: number) => (index === 0 ? { side: 1280, chars: 170_000 } : index === 1 ? { side: 1000, chars: 130_000 } : { side: 800, chars: 100_000 })
 
 /** The first screen, the about picture and the gallery get real photos: from the photo search of the server (Pexels) or from the person's own files. */
 function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accent, alt, dark, prompt }: Props) {
@@ -51,15 +54,12 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
     if (!result) return
     setBusy(true)
     setProblem('')
-    // the photos are copied into the page (scaled down), so the finished site does not depend on the photo service; one that cannot be read is skipped
+    // the photos are copied into the page (scaled down: the first screen a little bigger, the rest smaller), so the finished site does not depend on the photo service
+    // and stays light (six photos are about 0.6 MB); one that cannot be read is skipped
     const copies = await Promise.all(
-      result.photos.map(async (p) => {
-        try {
-          const blob = await (await fetch(p.url, { signal: AbortSignal.timeout(20_000) })).blob()
-          return await readPicture(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }), 1400)
-        } catch {
-          return undefined
-        }
+      result.photos.slice(0, 7).map(async (p, i) => {
+        const blob = await loadPhoto(p.url)
+        return blob ? readPicture(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }), SIZES(i).side, false, SIZES(i).chars).catch(() => undefined) : undefined
       }),
     )
     const pictures = copies.filter((c): c is string => !!c)
@@ -67,7 +67,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
     if (pictures.length < 2) return setProblem('The photos could not be copied (the photo service did not send them). Try again or upload your own.')
     // the credit line names the photographers, as the licences ask
     const credits = [...new Set(result.photos.map((p) => p.credit).filter(Boolean))].slice(0, 6).join('; ')
-    onApply([{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2, 9), credit: `Photos: ${result.source}${credits ? ` - ${credits}` : ''}`.slice(0, 400) }], 'Photos from the search')
+    onApply([{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2, 7), credit: `Photos: ${result.source}${credits ? ` - ${credits}` : ''}`.slice(0, 400) }], 'Photos from the search')
   }
 
   const draw = async () => {
@@ -106,7 +106,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
     setBusy(true)
     setProblem('')
     try {
-      const pictures = await Promise.all(list.map((f) => readPicture(f, 1400)))
+      const pictures = await Promise.all(list.map((f, i) => readPicture(f, SIZES(i).side, false, SIZES(i).chars)))
       onApply([{ op: 'photos', hero: pictures[0], ...(pictures[1] ? { about: pictures[1] } : {}), ...(pictures.length > 2 ? { gallery: pictures.slice(2) } : {}) }], `${list.length} of my own photos`)
     } catch (error) {
       setProblem(error instanceof Error ? error.message : 'Could not read the pictures.')
@@ -139,7 +139,7 @@ function PhotosPanel({ defaultQuery, hasPhotos, onApply, onClear, planFor, accen
           </button>
         </div>
         <div className="space-y-1">
-          <span className="font-medium text-gray-700">Or search real photos (free licences; the credit goes in the footer)</span>
+          <span className="font-medium text-gray-700">Or search real photos (free licences, best matches first; needs the internet the first time, a photo that was loaded once works offline too)</span>
           <div className="flex gap-2">
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={defaultQuery || 'bakery'} className={field} aria-label="What the photos should show" />
             <button type="button" onClick={() => void search(1)} disabled={busy} className="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">

@@ -13,7 +13,9 @@
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
+import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
+import { searchCommons } from './commons.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const PORT = Number(process.env.PORT ?? 8787)
@@ -37,6 +39,9 @@ const KEY = process.env.ANTHROPIC_API_KEY
 const BASE = (process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com').replace(/\/$/, '')
 const MODEL = process.env.EDIT_MODEL ?? 'claude-haiku-5-5'
 const DATA = process.env.EDIT_DATA_DIR ?? path.join(here, 'data')
+// searches and photos that were loaded once (they work again without the internet)
+const PHOTO_DIR = path.join(DATA, 'photo-cache')
+const PHOTO_HOSTS = new Set(['upload.wikimedia.org', 'thumb.wikimedia.org', 'images.pexels.com', new URL(COMMONS_BASE).host, new URL(PEXELS_BASE).host, ...String(process.env.PHOTO_FILE_HOSTS ?? '').split(',').filter(Boolean)])
 const MAX_BODY = 20_000
 
 const SECTIONS = ['stats', 'marquee', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact']
@@ -458,32 +463,75 @@ export const server = http.createServer(async (req, res) => {
       const key = `${query}|${page}`
       const hit = photoCache.get(key)
       if (hit && Date.now() - hit.at < 600_000) return send(res, 200, hit.body)
-      // without a Pexels key the photos come from Wikimedia Commons (free licences, no key): only pictures whose licence allows use on a business site with a credit
-      if (!PEXELS_KEY) {
-        const api = new URL(`${COMMONS_BASE}/w/api.php`)
-        for (const [k, v] of Object.entries({ action: 'query', format: 'json', generator: 'search', gsrnamespace: '6', gsrsearch: `${query} filetype:bitmap`, gsrlimit: '40', gsroffset: String((page - 1) * 40), prop: 'imageinfo', iiprop: 'url|size|mime|extmetadata', iiurlwidth: '1280' })) api.searchParams.set(k, v)
-        const upstream = await fetch(api, { headers: { 'user-agent': 'ui-blocks-website-generator/1.0 (local tool)' }, signal: AbortSignal.timeout(15_000) }).catch(() => undefined)
-        if (!upstream?.ok) return send(res, 502, { error: 'the photo service did not answer' })
-        const found = await upstream.json()
-        const strip = (html) => String(html ?? '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
-        const photos = Object.values(found.query?.pages ?? {})
-          .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
-          .map((p) => ({ p, info: p.imageinfo?.[0] }))
-          .filter(({ p, info }) => info && info.mime === 'image/jpeg' && info.width >= 1000 && info.height >= 600 && info.width > info.height && /^(CC0|CC BY|CC BY-SA|Public domain|PD)/i.test(info.extmetadata?.LicenseShortName?.value ?? '') && !/-NC|-ND/i.test(info.extmetadata?.LicenseShortName?.value ?? '') && !/logo|map|diagram|icon|flag|screenshot|poster|cover|painting|drawing|stamp|coin/i.test(p.title))
-          .slice(0, 9)
-          .map(({ p, info }) => ({ id: p.pageid, url: info.thumburl, thumb: String(info.thumburl).replace(/\/\d+px-/, '/400px-'), alt: strip(p.title.replace(/^File:/, '').replace(/\.\w+$/, '')).slice(0, 140), credit: `${strip(info.extmetadata?.Artist?.value).slice(0, 60) || 'Wikimedia Commons'} (${info.extmetadata?.LicenseShortName?.value})`, creditUrl: info.descriptionurl ?? '', pageUrl: info.descriptionurl ?? '' }))
-        const body = { photos, source: 'Wikimedia Commons (CC licences)', sourceUrl: 'https://commons.wikimedia.org' }
-        photoCache.set(key, { at: Date.now(), body })
-        return send(res, 200, body)
+      // a search that was made before is answered from the disk (also when the internet is gone)
+      const diskKey = path.join(PHOTO_DIR, `search-${crypto.createHash('sha1').update(`${PEXELS_KEY ? 'pexels' : 'commons'}|${key}`).digest('hex')}.json`)
+      const fromDisk = () => {
+        try {
+          return JSON.parse(fs.readFileSync(diskKey, 'utf8'))
+        } catch {
+          return undefined
+        }
       }
-      const upstream = await fetch(`${PEXELS_BASE}/v1/search?query=${encodeURIComponent(query)}&per_page=9&page=${page}&orientation=landscape`, { headers: { Authorization: PEXELS_KEY }, signal: AbortSignal.timeout(15_000) })
+      const remember = (body) => {
+        photoCache.set(key, { at: Date.now(), body })
+        if (photoCache.size > 200) photoCache.delete(photoCache.keys().next().value)
+        try {
+          fs.mkdirSync(PHOTO_DIR, { recursive: true })
+          fs.writeFileSync(diskKey, JSON.stringify(body))
+        } catch {
+          // the cache is optional
+        }
+        return body
+      }
+      // without a Pexels key the photos come from Wikimedia Commons (free licences, no key), the best matches first
+      if (!PEXELS_KEY) {
+        let photos
+        try {
+          photos = await searchCommons({ base: COMMONS_BASE, query, page })
+        } catch {
+          const saved = fromDisk()
+          if (saved) return send(res, 200, { ...saved, offline: true })
+          return send(res, 502, { error: 'the photo service did not answer (no internet?) and this search is not saved yet' })
+        }
+        return send(res, 200, remember({ photos, source: 'Wikimedia Commons (CC licences)', sourceUrl: 'https://commons.wikimedia.org' }))
+      }
+      const upstream = await fetch(`${PEXELS_BASE}/v1/search?query=${encodeURIComponent(query)}&per_page=9&page=${page}&orientation=landscape`, { headers: { Authorization: PEXELS_KEY }, signal: AbortSignal.timeout(15_000) }).catch(() => undefined)
+      if (!upstream) {
+        const saved = fromDisk()
+        return saved ? send(res, 200, { ...saved, offline: true }) : send(res, 502, { error: 'the photo service did not answer (no internet?) and this search is not saved yet' })
+      }
       if (!upstream.ok) return send(res, 502, { error: `the photo service answered ${upstream.status}` })
       const found = await upstream.json()
       const photos = (found.photos ?? []).filter((p) => p?.src?.large2x || p?.src?.large).map((p) => ({ id: p.id, url: p.src.large2x ?? p.src.large, thumb: p.src.medium ?? p.src.small ?? p.src.large, alt: String(p.alt ?? '').slice(0, 140), credit: String(p.photographer ?? '').slice(0, 80), creditUrl: p.photographer_url ?? '', pageUrl: p.url ?? '' }))
-      const body = { photos, source: 'Pexels', sourceUrl: 'https://www.pexels.com' }
-      photoCache.set(key, { at: Date.now(), body })
-      if (photoCache.size > 200) photoCache.delete(photoCache.keys().next().value)
-      return send(res, 200, body)
+      return send(res, 200, remember({ photos, source: 'Pexels', sourceUrl: 'https://www.pexels.com' }))
+    }
+    // a photo of a search result, copied through the server: the first time from its host, later from the disk (so a chosen photo can be used again without the internet)
+    if (req.method === 'GET' && url.pathname === '/api/photo-file') {
+      if (limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      let target
+      try {
+        target = new URL(url.searchParams.get('u') ?? '')
+      } catch {
+        return send(res, 400, { error: 'u is required' })
+      }
+      if (!PHOTO_HOSTS.has(target.host)) return send(res, 400, { error: 'this host is not a photo service' })
+      const file = path.join(PHOTO_DIR, `file-${crypto.createHash('sha1').update(target.href).digest('hex')}.jpg`)
+      if (fs.existsSync(file)) {
+        res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'max-age=86400', 'access-control-allow-origin': '*' })
+        return res.end(fs.readFileSync(file))
+      }
+      const upstream = await fetch(target, { headers: { 'user-agent': 'ui-blocks-website-generator/1.0 (local tool)' }, signal: AbortSignal.timeout(20_000) }).catch(() => undefined)
+      if (!upstream?.ok || !(upstream.headers.get('content-type') ?? '').startsWith('image/')) return send(res, 502, { error: 'the photo could not be loaded (no internet?)' })
+      const bytes = Buffer.from(await upstream.arrayBuffer())
+      if (bytes.length > 6_000_000) return send(res, 502, { error: 'the photo is too big' })
+      try {
+        fs.mkdirSync(PHOTO_DIR, { recursive: true })
+        fs.writeFileSync(file, bytes)
+      } catch {
+        // the cache is optional
+      }
+      res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'max-age=86400', 'access-control-allow-origin': '*' })
+      return res.end(bytes)
     }
     if (req.method === 'POST' && url.pathname.startsWith('/api/') && limited(req.socket.remoteAddress ?? 'unknown')) return send(res, 429, { error: 'too many requests, try again in a minute' })
     if (req.method === 'POST' && TOKEN && req.headers['x-edit-token'] !== TOKEN) return send(res, 401, { error: 'missing or wrong token' })

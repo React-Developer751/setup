@@ -2,7 +2,7 @@
 // background), and below the size the photo operation accepts.
 const MAX_CHARS = 440_000
 
-export function readPicture(file: File, maxSize: number, keepTransparency = false): Promise<string> {
+export function readPicture(file: File, maxSize: number, keepTransparency = false, maxChars = MAX_CHARS): Promise<string> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
     const image = new Image()
@@ -18,7 +18,7 @@ export function readPicture(file: File, maxSize: number, keepTransparency = fals
       // lower the quality until it fits
       let quality = 0.85
       let data = canvas.toDataURL('image/jpeg', quality)
-      while (data.length > MAX_CHARS && quality > 0.4) {
+      while (data.length > maxChars && quality > 0.3) {
         quality -= 0.1
         data = canvas.toDataURL('image/jpeg', quality)
       }

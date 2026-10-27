@@ -66,7 +66,7 @@ export function sendFeedback(entry: { text: string; ops: EditOp[]; accepted: boo
 }
 
 export type Photo = { id: number; url: string; thumb: string; alt: string; credit: string; creditUrl: string; pageUrl: string }
-export type PhotoResult = { photos: Photo[]; source: string; sourceUrl: string }
+export type PhotoResult = { photos: Photo[]; source: string; sourceUrl: string; /** the answer was saved earlier (the internet did not answer) */ offline?: boolean }
 
 /** pictures for a search ("pest control"), from the optional photo service of the server; undefined when it is not there */
 export async function searchPhotos(query: string, page = 1): Promise<{ result?: PhotoResult; problem?: string }> {
@@ -74,6 +74,7 @@ export async function searchPhotos(query: string, page = 1): Promise<{ result?: 
     const res = await fetch(`/api/photos?q=${encodeURIComponent(query)}&page=${page}`, { signal: AbortSignal.timeout(20_000) })
     if (res.status === 503) return { problem: 'The photo search is not switched on: start the server with PEXELS_API_KEY=your-key (free at pexels.com/api), or upload your own pictures.' }
     if (res.status === 429) return { problem: 'Too many searches: wait a minute.' }
+    if (res.status === 502) return { problem: 'The photo search needs the internet and this search is not saved yet. Try again when you are online, or upload your own pictures (the image AI works offline).' }
     if (!res.ok) return { problem: 'The photo search did not answer. You can upload your own pictures instead.' }
     const body = (await res.json()) as PhotoResult
     // only https addresses are ever used on a page
@@ -82,4 +83,17 @@ export async function searchPhotos(query: string, page = 1): Promise<{ result?: 
   } catch {
     return { problem: 'The server is not running (npm run server) or not reachable. You can upload your own pictures instead.' }
   }
+}
+
+/** a photo of a search result, copied through the server (it keeps a copy, so a photo that was loaded once works again without the internet); the address itself when the server cannot */
+export async function loadPhoto(url: string): Promise<Blob | undefined> {
+  for (const address of [`/api/photo-file?u=${encodeURIComponent(url)}`, url]) {
+    try {
+      const res = await fetch(address, { signal: AbortSignal.timeout(25_000) })
+      if (res.ok && (res.headers.get('content-type') ?? '').startsWith('image/')) return await res.blob()
+    } catch {
+      // the next way
+    }
+  }
+  return undefined
 }
