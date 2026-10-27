@@ -65,6 +65,7 @@ function About() {
       {DATA.about.map((p, i) => (
         <p key={i}>{p}</p>
       ))}
+      {DATA.stats.length > 0 && <h3 className="stats-title">{DATA.stats_title}</h3>}
       {DATA.stats.length > 0 && (
         <ul className="stats">
           {DATA.stats.map((s) => (
@@ -160,6 +161,23 @@ function Testimonials() {
   );
 }
 
+function Blog() {
+  if (!DATA.blog) return null;
+  return (
+    <section id="journal" className="section blog">
+      <h2>{DATA.blog_title}</h2>
+      <div className="grid">
+        {DATA.blog.map((b) => (
+          <article className="card" key={b.title}>
+            <h3>{b.title}</h3>
+            <p>{b.excerpt}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Steps() {
   return (
     <section id="steps" className="section steps">
@@ -226,6 +244,7 @@ function App() {
         <Steps />
         <Team />
         <Testimonials />
+        <Blog />
         <Faq />
         <CallToAction />
       </main>
@@ -287,6 +306,7 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 20px; }
 .faq { background: var(--surface); } .faq details { padding: 14px 0; border-bottom: 1px solid var(--bg); max-width: 760px; }
 .faq summary { cursor: pointer; font-weight: 600; } .faq p { color: var(--muted); margin-top: 8px; }
 .contact { list-style: none; padding: 0; margin-top: 18px; display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; }
+.stats-title { margin: 22px 0 6px; color: var(--muted); font-size: .95rem; text-transform: uppercase; letter-spacing: .1em; }
 .price { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
 blockquote.card { margin: 0; } blockquote cite { display: block; margin-top: 10px; font-style: normal; font-weight: 600; }
 .cta { text-align: center; background: var(--primary); color: var(--primary-text); }
@@ -379,7 +399,9 @@ def build_preview_body(content, assets, layout):
             % (e(content["eyebrow"]), e(content["hero_heading"]), e(content["tagline"]), btns))
     art = '<div class="hero-art%s">%s</div>' % (" hero-art-bg" if layout["hero"] == "center" else "", assets["hero"])
     hero = '<section class="hero hero-%s">%s</section>' % (layout["hero"], text + art if layout["hero"] == "split" else art + text)
-    stats_html = '<ul class="stats">%s</ul>' % stats if stats else ""
+    stats_html = ('<h3 class="stats-title">%s</h3><ul class="stats">%s</ul>' % (e(content.get("stats_title", "")), stats)) if stats else ""
+    blog = ('<section id="journal" class="section blog"><h2>%s</h2><div class="grid">%s</div></section>' % (e(content.get("blog_title", "")), "".join(
+        '<article class="card"><h3>%s</h3><p>%s</p></article>' % (e(b["title"]), e(b["excerpt"])) for b in content["blog"]))) if content.get("blog") else ""
     highlights = '<section class="section highlights" aria-label="Highlights">%s</section>' % "".join(
         '<div class="hl"><strong>%s</strong><span>%s</span></div>' % (e(h["title"]), e(h["text"])) for h in content["highlights"])
     steps = '<section id="steps" class="section steps"><h2>%s</h2><ol>%s</ol></section>' % (e(content["steps_title"]), "".join(
@@ -400,11 +422,11 @@ def build_preview_body(content, assets, layout):
         '<header class="site-header"><a class="brand" href="#top"><span class="logo">%s</span><span>%s</span></a>'
         '<nav><a href="#about">%s</a><a href="#features">%s</a><a href="#faq">%s</a><a href="#contact">%s</a></nav></header>\n'
         '<main>%s\n%s\n<section id="about" class="section about"><h2>%s</h2>%s%s</section>\n'
-        '<section id="features" class="section features %s"><h2>%s</h2><div class="grid">%s</div></section>\n%s\n%s\n%s\n%s\n%s\n'
+        '<section id="features" class="section features %s"><h2>%s</h2><div class="grid">%s</div></section>\n%s\n%s\n%s\n%s\n%s\n%s\n'
         '<section id="contact" class="section cta"><h2>%s</h2><p>%s</p><a class="btn btn-primary" href="%s">%s</a><ul class="contact">%s</ul></section></main>\n'
         '<footer class="site-footer">%s</footer>'
         % (assets["logo"], e(content["brand"]), e(ui["about"]), e(content["features_title"]), e(ui["faq"]), e(ui["contact"]), hero, highlights, e(content["about_title"]), about, stats_html,
-           layout["features"], e(content["features_title"]), feats, pricing, steps, team, reviews, faq, e(content["cta_title"]), e(content["cta_text"]),
+           layout["features"], e(content["features_title"]), feats, pricing, steps, team, reviews, blog, faq, e(content["cta_title"]), e(content["cta_text"]),
            e(href, quote=True), e(content["cta_primary"]), contact, e(content["footer"])))
 
 
@@ -439,7 +461,7 @@ def validate_jsx(jsx):
             tags.append(name)
     if tags:
         raise ValueError("unclosed tag(s): %s" % tags)
-    for need in ("function App", "ReactDOM.createRoot", "function Hero", "function Features", "function Steps", "function Faq", "function Highlights", "function Pricing", "function Team", "function Testimonials"):
+    for need in ("function App", "ReactDOM.createRoot", "function Hero", "function Features", "function Steps", "function Faq", "function Highlights", "function Pricing", "function Team", "function Testimonials", "function Blog"):
         if need not in code:
             raise ValueError("missing " + need)
     return True

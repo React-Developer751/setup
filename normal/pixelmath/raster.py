@@ -183,6 +183,7 @@ class Canvas:
     def __init__(self, w, h, color=(0.0, 0.0, 0.0)):
         self.w, self.h = w, h
         self.px = list(color) * (w * h)
+        self.solid_soft = False       # True: shapes with soft > 1 are fully opaque inside and fade only at the edge (blurred foreground)
 
     # --- fills
     def gradient_v(self, stops, y0=0, y1=None):
@@ -197,15 +198,21 @@ class Canvas:
     def fill_rect(self, x0, y0, x1, y1, color, alpha=1.0):
         x0, x1 = max(0, int(x0)), min(self.w, int(x1))
         y0, y1 = max(0, int(y0)), min(self.h, int(y1))
+        if x1 <= x0 or y1 <= y0:
+            return
         px, w = self.px, self.w
+        n = x1 - x0
+        if alpha >= 0.999:
+            span = [color[0], color[1], color[2]] * n               # whole row at once (C speed)
+            for y in range(y0, y1):
+                i = (y * w + x0) * 3
+                px[i:i + n * 3] = span
+            return
         ia = 1.0 - alpha
+        add = [color[0] * alpha, color[1] * alpha, color[2] * alpha] * n
         for y in range(y0, y1):
             i = (y * w + x0) * 3
-            for _ in range(x0, x1):
-                px[i] = px[i] * ia + color[0] * alpha
-                px[i + 1] = px[i + 1] * ia + color[1] * alpha
-                px[i + 2] = px[i + 2] * ia + color[2] * alpha
-                i += 3
+            px[i:i + n * 3] = [a * ia + b for a, b in zip(px[i:i + n * 3], add)]
 
     def blend(self, x, y, color, alpha=1.0):
         if 0 <= x < self.w and 0 <= y < self.h:
@@ -228,8 +235,12 @@ class Canvas:
                 d = sdf(x + 0.5, fy)
                 if d >= half:
                     continue
-                a = (1.0 if d <= -half else half - d) / soft if soft != 1.0 else (
-                    1.0 if d <= -0.5 else 0.5 - d)
+                if soft == 1.0:
+                    a = 1.0 if d <= -0.5 else 0.5 - d
+                elif self.solid_soft:
+                    a = 1.0 if d <= -half else (half - d) / soft
+                else:
+                    a = (1.0 if d <= -half else half - d) / soft
                 if a > 1.0:
                     a = 1.0
                 a *= alpha

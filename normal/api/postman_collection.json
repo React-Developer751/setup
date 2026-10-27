@@ -367,6 +367,116 @@
       }
     },
     {
+      "name": "Studio: one picture (JPEG)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/scene",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "scene"
+          ]
+        },
+        "description": "Premium niche picture. Headers X-PixelMath-Niche / -Fallback / -Text-Color tell what was drawn and which text colour to use.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"gym with dumbbells in red light\",\n  \"width\": 1280,\n  \"height\": 640,\n  \"text_zone\": \"left\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Studio: one picture with report (base64)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/scene",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "scene"
+          ]
+        },
+        "description": "JSON with the image and the judge's report (niche, fallback, scores, redrawn, contrast).",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"dental clinic reception, calm blue\",\n  \"mood\": \"cool\",\n  \"text_zone\": \"left\",\n  \"response\": \"base64\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Studio: site set (zip)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/set",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "set"
+          ]
+        },
+        "description": "hero.jpg, about.jpg, tile-N.jpg and report.json in one zip (Send and Download).",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"wood fired pizza on a board\",\n  \"count\": 6,\n  \"accent\": \"#c0392b\",\n  \"mood\": \"warm\",\n  \"text_zone\": \"left\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Studio: niches",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/niches",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "niches"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
       "name": "Parse prompt",
       "request": {
         "method": "POST",

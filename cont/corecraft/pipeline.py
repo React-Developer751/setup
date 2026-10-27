@@ -22,5 +22,5 @@ def run(prompt, out_root="output", seed=None, facts=None, lang=None):
     pal = {k: v for k, v in assets["palette"].items() if k != "rgb"}
     (out_dir / "content.json").write_text(json.dumps(content, indent=2, ensure_ascii=False), encoding="utf-8")
     (out_dir / "palette.json").write_text(json.dumps(pal, indent=2), encoding="utf-8")
-    result.update({"brand": content["brand"], "niche": content["niche"], "business_type": content["business_type"], "needs_review": content["needs_review"], "palette": pal})
+    result.update({"brand": content["brand"], "niche": content["niche"], "business_type": content["business_type"], "needs_review": content["needs_review"], "missing": content.get("missing", []), "palette": pal})
     return result

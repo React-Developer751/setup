@@ -16,11 +16,21 @@ def main():
     ap.add_argument("--name"), ap.add_argument("--city"), ap.add_argument("--phone"), ap.add_argument("--email")
     ap.add_argument("--services", help="comma separated list of your real services")
     a = ap.parse_args()
-    prompt = a.prompt or input("Describe your business: ")
+    try:
+        prompt = a.prompt or input("Describe your business: ")
+    except EOFError:
+        sys.exit("error: no prompt given. Example: python3 main.py \"dental clinic in Pune, braces, implants\"")
     facts = {}
     if a.facts:
-        with open(a.facts, encoding="utf-8") as f:
-            facts = json.load(f)
+        try:
+            with open(a.facts, encoding="utf-8") as f:
+                facts = json.load(f)
+        except OSError as e:
+            sys.exit("error: cannot read %s (%s)" % (a.facts, e.strerror))
+        except ValueError as e:
+            sys.exit("error: %s is not valid JSON (%s)" % (a.facts, e))
+        if not isinstance(facts, dict):
+            sys.exit("error: %s must hold a JSON object like {\"name\": ..., \"city\": ...}" % a.facts)
     for key in ("name", "city", "phone", "email"):
         if getattr(a, key):
             facts[key] = getattr(a, key)
@@ -30,9 +40,13 @@ def main():
         r = pipeline.run(prompt, a.out, a.seed, facts or None, a.lang)
     except ValueError as e:
         sys.exit("error: %s" % e)
+    except OSError as e:
+        sys.exit("error: cannot write the site to %s (%s)" % (a.out, e.strerror))
     print("Brand: %s | type: %s | layout: %s" % (r["brand"], r["business_type"], r["layout"]))
     for note in r["needs_review"]:
         print("  check:", note)
+    if r.get("missing"):
+        print("  not given (left empty, nothing invented):", ", ".join(r["missing"]))
     print("Generated in %s: %s" % (r["dir"], ", ".join(r["files"])))
     print("Open preview.html directly, or run: cd %s && python3 -m http.server  (for the React index.html)" % r["dir"])
 

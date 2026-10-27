@@ -137,6 +137,28 @@ def openapi(cfg=None):
                                                "requestBody": {"required": True, "content": {"application/json": {"schema": {
                                                    "type": "object", "required": ["caption"], "properties": {"caption": {"type": "string", "maxLength": 200}}}}}},
                                                "responses": {"202": {"description": "Job accepted"}, "400": _err("Bad caption"), "404": _err("Unknown id")}}},
+            "/scene": {"post": {
+                "summary": "One premium niche picture for a website (restaurant, gym, dental, saas ...) with a built-in judge",
+                "description": "The niche, mood and accent are read from the prompt (\"gym with dumbbells in red light\"). If no niche fits, a neutral abstract "
+                               "in the accent colour is returned and the report says fallback: true (never a wrong subject). With text_zone the "
+                               "area stays calm so text on it has contrast >= 4.5:1 (report.text_color says which colour to use). "
+                               "Binary answers carry X-PixelMath-Niche / -Fallback / -Redrawn / -Text-Color headers; response=base64 returns the full report.",
+                "operationId": "scene",
+                "requestBody": {"required": True, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SceneRequest"}}}},
+                "responses": {"200": {"description": "JPEG/PNG bytes or JSON with base64 + report", "content": {**image, "application/json": {}}},
+                              "400": _err("Invalid parameter"), "401": _err("Missing or invalid API key"), "503": _err("Server busy")}}},
+            "/set": {"post": {
+                "summary": "3 to 8 pictures for one site in one style: hero (text zone), about, gallery tiles",
+                "description": "Same niche, palette, mood and light; different camera and composition. The judge redraws any picture too close to another "
+                               "(perceptual hash distance) and reports redrawn / min_distance / palette_family / hero text contrast. response=zip "
+                               "(default) returns hero.jpg, about.jpg, tile-N.jpg and report.json; response=base64 returns JSON. Takes about 5-12 s.",
+                "operationId": "set",
+                "requestBody": {"required": True, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SetRequest"}}}},
+                "responses": {"200": {"description": "zip or JSON", "content": {"application/zip": {"schema": {"type": "string", "format": "binary"}},
+                                                                                "application/json": {}}},
+                              "400": _err("Invalid parameter"), "401": _err("Missing or invalid API key"), "503": _err("Server busy")}}},
+            "/niches": {"get": {"summary": "The niches the studio can draw", "operationId": "niches",
+                                "responses": {"200": {"description": "{niches: [{id, title, group, accent, mood}]}"}, "401": _err("Missing or invalid API key")}}},
             "/parse": {"post": {"summary": "Show how a prompt is understood", "operationId": "parse",
                                 "requestBody": {"required": True, "content": {"application/json": {"schema": {
                                     "type": "object", "required": ["prompt"], "additionalProperties": False,
@@ -227,6 +249,24 @@ def openapi(cfg=None):
                     "learned": {"type": "string", "enum": ["auto", "always", "blend", "off"]},
                     "response": {"type": "string", "enum": ["binary", "base64"], "default": "binary"},
                     "save": {"type": "boolean", "default": False}}},
+                "SceneRequest": {"type": "object", "required": ["prompt"], "additionalProperties": False, "properties": {
+                    "prompt": {"type": "string", "example": "wood fired pizza on a board"},
+                    "width": {"type": "integer", "default": 640}, "height": {"type": "integer", "default": 400}, "size": {"type": "integer"},
+                    "seed": {"type": "integer", "default": 0},
+                    "accent": {"type": "string", "example": "#c0392b", "description": "colour name or #rrggbb; the picture follows it"},
+                    "mood": {"type": "string", "enum": ["warm", "cool", "dark", "light"]},
+                    "text_zone": {"type": "string", "enum": ["left", "center", "bottom", "none"], "default": "none"},
+                    "variant": {"type": "string", "enum": ["fit", "close", "detail", "wide", "fit-flip", "close-flip", "detail-flip", "wide-flip"], "default": "fit"},
+                    "niche": {"type": "string", "description": "force a niche id (see /niches)"},
+                    "format": {"type": "string", "enum": ["jpeg", "png"], "default": "jpeg"}, "quality": {"type": "integer", "default": 72},
+                    "use_model": {"type": "boolean", "default": True, "description": "use the trained model's niche classifier and learned accents"},
+                    "response": {"type": "string", "enum": ["binary", "base64"], "default": "binary"}}},
+                "SetRequest": {"type": "object", "required": ["prompt"], "additionalProperties": False, "properties": {
+                    "prompt": {"type": "string", "example": "dental clinic reception, calm blue"}, "count": {"type": "integer", "default": 6, "minimum": 3, "maximum": 8},
+                    "seed": {"type": "integer", "default": 0}, "accent": {"type": "string"}, "mood": {"type": "string", "enum": ["warm", "cool", "dark", "light"]},
+                    "text_zone": {"type": "string", "enum": ["left", "center", "bottom", "none"], "default": "left", "description": "text zone of the hero picture"},
+                    "niche": {"type": "string"}, "format": {"type": "string", "enum": ["jpeg", "png"], "default": "jpeg"}, "quality": {"type": "integer", "default": 72},
+                    "use_model": {"type": "boolean", "default": True}, "response": {"type": "string", "enum": ["zip", "base64"], "default": "zip"}}},
                 "ParseResult": {"type": "object", "properties": {
                     "mode": {"type": "string"}, "time": {"type": "string", "nullable": True},
                     "flags": {"type": "array", "items": {"type": "string"}},
@@ -321,6 +361,16 @@ def postman_collection():
             req("Gallery: one picture (details)", "GET", "gallery/1"),
             req("Gallery: image", "GET", "gallery/1/image"),
             req("Gallery: favourite", "POST", "gallery/1/favourite", _json_body({"favourite": True})),
+            req("Studio: one picture (JPEG)", "POST", "scene", _json_body(
+                {"prompt": "gym with dumbbells in red light", "width": 1280, "height": 640, "text_zone": "left"}),
+                desc="Premium niche picture. Headers X-PixelMath-Niche / -Fallback / -Text-Color tell what was drawn and which text colour to use."),
+            req("Studio: one picture with report (base64)", "POST", "scene", _json_body(
+                {"prompt": "dental clinic reception, calm blue", "mood": "cool", "text_zone": "left", "response": "base64"}),
+                desc="JSON with the image and the judge's report (niche, fallback, scores, redrawn, contrast)."),
+            req("Studio: site set (zip)", "POST", "set", _json_body(
+                {"prompt": "wood fired pizza on a board", "count": 6, "accent": "#c0392b", "mood": "warm", "text_zone": "left"}),
+                desc="hero.jpg, about.jpg, tile-N.jpg and report.json in one zip (Send and Download)."),
+            req("Studio: niches", "GET", "niches"),
             req("Parse prompt", "POST", "parse", _json_body({"prompt": "ek laal ghar aur do ped, raat"}),
                 desc="Shows entities, colours, time of day and which words were not understood."),
             req("Model info", "GET", "model"),

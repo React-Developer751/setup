@@ -67,12 +67,24 @@ class Sample:
     id: str
     caption: str
     thumb: bytes            # grid*grid*3 bytes, row-major RGB
+    niche: str = ""         # optional labels from a {image, caption, niche, mood} manifest
+    mood: str = ""
 
 
-def make_sample(caption, thumb_floats):
+def label_tokens(niche, mood):
+    """Letters-only tokens that stand for a niche / mood inside the bag-of-words (e.g. 'nichedental', 'moodwarm')."""
+    out = []
+    if niche:
+        out.append("niche" + "".join(ch for ch in niche.lower() if ch.isalpha()))
+    if mood:
+        out.append("mood" + "".join(ch for ch in mood.lower() if ch.isalpha()))
+    return out
+
+
+def make_sample(caption, thumb_floats, niche="", mood=""):
     thumb = bytes(min(255, max(0, int(round(v * 255)))) for v in thumb_floats)
-    sid = hashlib.md5(caption.encode("utf-8") + thumb).hexdigest()[:12]
-    return Sample(sid, caption, thumb)
+    sid = hashlib.md5(caption.encode("utf-8") + thumb + (("|%s|%s" % (niche, mood)).encode("utf-8") if niche or mood else b"")).hexdigest()[:12]
+    return Sample(sid, caption, thumb, niche, mood)
 
 
 # ------------------------------------------------------------------ model
@@ -85,6 +97,7 @@ class LearnedModel:
         self.doc_freq = {}           # word -> number of training captions containing it
         self.samples = []            # list[Sample]; kept so training can be re-run on old + new data
         self.meta = {}
+        self.extras = {}             # optional trained add-ons stored in the same file (e.g. the studio's niche classifier)
 
     # --- inference
     def known_words(self, text):
@@ -130,8 +143,11 @@ class LearnedModel:
             "bias": [round(v, 4) for v in self.bias],
             "vocab": {w: {"n": self.doc_freq.get(w, 0), "w": [round(v, 4) for v in row]}
                       for w, row in sorted(self.rows.items())},
-            "samples": [{"id": s.id, "caption": s.caption, "thumb": s.thumb.hex()} for s in self.samples],
+            "samples": [dict({"id": s.id, "caption": s.caption, "thumb": s.thumb.hex()},
+                             **({"niche": s.niche} if s.niche else {}), **({"mood": s.mood} if s.mood else {})) for s in self.samples],
         }
+        if self.extras:
+            data["extras"] = self.extras
         tmp = "%s.tmp%d" % (path, os.getpid())
         try:
             with open(tmp, "w", encoding="utf-8") as fh:
@@ -173,8 +189,10 @@ class LearnedModel:
                 thumb = bytes.fromhex(s["thumb"])
                 if len(thumb) != m.dim:
                     raise ModelError("corrupt model (sample size)")
-                m.samples.append(Sample(str(s["id"]), str(s["caption"]), thumb))
+                m.samples.append(Sample(str(s["id"]), str(s["caption"]), thumb, str(s.get("niche", "")), str(s.get("mood", ""))))
             m.meta = dict(data.get("meta", {}))
+            extras = data.get("extras", {})
+            m.extras = extras if isinstance(extras, dict) else {}
             return m
         except ModelError:
             raise
@@ -184,7 +202,7 @@ class LearnedModel:
 
 # ------------------------------------------------------------------ training
 def _prepare(samples):
-    return [(caption_words(s.caption), [b / 255.0 for b in s.thumb]) for s in samples]
+    return [(caption_words(s.caption) + label_tokens(s.niche, s.mood), [b / 255.0 for b in s.thumb]) for s in samples]
 
 
 def _mse(pred, target):
@@ -299,6 +317,13 @@ def train_model(model, new_samples, epochs=80, lr=0.3, l2=1e-4, val_frac=0.15, s
     model.bias, model.rows, model.doc_freq, model.samples = bias, rows, doc_freq, samples
     model.meta = {"samples": len(samples), "vocab": len(rows), "epochs": metrics["best_epoch"],
                   "val_mse": metrics["val_mse"], "baseline_val": metrics["baseline_val"]}
+    from .studio.classifier import build_niche_nb
+    nb = build_niche_nb(samples)
+    if nb:
+        model.extras["niche_nb"] = nb
+        metrics["niche_classes"] = len(nb["classes"])
+    else:
+        model.extras.pop("niche_nb", None)
     return metrics
 
 
@@ -348,6 +373,47 @@ def _read_caption_tables_unchecked(root):
     return table
 
 
+MANIFEST_NAMES = ("manifest.jsonl", "dataset.jsonl")
+
+
+def _read_manifest(root):
+    """{image, caption, niche, mood} records, one JSON object per line: normalised image path -> (caption, niche, mood)."""
+    out = {}
+    for name in MANIFEST_NAMES:
+        path = os.path.join(root, name)
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding="utf-8-sig") as fh:
+            for n, line in enumerate(fh, 1):
+                if not line.strip():
+                    continue
+                try:
+                    rec = json.loads(line)
+                except ValueError:
+                    raise ModelError("%s line %d is not valid JSON" % (name, n))
+                if not isinstance(rec, dict) or not isinstance(rec.get("image"), str) or not isinstance(rec.get("caption"), str):
+                    raise ModelError('%s line %d needs "image" and "caption" strings (and optional "niche", "mood")' % (name, n))
+                niche, mood = rec.get("niche") or "", rec.get("mood") or ""
+                if not isinstance(niche, str) or not isinstance(mood, str):
+                    raise ModelError("%s line %d: niche and mood must be strings" % (name, n))
+                out[_norm_key(rec["image"].strip())] = (rec["caption"].strip(), niche.strip(), mood.strip().lower())
+    return out
+
+
+def _check_labels(niche, mood):
+    """Reason a manifest label is unusable, or None. Niche ids come from the studio registry."""
+    if mood:
+        from .studio.palette import MOODS
+        if mood not in MOODS:
+            return "unknown mood %r (use %s)" % (mood, ", ".join(MOODS))
+    if niche:
+        from .studio.niches import NICHES, load_all
+        load_all()
+        if niche not in NICHES and niche != "none":
+            return "unknown niche %r" % niche
+    return None
+
+
 def _filename_caption(rel):
     stem = os.path.splitext(os.path.basename(rel))[0]
     words = [w for w in re.split(r"[_\-.\s]+", stem) if w and not w.isdigit()]
@@ -367,7 +433,8 @@ def load_dataset(data_dir, grid=DEFAULT_GRID, extras=None):
     if not os.path.isdir(root):
         raise ModelError("data folder not found: %s" % data_dir)
     root_table = _read_caption_tables(root)
-    samples, skipped, sources = [], [], {"table": 0, "sidecar": 0, "filename": 0}
+    manifest = _read_manifest(root)
+    samples, skipped, sources = [], [], {"table": 0, "sidecar": 0, "filename": 0, "manifest": 0}
     for dirpath, dirs, files in os.walk(root):
         dirs.sort()
         dir_table = root_table if dirpath == root else _read_caption_tables(dirpath)
@@ -380,9 +447,18 @@ def load_dataset(data_dir, grid=DEFAULT_GRID, extras=None):
             if ext.lower() not in IMAGE_EXTS:
                 continue
             path = os.path.join(dirpath, fn)
-            caption = (dir_table.get(_norm_key(fn)) or root_table.get(_norm_key(rel))
-                       or root_table.get(_norm_key(fn)))
-            source = "table"
+            niche = mood = ""
+            rec = manifest.get(_norm_key(rel))
+            if rec:
+                caption, niche, mood = rec
+                bad = _check_labels(niche, mood)
+                if bad:
+                    skipped.append((rel, bad))
+                    continue
+            else:
+                caption = (dir_table.get(_norm_key(fn)) or root_table.get(_norm_key(rel))
+                           or root_table.get(_norm_key(fn)))
+            source = "manifest" if rec else "table"
             if not caption:
                 side = os.path.join(dirpath, base + ".txt")
                 if os.path.isfile(side):
@@ -401,7 +477,7 @@ def load_dataset(data_dir, grid=DEFAULT_GRID, extras=None):
             except Exception as exc:                       # one bad file must not stop a run
                 skipped.append((rel, "%s: %s" % (type(exc).__name__, exc)))
                 continue
-            samples.append(make_sample(caption, thumb))
+            samples.append(make_sample(caption, thumb, niche, mood))
             if extras is not None:
                 extras[samples[-1].id] = (rel.replace("\\", "/"), bytes(min(255, max(0, int(round(v * 255)))) for v in prev))
             sources[source] += 1

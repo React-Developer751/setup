@@ -24,13 +24,17 @@ python3 -m pixelmath "लाल घर और पेड़" -o hindi.png        
 python3 train.py my_data --model my_model.json
 python3 -m pixelmath "aqua mossy" --model my_model.json -o out.png
 
+# studio: premium website pictures for 50 niches, hero/about/tiles with a judge (see "Studio")
+python3 -m pixelmath "gym with dumbbells in red light" --studio --text-zone left --width 1280 --height 640 -o hero.jpg
+python3 -m pixelmath "dental clinic reception, calm blue" --set 6 -o site_pictures/
+
 # creative mode: propose, judge, evolve (see "Creative mode")
 python3 -m pixelmath "laptop and coffee cup" --temperature 0.8 -o creative.png
 python3 -m pixelmath --imagine --temperature 0.9 -o mashup.png
 python3 -m pixelmath "mandelbrot complementary" --temperature 0.8 --explore 300 -o fractal.png   # screen 300 ideas, keep the best
 python3 -m pixelmath "fractal tree" -o tree.png          # also: fern, snowflake, dragon curve, sierpinski, flow field, marble
 
-python3 -m unittest discover -s tests          # 144 tests
+python3 -m unittest discover -s tests          # 167 tests
 ```
 
 ## PixelMath Studio (web interface)
@@ -189,6 +193,83 @@ size (about 10 ms each) and breeds from the best few; `python3 examples/generati
 ([business_check/generative_gallery.png](business_check/generative_gallery.png)). Fractals are computed on at most 320 px and textures on
 160 px, then smoothly enlarged (a full-size Mandelbrot in pure Python would take minutes); L-systems and flow fields are drawn at the
 real size. A flow field takes about 2 s at 384 px.
+
+## Studio: premium website pictures for 50 business niches
+
+```bash
+python3 -m pixelmath "wood fired pizza on a board" --studio -o hero.jpg                       # one picture, niche read from the prompt
+python3 -m pixelmath "gym with dumbbells in red light" --studio --text-zone left --width 1280 --height 640 -o hero.jpg
+python3 -m pixelmath "dental clinic reception, calm blue" --set 6 -o site_pictures/ --accent "#2e86de" --mood cool
+python3 -m pixelmath --list-niches
+curl -s localhost:8000/set -H 'Content-Type: application/json' -d '{"prompt":"bakery","count":6,"accent":"#d98e32","text_zone":"left"}' -o site.zip
+```
+
+What it is: for a website's first screen, About section and gallery. Not clip-art stickers but layered scenes: an out-of-focus backdrop (depth
+of field), a sharp middle layer with contact shadows and ambient occlusion, soft foreground accents, a key light, mood grading, vignette and film
+grain. 50 niches (restaurants, cafes, bakeries, thali, sushi, retail, clinics, gym, yoga, spa, salon, SaaS, apps, law, school, real estate,
+construction, trades, solar, farm, car repair / wash / showroom, photography, weddings, events, travel, logistics), each with its own props,
+backdrop and surface. Pure Python, no model, no internet. It is illustrated, not photo-realistic.
+
+| You control | How |
+|---|---|
+| Colours | `--accent #hex|name` (the whole picture follows it; walls, floor, accents, signage) |
+| Mood | `--mood warm|cool|dark|light` (grading, light colour, practical lights in dark) |
+| Text space | `--text-zone left|center|bottom`: the subject moves away from that area and a soft panel is added only if needed so the text has contrast >= 4.5:1; the report tells you which text colour to use (`text_color`) |
+| Prompt | English, Hinglish and Hindi (Devanagari) are understood. "gym ... in red light" = dark mood + red accent; "calm blue" = cool + blue. |
+
+**A prompt that fits no niche never gets a wrong picture:** you get a neutral abstract in the accent colour and `fallback: true` in the report.
+
+**Sets** (`--set N`, `make_set(prompt, count, seed)`, `POST /set`): 3 to 8 pictures for one site in one style (same palette, mood, light): hero
+1280x640 with the text zone, about 640x600, then gallery tiles (close-up, detail, wide, mirrored ...). Any two pictures must differ by at least 14 of 63
+bits of a perceptual hash, otherwise the later one is drawn again.
+
+**The judge** runs on every picture and the answer is in `report`: `scores` (subject visible, text contrast, detail density, colours, duplicate
+distance), `redrawn` (how many extra tries the judge asked for), `fallback`, `contrast`, `text_color`, and for sets `min_distance`, `palette_family`.
+
+**File size:** pictures are written as JPEG by a pure-Python baseline encoder (`pixelmath/jpegwrite.py`: 4:2:0, optimised Huffman tables, quality
+lowered automatically until the file fits): hero < 60 KB, about < 40 KB, tiles < 25 KB.
+
+**Training:** `train.py` reads a `manifest.jsonl` with `{"image", "caption", "niche", "mood"}` lines. Besides the colour model it trains a niche
+classifier (naive Bayes) that is stored in the model file. The studio uses it to understand indirect or messy prompts and, just as important, to veto a keyword
+match that the whole sentence contradicts. The data of this project is in `studio_data/` (pictures drawn by the engine's own niche generators + captions
+written blind); `examples/make_studio_dataset.py` rebuilds it, `tools/export_niche_nb.py` ships the result inside the package
+(`pixelmath/studio/niche_nb.json`), `examples/studio_eval.py` measures everything below.
+
+**Measured** (`python3 examples/studio_eval.py --model studio_model.json --sheets`, results in `samples/studio_eval.json`, proof sheets
+`samples/studio-<niche>.jpg` for restaurant-italian, gym, dental, saas, kurti-store, salon, bakery, yoga, real-estate, school):
+
+| Test | Before training (keywords only) | After training (keywords + trained classifier) |
+|---|---|---|
+| 300 hold-out prompts (50 niches x 6, written blind, never trained on): right niche | 76.0% | **97.0%** |
+| ... fallback (refused, neutral abstract) | 22.3% | 3.0% |
+| ... **wrong niche** | 1.7% (5 prompts) | **0.0% (0)** |
+| 20 off-niche prompts (submarine, pottery, pirate ship ...): wrongly matched | 1 | **0** |
+| Colour prediction on 50 hold-out pictures (RMSE 0-255, lower is better) | untrained 63.0, average picture 59.2 | **34.0** |
+
+| Pictures: 50 niche prompts x 3 seeds (256x160) | |
+|---|---|
+| right subject | **98.0%** (147 of 150) |
+| fallback | 2.0% (3) |
+| **wrong subject** | **0** |
+| off-niche prompts, 60 pictures: neutral fallback | 60 of 60, wrong subject 0 |
+
+Sets of 6 (hero 1280x640 + about + 4 tiles), 10 niches: time 6.4 to 8.2 s (limit 20), min perceptual distance 14 to 24 bits (limit 14), palette family 0.76 to 0.96,
+hero text contrast 4.59 to 6.17 (limit 4.5), hero 29610 to 45093 bytes (limit 60000), largest tile 24906 bytes (limit 25000), judge ok in all.
+
+**Real-example check** (16 client-style prompts through `POST /scene` and a `POST /set`, pictures and reports in `samples/real_examples/`): it found
+and fixed these bugs, each now covered by a test: "underwater scuba diving school" drew the *school* scene (the word "school" alone was decisive: now a
+lookalike-word guard, avoid terms and near-miss training captions make it a fallback); "bike showroom" / "furniture showroom" drew the car showroom
+("showroom" alone is no longer decisive); the Hindi plural खिलौनों did not match खिलौने (word-stem matching); a fallback picture was redrawn
+needlessly (smooth is the point of a fallback; only contrast is judged now); a 1280x640 picture from `/scene` was squeezed to the 25 KB tile budget
+(the budget now follows the picture size); the Italian restaurant hero showed a hard edge where its table ended (backdrop extended).
+
+What these numbers do not say: the prompts are the kind a client types for these 50 niches; unusual businesses fall back (that is the intended behaviour, not
+a failure), and the engine draws illustrations, not photographs. Two of the ten sets sit exactly at the distance limit (14 bits) and tiles are within
+0.3 KB of their 25 KB budget: the judge redraws or lowers JPEG quality when needed, but there is no spare room. Neighbouring niches can still be swapped
+for each other on borderline wording ("furniture showroom" gives interior design, "pilates studio" gives yoga): the hold-out shows no such case, real prompts will.
+
+**Adding a niche** (about 100 lines): write `@sprop` props and a `@niche(...)` scene function in a new module of `pixelmath/studio/niches/`; see
+`stage.py` (docstring), `craft.py` and the reference `niches/food.py`; check it with `python3 examples/check_niches.py sheet.png your-niche`.
 
 ## How it works
 

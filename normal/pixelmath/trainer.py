@@ -79,8 +79,8 @@ def _main(argv=None):
         print("train.py: error: %s" % exc, file=sys.stderr)
         return 1
 
-    print("read %d images in %.1fs  (captions from: table %d, sidecar .txt %d, file/folder name %d)" % (
-        len(samples), time.time() - t0, sources["table"], sources["sidecar"], sources["filename"]))
+    print("read %d images in %.1fs  (captions from: manifest %d, table %d, sidecar .txt %d, file/folder name %d)" % (
+        len(samples), time.time() - t0, sources["manifest"], sources["table"], sources["sidecar"], sources["filename"]))
     for rel, why in skipped[:10]:
         print("  skipped %s: %s" % (rel, why))
     if len(skipped) > 10:
@@ -123,6 +123,8 @@ def _main(argv=None):
         if gain < 10:
             print("warning: the model barely beats the average image on unseen data. Add more, "
                   "more varied images with descriptive captions.")
+    if model.extras.get("niche_nb"):
+        print("niche classifier trained on %d niches (used by the studio when keywords are not enough)" % len(model.extras["niche_nb"]["classes"]))
     if args.words and model.rows:
         top = sorted(model.rows, key=lambda w: (-model.doc_freq.get(w, 0), w))[:args.words]
         print("most frequent words and the average colour each one learned:")

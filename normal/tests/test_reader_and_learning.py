@@ -368,7 +368,7 @@ class LearningTests(unittest.TestCase):
             samples, skipped, sources = load_dataset(d, grid=8)
             caps = sorted(s.caption.strip() for s in samples)
             self.assertEqual(caps, ["crimson desert", "emerald forest", "sunset c"])
-            self.assertEqual(sources, {"table": 1, "sidecar": 1, "filename": 1})
+            self.assertEqual(sources, {"table": 1, "sidecar": 1, "filename": 1, "manifest": 0})
             reasons = dict(skipped)
             self.assertIn("123.png", reasons)
             self.assertIn("broken.png", reasons)

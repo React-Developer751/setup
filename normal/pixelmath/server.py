@@ -87,6 +87,8 @@ def is_loopback(host):
 GEN_FIELDS = {"prompt", "size", "width", "height", "seed", "format", "learned", "response", "save"}
 CREATE_FIELDS = GEN_FIELDS | {"temperature", "population", "generations", "alternatives", "max_seconds", "explore"}
 IMAGINE_FIELDS = (GEN_FIELDS - {"prompt"}) | {"anchor", "temperature", "attempts", "population", "generations", "max_seconds"}
+SCENE_FIELDS = {"prompt", "width", "height", "size", "seed", "accent", "mood", "text_zone", "variant", "niche", "format", "response", "quality", "use_model"}
+SET_FIELDS = {"prompt", "count", "seed", "accent", "mood", "text_zone", "niche", "format", "response", "quality", "use_model"}
 TRAIN_FIELDS = {"epochs", "lr", "l2", "val_frac", "seed", "fresh", "grid", "refit"}
 
 
@@ -187,6 +189,58 @@ def parse_creative_params(src, cfg, from_text, imagine):
     else:
         out["alternatives"] = _int(keys, "alternatives", 3, 0, 5, from_text)
         out["explore"] = _int(keys, "explore", 0, 0, 500, from_text)
+    return out
+
+
+def _choice(src, name, default, allowed):
+    v = src.get(name, default)
+    if v is None:
+        return default
+    v = str(v).strip().lower()
+    if v not in allowed:
+        raise ApiError(400, "bad_parameter", "%s must be one of: %s" % (name, ", ".join(allowed)))
+    return v
+
+
+def parse_studio_params(src, cfg, from_text, is_set):
+    """Fields of POST /scene (one premium niche picture) and POST /set (3-8 pictures for one site)."""
+    fields = SET_FIELDS if is_set else SCENE_FIELDS
+    unknown = sorted(set(src) - fields)
+    if unknown:
+        raise ApiError(400, "unknown_field", "unknown field(s): %s (allowed: %s)" % (", ".join(unknown), ", ".join(sorted(fields))))
+    prompt = src.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        raise ApiError(400, "bad_parameter", "prompt is required (a non-empty string)")
+    if len(prompt) > MAX_PROMPT_CHARS:
+        raise ApiError(400, "bad_parameter", "prompt too long (max %d characters)" % MAX_PROMPT_CHARS)
+    out = {"prompt": prompt.strip(), "seed": _int(src, "seed", 0, 0, 2 ** 31 - 1, from_text),
+           "mood": _choice(src, "mood", None, ("warm", "cool", "dark", "light")),
+           "text_zone": _choice(src, "text_zone", "left" if is_set else None, ("left", "center", "bottom", "none")),
+           "format": _choice(src, "format", "jpeg", ("jpeg", "png")), "quality": _int(src, "quality", 72, 20, 95, from_text),
+           "use_model": _bool(src, "use_model", True)}
+    if out["text_zone"] == "none":
+        out["text_zone"] = None
+    acc, niche = src.get("accent"), src.get("niche")
+    for name, v in (("accent", acc), ("niche", niche)):
+        if v is not None and (not isinstance(v, str) or len(v) > 60):
+            raise ApiError(400, "bad_parameter", "%s must be a short string" % name)
+    if acc:
+        from .studio.palette import parse_color
+        try:
+            parse_color(acc)
+        except ValueError as exc:
+            raise ApiError(400, "bad_parameter", str(exc))
+    out["accent"], out["niche"] = acc or None, niche or None
+    if is_set:
+        out["count"] = _int(src, "count", 6, 3, 8, from_text)
+        out["response"] = _choice(src, "response", "zip", ("zip", "base64"))
+    else:
+        hi = max(cfg.max_size, 1600)
+        size = _int(src, "size", 640, MIN_SIZE, hi, from_text)
+        out["width"] = _int(src, "width", size, MIN_SIZE, hi, from_text)
+        out["height"] = _int(src, "height", int(size * 0.625) if "width" not in src and "size" not in src else size, MIN_SIZE, hi, from_text)
+        out["variant"] = _choice(src, "variant", "fit", ("fit", "close", "detail", "wide", "fit-flip", "close-flip", "detail-flip", "wide-flip"))
+        out["response"] = _choice(src, "response", "binary", ("binary", "base64"))
     return out
 
 
@@ -528,6 +582,9 @@ ROUTES = {
     "/generate": {"GET": "get_generate", "POST": "post_generate"},
     "/create": {"POST": "post_create"},
     "/imagine": {"POST": "post_imagine"},
+    "/scene": {"POST": "post_scene"},
+    "/set": {"POST": "post_set"},
+    "/niches": {"GET": "get_niches"},
     "/parse": {"POST": "post_parse"},
     "/model": {"GET": "get_model_info"},
     "/train": {"POST": "post_train"},
@@ -847,6 +904,76 @@ class Handler(BaseHTTPRequestHandler):
                                      **({"X-PixelMath-Gallery-Id": str(gallery_id)} if gallery_id else {}),
                                      **(extra_headers or {}),
                                      "Content-Disposition": 'inline; filename="pixelmath.%s"' % p["format"]})
+
+    def get_niches(self, parts, path):
+        from .studio.api import list_niches
+        self._json({"niches": list_niches()})
+
+    def _studio_slot(self):
+        app = self.app
+        if not app.render_slots.acquire(timeout=app.cfg.queue_wait):
+            raise ApiError(503, "busy", "the server is still busy after waiting %g s, retry shortly" % app.cfg.queue_wait, {"Retry-After": "2"})
+
+    def post_scene(self, parts, path):
+        from .studio.api import scene
+        p = parse_studio_params(self._json_body(), self.app.cfg, False, False)
+        self._studio_slot()
+        try:
+            t0 = time.time()
+            try:
+                res = scene(p["prompt"], p["width"], p["height"], p["seed"], p["accent"], p["mood"], p["text_zone"], p["variant"], p["niche"],
+                            fmt=p["format"], quality=p["quality"], model=self.app.get_model() if p["use_model"] else None)
+            except ValueError as exc:
+                raise ApiError(400, "bad_parameter", str(exc))
+            secs = round(time.time() - t0, 3)
+        finally:
+            self.app.render_slots.release()
+        rep, mime = res.report, "image/jpeg" if p["format"] == "jpeg" else "image/png"
+        if p["response"] == "base64":
+            self._json({"image_base64": base64.b64encode(res.data).decode("ascii"), "mime": mime, "width": p["width"], "height": p["height"],
+                        "render_seconds": secs, "report": rep})
+            return
+        self._send(200, res.data, mime, {"X-PixelMath-Niche": str(rep["niche"]), "X-PixelMath-Fallback": str(rep["fallback"]).lower(),
+                                         "X-PixelMath-Redrawn": str(rep["redrawn"]), "X-PixelMath-Seed": str(rep["seed"]),
+                                         "X-PixelMath-Text-Color": str(rep["text_color"]), "X-Render-Seconds": str(secs),
+                                         "Content-Disposition": 'inline; filename="scene.%s"' % ("jpg" if p["format"] == "jpeg" else "png")})
+
+    def post_set(self, parts, path):
+        import io
+        from .studio.api import make_set
+        p = parse_studio_params(self._json_body(), self.app.cfg, False, True)
+        self._studio_slot()
+        try:
+            t0 = time.time()
+            try:
+                results, rep = make_set(p["prompt"], p["count"], p["seed"], p["accent"], p["mood"], p["text_zone"], p["niche"], fmt=p["format"],
+                                        quality=p["quality"], model=self.app.get_model() if p["use_model"] else None)
+            except ValueError as exc:
+                raise ApiError(400, "bad_parameter", str(exc))
+            secs = round(time.time() - t0, 3)
+        finally:
+            self.app.render_slots.release()
+        ext = "jpg" if p["format"] == "jpeg" else "png"
+        tile = 0
+        names = []
+        for r in results:
+            role = r.report["role"]
+            tile += role == "tile"
+            names.append({"hero": "hero", "about": "about"}.get(role) or "tile-%d" % tile)
+            r.report["file"] = "%s.%s" % (names[-1], ext)
+        if p["response"] == "base64":
+            self._json({"report": rep, "images": [{"file": r.report["file"], "role": r.report["role"], "width": r.canvas.w, "height": r.canvas.h,
+                                                   "mime": "image/jpeg" if ext == "jpg" else "image/png",
+                                                   "image_base64": base64.b64encode(r.data).decode("ascii")} for r in results]})
+            return
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_STORED) as z:
+            for r in results:
+                z.writestr(r.report["file"], r.data)
+            z.writestr("report.json", json.dumps(rep, indent=2, ensure_ascii=False))
+        self._send(200, buf.getvalue(), "application/zip", {"X-PixelMath-Niche": str(rep["niche"]), "X-PixelMath-Fallback": str(rep["fallback"]).lower(),
+                                                              "X-PixelMath-Redrawn": str(rep["redrawn"]), "X-Render-Seconds": str(secs),
+                                                              "Content-Disposition": 'attachment; filename="site-pictures.zip"'})
 
     def post_create(self, parts, path):
         self._creative(parse_creative_params(self._json_body(), self.app.cfg, False, False), False)

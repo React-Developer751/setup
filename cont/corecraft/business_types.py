@@ -151,7 +151,7 @@ def _norm(s):
     return re.sub(r"\s+", " ", s.lower()).strip()
 
 
-TRADE_WORDS = {"supplier", "suppliers", "dealer", "dealers", "wholesaler", "trader", "traders", "distributor", "distributors", "manufacturer", "manufacturers"}
+TRADE_WORDS = {"supplier", "suppliers", "wholesaler", "trader", "traders", "distributor", "distributors", "manufacturer", "manufacturers"}
 HEAD_SPLIT = re.compile(r"\s(?:with|offering|offers|including|for|selling|providing|specializing|specialising|in|at|near|that|which|who|called|named)\s", re.I)
 
 
@@ -163,25 +163,35 @@ def _score(text, t):
         k = _norm(k.rstrip("~"))
         if not k:
             continue
-        hit = re.search(r"(?<![a-z])" + re.escape(k), p) if k.isascii() else (k in p)
+        hit = (re.search(r"(?<![a-z])" + re.escape(k) + (r"(?![a-z])" if len(k) <= 4 else ""), p) if k.isascii()
+               else re.search(r"(?<![\u0900-\u097f])" + re.escape(k), p))   # Devanagari keys match at a word start, so "नल" is not found inside "पैनल"
         if hit:
             score += (0.4 if weak else 1.0) + 0.5 * k.count(" ") + (0.2 if len(k) > 6 else 0)
     return score
+
+
+def type_scores(prompt):
+    """Rule score of every business type for a prompt (keyword hits, the head clause counting extra)."""
+    first = re.split(r"[,:;]", prompt, maxsplit=1)[0]   # the first clause says what the business is; later ones list its services
+    head = HEAD_SPLIT.split(" " + first + " ", maxsplit=1)[0]
+    tail_words = " ".join(head.split()[-2:])   # the head noun of an English noun phrase comes last: "... online store", "... dental clinic"
+    last = head.split()[-1].lower().strip(".") if head.split() else ""
+    trade = last in TRADE_WORDS   # "... supplier / wholesaler": the business sells goods, whatever the goods are for
+    out = {}
+    for tid, t in T.items():
+        if trade and t["niche"] not in ("shop", "store"):
+            out[tid] = 0.0
+            continue
+        out[tid] = 1.5 * _score(head, t) + _score(prompt, t) + 1.0 * min(_score(tail_words, t), 1.5)
+    return out
 
 
 def detect_type(prompt):
     """Best-matching business type id and its confidence (0 = nothing matched).
     The head clause ("dental clinic" in "dental clinic in Pune offering braces") counts extra, so listed
     extras ("... with rooms, spa and restaurant") do not outvote what the business is."""
-    head = HEAD_SPLIT.split(" " + prompt + " ", maxsplit=1)[0]
-    tail_words = " ".join(head.split()[-2:])   # the head noun of an English noun phrase comes last: "... online store", "... dental clinic"
-    last = head.split()[-1].lower().strip(".") if head.split() else ""
-    trade = last in TRADE_WORDS   # "... supplier / dealer": the business sells goods, whatever the goods are for
     best, best_score = None, 0.0
-    for tid, t in T.items():
-        if trade and t["niche"] not in ("shop", "store"):
-            continue
-        score = 1.5 * _score(head, t) + _score(prompt, t) + 1.0 * min(_score(tail_words, t), 1.5)
+    for tid, score in type_scores(prompt).items():
         if score > best_score:
             best, best_score = tid, score
     return best, best_score
@@ -328,3 +338,20 @@ def parse_hindi(prompt, type_keys=()):
             items.append(c)
     facts["items"] = items[:6]
     return facts
+
+
+# ---- more types (autosales, robotics, pottery, skin, eye) ---------------------------------------------------------
+add("autosales", "Vehicle Showroom", "shop", "bike showroom,motorcycle showroom,bike dealership,two wheeler showroom,car showroom,car dealership,car dealer,used cars,second hand car,scooter dealer,motorcycle dealer,bike dealer,बाइक शोरूम,कार डीलरशिप",
+    "motorcycles scooters helmets accessories test-rides finance servicing spares riding-gear gloves jackets", "riders", ("Book a Test Ride", "Visit the Showroom"), "bold")
+add("robotics", "Robotics & STEM Lab", "education", "robotics,robotic,stem lab,arduino,drone workshop,coding lab,रोबोटिक्स", "workshops kits projects classes challenges sessions sensors robots drones coding-labs competitions camps", "students", ("Book a Demo", "See the Workshops"), "cool")
+add("pottery", "Pottery Studio", "portfolio", "pottery,ceramic,ceramics,clay studio,clay art,kumhar,मिट्टी के बर्तन,कुम्हार", "workshops classes pieces mugs bowls glazes sessions plates vases kits", "makers", ("Book a Session", "See the Studio"), "warm")
+add("skin", "Skin Clinic", "care", "skin clinic,dermatologist,dermatology,skin doctor,skin specialist,acne,pigmentation,त्वचा", "consultations treatments peels facials procedures assessments programs sessions", "patients", ("Book a Consultation", "Call the Clinic"), "calm")
+add("eye", "Eye Clinic", "care", "eye clinic,eye hospital,eye specialist,eye doctor,ophthalmology,ophthalmologist,cataract,lasik,aankhon,netra,आंखों,आँखों,नेत्र", "eye-tests consultations surgeries lenses screenings glasses frames treatments assessments", "patients", ("Book an Eye Test", "Call the Clinic"), "calm")
+for _tid in ("autosales", "robotics", "pottery", "skin", "eye"):
+    T[_tid]["offers"] = [w.replace("-", " ") for w in T[_tid]["offers"]]
+
+
+from .keywords_extra import EXTRA_KEYS   # noqa: E402
+
+for _tid, _ks in EXTRA_KEYS.items():
+    T[_tid]["keys"] = list(dict.fromkeys(T[_tid]["keys"] + [k.strip() for k in _ks.split(",") if k.strip()]))

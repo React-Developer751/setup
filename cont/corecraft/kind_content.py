@@ -90,7 +90,7 @@ FAQ_COMMON = [
     ("How do I get started?", "Use the button on this page or the contact details, tell us what you need, and we will reply with the next steps."),
     ("What does it cost?", "That depends on what you need. Get in touch and we will explain the options clearly before you decide."),
 ]
-FAQ_LAST = ("How can I contact you?", "Use the contact details on this page and we will get back to you.")
+FAQ_LAST = ("How can I contact you?", "Use the contact details on this page and you will hear from us.")
 
 HIGHLIGHTS = {
     "care": [("Caring team", "Friendly people who explain every step."), ("Clear advice", "Plain-language answers to your questions."), ("Easy booking", "Simple to reach and simple to schedule.")],

@@ -133,5 +133,21 @@ def main():
     print("model.json bytes:", out.stat().st_size)
 
 
+def train_detector_and_report():
+    """Also (re)train the business-type detector and print its accuracy before and after."""
+    import json
+    sys.path.insert(0, str(ROOT / "training"))
+    import train_detector
+    from corecraft import detector
+    from labelled import HOLDOUT, TRAIN
+    train_detector.main()
+    base = json.loads((ROOT / "data" / "baseline_detection.json").read_text())
+    for name, rows in (("TRAIN", TRAIN), ("HOLDOUT", HOLDOUT)):
+        ok = sum(detector.detect(p)[0] == t for p, t in rows)
+        b = base[name.lower()]
+        print("  %-8s business-type accuracy: before %d/%d = %.1f%% -> after %d/%d = %.1f%%" % (name, b[0], b[1], 100 * b[0] / b[1], ok, len(rows), 100 * ok / len(rows)))
+
+
 if __name__ == "__main__":
     main()
+    train_detector_and_report()

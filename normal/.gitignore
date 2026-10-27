@@ -6,3 +6,8 @@ build/
 dist/
 output.png
 *.json.bak
+pixelmath_model.json
+pixelmath_model.db*
+*.db-wal
+*.db-shm
+studio_model.json

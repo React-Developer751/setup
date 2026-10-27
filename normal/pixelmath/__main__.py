@@ -39,12 +39,27 @@ def _main(argv=None):
     ap.add_argument("--explore", type=int, default=0,
                     help="creative mode: judge this many extra random ideas at thumbnail size first and breed from the best "
                          "(for example 300; costs about 10 ms each)")
+    ap.add_argument("--studio", action="store_true",
+                    help="premium niche picture for a website (restaurant, gym, dental, saas ...); implied by --accent/--mood/--text-zone/--set")
+    ap.add_argument("--accent", help="studio: accent colour, name or #rrggbb (the picture follows it)")
+    ap.add_argument("--mood", choices=("warm", "cool", "dark", "light"), help="studio: overall mood")
+    ap.add_argument("--text-zone", choices=("left", "center", "bottom"), help="studio: keep this area calm so text on it has contrast >= 4.5:1")
+    ap.add_argument("--niche", help="studio: force a niche id instead of reading it from the prompt (see --list-niches)")
+    ap.add_argument("--set", type=int, metavar="N", help="studio: make a set of N pictures (3-8) for one site in the folder given by -o (a directory)")
+    ap.add_argument("--list-niches", action="store_true", help="list the studio niches and exit")
     ap.add_argument("--imagine", action="store_true",
                     help="mash two random ideas together (the prompt, if given, is kept as one of them)")
     ap.add_argument("--attempts", type=int, default=12, help="mash-up tries before giving up (default 12)")
     ap.add_argument("--version", action="version", version="pixelmath " + __version__)
     args = ap.parse_args(argv)
 
+    if args.list_niches:
+        from .studio.api import list_niches
+        for n in list_niches():
+            print("%-20s %-8s %-6s %-8s %s" % (n["id"], n["group"], n["mood"], n["accent"], n["title"]))
+        return 0
+    if args.studio or args.accent or args.mood or args.text_zone or args.set or args.niche:
+        return _studio(ap, args)
     if not 0.0 <= args.temperature <= 1.0:
         ap.error("--temperature must be between 0.0 and 1.0")
     try:
@@ -121,6 +136,66 @@ def _main(argv=None):
         hint = "" if model else " (train a model with train.py to teach it new words)"
         print("note: no known objects in this prompt, so abstract art was generated.%s" % hint,
               file=sys.stderr)
+    return 0
+
+
+def _studio(ap, args):
+    """Premium niche pictures: one scene (-o file.jpg|png) or a whole site set (--set N -o folder/)."""
+    import json
+    from .studio.api import make_set, scene
+    prompt = " ".join(args.prompt).strip()
+    if not prompt and not args.niche:
+        ap.error("describe the business, e.g. \"wood fired pizza on a board\"")
+    model = None
+    if args.model:
+        try:
+            model = LearnedModel.load(args.model)
+        except ModelError as exc:
+            print("pixelmath: error: %s" % exc, file=sys.stderr)
+            return 1
+    try:
+        if args.set:
+            out = args.output if args.output != "output.png" else "site_pictures"
+            os.makedirs(out, exist_ok=True)
+            results, rep = make_set(prompt or args.niche, args.set, args.seed, args.accent, args.mood, args.text_zone or "left", args.niche,
+                                    fmt="jpeg", model=model)
+            names = {"hero": "hero", "about": "about"}
+            tile = 0
+            for r in results:
+                role = r.report["role"]
+                if role == "tile":
+                    tile += 1
+                name = names.get(role) or "tile-%d" % tile
+                path = os.path.join(out, name + ".jpg")
+                with open(path, "wb") as fh:
+                    fh.write(r.data)
+                r.report["file"] = name + ".jpg"
+            with open(os.path.join(out, "report.json"), "w", encoding="utf-8") as fh:
+                json.dump(rep, fh, indent=2, ensure_ascii=False)
+            print("%s: %d pictures in %s/ (%.1fs)  niche=%s fallback=%s mood=%s accent=%s" % (
+                rep["title"], args.set, out, rep["seconds"], rep["niche"], rep["fallback"], rep["mood"], rep["accent"]))
+            print("  judge: min distance %d bits, palette family %.2f, hero text contrast %s, redrawn %d" % (
+                rep["min_distance"], rep["palette_family"], rep["hero_contrast"], rep["redrawn"]))
+            for r in results:
+                print("  %-9s %4dx%-4d %6d bytes  %s" % (r.report["file"], r.report["size"][0], r.report["size"][1], r.report["bytes"], r.report["scores"]))
+            return 0
+        width, height = args.width or (args.size if args.size != 512 else 640), args.height or (args.size if args.size != 512 else 400)
+        ext = os.path.splitext(args.output)[1].lower()
+        fmt = "jpeg" if ext in (".jpg", ".jpeg") else "png"
+        if ext not in (".jpg", ".jpeg", ".png"):
+            ap.error("studio output must end in .jpg, .jpeg or .png")
+        res = scene(prompt, width, height, args.seed, args.accent, args.mood, args.text_zone, niche=args.niche, fmt=fmt, model=model)
+    except ValueError as exc:
+        print("pixelmath: error: %s" % exc, file=sys.stderr)
+        return 1
+    with open(args.output, "wb") as fh:
+        fh.write(res.data)
+    rep = res.report
+    print("saved %s (%dx%d, %d bytes) niche=%s fallback=%s mood=%s accent=%s in %.1fs" % (
+        args.output, width, height, rep["bytes"], rep["niche"], rep["fallback"], rep["mood"], rep["accent"], rep["seconds"]))
+    print("  judge:", json.dumps({k: rep[k] for k in ("scores", "redrawn", "contrast", "text_color")}, ensure_ascii=False))
+    if rep["fallback"]:
+        print("note: no niche fits this prompt (%s): drew a neutral abstract in the accent colour" % rep["fallback_reason"], file=sys.stderr)
     return 0
 
 
