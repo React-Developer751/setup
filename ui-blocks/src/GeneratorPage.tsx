@@ -19,7 +19,7 @@ import EditChat, { type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
-import { askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { askBlueprint, askServer, imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
@@ -265,6 +265,15 @@ function GeneratorPage() {
     applyOps('Texts from Core-Craft AI', ops, 'rules', `Core-Craft AI wrote the texts of this page about what you said (${decision.reason}). Say "undo" to go back to the built-in texts.`)
   }
 
+  /** the AI of the server (when it is switched on in the chat and has a key) writes the texts of the page from the prompt: what the person listed becomes the cards, the line under the headline, the FAQ */
+  const applyBlueprint = async (text: string, run: number) => {
+    if (!useServer || !serverReady) return
+    const blocks = await askBlueprint(text)
+    if (run !== coreRun.current) return
+    if (!blocks) return say({ role: 'ai', text: 'The AI did not write the texts this time; the built-in texts are used.' })
+    applyOps('Texts written by the AI', [{ op: 'core', data: blocks }], 'server', 'The AI wrote the texts of this page from what you said (every text is checked again). Say "undo" to go back to the built-in texts.')
+  }
+
   const generate = async (text: string) => {
     if (!text.trim()) return
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
@@ -289,6 +298,7 @@ function GeneratorPage() {
     coreRun.current += 1
     setCoreNote('')
     void applyCoreContent(text, plan.variation, coreRun.current)
+    void applyBlueprint(text, coreRun.current)
     autoMade.current = false
     setDrawn([])
     setRated({})

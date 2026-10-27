@@ -172,6 +172,10 @@ const upstream = http.createServer((req, res) => {
     const parsed = JSON.parse(body)
     upstreamRequests.push({ headers: req.headers, body: parsed, url: req.url })
     const asked = parsed.messages[0].content
+    if (parsed.tools?.[0]?.name === 'write_site') {
+      res.writeHead(200, { 'content-type': 'application/json' })
+      return res.end(JSON.stringify({ content: [{ type: 'tool_use', id: 'y', name: 'write_site', input: { hero: { title: 'Wood-fired pizza, <b>made</b> for sharing', subtitle: 'Forno Rosso in Mumbai.', button: 'Book a table' }, features: { title: 'On the menu', items: [{ title: '<Wood Fired Pizza>', text: 'Baked in a real oven.' }, { title: 'Fresh Pasta', text: 'Made every morning.' }, { title: 'Tiramisu', text: 'Our dessert.' }, { title: 'Weekend Brunch', text: 'Saturday and Sunday.' }] }, about: { title: 'About', paragraphs: ['A family kitchen in Mumbai.'] }, steps: { title: 'How it works', items: [{ title: 'Book', text: 'Pick a time.' }, { title: 'Arrive', text: 'We hold your table.' }, { title: 'Eat', text: 'Enjoy.' }] }, faq: [{ q: 'Do I need to book?', a: 'Please call to confirm.' }, { q: 'Is there brunch?', a: 'Yes, at weekends.' }, { q: 'Where are you?', a: 'Mumbai.' }, { q: 'Vegetarian?', a: 'Please call to confirm.' }], cta: { title: 'Hungry?', button: 'Book now' } } }] }))
+    }
     const answer = /FAIL/.test(asked)
       ? null
       : /undo/i.test(asked)
@@ -227,6 +231,22 @@ const before = fs.existsSync(feedbackFile) ? fs.readFileSync(feedbackFile, 'utf8
 await post('/api/feedback', { text: 'make it red', ops: [{ op: 'accent', hex: '#dc2626' }], accepted: true, source: 'rules' })
 const after = fs.readFileSync(feedbackFile, 'utf8').split('\n').filter(Boolean)
 ok(after.length === before + 1 && JSON.parse(after.at(-1)).text === 'make it red', 'feedback is appended to the file')
+// ── the AI writes the texts of a page from the prompt (against the fake model): the answer is cleaned by the page like every other text
+{
+  const { cleanCore } = await loadGeneratorModule('edit/edits.ts')
+  const before = upstreamRequests.length
+  const answer = await post('/api/blueprint', { prompt: 'Italian restaurant Forno Rosso in Mumbai with wood fired pizza, fresh pasta, tiramisu and weekend brunch' })
+  const body = await answer.json()
+  const sent = upstreamRequests[before]
+  ok(answer.status === 200 && sent?.body.tools[0].name === 'write_site' && sent.body.tool_choice.name === 'write_site', 'blueprint: the model is asked for the whole page through one forced tool call')
+  ok(/Never invent numbers/.test(sent?.body.system ?? '') && /exactly those things/.test(sent?.body.system ?? ''), 'blueprint: the model is told to use only the facts and to show everything the person listed')
+  const blocks = cleanCore(body.blocks)
+  ok(blocks?.features?.items.map((f) => f.title).join('|') === 'Wood Fired Pizza|Fresh Pasta|Tiramisu|Weekend Brunch', 'blueprint: the cards are the things the person listed (markup is stripped from the texts)')
+  ok(!JSON.stringify(blocks).includes('<'), 'blueprint: no markup gets into the page')
+  ok(blocks?.hero?.button === 'Book a table' && blocks.faq.length === 4, 'blueprint: the hero button and the FAQ come through')
+  ok((await post('/api/blueprint', { prompt: 'x' })).status === 400, 'blueprint: a too short prompt is refused')
+}
+
 // rate limit: the 31st request within a minute from one address is refused
 let limit = 0
 for (let i = 0; i < 40; i += 1) if ((await post('/api/feedback', { text: 'x', ops: [] })).status === 429) limit += 1

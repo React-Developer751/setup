@@ -1,7 +1,7 @@
 // Path C: an optional AI server (server/index.mjs) reads the requests the offline rules could not understand.
 // The server only returns operations; they are checked here with cleanOp exactly like those of the rules, so a wrong or
 // hostile answer can never do more than the rules can. When the server is not running everything still works offline.
-import { cleanOp, type EditOp } from './edits'
+import { cleanCore, cleanOp, type CoreBlocks, type EditOp } from './edits'
 import type { Control, EditContext } from './understand'
 
 export type SiteState = {
@@ -96,4 +96,15 @@ export async function loadPhoto(url: string): Promise<Blob | undefined> {
     }
   }
   return undefined
+}
+
+/** the AI of the server writes the texts of the whole page from the prompt (needs ANTHROPIC_API_KEY on the server); the answer is cleaned like every other text; undefined when it cannot */
+export async function askBlueprint(prompt: string): Promise<CoreBlocks | undefined> {
+  try {
+    const res = await fetch('/api/blueprint', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt }), signal: AbortSignal.timeout(50_000) })
+    if (!res.ok) return undefined
+    return cleanCore(((await res.json()) as { blocks?: unknown }).blocks)
+  } catch {
+    return undefined
+  }
 }

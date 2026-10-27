@@ -55,6 +55,8 @@ export function generateLibraryPage(
     return pool[Math.floor(rand() * pool.length)]
   }
   const maybe = (probability: number) => rand() < probability
+  // offers the person named ("free shipping above 999", "cash on delivery") have a bar of their own at the top of the page
+  const hasOffers = !!base.content.offers?.length
 
   // draw everything in a fixed order so the same prompt always gives the same page
   const chosen = Object.fromEntries((Object.keys(rolePools) as Role[]).map((role) => [role, pickFrom(role)])) as Record<Role, string>
@@ -89,6 +91,7 @@ export function generateLibraryPage(
       ? ['nav', 'hero', 'about', 'features', 'cta', 'contact', 'footer']
       : ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
+  if (hasOffers) visible.add('banner')
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)

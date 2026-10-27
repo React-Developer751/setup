@@ -18,7 +18,8 @@ export type WebsiteContent = {
   subject: string
   hero: { title: string; subtitle: string; button: string }
   features: { title: string; items: { title: string; text: string }[] }
-  stats: { value: string; label: string }[]
+  /** `fact`: a number the person gave (kept as it is; the numbers of the kits are replaced) */
+  stats: { value: string; label: string; fact?: boolean }[]
   testimonial: Quote
   faq: { q: string; a: string }[]
   cta: { title: string; button: string }
@@ -31,6 +32,8 @@ export type WebsiteContent = {
   testimonials: Quote[]
   blog: { title: string; posts: { tag: string; title: string; slug?: string }[] }
   contact: { title: string; text: string; email: string; phone: string; address: string; whatsapp?: string; hoursText?: string; /** the address is the person's own: show a real map */ showMap?: boolean }
+  /** the offers the person named ("free shipping above ₹999", "cash on delivery", "7-day returns"): the announcement bar of the page */
+  offers?: string[]
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>

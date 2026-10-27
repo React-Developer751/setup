@@ -93,7 +93,8 @@ function dataFor(role: Role, c: WebsiteContent): Data {
         subtitle: about[0],
         eyebrow: 'Our story',
         itemTitles: c.about.points,
-        itemTexts: [about[1], about[0]],
+        // four cards of an about part must not carry the same paragraph four times: the texts of the features follow the two paragraphs
+        itemTexts: [about[1], about[0], ...features.map((f) => f.text)].filter(Boolean),
         itemLabels: ['About', 'Mission', 'Values'],
         extraTexts: about,
       }
@@ -931,15 +932,17 @@ function fillBanner(root: Element, c: WebsiteContent) {
     ;[...bar.classList].filter((name) => /^(top|bottom|start|end|left|right|inset)-/.test(name)).forEach((name) => bar.classList.remove(name))
   })
   root.querySelectorAll('input').forEach((input) => input.getAttribute('type') === 'email' && input.setAttribute('placeholder', 'Your email'))
+  // the offers the person named, else the call to action
+  const offers = c.offers ?? []
   const heading = root.querySelector('h1,h2,h3,h4')
   if (heading) {
-    setText(heading, c.cta.title)
+    setText(heading, offers[0] ?? c.cta.title)
     const text = heading.nextElementSibling
-    if (text && text.tagName === 'P') setText(text, c.hero.subtitle.split(/(?<=[.!?])\s/)[0] ?? c.hero.subtitle)
+    if (text && text.tagName === 'P') setText(text, offers.length > 1 ? offers.slice(1).join(' · ') : c.hero.subtitle.split(/(?<=[.!?])\s/)[0] ?? c.hero.subtitle)
   } else {
     // one line of text with a link: the line is the message, the link the action
     const line = [...root.querySelectorAll('p, span')].find((el) => ownText(el) && !el.closest('a,button'))
-    if (line) setText(line, c.cta.title)
+    if (line) setText(line, offers.length ? offers.join('  ·  ') : c.cta.title)
     ;[...root.querySelectorAll('span')].filter((el) => el !== line && isLeaf(el) && visibleText(el).length > 12 && !el.closest('a,button') && !el.classList.contains('sr-only')).forEach((el) => el.remove())
   }
   root.querySelectorAll('a').forEach((a) => {

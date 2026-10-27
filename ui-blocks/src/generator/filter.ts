@@ -12,6 +12,8 @@ const titleCase = (s: string) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase())
 
 // Capitalised words that are NOT a business name: acronyms, places, and the verbs a prompt starts with.
 const NOT_A_NAME = new Set([
+  // products and services that are written with capitals but are not the name of the business
+  'whatsapp', 'gst', 'upi', 'google', 'instagram', 'facebook', 'youtube', 'shopify', 'amazon', 'zoom', 'excel', 'pdf', 'wordpress', 'tally', 'paytm', 'phonepe', 'gpay', 'sms', 'emi', 'cod',
   'saas', 'ai', 'crm', 'erp', 'it', 'ui', 'ux', 'seo', 'api', 'b2b', 'b2c', 'i', 'create', 'build', 'make', 'design', 'generate',
   'need', 'want', 'please', 'india', 'usa', 'uk', 'uae', 'new', 'york', 'online', 'indian', 'american', 'british', 'italian',
   'french', 'chinese', 'japanese', 'family', 'premium', 'luxury', 'modern', 'simple', 'website', 'landing', 'page', 'site',
@@ -89,6 +91,9 @@ function extractSubject(userPrompt: string) {
     const count = raw.split(/\s+/).filter(Boolean).length
     if (raw && count <= MAX_SUBJECT_WORDS && raw.length <= MAX_SUBJECT_LENGTH) return raw.toLowerCase()
   }
+  // a long prompt that starts with the business ("kurti and saree online store, free shipping above 999, ..."): its first part is the subject
+  const firstPart = clean(withoutName.split(/[,.;]/)[0])
+  if (firstPart && firstPart.split(/\s+/).length <= MAX_SUBJECT_WORDS && firstPart.split(/\s+/).some(isBusinessWord) && !hinglish) return firstPart.toLowerCase()
   // a long or Hinglish prompt: the business words in it are the subject
   return subjectFromBusinessWords(withoutName).toLowerCase()
 }
@@ -111,6 +116,11 @@ const THEME_NOUN: Record<string, string> = {
 }
 
 function inventName(subject: string, userPrompt: string, themeKey?: string, nicheLabel?: string) {
+  const name = inventPlainName(subject, userPrompt, themeKey, nicheLabel)
+  return name.replace(/\bSaas\b/g, 'SaaS')
+}
+
+function inventPlainName(subject: string, userPrompt: string, themeKey?: string, nicheLabel?: string) {
   // a niche knows what the business is called in plain words ("Pest control" -> "Harbor Pest Control")
   if (nicheLabel) {
     const first = [...userPrompt.toLowerCase()].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7)
@@ -139,13 +149,27 @@ export function extractContentDetails(userPrompt: string, themeKey?: string, nic
   const stop = words.findIndex((w) => STOP_WORDS.has(w.toLowerCase()))
   const fromLoose = titleCase((stop >= 0 ? words.slice(0, stop) : words).join(' '))
 
-  const subject = extractSubject(userPrompt)
-  // "called Iron Pulse Delhi": the city at the end is the place
+  let subject = extractSubject(userPrompt)
+  // a Hinglish prompt ("mujhe ek premium Italian restaurant ki website chahiye") must not leave its filler words in the subject
+  subject = subject.replace(/^(?:(?:ek|mujhe|meri|mera|mere|apni|apna|apne|hamari|hamara|humari|ek\s+aur|koi)\s+)+/i, '').replace(/\s+(?:ki|ka|ke|ko)$/i, '').trim()
+  // "called Iron Pulse Delhi": the city at the end is the place: the city at the end is the place
   const dropCity = (name: string | undefined) => {
     let parts = (name ?? '').split(/\s+/).filter(Boolean)
     while (parts.length > 1 && KNOWN_CITY_WORDS.has(parts[parts.length - 1].toLowerCase())) parts = parts.slice(0, -1)
     return parts.join(' ')
   }
   const named = (dropCity(capitalised) || fromLoose || nameFromCapitals(userPrompt) || '').slice(0, MAX_NAME_LENGTH).trim()
+  // the name of the business is not what the business is: "italian restaurant forno rosso" is "italian restaurant"
+  if (named && subject.toLowerCase().includes(named.toLowerCase())) subject = subject.toLowerCase().replace(named.toLowerCase(), ' ').replace(/\s+/g, ' ').trim()
+  // only an adjective is left ("premium"): the words after it in the prompt are the business ("premium Italian restaurant ki website" -> "italian restaurant")
+  const ADJECTIVES = /^(?:premium|luxury|luxurious|best|top|modern|new|famous|popular|small|big|good|great|nice|beautiful|professional|elegant|classic)$/i
+  if (ADJECTIVES.test(subject)) {
+    const after = userPrompt.match(new RegExp(`\\b${subject}\\s+([A-Za-z]+(?:\\s+[A-Za-z]+){0,2})`, 'i'))?.[1].split(/\s+/) ?? []
+    const stop = after.findIndex((w) => HINGLISH.has(w.toLowerCase()) || /^(?:website|site|page|for|in|with|called|named|naam)$/i.test(w))
+    const words = (stop >= 0 ? after.slice(0, stop) : after).filter(Boolean)
+    subject = words.join(' ').toLowerCase()
+  }
+  // nothing that names a kind of business is left: the niche says what the business is
+  if (nicheLabel && !subject.split(/\s+/).some((w) => isBusinessWord(w))) subject = nicheLabel.toLowerCase()
   return { businessName: named || inventName(subject, userPrompt, themeKey, nicheLabel), subject }
 }
