@@ -26,7 +26,8 @@ export type WebsiteContent = {
   // sections of the long page
   about: { title: string; paragraphs: string[]; points: string[] }
   steps: { title: string; items: { title: string; text: string }[] }
-  pricing: { title: string; plans: Plan[] }
+  /** `fromPrompt`: the prices are the ones the person wrote; the prices of a text pack are examples and are not shown on a page of their own */
+  pricing: { title: string; plans: Plan[]; fromPrompt?: boolean }
   gallery: { title: string; captions: string[] }
   team: { title: string; members: { name: string; role: string; bio?: string }[] }
   testimonials: Quote[]

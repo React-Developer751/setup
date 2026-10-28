@@ -124,6 +124,19 @@ for (const [prompt, name] of [['Create a website for a law firm called Rao and P
   ok(extractContentDetails(prompt, 'general_business').businessName === name, `the name "${name}" is kept whole (got "${extractContentDetails(prompt, 'general_business').businessName}")`)
 }
 
+// ── a German cafe is a German cafe (a Hinglish prompt, no name): its own menu, a German name, no chai and no prices that nobody wrote
+for (const prompt of ['ek german cafe ke liye website banao', 'German cafe in Pune', 'website for a german bakery and kaffeehaus', 'जर्मन कैफे की वेबसाइट']) {
+  const g = generateWebsite(prompt, 0, 'premium', true, 'auto')
+  const text = JSON.stringify(g.content)
+  ok(g.niche === 'german_cafe', `"${prompt}" is the German cafe pack (${g.niche})`)
+  ok(/Pretzel/.test(text) && /Strudel|Black Forest/.test(text), `"${prompt}": the menu is German`)
+  ok(!/chai|masala|samosa|tandoor|thali|curry/i.test(text), `"${prompt}": no Indian menu on a German cafe`)
+  if (!/जर्मन/.test(prompt)) ok(/Kaffeehaus|Cafe Edelweiss|Brezel|Zum Goldenen/.test(g.content.brandName), `"${prompt}": a German name (${g.content.brandName})`)
+  ok(!g.content.pricing.fromPrompt, `"${prompt}": the example prices are not the person's`)
+}
+const priced = generateWebsite('German cafe called Kaffeehaus Berlin: pretzel 150 rupees, black forest cake 250 rupees', 0, 'premium', true, 'auto')
+ok(priced.content.pricing.fromPrompt === true && priced.content.brandName === 'Kaffeehaus Berlin', 'prices the person wrote are kept and shown')
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

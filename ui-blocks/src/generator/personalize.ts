@@ -19,6 +19,8 @@ export type Facts = {
   hours?: string
   /** prices named for something ("monthly membership 1999") */
   prices: { name: string; amount: number }[]
+  /** the currency the person wrote next to a price */
+  currency?: string
 }
 
 const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy)\b/gi
@@ -42,7 +44,7 @@ const splitList = (text: string) => text.split(/\s*(?:,|;|&|\band\b|\baur\b|\bpl
 
 /** "called Name" is the name, not a description: it is cut out (up to the next word that starts a description) */
 const described = (prompt: string) =>
-  prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])\s+[^,.;]*?(?=\s+(?:with|for|in|at|near|selling|offering|providing|offers|which|that|who|and|including|ke liye|me|mein)(?![\p{L}])|[,.;]|$)/giu, ' ').replace(/\s+/g, ' ').trim()
+  prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])\s+[^,.;:]*?(?=\s+(?:with|for|in|at|near|selling|offering|providing|offers|which|that|who|and|including|ke liye|me|mein)(?![\p{L}])|[,.;:]|$)/giu, ' ').replace(/\s+/g, ' ').trim()
 
 /** things that are promises, not services */
 const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7(?:\s+\w+)?|\d+\+?\s*(?:years?|saal)\b.*|(?:years?|saal)\s+(?:of\s+)?experience|(?:great|good|friendly|best)\s+(?:service|prices?|staff)|prices?|pricing|staff|quality|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|cash on delivery|cod|(?:easy\s+)?(?:\d+[\s-]*days?\s+)?(?:returns?|refunds?|exchange)|(?:fast\s+)?(?:shipping|delivery)(?:\s+(?:above|over)\s+.*)?|\d{1,2}\s*%\s*(?:off|discount)|online\b.*|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
@@ -58,6 +60,8 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   // a person's title and name ("Dr. Sharma") is the brand, not a service
   const text = described(prompt).replace(/\b(?:Dr|Mr|Mrs|Ms|Prof|Er|Adv)\.?\s+[A-Z][\p{L}-]+(?:\s+[A-Z][\p{L}-]+)?/gu, ' ').replace(/\s+/g, ' ').trim()
   const facts: Facts = { services: [], perks: [], offers: [], prices: [] }
+  // the money the person wrote ("150 rupees", "Rs 250", "£12") is the money of the page
+  facts.currency = /₹|\brupees?\b|\brs\.?(?=\s*\d)|\binr\b/i.test(text) ? '₹' : /£|\bpounds?\b/i.test(text) ? '£' : /€|\beuros?\b/i.test(text) ? '€' : undefined
 
   // place: a capitalised word after in / at / near, or a city we know
   const placeMatch = text.match(/(?<![\p{L}])(?:in|at|near|around|based in|across)\s+([A-Z][\p{L}-]+(?:\s+[A-Z][\p{L}-]+)?)/u)
@@ -111,7 +115,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   // a list that stands on its own after the name and the place ("naam Forno Rosso, wood fired pizza, fresh pasta, tiramisu aur weekend brunch"): the short phrases are the offer
   if (!lists.length) {
     const META = /(?<![\p{L}])(?:website|web\s*site|site|page|landing|single|multiple|multi|chahiye|chahie|banao|bana|banani|mujhe|please|create|build|make|premium|naam|name|called|named|ke\s+liye|ki|ka|ke|mein|me|want|need|for|pages?)(?![\p{L}])/iu
-    const parts = withoutPlace.split(/\s*(?:,|;)\s*|\s+(?:aur|and|&)\s+/i).map((x) => x.trim()).filter(Boolean)
+    const parts = withoutPlace.split(/\s*(?:,|;|:)\s*|\s+(?:aur|and|&)\s+/i).map((x) => x.trim()).filter(Boolean)
     const items = parts.filter((x) => !META.test(x) && x.split(/\s+/).length <= 5 && !/^\d+$/.test(x))
     if (parts.length >= 3 && items.length >= 2) {
       lists.push(items.join(', '))
@@ -123,7 +127,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   const fromExplicit = new Set(lists.filter((l) => explicit.has(l)).flatMap(splitList))
   for (const raw0 of lists.flatMap(splitList)) {
     // "monthly membership 1999": the thing and its price
-    const priced = /(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|trial|shipping|delivery|orders?)(?![\p{L}])/iu.test(raw0) ? null : raw0.match(/^(.*?[a-z])\s*(?:@|at|for|rs\.?|₹)?\s*(\d{3,6})$/i)
+    const priced = /(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|trial|shipping|delivery|orders?)(?![\p{L}])/iu.test(raw0) ? null : raw0.match(/^(.*?[a-z])\s*(?:@|at|for|rs\.?|inr|₹|£|€|\$)?\s*(\d{3,6}|\d{1,2}(?=\s*(?:rupees?|rs\.?|pounds?|euros?|dollars?|usd|inr)$))(?:\s*(?:rupees?|rs\.?|inr|₹|pounds?|euros?|dollars?|usd|only|\/-))?$/i)
     if (priced) facts.prices.push({ name: cleanItem(priced[1]), amount: Number(priced[2]) })
     // "kurti and saree online store": the last item ends with the kind of business, which is not a product
     const whole = priced ? cleanItem(priced[1]) : raw0
@@ -195,11 +199,21 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
 
   // one feature card per service the person named (the first cards)
   if (services.length) {
-    const cards = services.slice(0, 6).map((s, i) => ({
-      title: titleCase(s).slice(0, 32),
-      text: CARD_TEXT[(i + Math.floor(rand() * CARD_TEXT.length)) % CARD_TEXT.length].replaceAll('{S}', upperFirst(fixAcronyms(s))).replaceAll('{s}', lowerFirst(fixAcronyms(s))),
-    }))
-    const rest = next.features.items.filter((item) => !cards.some((c) => c.title.toLowerCase() === item.title.toLowerCase()))
+    // a service the text pack already describes ("pretzel" and the pack's "Fresh Pretzels") keeps the pack's own card, with its real sentence
+    const used = new Set<number>()
+    const cards = services.slice(0, 6).map((s, i) => {
+      const stems = significant(s)
+      const at = next.features.items.findIndex((item, n) => !used.has(n) && stems.length > 0 && significant(item.title).some((w) => stems.includes(w)))
+      if (at >= 0) {
+        used.add(at)
+        return { title: next.features.items[at].title, text: next.features.items[at].text }
+      }
+      return {
+        title: titleCase(s).slice(0, 32),
+        text: CARD_TEXT[(i + Math.floor(rand() * CARD_TEXT.length)) % CARD_TEXT.length].replaceAll('{S}', upperFirst(fixAcronyms(s))).replaceAll('{s}', lowerFirst(fixAcronyms(s))),
+      }
+    })
+    const rest = next.features.items.filter((item, n) => !used.has(n) && !cards.some((c) => c.title.toLowerCase() === item.title.toLowerCase()))
     const keep = size === 'full' ? 6 : 3
     next = { ...next, features: { ...next.features, items: [...cards, ...rest].slice(0, keep) }, marquee: [...new Set([...services.slice(0, 4).map((s) => titleCase(s).slice(0, 16)), ...next.marquee])].slice(0, 8) }
   }
@@ -248,9 +262,11 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
   if (hours) next = { ...next, contact: { ...next.contact, hoursText: hours } }
   // a price named for something is the first plan of the price list (the currency of the plans that are there)
   if (prices.length && next.pricing.plans.length) {
-    const currency = /^[^\d\s]+/.exec(next.pricing.plans[0].price)?.[0] ?? '₹'
-    const plans = next.pricing.plans.map((plan, i) => (prices[i] ? { ...plan, name: titleCase(prices[i].name).slice(0, 28), price: `${currency}${prices[i].amount.toLocaleString(currency === '$' ? 'en-US' : 'en-IN')}` } : plan))
-    next = { ...next, pricing: { ...next.pricing, plans } }
+    // the money the person wrote ("150 rupees", "Rs 250", "£12") is the money of the page; else the one of the text pack
+    const currency = facts.currency ?? /^[^\d\s]+/.exec(next.pricing.plans[0].price)?.[0] ?? '₹'
+    // the plans are the prices the person wrote (the example prices of the text pack are not mixed in)
+    const plans = prices.slice(0, 6).map((priceOf, i) => ({ ...(next.pricing.plans[i] ?? next.pricing.plans[0]), name: titleCase(priceOf.name).slice(0, 28), price: `${currency}${priceOf.amount.toLocaleString(currency === '$' ? 'en-US' : 'en-IN')}` }))
+    next = { ...next, pricing: { ...next.pricing, plans, fromPrompt: true } }
   }
 
   if (place) {

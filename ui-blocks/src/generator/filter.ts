@@ -120,8 +120,15 @@ function inventName(subject: string, userPrompt: string, themeKey?: string, nich
   return name.replace(/\bSaas\b/g, 'SaaS')
 }
 
+/** names that suit a kind of business better than a made-up first word and its label ("Kaffeehaus Linde" for a German cafe) */
+const NICHE_NAMES: Record<string, string[]> = { 'German cafe': ['Kaffeehaus Linde', 'Cafe Edelweiss', 'Brezel und Bohne', 'Zum Goldenen Kuchen', 'Kaffeehaus Eiche'] }
+
 function inventPlainName(subject: string, userPrompt: string, themeKey?: string, nicheLabel?: string) {
   // a niche knows what the business is called in plain words ("Pest control" -> "Harbor Pest Control")
+  if (nicheLabel && NICHE_NAMES[nicheLabel]) {
+    const pick = [...userPrompt.toLowerCase()].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 11)
+    return NICHE_NAMES[nicheLabel][pick % NICHE_NAMES[nicheLabel].length]
+  }
   if (nicheLabel) {
     const first = [...userPrompt.toLowerCase()].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7)
     return `${FRESH_WORDS[first % FRESH_WORDS.length]} ${titleCase(nicheLabel.toLowerCase())}`.replace(/\b(?:Ngo|Pg|Hr|Ac|Cctv|Gst|Seo|Ev|Dj|Diy)\b/g, (m) => m.toUpperCase())

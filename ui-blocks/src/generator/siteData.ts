@@ -485,8 +485,10 @@ function mergeGallery(generated: string[], seed: Seed, rand: () => number, count
  * The same pool, for the single page of the "92 components" engine: its team, reviews, FAQ, gallery captions and blog teasers
  * keep their usual number, but come from the pool first.
  */
-export function applyPoolToContent(content: WebsiteContent, theme: ThemeKey, prompt: string, rand: () => number): WebsiteContent {
+export function applyPoolToContent(content: WebsiteContent, theme: ThemeKey, prompt: string, rand: () => number, nicheOwn = false): WebsiteContent {
   content = applyBusiness(content, findBusiness(prompt, theme))
+  // a business with a text pack of its own keeps the pack's gallery, questions and articles: the pool's lines are for its kind of business (a restaurant's "The pass at lunch service" on a cafe)
+  if (nicheOwn) return content
   const seed: Seed = { theme, prompt, brand: content.brandName, subject: content.subject }
   const pool = getPool()
   const fit = <T extends { for: string[] }>(items: T[]) => shuffled(items.filter((item) => fits(item, theme, prompt)), rand)

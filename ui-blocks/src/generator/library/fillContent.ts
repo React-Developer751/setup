@@ -83,7 +83,7 @@ const andList = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).j
  */
 function leadFor(role: Role, c: WebsiteContent): string | undefined {
   const brand = c.brandName
-  const lower = (t: string) => (/^[A-Z]{2,}\b/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1))
+  const lower = (t: string) => t.split(' ').map((w) => (/^[A-Z]{2,}\b/.test(w) ? w : w.toLowerCase())).join(' ')
   switch (role) {
     case 'features':
     case 'links':
@@ -1166,10 +1166,16 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   if (role === 'banner') return step('banner', () => fillBanner(root, c))
   if (role === 'nav') {
     step('menu', () => fillNav(root, c, links))
+    // entries of the kit that are still called "Link" after the page's own links are written are placeholders: they go
+    step('menu leftovers', () => root.querySelectorAll('a').forEach((el) => { if (/^(link|menu item|nav link)$/i.test(visibleText(el))) (el.closest('li') ?? el).remove() }))
     // a made-up sentence of the kit inside the menu ("Some text as placeholder")
     return step('menu clean-up', () => root.querySelectorAll('p, div, span').forEach((el) => isLeaf(el) && /placeholder/i.test(visibleText(el)) && el.remove()))
   }
-  if (role === 'footer') return step('footer', () => fillFooter(root, c, links))
+  if (role === 'footer') {
+    step('footer', () => fillFooter(root, c, links))
+    // the footer kit spells "Terms" as "Teams"
+    return step('footer typo', () => root.querySelectorAll('a').forEach((a) => { if (visibleText(a) === 'Teams') setText(a, 'Terms') }))
+  }
   step('text', () => (role === 'hero' ? fillHero(root, c) : fillSection(root, role, c)))
   step('buttons', () => fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button))
   step('leftovers', () => cleanLeftovers(root, role, c))
@@ -1179,6 +1185,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     step('answers', () => fillFaqAnswers(root, c))
   }
   step('made-up contact', () => dropMadeUpContact(root, c))
+
   step('fields', () => setPlaceholders(root))
   step('title', () => ensureTitle(root, role, c))
   step('names', () => replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members))

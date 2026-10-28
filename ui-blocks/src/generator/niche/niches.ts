@@ -7,6 +7,7 @@ import batchE from '../../data/niches/batch-e.json'
 import batchF from '../../data/niches/batch-f.json'
 import batchG from '../../data/niches/batch-g.json'
 import batchH from '../../data/niches/batch-h.json'
+import batchI from '../../data/niches/batch-i.json'
 import type { Niche } from './types'
 
-export const NICHES = [...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF, ...batchG, ...batchH] as unknown as Niche[]
+export const NICHES = [...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF, ...batchG, ...batchH, ...batchI] as unknown as Niche[]

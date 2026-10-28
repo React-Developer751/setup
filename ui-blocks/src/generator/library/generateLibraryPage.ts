@@ -47,7 +47,7 @@ export function generateLibraryPage(
   const generated = generateWebsite(userPrompt, variation, tierOverride, creative, motionSetting, edits)
   // your own data (src/data/dataPool.json) first, the generated text for what it does not cover
   const poolRand = seededRandom(hash(`${userPrompt.trim().toLowerCase()}|pool|${variation}`))
-  const base = { ...generated, content: applyPoolToContent(generated.content, generated.themeKey, userPrompt, poolRand) }
+  const base = { ...generated, content: applyPoolToContent(generated.content, generated.themeKey, userPrompt, poolRand, !!generated.niche) }
   // the e-mail, phone and street of the kit ("hello@example.com", "+1 (555) 000-0000", "123 Sample Street") are not the business's: they are left out, the city stays
   const MADE_UP = /example\.com|\(555\)|Sample Street|Your City/i
   const own = (value: string) => (MADE_UP.test(value) ? '' : value)
@@ -103,6 +103,8 @@ export function generateLibraryPage(
   // reviews with a made-up name ("Sample Customer") and a team of made-up people are not shown: the person adds real ones ("add the team")
   if (base.content.testimonials.length && base.content.testimonials.every((t) => /sample/i.test(t.author))) visible.delete('testimonial')
   visible.delete('team')
+  // prices that nobody wrote (the examples of a text pack, in dollars) are not shown: the person adds real ones ("pricing 500 rupees ...")
+  if (!base.content.pricing.fromPrompt) visible.delete('pricing')
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)

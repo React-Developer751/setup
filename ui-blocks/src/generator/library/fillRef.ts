@@ -14,7 +14,7 @@ const put = (root: Element, slot: string, text: string | undefined) => {
 const short = (text: string, max: number) => (text.length <= max ? text : `${text.slice(0, max - 1).replace(/\s+\S*$/, '')}…`)
 const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 /** the first letter of a service name lower-cased, but not an acronym (NHS, UKVI) */
-const lowerFirst = (s: string) => (/^[A-Z]{2,}\b/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
+const lowerFirst = (s: string) => s.split(' ').map((w) => (/^[A-Z]{2,}/.test(w) ? w : w.toLowerCase())).join(' ')
 
 /** n slots of a repeated part: the first ones get the items, the others are removed */
 function repeat<T>(root: Element, slot: string, items: T[], fill: (el: HTMLElement, item: T, index: number) => void) {
