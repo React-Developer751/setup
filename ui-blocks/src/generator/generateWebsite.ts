@@ -21,7 +21,7 @@ import { TARGETS, type SiteEdits, type Target } from './edit/edits'
 import { decideTheme } from './themeClassifier'
 import { fontChoiceTokens, withFont } from './fonts'
 import { onColor } from './themes'
-import { chooseMood, moodById, moodFontVars, moodFromText, moodPalette, moodTheme, panelColors, type Mood } from './moods'
+import { chooseMood, moodById, moodFontVars, moodFromText, moodPalette, moodTheme, panelColors, SIGNATURE_MOODS, type Mood } from './moods'
 import { temperature } from './creativity'
 import { hexToRgb, rgbToHsl } from './art/color'
 import { sectionOfLayout } from './edit/applyEdits'
@@ -46,7 +46,7 @@ export { hash, seededRandom }
  * `motionSetting`: how much the page moves; 'auto' lets the motion brain decide from the design level.
  */
 /** the moods whose look does not depend on their own colours */
-const PREMIUM_MOODS = new Set(['minimal-light', 'minimal-dark', 'editorial', 'luxe-dark'])
+const PREMIUM_MOODS = new Set<string>(['minimal-light', 'minimal-dark', 'editorial', 'luxe-dark', ...SIGNATURE_MOODS])
 
 export function planWebsite(
   userPrompt: string,
@@ -121,13 +121,14 @@ export function planWebsite(
     // the colours of the brain and of the moods are checked as a pair: no neon second colour, no two loud colours of one lightness (colorHarmony.ts); what the person chooses afterwards is theirs
     const trustedPair = colors?.harmony === 'curated' || colors?.harmony === 'premium'
     // a designer's pair keeps its own second colour inside a mood (a charcoal second colour must not turn into the mood's blue)
-    const generated = premiumColours && !askedMood ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
-    const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
+    const signature = !!mood && SIGNATURE_MOODS.has(mood.id)
+    const generated = premiumColours && !askedMood && !signature ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' && !signature ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
+    const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || signature || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
     return { colors, mood, moodMade, palette, judgement: judgePalette(palette, themeKey, prompt) }
   }
   let look = makeLook(0)
   if (useBrains && !personChoseColours && look.judgement.score < GOOD_ENOUGH) {
-    for (let attempt = 1; attempt <= 10 && look.judgement.score < GOOD_ENOUGH; attempt += 1) {
+    for (let attempt = 1; attempt <= 24 && look.judgement.score < GOOD_ENOUGH; attempt += 1) {
       const other = makeLook(attempt)
       if (other.judgement.score > look.judgement.score) look = other
     }

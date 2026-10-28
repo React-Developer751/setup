@@ -8,11 +8,11 @@ import type { ThemeKey, Theme, Palette, PaletteMode, ColorMode } from './themes'
 import type { Target } from './edit/edits'
 import { sectionTokens, mixHex } from './edit/sectionColors'
 
-export type MoodId = 'minimal-light' | 'minimal-dark' | 'soft-neo' | 'retro' | 'cyberpunk' | 'glass' | 'bold-contrast' | 'editorial' | 'playful-pop' | 'luxe-dark'
+export type MoodId = 'minimal-light' | 'minimal-dark' | 'soft-neo' | 'retro' | 'cyberpunk' | 'glass' | 'bold-contrast' | 'editorial' | 'playful-pop' | 'luxe-dark' | 'clinic-mesh' | 'plum-ivory' | 'trust-navy' | 'violet-glow' | 'cream-coral'
 export type MoodChoice = MoodId | 'none'
 
 /** how a panel of the page is coloured */
-export type PanelRole = 'plain' | 'band' | 'soft-alt' | 'accent' | 'deep' | 'ink' | 'pop-alt'
+export type PanelRole = 'plain' | 'band' | 'soft-alt' | 'accent' | 'deep' | 'ink' | 'pop-alt' | 'alt-ink'
 
 type Colors = (h: number, h2: number, mode: ColorMode) => PaletteMode & { shadowD?: string; shadowL?: string }
 
@@ -226,7 +226,73 @@ export const MOODS: Mood[] = [
     roles: { hero: 'deep', footer: 'ink', cta: 'deep', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
     affinity: { luxury_minimal: 3, fashion_retail: 3, real_estate: 3, events_wedding: 2, beauty_wellness: 2, automotive: 2, food_dining: 1, travel_tourism: 1 },
   },
+  // ───────────── five designs taken from real translation-service websites (design and colour only, the content is never touched) ─────────────
+  // Each one is a fixed signature (its own colours, typeface and way of painting the panels) read from a live site: they do not take the hue of the business,
+  // that is what makes them look designed rather than recoloured. Their extra rules (backdrops, tinted cards, pill buttons) are in moodCss.ts.
+  {
+    id: 'clinic-mesh',
+    label: 'Clinic mesh',
+    blurb: 'Soft mint, blue and lavender mesh backdrops, glassy tinted cards with dark icon tiles, pill buttons, a calm medical teal.',
+    keywords: ['clinic mesh', 'medical mesh', 'mint glass', 'pastel glass', 'mesh gradient'],
+    mode: 'light',
+    font: { family: 'Roboto Flex', weights: '400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-3xl', heading: 'tracking-tight font-bold', fontClass: 'font-sans', surface: 'shadow-[0_12px_32px_-14px_rgba(13,110,99,0.35)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#eef7f4', surface: '#ffffff', border: '#cfe3dc', text: '#07201b', muted: '#4a6760', accent: '#12897b', alt: '#4e3781' } : { bg: '#07130f', surface: '#0d1f1a', border: '#1d3a32', text: '#e7f5f1', muted: '#9bb8af', accent: '#4fd1bd', alt: '#a78bfa' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'deep', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
+    affinity: { healthcare: 3, beauty_wellness: 2, education: 2, professional_services: 2, nonprofit: 2, general_business: 1, home_services: 1 },
+  },
+  {
+    id: 'plum-ivory',
+    label: 'Plum and ivory',
+    blurb: 'Ivory pages, deep aubergine panels with a fine wave pattern, mauve accents, thin borders, near-black pill buttons. Dignified.',
+    keywords: ['plum ivory', 'plum and ivory', 'aubergine', 'mauve ivory'],
+    mode: 'light',
+    font: { family: 'Plus Jakarta Sans', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-xl', heading: 'tracking-tight font-bold', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#f7f1f4', surface: '#ffffff', border: '#e9e1e5', text: '#2b1722', muted: '#5f5159', accent: '#a05c7c', alt: '#553049' } : { bg: '#150a11', surface: '#201019', border: '#3a2331', text: '#f6edf1', muted: '#b9a3af', accent: '#d08aaa', alt: '#e8c1d3' }),
+    roles: { hero: 'ink', footer: 'ink', cta: 'ink', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
+    affinity: { professional_services: 3, luxury_minimal: 2, events_wedding: 2, nonprofit: 2, beauty_wellness: 1, healthcare: 1, general_business: 1 },
+  },
+  {
+    id: 'trust-navy',
+    label: 'Trust navy',
+    blurb: 'Government-grade navy and a signal red on warm off-white, light-blue tinted cards with small tag chips, a navy panel for the final call.',
+    keywords: ['trust navy', 'navy and red', 'government style', 'gov style'],
+    mode: 'light',
+    font: { family: 'Plus Jakarta Sans', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-2xl', heading: 'tracking-tight font-extrabold', fontClass: 'font-sans', surface: 'shadow-[0_10px_28px_-16px_rgba(0,48,120,0.4)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#f8f8f7', surface: '#ffffff', border: '#dfe3e6', text: '#0b0c0c', muted: '#505a5f', accent: '#003078', alt: '#c8102e' } : { bg: '#08111d', surface: '#0f1c2e', border: '#1f3350', text: '#eef3f9', muted: '#9fb2c8', accent: '#6ea8ff', alt: '#ff6b81' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'ink', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { professional_services: 3, general_business: 3, education: 2, healthcare: 2, real_estate: 2, home_services: 1, nonprofit: 1 },
+  },
+  {
+    id: 'violet-glow',
+    label: 'Violet glow',
+    blurb: 'Electric violet with pink, lavender glows on a near-white page, gradient buttons, a violet-to-pink closing band, a night-violet footer.',
+    keywords: ['violet glow', 'violet and pink', 'violet pop', 'electric violet'],
+    mode: 'light',
+    font: { family: 'Plus Jakarta Sans', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-2xl', heading: 'tracking-tight font-extrabold', fontClass: 'font-sans', surface: 'shadow-[0_14px_34px_-16px_rgba(91,33,230,0.4)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#fbf9ff', surface: '#ffffff', border: '#e6dcff', text: '#0b0620', muted: '#5a5373', accent: '#5b21e6', alt: '#ec4899' } : { bg: '#0b0620', surface: '#150d33', border: '#2b1d57', text: '#f4efff', muted: '#b7acd9', accent: '#a78bfa', alt: '#f472b6' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'accent', stats: 'band', testimonials: 'soft-alt', rhythm: ['plain', 'band'] },
+    affinity: { modern_tech: 3, creative_studio: 3, general_business: 2, education: 2, fashion_retail: 1, playful_vibrant: 1, professional_services: 1 },
+  },
+  {
+    id: 'cream-coral',
+    label: 'Cream and coral',
+    blurb: 'Warm cream pages, a coral call to action, deep indigo panels, white rounded cards with a soft violet shadow, a friendly Mulish.',
+    keywords: ['cream and coral', 'cream coral', 'coral and cream', 'coral indigo'],
+    mode: 'light',
+    font: { family: 'Mulish', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-2xl', heading: 'tracking-tight font-extrabold', fontClass: 'font-sans', surface: 'shadow-[0_14px_34px_-18px_rgba(27,13,68,0.35)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#faf7f2', surface: '#ffffff', border: '#ece4d8', text: '#0e0b1f', muted: '#5b556b', accent: '#ff5a3c', alt: '#6d3df2' } : { bg: '#0e0b1f', surface: '#17132e', border: '#2b2552', text: '#f6f2ea', muted: '#b4aed0', accent: '#ff8a6b', alt: '#a78bfa' }),
+    roles: { hero: 'plain', footer: 'alt-ink', cta: 'alt-ink', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
+    affinity: { general_business: 3, food_dining: 2, travel_tourism: 2, home_services: 2, real_estate: 2, professional_services: 2, education: 1 },
+  },
 ]
+
+/** the designs read from live sites: a fixed signature, not a recolouring of the business's hue */
+export const SIGNATURE_MOODS = new Set<MoodId>(['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral'])
 
 export const MOOD_IDS = MOODS.map((m) => m.id)
 
@@ -244,7 +310,10 @@ export function moodFromText(text: string): Mood | undefined {
 }
 
 /** what the words of the prompt say about the look: moods they suit (more likely) and moods that would clash with them (very unlikely) */
-const PROMPT_LOOK: { words: RegExp; suit: MoodId[]; avoid: MoodId[] }[] = [
+const PROMPT_LOOK: { words: RegExp; suit: MoodId[]; avoid: MoodId[]; /** an avoided mood is never chosen */ hard?: boolean }[] = [
+  // a pink-purple signature does not fit a dentist, a lawyer, an accountant or a school (the colour judge says the same)
+  { words: /(?<![a-z])(?:dentist|dental|lawyer|law\s+firm|advocate|attorney|accountant|accounting|chartered|ca\s+firm|school|tuition|coaching|college)(?![a-z])/i, suit: [], avoid: ['violet-glow', 'plum-ivory'], hard: true },
+  { words: /(?<![a-z])(?:translat\w*|interpret\w*|certified|notaris\w*|immigration|visa|document\w*|apostille|legal|solicitor\w*)(?![a-z])/i, suit: ['trust-navy', 'plum-ivory', 'clinic-mesh', 'violet-glow', 'cream-coral'], avoid: ['cyberpunk', 'retro', 'playful-pop', 'bold-contrast'] },
   { words: /(?<![a-z])(?:yoga|spa|meditation|wellness|ayurved\w*|clinic|dental|dentist|hospital|doctor|therapy|physio\w*|pharmacy|salon|skincare|beauty)(?![a-z])/i, suit: ['soft-neo', 'minimal-light', 'editorial', 'glass'], avoid: ['cyberpunk', 'bold-contrast', 'retro'] },
   { words: /(?<![a-z])(?:wedding|bridal|bride|jewel\w*|boutique|couture|fashion|perfume|watch|luxury)(?![a-z])/i, suit: ['luxe-dark', 'editorial', 'minimal-light'], avoid: ['cyberpunk', 'playful-pop', 'bold-contrast'] },
   { words: /(?<![a-z])(?:kids?|child\w*|toys?|nursery|daycare|playschool|preschool|pets?|dogs?|cats?|puppy|candy|ice\s*cream)(?![a-z])/i, suit: ['playful-pop', 'soft-neo'], avoid: ['cyberpunk', 'luxe-dark', 'minimal-dark'] },
@@ -273,7 +342,7 @@ export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, 
     let w = (0.06 + (m.affinity[theme] ?? 0) / 3) ** (1 / (0.25 + temp))
     // a mood the business type has no affinity with (cyberpunk for a school, retro for a clinic) is rare, even when the creativity is high
     if ((m.affinity[theme] ?? 0) < 2) w *= 0.1
-    for (const l of look) w *= l.suit.includes(m.id) ? 3 : l.avoid.includes(m.id) ? 0.04 : 1
+    for (const l of look) w *= l.suit.includes(m.id) ? 3 : l.avoid.includes(m.id) ? (l.hard ? 0 : 0.04) : 1
     // the loud moods need a reason in the words (a gym, a toy shop, a game): a plain "portfolio" or "school" gets a calm look, unless the creativity is wild
     if (LOUD_MOODS.has(m.id) && temp < 0.8 && !look.some((l) => l.suit.includes(m.id))) w *= 0.12
     return { mood: m, weight: w }
@@ -297,7 +366,7 @@ export function moodPalette(mood: Mood, hue: number, altHue0: number, baseName =
   const altHue = trustAlt && mood.id !== 'glass' ? altHue0 : hue + Math.sign(gap || 1) * Math.min(70, Math.max(25, Math.abs(gap)))
   const made = bothModes((mode) => mood.colors(hue, altHue, mode))
   const strip = (c: ReturnType<Colors>): PaletteMode => ({ bg: c.bg, surface: c.surface, border: c.border, text: c.text, muted: c.muted, accent: c.accent, alt: c.alt })
-  const palette: Palette = { name: baseName ? `${mood.label}: ${baseName}` : `${mood.label}: hue ${Math.round(hue)}`, light: strip(made.light), dark: strip(made.dark) }
+  const palette: Palette = { name: SIGNATURE_MOODS.has(mood.id) ? mood.label : baseName ? `${mood.label}: ${baseName}` : `${mood.label}: hue ${Math.round(hue)}`, light: strip(made.light), dark: strip(made.dark) }
   const extra = (c: ReturnType<Colors>): Record<string, string> => (c.shadowD ? { '--g-shadow-d': c.shadowD, '--g-shadow-l': c.shadowL ?? '#ffffff' } : {})
   return { palette, tokens: { light: extra(made.light), dark: extra(made.dark) } }
 }
@@ -322,6 +391,11 @@ const STACKS = {
   serif: 'ui-serif, Georgia, Cambria, "Times New Roman", serif',
   mono: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
 }
+/** the typeface of the mood for the library engine: every font class of the page reads it, and the exports link its Google font */
+export const moodFontTokens = (mood: Mood): Record<string, string> => {
+  const value = `"${mood.font.family}", ${STACKS[mood.font.fallback]}`
+  return { '--font-sans': value, '--font-serif': value, '--font-mono': value, '--g-font': mood.font.family, '--g-font-weights': mood.font.weights }
+}
 /** the CSS variable of the typeface of the mood */
 export const moodFontVars = (mood: Mood): Record<string, string> => ({ [mood.font.variable]: `"${mood.font.family}", ${STACKS[mood.font.fallback]}` })
 
@@ -335,6 +409,7 @@ export function roleColor(role: PanelRole, p: PaletteMode, alt = false): string 
     case 'accent': return p.accent
     case 'pop-alt': return alt ? p.alt : mixHex(p.accent, 22, p.bg)
     case 'deep': return mixHex(p.accent, 20, rgbToHsl(hexToRgb(p.bg)).l < 50 ? '#050508' : '#12121a')
+    case 'alt-ink': return mixHex(p.alt, 16, rgbToHsl(hexToRgb(p.bg)).l < 50 ? '#030305' : '#0a0a12')
     case 'ink': return rgbToHsl(hexToRgb(p.bg)).l < 50 ? mixHex(p.accent, 12, '#030305') : mixHex(p.accent, 16, '#0d0d14')
   }
 }

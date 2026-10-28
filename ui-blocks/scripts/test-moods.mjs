@@ -23,7 +23,7 @@ const PROMPT = 'Create a website for a bakery called Sweet Crumbs in Mumbai'
 const ops = (messages) => messages.flatMap((m) => { const p = parseEdit(m, 'single'); return p.kind === 'ops' ? p.ops : [] })
 
 // ── the moods
-ok(MOOD_IDS.length === 10 && new Set(MOOD_IDS).size === 10, 'ten moods')
+ok(MOOD_IDS.length === 15 && new Set(MOOD_IDS).size === 15, 'fifteen moods (ten general ones and five designs read from live sites)')
 ok(JSON.stringify([...MOOD_IDS, 'none', 'auto']) === JSON.stringify([...MOOD_CHOICES]), 'the moods of edits.ts are the moods of moods.ts')
 for (const mood of MOODS) {
   for (const hue of [5, 60, 140, 210, 280, 330]) {
@@ -36,14 +36,37 @@ for (const mood of MOODS) {
   }
 }
 const looks = MOODS.map((m) => { const s = generateWebsite(PROMPT, 3, undefined, true, 'auto', editsFrom([{ op: 'mood', mood: m.id }])); return { id: m.id, bg: s.palette[s.initialMode].bg, html: s.html, mode: s.initialMode, font: s.tokens.light['--g-font'] } })
-ok(new Set(looks.map((l) => l.bg)).size >= 9, 'every mood has its own page colour')
-ok(new Set(looks.map((l) => l.html)).size === 10, 'every mood makes a different site')
+ok(new Set(looks.map((l) => l.bg)).size >= 14, 'every mood has its own page colour')
+ok(new Set(looks.map((l) => l.html)).size === 15, 'every mood makes a different site')
 ok(looks.find((l) => l.id === 'cyberpunk').mode === 'dark' && looks.find((l) => l.id === 'retro').mode === 'light', 'a mood starts in its own mode')
 ok(new Set(looks.map((l) => l.font)).size >= 7, 'moods bring their own typefaces')
 ok(/shadow-\[0_0_22px/.test(looks.find((l) => l.id === 'cyberpunk').html) && /uppercase/.test(looks.find((l) => l.id === 'cyberpunk').html), 'cyberpunk: glow and wide capitals')
 ok(/--g-shadow-d/.test(looks.find((l) => l.id === 'soft-neo').html), 'soft: shadow colours in the page')
 ok(/border-2/.test(looks.find((l) => l.id === 'retro').html), 'retro: thick outlines')
 ok(/rounded-none/.test(looks.find((l) => l.id === 'bold-contrast').html), 'bold: sharp corners')
+
+// ── the five designs read from live translation-service sites: a fixed signature, their own typeface and extra rules, in the library engine
+{
+  const SIGN = { 'clinic-mesh': ['Roboto Flex', '#12897b'], 'plum-ivory': ['Plus Jakarta Sans', '#a05c7c'], 'trust-navy': ['Plus Jakarta Sans', '#003078'], 'violet-glow': ['Plus Jakarta Sans', '#5b21e6'], 'cream-coral': ['Mulish', '#ff5a3c'] }
+  const hueOf = (hex) => { const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255); const mx = Math.max(r, g, b); const mn = Math.min(r, g, b); const d = mx - mn || 1; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360 }
+  const hueGap = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b))
+  for (const [id, [font, signature]] of Object.entries(SIGN)) {
+    const a = generateLibraryPage('Certified translation agency in London', 3, 'premium', true, 'auto', editsFrom([{ op: 'mood', mood: id }]))
+    const b = generateLibraryPage('bakery called Sweet Crumbs in Mumbai', 7, 'premium', true, 'auto', editsFrom([{ op: 'mood', mood: id }]))
+    ok(a.fontTokens?.['--g-font'] === font && /Roboto|Jakarta|Mulish/.test(a.fontTokens['--font-sans']), `${id}: its own typeface (${font}) is in the library page`)
+    ok(a.css.includes('border-radius') && a.css.includes('[data-role=hero]'), `${id}: its extra rules (cards, buttons, backdrop) are in the page css`)
+    ok(a.palette.light.bg === b.palette.light.bg && hueGap(hueOf(a.palette.light.accent), hueOf(b.palette.light.accent)) < 12, `${id}: the signature colours do not change with the business`)
+    ok(hueGap(hueOf(a.palette.light.accent), hueOf(signature)) < 14, `${id}: the main colour is the one of the site it was read from`)
+    ok(a.sections.some((x) => x.role === 'footer' && x.paint), `${id}: the footer panel is painted`)
+  }
+  const typed = generateLibraryPage('Certified translation agency in London', 3, 'premium', true, 'auto', editsFrom([{ op: 'mood', mood: 'trust-navy' }, { op: 'style', target: 'page', prop: 'font', value: 'serif' }]))
+  ok(typed.fontTokens?.['--g-font'] === 'Playfair Display', 'a typeface the person asks for wins over the one of the design')
+  ok(!generateLibraryPage('Certified translation agency in London', 3, 'premium', true, 'auto', editsFrom([{ op: 'mood', mood: 'retro' }])).css.includes('[data-role=hero]{background-image'), 'the older moods add no extra rules')
+  const pick = (prompt, theme) => { const c = {}; for (let i = 0; i < 200; i += 1) { const m = chooseMood(prompt, theme, seededRandom(i * 7 + 1), 0.6)?.id; c[m] = (c[m] ?? 0) + 1 } return c }
+  const tr = pick('translation agency in London for certified legal documents', 'professional_services')
+  ok(['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral'].reduce((n, k) => n + (tr[k] ?? 0), 0) >= 70, 'a translation or legal prompt often gets one of the five designs')
+  ok(!tr.cyberpunk && !tr.retro && !tr['playful-pop'] && !tr['bold-contrast'], 'and never a loud mood')
+}
 
 // ── the colour of each panel
 const cyber = generateWebsite(PROMPT, 3, 'premium', true, 'auto', editsFrom([{ op: 'mood', mood: 'cyberpunk' }]))

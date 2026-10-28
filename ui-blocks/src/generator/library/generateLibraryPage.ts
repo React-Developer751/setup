@@ -7,7 +7,8 @@ import type { MotionSetting } from '../motionBrain'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
 import { rolePools, tierPools, type Role } from './libraryRoles'
-import { panelColors } from '../moods'
+import { moodFontTokens, panelColors } from '../moods'
+import { moodCss } from '../moodCss'
 import { chosenFont, editCss } from './editCss'
 
 /** the part of a page that a library component fills, for each section a person can ask to remove or add */
@@ -155,8 +156,9 @@ export function generateLibraryPage(
     return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
-  const css = editCss(edits)
-  const fontTokens = chosenFont(edits)
+  // the design mood's own rules first, then what the person asked for (theirs win)
+  const css = [moodCss(generated.mood?.id), editCss(edits)].filter(Boolean).join('\n')
+  const fontTokens = chosenFont(edits) ?? (generated.mood ? moodFontTokens(generated.mood) : undefined)
   const imports = [...new Set(sections.map(({ componentId }) => componentId))]
     .map((componentId) => `import ${componentName(componentId)} from './components/${componentId}'`)
     .join('\n')

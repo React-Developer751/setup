@@ -56,7 +56,7 @@ export function judgePalette(palette: Palette, theme: ThemeKey, prompt: string):
       problems.push(`the main colour does not suit this business (${band.source})`)
     }
     if (a.s > 25 && CALM.has(theme) && within(a.h, MAGENTA)) {
-      penalty += 0.25
+      penalty += 0.4
       problems.push('pink-purple for a serious business')
     }
     if (b.s > 30 && CALM.has(theme) && within(b.h, MAGENTA) && hueGap(a.h, b.h) > 40) {

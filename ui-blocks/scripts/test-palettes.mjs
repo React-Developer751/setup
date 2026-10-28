@@ -63,7 +63,7 @@ for (const p of prompts) {
       if (chroma < 6) continue
       tinted += 1
       const d = Math.abs(bg.h - accent.h) % 360
-      if ((d > 180 ? 360 - d : d) > 100 && s.mood?.id !== 'cyberpunk' && s.mood?.id !== 'retro') clash += 1
+      if ((d > 180 ? 360 - d : d) > 100 && s.mood?.id !== 'cyberpunk' && s.mood?.id !== 'retro' && s.mood?.id !== 'cream-coral') clash += 1
     }
   }
 }
