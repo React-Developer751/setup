@@ -114,7 +114,7 @@ export function generateWebsiteContent(
     const avoid = shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords, ...shaping.niche.features.map((f) => f.title)] : []
     const personal = personalize(base, extractFacts(userPrompt, subject, avoid), size, shaping.rand, !!shaping.niche)
     // example numbers of the kits are claims nobody made: plain statements instead
-    const plain = withCuisine({ ...personal, stats: plainStats(personal.stats, shaping.rand) }, userPrompt)
+    const plain = withCuisine({ ...personal, stats: plainStats(personal.stats, shaping.rand, !/\b(?:ngo|charity|foundation|donat\w*|shelter|rescue|trust|store|shop|restaurants?|cafes?|bakery|tapri|chai|school)\b/i.test(userPrompt)) }, userPrompt)
     // no text pack: the cards of the business type next to it must not talk about another business
     return shaping.niche ? plain : scrubForeign(plain, userPrompt)
   }

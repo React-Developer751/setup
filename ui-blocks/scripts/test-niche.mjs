@@ -148,6 +148,18 @@ ok(generateWebsite('coaching institute for UPSC', 0, 'premium', true, 'auto').co
 const jp = JSON.stringify(generateWebsite('japanese restaurant', 0, 'premium', true, 'auto').content)
 ok(/Sushi|Ramen/.test(jp) && !/Regional Favourites/.test(jp), 'a japanese restaurant serves japanese food')
 
+// animal welfare, chai stalls, cuisine stats
+for (const prompt of ['ngo for stray dogs', 'animal shelter in Pune', 'dog rescue and adoption']) {
+  const g = generateWebsite(prompt, 0, 'premium', true, 'auto')
+  const text = JSON.stringify(g.content)
+  ok(g.niche === 'animal_welfare', `"${prompt}" is the animal welfare pack (${g.niche})`)
+  ok(!/Women Skill|Education Support|Simple|Booking/.test(text), `"${prompt}": no child-charity or booking wording`)
+}
+const jp2 = generateWebsite('japanese restaurant', 0, 'premium', true, 'auto').content
+ok(!/Veg/.test(JSON.stringify(jp2.stats)), 'a japanese restaurant has no veg/non-veg stat')
+const chai = generateWebsite('ek chai ki tapri ki website', 0, 'premium', true, 'auto').content
+ok(!/oven/i.test(JSON.stringify(chai.hero)) && /chai/i.test(JSON.stringify(chai.features)), 'a chai stall is not baked in an oven')
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

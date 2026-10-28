@@ -295,8 +295,9 @@ const PLAIN_STATS = [
  * The kits come with example numbers ("15 years", "5k+ meals", "100%", "30 days"). On a real business page they would be claims the
  * business never made, so they are replaced by plain statements. Kept: "24/7" and what the person wrote (their years of experience).
  */
-export function plainStats(stats: { value: string; label: string; fact?: boolean }[], rand: () => number): { value: string; label: string; fact?: boolean }[] {
-  const bank = [...PLAIN_STATS].sort(() => rand() - 0.5)
+export function plainStats(stats: { value: string; label: string; fact?: boolean }[], rand: () => number, booking = true): { value: string; label: string; fact?: boolean }[] {
+  // "Simple Booking" only fits a business that takes bookings
+  const bank = PLAIN_STATS.filter((b) => booking || b.label !== 'Booking').sort(() => rand() - 0.5)
   let next = 0
   const used = new Set<string>()
   return stats.map((stat) => {

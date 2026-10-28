@@ -1,225 +1,449 @@
 [
- {
-  "id": "german_cafe",
-  "label": "German cafe",
-  "theme": "food_dining",
-  "keywords": [
-   "german cafe",
-   "german bakery",
-   "german coffee house",
-   "kaffeehaus",
-   "kaffee und kuchen",
-   "pretzel cafe",
-   "brezel",
-   "german style cafe",
-   "जर्मन कैफे"
-  ],
-  "heroTitles": [
-   "Kaffee Und Kuchen, Just The German Way",
-   "Fresh Pretzels And Black Forest Cake Daily",
-   "A Little Corner Of Germany For Your Coffee"
-  ],
-  "heroSubtitles": [
-   "{brand} bakes pretzels and cakes the German way and pours filter coffee all day, in a calm room made for a long chat.",
-   "Come for warm apple strudel and a pot of coffee, stay for a slow afternoon. {brand} is a small cafe with a German menu.",
-   "From soft pretzels at breakfast to bratwurst at lunch and Black Forest cake after, {brand} keeps a simple German menu."
-  ],
-  "button": "Reserve A Table",
-  "featureTitle": "A German Menu For Every Part Of The Day",
-  "features": [
-   {
-    "title": "Fresh Pretzels",
-    "text": "Soft salted pretzels baked through the day, served plain, with butter or with mustard."
-   },
-   {
-    "title": "Black Forest Cake",
-    "text": "Layers of chocolate sponge, cherries and cream, the classic cake of the Black Forest."
-   },
-   {
-    "title": "Apple Strudel",
-    "text": "Thin pastry around spiced apples and raisins, served warm with vanilla sauce."
-   },
-   {
-    "title": "Bratwurst And Mustard",
-    "text": "Grilled German sausages with mustard and bread, for a proper lunch at the cafe."
-   },
-   {
-    "title": "Filter Coffee",
-    "text": "Freshly brewed filter coffee by the cup or the pot, the German way to start a slow morning."
-   },
-   {
-    "title": "Kaffee Und Kuchen",
-    "text": "A pot of coffee and a slice of cake in the afternoon, a German habit we are happy to share."
-   }
-  ],
-  "stats": [
-   {
-    "value": "Daily",
-    "label": "Fresh bakes"
-   },
-   {
-    "value": "All day",
-    "label": "Filter coffee"
-   },
-   {
-    "value": "By slice",
-    "label": "Cakes and strudel"
-   }
-  ],
-  "steps": {
-   "title": "How A Visit Works",
-   "items": [
-    {
-     "title": "Find A Table",
-     "text": "Pick a table inside or by the window, or reserve one for a group."
+  {
+    "id": "german_cafe",
+    "label": "German cafe",
+    "theme": "food_dining",
+    "keywords": [
+      "german cafe",
+      "german bakery",
+      "german coffee house",
+      "kaffeehaus",
+      "kaffee und kuchen",
+      "pretzel cafe",
+      "brezel",
+      "german style cafe",
+      "जर्मन कैफे"
+    ],
+    "heroTitles": [
+      "Kaffee Und Kuchen, Just The German Way",
+      "Fresh Pretzels And Black Forest Cake Daily",
+      "A Little Corner Of Germany For Your Coffee"
+    ],
+    "heroSubtitles": [
+      "{brand} bakes pretzels and cakes the German way and pours filter coffee all day, in a calm room made for a long chat.",
+      "Come for warm apple strudel and a pot of coffee, stay for a slow afternoon. {brand} is a small cafe with a German menu.",
+      "From soft pretzels at breakfast to bratwurst at lunch and Black Forest cake after, {brand} keeps a simple German menu."
+    ],
+    "button": "Reserve A Table",
+    "featureTitle": "A German Menu For Every Part Of The Day",
+    "features": [
+      {
+        "title": "Fresh Pretzels",
+        "text": "Soft salted pretzels baked through the day, served plain, with butter or with mustard."
+      },
+      {
+        "title": "Black Forest Cake",
+        "text": "Layers of chocolate sponge, cherries and cream, the classic cake of the Black Forest."
+      },
+      {
+        "title": "Apple Strudel",
+        "text": "Thin pastry around spiced apples and raisins, served warm with vanilla sauce."
+      },
+      {
+        "title": "Bratwurst And Mustard",
+        "text": "Grilled German sausages with mustard and bread, for a proper lunch at the cafe."
+      },
+      {
+        "title": "Filter Coffee",
+        "text": "Freshly brewed filter coffee by the cup or the pot, the German way to start a slow morning."
+      },
+      {
+        "title": "Kaffee Und Kuchen",
+        "text": "A pot of coffee and a slice of cake in the afternoon, a German habit we are happy to share."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Daily",
+        "label": "Fresh bakes"
+      },
+      {
+        "value": "All day",
+        "label": "Filter coffee"
+      },
+      {
+        "value": "By slice",
+        "label": "Cakes and strudel"
+      }
+    ],
+    "steps": {
+      "title": "How A Visit Works",
+      "items": [
+        {
+          "title": "Find A Table",
+          "text": "Pick a table inside or by the window, or reserve one for a group."
+        },
+        {
+          "title": "Order At The Counter",
+          "text": "Choose pretzels, cake or a hot plate and a pot of coffee."
+        },
+        {
+          "title": "Sit And Stay",
+          "text": "Take your time: the coffee comes to the table and refills are easy."
+        },
+        {
+          "title": "Take Cake Home",
+          "text": "Ask for a boxed slice or a whole cake to share at home."
+        }
+      ]
     },
-    {
-     "title": "Order At The Counter",
-     "text": "Choose pretzels, cake or a hot plate and a pot of coffee."
+    "faq": [
+      {
+        "q": "Do I need to reserve a table?",
+        "a": "Walk-ins are welcome. For a group or a birthday, message us and we will keep a table ready."
+      },
+      {
+        "q": "Do you serve vegetarian food?",
+        "a": "Yes. Pretzels, strudel, cakes and many bakes are vegetarian; ask the team about each dish."
+      },
+      {
+        "q": "Is the filter coffee strong?",
+        "a": "It is a medium roast brewed fresh. Ask for it stronger or lighter and we will adjust."
+      },
+      {
+        "q": "Can I order a whole cake?",
+        "a": "Yes. Tell us the cake and the day, and we will confirm if it can be ready."
+      },
+      {
+        "q": "What is in the bratwurst?",
+        "a": "Ask the team which sausages are on the menu today and what they are made of."
+      }
+    ],
+    "cta": {
+      "title": "Ready For Coffee And Cake?",
+      "button": "Reserve A Table"
     },
-    {
-     "title": "Sit And Stay",
-     "text": "Take your time: the coffee comes to the table and refills are easy."
+    "about": {
+      "title": "About Our German Cafe",
+      "paragraphs": [
+        "{brand} is a small German cafe that bakes pretzels, strudel and cakes and brews filter coffee all day.",
+        "The menu is simple and homely: the cakes and bakes of a German coffee house, served at a pace that lets you stay."
+      ],
+      "points": [
+        "Pretzels and cakes baked fresh",
+        "Filter coffee by the pot",
+        "A calm room for long chats"
+      ]
     },
-    {
-     "title": "Take Cake Home",
-     "text": "Ask for a boxed slice or a whole cake to share at home."
-    }
-   ]
-  },
-  "faq": [
-   {
-    "q": "Do I need to reserve a table?",
-    "a": "Walk-ins are welcome. For a group or a birthday, message us and we will keep a table ready."
-   },
-   {
-    "q": "Do you serve vegetarian food?",
-    "a": "Yes. Pretzels, strudel, cakes and many bakes are vegetarian; ask the team about each dish."
-   },
-   {
-    "q": "Is the filter coffee strong?",
-    "a": "It is a medium roast brewed fresh. Ask for it stronger or lighter and we will adjust."
-   },
-   {
-    "q": "Can I order a whole cake?",
-    "a": "Yes. Tell us the cake and the day, and we will confirm if it can be ready."
-   },
-   {
-    "q": "What is in the bratwurst?",
-    "a": "Ask the team which sausages are on the menu today and what they are made of."
-   }
-  ],
-  "cta": {
-   "title": "Ready For Coffee And Cake?",
-   "button": "Reserve A Table"
-  },
-  "about": {
-   "title": "About Our German Cafe",
-   "paragraphs": [
-    "{brand} is a small German cafe that bakes pretzels, strudel and cakes and brews filter coffee all day.",
-    "The menu is simple and homely: the cakes and bakes of a German coffee house, served at a pace that lets you stay."
-   ],
-   "points": [
-    "Pretzels and cakes baked fresh",
-    "Filter coffee by the pot",
-    "A calm room for long chats"
-   ]
-  },
-  "pricing": {
-   "title": "Simple Cafe Prices",
-   "plans": [
-    {
-     "name": "Pretzel And Coffee",
-     "price": "$4",
-     "period": "/set",
-     "perks": [
-      "Fresh pretzel",
-      "Filter coffee",
-      "Butter or mustard"
-     ]
+    "pricing": {
+      "title": "Simple Cafe Prices",
+      "plans": [
+        {
+          "name": "Pretzel And Coffee",
+          "price": "$4",
+          "period": "/set",
+          "perks": [
+            "Fresh pretzel",
+            "Filter coffee",
+            "Butter or mustard"
+          ]
+        },
+        {
+          "name": "Cake And Coffee",
+          "price": "$6",
+          "period": "/set",
+          "perks": [
+            "A slice of cake",
+            "A pot of coffee",
+            "Cream on the side"
+          ]
+        },
+        {
+          "name": "German Lunch",
+          "price": "$9",
+          "period": "/plate",
+          "perks": [
+            "Bratwurst and mustard",
+            "Bread or pretzel",
+            "Filter coffee"
+          ]
+        }
+      ]
     },
-    {
-     "name": "Cake And Coffee",
-     "price": "$6",
-     "period": "/set",
-     "perks": [
-      "A slice of cake",
-      "A pot of coffee",
-      "Cream on the side"
-     ]
+    "gallery": {
+      "title": "From Our German Kitchen",
+      "captions": [
+        "Fresh Pretzels",
+        "Black Forest Cake",
+        "Warm Apple Strudel",
+        "Filter Coffee Pot",
+        "Bratwurst Lunch",
+        "Cafe Corner"
+      ]
     },
-    {
-     "name": "German Lunch",
-     "price": "$9",
-     "period": "/plate",
-     "perks": [
-      "Bratwurst and mustard",
-      "Bread or pretzel",
-      "Filter coffee"
-     ]
-    }
-   ]
-  },
-  "gallery": {
-   "title": "From Our German Kitchen",
-   "captions": [
-    "Fresh Pretzels",
-    "Black Forest Cake",
-    "Warm Apple Strudel",
-    "Filter Coffee Pot",
-    "Bratwurst Lunch",
-    "Cafe Corner"
-   ]
-  },
-  "team": {
-   "title": "Meet Our Cafe Team",
-   "roles": [
-    "Head Baker",
-    "Barista",
-    "Cafe Manager"
-   ]
-  },
-  "testimonials": [
-   {
-    "quote": "The pretzels were warm and soft and the cake tasted like it came from a German bakery.",
-    "role": "Cafe guest"
-   },
-   {
-    "quote": "A quiet place for a long coffee and a slice of strudel, easy to spend an afternoon here.",
-    "role": "Regular guest"
-   },
-   {
-    "quote": "We booked a table for six and the team kept it ready with coffee on arrival.",
-    "role": "Birthday group"
-   }
-  ],
-  "blog": {
-   "title": "From The German Cafe",
-   "posts": [
-    {
-     "tag": "Baking",
-     "title": "How A German Pretzel Gets Its Dark Crust"
+    "team": {
+      "title": "Meet Our Cafe Team",
+      "roles": [
+        "Head Baker",
+        "Barista",
+        "Cafe Manager"
+      ]
     },
-    {
-     "tag": "Coffee",
-     "title": "Filter Coffee Versus Espresso, What Is The Difference"
+    "testimonials": [
+      {
+        "quote": "The pretzels were warm and soft and the cake tasted like it came from a German bakery.",
+        "role": "Cafe guest"
+      },
+      {
+        "quote": "A quiet place for a long coffee and a slice of strudel, easy to spend an afternoon here.",
+        "role": "Regular guest"
+      },
+      {
+        "quote": "We booked a table for six and the team kept it ready with coffee on arrival.",
+        "role": "Birthday group"
+      }
+    ],
+    "blog": {
+      "title": "From The German Cafe",
+      "posts": [
+        {
+          "tag": "Baking",
+          "title": "How A German Pretzel Gets Its Dark Crust"
+        },
+        {
+          "tag": "Coffee",
+          "title": "Filter Coffee Versus Espresso, What Is The Difference"
+        },
+        {
+          "tag": "Cake",
+          "title": "What Makes A Real Black Forest Cake"
+        }
+      ]
     },
-    {
-     "tag": "Cake",
-     "title": "What Makes A Real Black Forest Cake"
-    }
-   ]
+    "marquee": [
+      "Pretzel",
+      "Strudel",
+      "Bratwurst",
+      "Black Forest",
+      "Kaffee",
+      "Kuchen",
+      "Filter Coffee",
+      "Cake"
+    ],
+    "contactText": "Planning a coffee date or a birthday table? Message {brand} and we will keep a table ready for you."
   },
-  "marquee": [
-   "Pretzel",
-   "Strudel",
-   "Bratwurst",
-   "Black Forest",
-   "Kaffee",
-   "Kuchen",
-   "Filter Coffee",
-   "Cake"
-  ],
-  "contactText": "Planning a coffee date or a birthday table? Message {brand} and we will keep a table ready for you."
- }
+  {
+    "id": "animal_welfare",
+    "label": "Animal welfare and rescue",
+    "theme": "nonprofit",
+    "keywords": [
+      "stray dogs",
+      "street dogs",
+      "stray animals",
+      "animal shelter",
+      "animal rescue",
+      "dog rescue",
+      "stray cats",
+      "animal welfare",
+      "pet adoption",
+      "आवारा कुत्ते"
+    ],
+    "heroTitles": [
+      "Every Street Dog Deserves A Safe Tomorrow",
+      "Rescue, Heal And Find A Home",
+      "Be The Reason A Stray Gets A Second Chance"
+    ],
+    "heroSubtitles": [
+      "{brand} rescues injured and abandoned animals, treats them, vaccinates them and finds them loving homes.",
+      "Feed, adopt, volunteer or sponsor treatment, because one act of kindness can change an animal's whole life.",
+      "{brand} runs a rescue shelter and a street-feeding program, and shares where every donation goes."
+    ],
+    "button": "Help An Animal",
+    "featureTitle": "How We Help Animals In Need",
+    "features": [
+      {
+        "title": "Rescue And Ambulance",
+        "text": "Calls about injured or trapped animals are answered by a rescue team."
+      },
+      {
+        "title": "Treatment And Surgery",
+        "text": "Wounds, fractures and illness treated by visiting vets, with medicines paid by donors."
+      },
+      {
+        "title": "Vaccination And Sterilisation",
+        "text": "Anti-rabies shots and sterilisation drives that keep street animals healthy."
+      },
+      {
+        "title": "Feeding Drives",
+        "text": "Daily meals and clean water for street dogs and cats in nearby lanes."
+      },
+      {
+        "title": "Adoption",
+        "text": "Healthy, vaccinated animals matched with families who are ready for them."
+      },
+      {
+        "title": "Volunteer Walks",
+        "text": "Weekend shifts for walking, cleaning and caring for animals in the shelter."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Vaccinated",
+        "label": "Before every adoption"
+      },
+      {
+        "value": "Daily",
+        "label": "Street feeding"
+      },
+      {
+        "value": "Open",
+        "label": "Reports for donors"
+      }
+    ],
+    "steps": {
+      "title": "How A Rescue Works",
+      "items": [
+        {
+          "title": "Someone Reports",
+          "text": "A call or message tells us where an animal needs help."
+        },
+        {
+          "title": "We Reach And Treat",
+          "text": "The rescue team brings the animal in and a vet checks it."
+        },
+        {
+          "title": "It Recovers",
+          "text": "Food, rest and care at the shelter until the animal is healthy."
+        },
+        {
+          "title": "Home Or Release",
+          "text": "Adopted by a family, or vaccinated and returned to its own area."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "What should I do if I find an injured animal?",
+        "a": "Call or message us with the exact location and a photo. Keep the animal calm and give it water while the team arrives."
+      },
+      {
+        "q": "Can I adopt a dog or cat?",
+        "a": "Yes. We meet you first, then match you with an animal that suits your home. Every animal is vaccinated before it leaves."
+      },
+      {
+        "q": "Do you give a receipt for donations?",
+        "a": "Yes. We issue a receipt for every donation and share how funds are used."
+      },
+      {
+        "q": "Can I feed street animals myself?",
+        "a": "Yes. Ask us where feeding is needed so food reaches animals that are not already fed."
+      },
+      {
+        "q": "How can I volunteer?",
+        "a": "Message us. We will tell you the next walk, feeding round or shelter shift."
+      }
+    ],
+    "cta": {
+      "title": "Will You Stand With Them This Month?",
+      "button": "Help An Animal"
+    },
+    "about": {
+      "title": "About Our Rescue",
+      "paragraphs": [
+        "{brand} began when a few neighbours started feeding and treating the street animals in their lane, and it grew into a rescue and adoption group.",
+        "We keep our work local, share how funds are used and treat every animal with patience and care."
+      ],
+      "points": [
+        "Rescue and treatment",
+        "Shots and sterilisation drives",
+        "Adoption with a home visit"
+      ]
+    },
+    "pricing": {
+      "title": "Ways To Help",
+      "plans": [
+        {
+          "name": "Feeder",
+          "price": "$5",
+          "period": "/month",
+          "perks": [
+            "Feeds street animals",
+            "Monthly update",
+            "Donation receipt"
+          ]
+        },
+        {
+          "name": "Sponsor A Treatment",
+          "price": "$15",
+          "period": "/month",
+          "perks": [
+            "Medicines and vet care",
+            "Progress updates",
+            "Donation receipt"
+          ]
+        },
+        {
+          "name": "Guardian",
+          "price": "$40",
+          "period": "/month",
+          "perks": [
+            "Sponsor an animal's stay",
+            "Visit invitations",
+            "Donation receipt"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "Moments From The Shelter",
+      "captions": [
+        "Rescued pup",
+        "Vaccination drive",
+        "Street feeding",
+        "Adoption day",
+        "Recovery ward",
+        "Volunteer walk"
+      ]
+    },
+    "team": {
+      "title": "Meet The People Who Care",
+      "roles": [
+        "Founder And Trustee",
+        "Rescue Coordinator",
+        "Volunteer Manager"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They picked up an injured puppy within the hour and kept me updated until it was well.",
+        "role": "Rescuer"
+      },
+      {
+        "quote": "We adopted from them and the home visit and vaccination records made us trust the process.",
+        "role": "Adopter"
+      },
+      {
+        "quote": "I walk the dogs every Sunday and see how carefully everything is organised.",
+        "role": "Volunteer"
+      }
+    ],
+    "blog": {
+      "title": "Stories And Updates",
+      "posts": [
+        {
+          "tag": "Rescue",
+          "title": "What To Do When You Find An Injured Street Dog"
+        },
+        {
+          "tag": "Adoption",
+          "title": "Getting Your Home Ready For A Rescued Dog"
+        },
+        {
+          "tag": "Care",
+          "title": "Why Sterilisation And Vaccination Matter"
+        }
+      ]
+    },
+    "marquee": [
+      "Rescue",
+      "Adopt",
+      "Feed",
+      "Vaccinate",
+      "Volunteer",
+      "Sponsor",
+      "Care",
+      "Donate"
+    ],
+    "contactText": "Found an animal in need, want to adopt or volunteer? Write to us and we will reply quickly."
+  }
 ]
