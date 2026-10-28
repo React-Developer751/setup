@@ -14,7 +14,8 @@ const children = [
   run('images', process.execPath, ['scripts/run-pixelmath.mjs']),
   run('content', process.execPath, ['scripts/run-corecraft.mjs']),
   run('server', process.execPath, ['server/index.mjs']),
-  run('app', process.execPath, ['node_modules/vite/bin/vite.js', '--port', '5173']),
+  // --prod: the built page (npm run build) is served by the server itself, no dev server
+  ...(process.argv.includes('--prod') ? [] : [run('app', process.execPath, ['node_modules/vite/bin/vite.js', '--port', '5173'])]),
 ]
-console.log('\nOpen http://localhost:5173  (Ctrl+C stops all four)\n')
+console.log(process.argv.includes('--prod') ? '\nOpen http://localhost:8787  (the built page; Ctrl+C stops all three)\n' : '\nOpen http://localhost:5173  (Ctrl+C stops all four)\n')
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { children.forEach((c) => c.kill(signal)); process.exit(0) })

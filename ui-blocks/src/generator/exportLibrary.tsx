@@ -12,6 +12,7 @@ import prelineScript from '../../node_modules/preline/dist/preline.js?raw'
 import extraContentSource from './extraContent.ts?raw'
 import { faviconSvg } from './artBrain'
 import { escapeHtml, jsString, slugify, usedCss, type ExportDetails } from './exportSite'
+import { hoistImages, oneHeading } from './exportAssets'
 import { seededRandom } from './random'
 import finalPromptSource from './finalPrompt.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
@@ -167,7 +168,9 @@ function renderLibrary(lib: Library) {
 }
 
 export function buildLibraryStandalone(lib: Library): string {
-  const { html, styles, needsPreline, css } = renderLibrary(lib)
+  const rendered0 = renderLibrary(lib)
+  const { styles, needsPreline, css } = rendered0
+  const html = oneHeading(rendered0.html)
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -225,7 +228,11 @@ ${pagesScript(lib)}</script>
 const PLACEHOLDER_URL = 'https://www.example.com'
 
 export function buildLibraryStaticFiles(lib: Library, details: ExportDetails = {}): ZipEntry[] {
-  const { html, styles, needsPreline, css } = renderLibrary(lib)
+  const rendered = renderLibrary(lib)
+  const { styles, needsPreline, css } = rendered
+  // the pictures become files of the site (assets/img), the page keeps only their addresses
+  const hoisted = hoistImages(oneHeading(rendered.html))
+  const html = hoisted.html
   const brand = lib.content.brandName
   const description = lib.content.hero.subtitle
   const siteUrl = safeSiteUrl(details.siteUrl, PLACEHOLDER_URL)
@@ -298,6 +305,7 @@ ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src=
     { path: 'assets/site.js', content: script },
     { path: 'assets/favicon.svg', content: favicon + '\n' },
     ...(needsPreline ? [{ path: 'assets/preline.js', content: prelineScript }] : []),
+    ...hoisted.files,
     { path: 'sitemap.xml', content: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${xmlEscape(siteUrl)}/</loc><lastmod>${today}</lastmod></url>\n</urlset>\n` },
     { path: 'robots.txt', content: `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl.replace(/\s/g, '')}/sitemap.xml\n` },
     ...deployFiles(brand),

@@ -39,6 +39,7 @@
     "components:convert": "node scripts/convert-all.mjs ..",
     "components:audit": "node scripts/audit-components.mjs src/components",
     "app": "node scripts/start-all.mjs",
+    "start": "npm run build && node scripts/start-all.mjs --prod",
     "images:learn": "node scripts/image-learn.mjs",
     "test:images": "node scripts/test-images.mjs"
   },

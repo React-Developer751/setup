@@ -128,3 +128,13 @@ npm run dev         # the page: Real photos > "Draw scenes for my site"
 * Settings: `PIXELMATH_URL` (default http://127.0.0.1:8000), `PIXELMATH_API_KEY` (if the engine runs with a key: sent by the server, never by the page),
   `PIXELMATH_DIR` and `PIXELMATH_PORT` for `npm run images`, `EDIT_IMAGES_PER_MINUTE` (default 90).
 * Check: `npm run test:images` (plans, words, the server's proxy against a fake engine, and the real engine when it runs).
+
+
+## Production
+```bash
+npm run start      # builds the page and serves it with the API on http://localhost:8787 (plus the two engines)
+```
+* **One process**: `server/index.mjs` serves `dist/` (hashed files cached for a year, any other address is the app) and the API. `SERVE_DIST=0` turns the page off, `DIST_DIR` points elsewhere, `HOST=0.0.0.0` needs `EDIT_SERVER_TOKEN` and a TLS reverse proxy (`TRUST_PROXY=1` behind it).
+* **Security headers** on the page: a content security policy (no external scripts, `object-src 'none'`, `frame-ancestors 'none'`), `nosniff`, no framing, no referrer, no camera or microphone. Inline scripts stay allowed because the previews are frames made from text. The API refuses other origins, wrong content types and too many requests, and every stored read needs the token when one is set.
+* **No external AI, model or API** is called at run time. `npm audit --omit=dev`: 0 vulnerabilities. `npm test` is the gate (tests, types, lint, build).
+* **Exported sites**: each picture is a file in `assets/img` (the page is about 20 times lighter), pictures below the first screen load lazily, one `h1` per page, no tracking, no external scripts (Google Fonts are linked by the exported pages and named in their README).

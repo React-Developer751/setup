@@ -172,7 +172,7 @@ const src = fs.readFileSync('server/index.mjs', 'utf8')
 ok(!/anthropic|openai|pexels|wikimedia|api\.[a-z]+\.com/i.test(src), 'server: no external AI or API is named in the server')
 ok(!fs.existsSync('server/commons.mjs'), 'server: the Wikimedia photo search is gone')
 
-const server = start({ ANTHROPIC_API_KEY: 'test-key', PEXELS_API_KEY: 'test-key' })
+const server = start({ ANTHROPIC_API_KEY: 'test-key', PEXELS_API_KEY: 'test-key', EDIT_RATE_PER_MINUTE: '30' })
 await wait()
 const health = await (await fetch(`http://127.0.0.1:${PORT}/api/health`)).json()
 ok(health.ok === true && !('ai' in health) && !('photos' in health), 'health reports only the own engines')
@@ -185,11 +185,40 @@ const before = fs.existsSync(feedbackFile) ? fs.readFileSync(feedbackFile, 'utf8
 await post('/api/feedback', { text: 'make it red', ops: [{ op: 'accent', hex: '#dc2626' }], accepted: true, source: 'rules' })
 const after = fs.readFileSync(feedbackFile, 'utf8').split('\n').filter(Boolean)
 ok(after.length === before + 1 && JSON.parse(after.at(-1)).text === 'make it red', 'feedback is appended to the file')
-// rate limit: the 31st request within a minute from one address is refused
+// rate limit: a request over the limit of a minute from one address is refused
 let limit = 0
 for (let i = 0; i < 40; i += 1) if ((await post('/api/feedback', { text: 'x', ops: [] })).status === 429) limit += 1
 ok(limit > 0, 'too many requests are refused with 429')
 server.kill()
+
+// ── the built page is served with strict headers, and nothing outside its folder can be read
+{
+  const dist = fs.mkdtempSync('/tmp/dist-')
+  fs.mkdirSync(`${dist}/assets`)
+  fs.writeFileSync(`${dist}/index.html`, '<!doctype html><title>app</title>')
+  fs.writeFileSync(`${dist}/assets/app-abc.js`, 'console.log(1)')
+  fs.writeFileSync(`${dist}/../secret-outside.txt`, 'secret')
+  const web = start({ DIST_DIR: dist })
+  await wait()
+  const get = (p, init) => fetch(`http://127.0.0.1:${PORT}${p}`, init)
+  const home = await get('/')
+  ok(home.status === 200 && /text\/html/.test(home.headers.get('content-type')) && /default-src 'self'/.test(home.headers.get('content-security-policy') ?? ''), 'the page is served with a content security policy')
+  ok(home.headers.get('x-content-type-options') === 'nosniff' && home.headers.get('x-frame-options') === 'DENY' && home.headers.get('referrer-policy') === 'no-referrer' && /frame-ancestors 'none'/.test(home.headers.get('content-security-policy')), 'no sniffing, no framing, no referrer')
+  const js = await get('/assets/app-abc.js')
+  ok(js.status === 200 && /immutable/.test(js.headers.get('cache-control')) && /javascript/.test(js.headers.get('content-type')), 'files with a hash in the name are cached for a year')
+  ok((await (await get('/some/route')).text()).includes('<title>app</title>'), 'any other address is the app')
+  ok((await get('/missing.js')).status === 404, 'a missing file is a 404')
+  for (const bad of ['/..%2fsecret-outside.txt', '/%2e%2e/secret-outside.txt', '/assets/..%2f..%2fsecret-outside.txt', '/%00']) {
+    const r = await get(bad)
+    ok(!(await r.text()).includes('secret'), `a path outside the folder is never read (${bad})`)
+  }
+  ok((await get('/api/nothing')).status === 404 && /json/.test((await get('/api/nothing')).headers.get('content-type')), 'an unknown api address is a json 404, not the app')
+  ok((await get('/', { method: 'HEAD' })).status === 200, 'HEAD works')
+  web.kill()
+  fs.rmSync(dist, { recursive: true, force: true })
+  fs.rmSync('/tmp/secret-outside.txt', { force: true })
+  await new Promise((r) => setTimeout(r, 300))
+}
 
 // ── 4. the parser on the labelled command sets: it must not get worse
 const cmdFile = 'src/data/training/edit-commands.test.jsonl'

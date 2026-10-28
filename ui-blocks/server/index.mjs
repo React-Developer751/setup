@@ -24,7 +24,7 @@ const CORECRAFT_URL = (process.env.CORECRAFT_URL ?? 'http://127.0.0.1:8100').rep
 const PIXELMATH_URL = (process.env.PIXELMATH_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
 const PIXELMATH_KEY = process.env.PIXELMATH_API_KEY
 const IMAGES_PER_MINUTE = Number(process.env.EDIT_IMAGES_PER_MINUTE ?? 90)
-const RATE_PER_MINUTE = Number(process.env.EDIT_RATE_PER_MINUTE ?? 30)
+const RATE_PER_MINUTE = Number(process.env.EDIT_RATE_PER_MINUTE ?? 120)
 const DATA = process.env.EDIT_DATA_DIR ?? path.join(here, 'data')
 const MAX_BODY = 20_000
 
@@ -107,6 +107,45 @@ async function imageEngineUp() {
 const send = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' })
   res.end(JSON.stringify(body))
+}
+
+
+// ── the built page (npm run build): served by this server, so one process is the whole site; the browser gets strict security headers
+const DIST = path.resolve(process.env.DIST_DIR ?? path.join(here, '..', 'dist'))
+const SERVE_DIST = process.env.SERVE_DIST !== '0' && fs.existsSync(path.join(DIST, 'index.html'))
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.ico': 'image/x-icon', '.wasm': 'application/wasm', '.woff2': 'font/woff2', '.woff': 'font/woff', '.txt': 'text/plain; charset=utf-8', '.map': 'application/json; charset=utf-8' }
+// the page shows its previews in frames made from text (srcdoc), which follow the rules of the page: inline scripts and styles and the Google fonts of the sites it makes are allowed, nothing else from outside
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://cdn.jsdelivr.net data: blob:; worker-src 'self' blob:; frame-src 'self' about: data: blob: https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+const SECURITY = { 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY', 'cross-origin-opener-policy': 'same-origin', 'permissions-policy': 'camera=(), microphone=(), geolocation=(), payment=()', 'content-security-policy': CSP }
+/** a file of the built page; an address that is not a file is the page itself (the app has no other pages); nothing outside the folder can be read */
+function serveStatic(req, res, pathname) {
+  if (!SERVE_DIST || (req.method !== 'GET' && req.method !== 'HEAD')) return false
+  let decoded
+  try {
+    decoded = decodeURIComponent(pathname)
+  } catch {
+    return false
+  }
+  if (decoded.includes('\0')) return false
+  let file = path.resolve(DIST, `.${decoded}`)
+  if (file !== DIST && !file.startsWith(DIST + path.sep)) return false
+  let stat = fs.statSync(file, { throwIfNoEntry: false })
+  if (stat?.isDirectory()) {
+    file = path.join(file, 'index.html')
+    stat = fs.statSync(file, { throwIfNoEntry: false })
+  }
+  const asked = !!path.extname(decoded)
+  // a missing file with an extension is a 404, any other address is the app
+  if (!stat?.isFile()) {
+    if (asked) return false
+    file = path.join(DIST, 'index.html')
+  }
+  const ext = path.extname(file).toLowerCase()
+  const hashed = file.includes(`${path.sep}assets${path.sep}`)
+  res.writeHead(200, { 'content-type': TYPES[ext] ?? 'application/octet-stream', 'cache-control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache', ...SECURITY })
+  if (req.method === 'HEAD') res.end()
+  else fs.createReadStream(file).pipe(res)
+  return true
 }
 
 export const server = http.createServer(async (req, res) => {
@@ -390,6 +429,7 @@ export const server = http.createServer(async (req, res) => {
       fs.appendFileSync(path.join(DATA, 'feedback.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), text: String(entry.text ?? '').slice(0, 600), ops: entry.ops ?? [], accepted: entry.accepted !== false, source: entry.source === 'server' ? 'server' : 'rules' })}\n`)
       return send(res, 200, { ok: true })
     }
+    if (!url.pathname.startsWith('/api/') && serveStatic(req, res, url.pathname)) return
     send(res, 404, { error: 'not found' })
   } catch (error) {
     // a problem of ours is not described to the caller (file names, internals); a refusal with a status (too large, bad request) is

@@ -100,6 +100,9 @@ export function generateLibraryPage(
       : ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
   if (hasOffers) visible.add('banner')
+  // reviews with a made-up name ("Sample Customer") and a team of made-up people are not shown: the person adds real ones ("add the team")
+  if (base.content.testimonials.length && base.content.testimonials.every((t) => /sample/i.test(t.author))) visible.delete('testimonial')
+  visible.delete('team')
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)

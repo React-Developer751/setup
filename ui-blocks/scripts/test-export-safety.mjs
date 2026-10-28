@@ -39,6 +39,20 @@ ok(safeSiteUrl('javascript:alert(1)', 'F') === 'F' && safeSiteUrl('ftp://x.com',
 ok(safeSiteUrl('https://x.com/p?a=1&b=2#top', 'F') === 'https://x.com/p', 'a query and a fragment are dropped')
 ok(xmlEscape('a&b<c>"d"') === 'a&amp;b&lt;c&gt;&quot;d&quot;', 'XML text is escaped')
 
+// ── the pictures of an exported site become files
+{
+  const { hoistImages, oneHeading } = await loadGeneratorModule('exportAssets.ts')
+  ok(oneHeading('<h1 class="a">One</h1><section><h1>Two</h1><h1 id="x">Three</h1></section>') === '<h1 class="a">One</h1><section><h2>Two</h2><h2 id="x">Three</h2></section>', 'a page keeps one h1, the other headings become h2')
+  const big = 'A'.repeat(4000)
+  const html = `<img src="data:image/jpeg;base64,${big}" alt="a"><div style="background-image: url(&quot;data:image/jpeg;base64,${big}&quot;)"></div><img src="data:image/png;base64,${'B'.repeat(4000)}" alt="b"><img src="data:image/svg+xml;utf8,%3Csvg%3E" alt="c"><img src="x.jpg" loading="eager" alt="d">`
+  const out = hoistImages(html)
+  ok(out.files.length === 2 && !out.html.includes('base64,'), 'big pictures become files, the same picture only once')
+  ok(out.html.includes('assets/img/pic-1.jpg') && out.html.includes('assets/img/pic-2.png') && out.html.includes('url(&quot;assets/img/pic-1.jpg&quot;)'), 'the page points at the files (also in a background)')
+  ok(out.html.includes('data:image/svg+xml') && out.html.includes('loading="eager"'), 'small pictures and a chosen loading mode stay')
+  ok(!/alt="a"[^>]*loading="lazy"/.test(out.html) && /alt="b"[^>]*loading="lazy"/.test(out.html), 'the first picture loads at once, the later ones lazily')
+  ok(out.files[0].content instanceof Uint8Array && out.files[0].content.length === 3000, 'the file holds the decoded bytes')
+}
+
 console.log(`export-safety: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) {
   console.log(fail.map((f) => ` - ${f}`).join('\n'))
