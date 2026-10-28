@@ -78,3 +78,23 @@ They are chosen by the kind of business (`showcaseMood`): fashion house, couture
 ## Limits
 * The pictures of the image engine are illustrations: the designs lean on photography, so the look is closer in structure and colour than in feeling. Upload real photos ("Real photos" panel) for the full effect.
 * No WebGL, scroll-driven motion, custom cursors or video.
+
+---
+
+# Part 3: award-winning studios (read 2026-10-28)
+Bruno Simon, Active Theory, Resn, Locomotive, Unseen, Moooi, Uncommon, Obys, 14islands, Immersive Garden.
+**What was really seen and what not:** in this browser (no GPU) most of these WebGL sites only show their loader. Seen: Bruno Simon (neon-purple grid and a glowing ring loader), Unseen (charcoal / blush preloader with a big "N"), Uncommon (loud teal page, condensed italic headline, phone mock-ups), Moooi (taupe page, thin large serif), Resn (`#141414` loader). Measured from their HTML and CSS: fonts, colours, titles, descriptions. Locomotive answered with a bot check (Cloudflare): it was not opened, a bot check is not bypassed. The rest of the pattern is general knowledge of this kind of site, not a measurement.
+
+## What they share
+* A near-black (`#000`, `#030303`, `#121212`) or very light (`#f8f8f8`, `#e8e8e8`) page; a tiny wordmark; tiny navigation; a loader with a counter.
+* **Giant type**, often a serif display next to a grotesk (Saol Display + Neue Montreal at Unseen, Obys serif, PS Times + Helvetica Neue at Immersive Garden), very tight tracking.
+* Warm neutrals with charcoal (Unseen blush `#efded9`, Moooi sand `#e3d9c6`).
+* Loud accents only where the site is playful (Uncommon teal and yellow, Bruno Simon neon purple and pink, handwritten Amatic SC).
+* Work is shown as a numbered index with thin rules, or as large picture tiles; buttons are text links with an underline.
+
+## What the generator learned
+Four more design moods (25 in all): `noir-lab` (near-black, off-white type, text links), `blush-serif` (blush and sand, a huge serif), `neon-arcade` (indigo night, hot pink and cyan neon, glowing rounded tiles), `studio-index` (light grey, giant black type, a numbered index of work), and two more parts for the showcase kit: `ShowTypeHero1` (tiny labels, a giant headline, text links and one wide picture strip) and `ShowIndex1` (a numbered index of the services).
+Chosen by the kind of business: immersive or experiential studios -> noir-lab; game studios and arcades -> neon-arcade; furniture, lighting, ceramics, interior design -> blush-serif; creative or design agencies and portfolios -> studio-index. Or ask by name ("obys style", "moooi style", "bruno simon style", "active theory style").
+
+## Limits
+No WebGL, 3D worlds, scroll-driven motion, cursor effects or preloaders: only their type, colour, layout and pace are taken.

@@ -123,4 +123,8 @@ export const showPools: Partial<Record<string, Partial<Record<Role, string[]>>>>
   'apple-tile': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowStack1'], cta: ['showkit/ShowCta1'] },
   'techno-black': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowStack1'], cta: ['showkit/ShowCta1'] },
   'showroom-white': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowStack1'], cta: ['showkit/ShowCta1'] },
+  'noir-lab': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowIndex1'], cta: ['showkit/ShowCta1'] },
+  'blush-serif': { hero: ['showkit/ShowTypeHero1'], features: ['showkit/ShowTiles1'], cta: ['showkit/ShowCta1'] },
+  'neon-arcade': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowTiles1'], cta: ['showkit/ShowCta1'] },
+  'studio-index': { hero: ['showkit/ShowTypeHero1'], features: ['showkit/ShowIndex1'], cta: ['showkit/ShowCta1'] },
 }

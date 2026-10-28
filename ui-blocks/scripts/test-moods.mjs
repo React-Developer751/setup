@@ -23,7 +23,7 @@ const PROMPT = 'Create a website for a bakery called Sweet Crumbs in Mumbai'
 const ops = (messages) => messages.flatMap((m) => { const p = parseEdit(m, 'single'); return p.kind === 'ops' ? p.ops : [] })
 
 // ── the moods
-ok(MOOD_IDS.length === 21 && new Set(MOOD_IDS).size === 21, 'twenty-one moods (ten general ones, five read from translation sites, six from picture-led sites)')
+ok(MOOD_IDS.length === 25 && new Set(MOOD_IDS).size === 25, 'twenty-five moods (ten general ones, five from translation sites, six from famous picture-led sites, four from award studios)')
 ok(JSON.stringify([...MOOD_IDS, 'none', 'auto']) === JSON.stringify([...MOOD_CHOICES]), 'the moods of edits.ts are the moods of moods.ts')
 for (const mood of MOODS) {
   for (const hue of [5, 60, 140, 210, 280, 330]) {
@@ -36,8 +36,8 @@ for (const mood of MOODS) {
   }
 }
 const looks = MOODS.map((m) => { const s = generateWebsite(PROMPT, 3, undefined, true, 'auto', editsFrom([{ op: 'mood', mood: m.id }])); return { id: m.id, bg: s.palette[s.initialMode].bg, html: s.html, mode: s.initialMode, font: s.tokens.light['--g-font'] } })
-ok(new Set(looks.map((l) => l.bg)).size >= 17, 'the moods have their own page colours (the white ones of the picture-led designs share one)')
-ok(new Set(looks.map((l) => l.html)).size === 21, `every mood makes a different site (${new Set(looks.map((l) => l.html)).size})`)
+ok(new Set(looks.map((l) => l.bg)).size >= 18, 'the moods have their own page colours (the white ones of the picture-led designs share one)')
+ok(new Set(looks.map((l) => l.html)).size === 25, `every mood makes a different site (${new Set(looks.map((l) => l.html)).size})`)
 ok(looks.find((l) => l.id === 'cyberpunk').mode === 'dark' && looks.find((l) => l.id === 'retro').mode === 'light', 'a mood starts in its own mode')
 ok(new Set(looks.map((l) => l.font)).size >= 7, 'moods bring their own typefaces')
 ok(/shadow-\[0_0_22px/.test(looks.find((l) => l.id === 'cyberpunk').html) && /uppercase/.test(looks.find((l) => l.id === 'cyberpunk').html), 'cyberpunk: glow and wide capitals')

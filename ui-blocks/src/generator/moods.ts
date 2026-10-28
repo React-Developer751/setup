@@ -8,7 +8,7 @@ import type { ThemeKey, Theme, Palette, PaletteMode, ColorMode } from './themes'
 import type { Target } from './edit/edits'
 import { sectionTokens, mixHex } from './edit/sectionColors'
 
-export type MoodId = 'minimal-light' | 'minimal-dark' | 'soft-neo' | 'retro' | 'cyberpunk' | 'glass' | 'bold-contrast' | 'editorial' | 'playful-pop' | 'luxe-dark' | 'clinic-mesh' | 'plum-ivory' | 'trust-navy' | 'violet-glow' | 'cream-coral' | 'maison-noir' | 'film-editorial' | 'atelier-3d' | 'apple-tile' | 'techno-black' | 'showroom-white'
+export type MoodId = 'minimal-light' | 'minimal-dark' | 'soft-neo' | 'retro' | 'cyberpunk' | 'glass' | 'bold-contrast' | 'editorial' | 'playful-pop' | 'luxe-dark' | 'clinic-mesh' | 'plum-ivory' | 'trust-navy' | 'violet-glow' | 'cream-coral' | 'maison-noir' | 'film-editorial' | 'atelier-3d' | 'apple-tile' | 'techno-black' | 'showroom-white' | 'noir-lab' | 'blush-serif' | 'neon-arcade' | 'studio-index'
 export type MoodChoice = MoodId | 'none'
 
 /** how a panel of the page is coloured */
@@ -362,12 +362,61 @@ export const MOODS: Mood[] = [
     roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
     affinity: { automotive: 3, modern_tech: 2, home_services: 1, general_business: 1, real_estate: 1 },
   },
+  // ───────────── four more, read from award-winning studios (Active Theory, Resn, Immersive Garden, Unseen, Moooi, Bruno Simon, Uncommon, Obys, 14islands) ─────────────
+  {
+    id: 'noir-lab',
+    label: 'Noir lab',
+    blurb: 'An immersive studio: near-black, off-white Helvetica-like type, tiny labels, a picture that fills the screen, no colour but one cold light.',
+    keywords: ['noir lab', 'immersive style', 'active theory style', 'resn style', 'dark studio look'],
+    mode: 'dark',
+    font: { family: 'Archivo', weights: '300;400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-none', heading: 'font-medium tracking-tighter', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-none uppercase tracking-widest', secondary: 'rounded-none uppercase tracking-widest' },
+    colors: (_h, _h2, mode) => finish(mode === 'dark' ? { bg: '#030303', surface: '#0f0f0f', border: '#262626', text: '#e8e8e8', muted: '#a6a6a6', accent: '#e8e8e8', alt: '#8fd3ff' } : { bg: '#e8e8e8', surface: '#f6f6f6', border: '#c9c9c9', text: '#030303', muted: '#4d4d4d', accent: '#030303', alt: '#2b6fa8' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { creative_studio: 3, modern_tech: 2, luxury_minimal: 1 },
+  },
+  {
+    id: 'blush-serif',
+    label: 'Blush serif',
+    blurb: 'A design house: blush and sand pages, charcoal, a large refined serif, quiet captions and generous space.',
+    keywords: ['blush serif', 'moooi style', 'unseen style', 'sand and charcoal'],
+    mode: 'light',
+    font: { family: 'Instrument Serif', weights: '400', variable: '--font-serif', fallback: 'serif' },
+    shape: { radius: 'rounded-sm', heading: 'font-normal tracking-tight', fontClass: 'font-serif', surface: '', border: 'border-(--g-border)', primary: 'rounded-none', secondary: 'rounded-none' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#efded9', surface: '#f7ece8', border: '#d9c3bb', text: '#212121', muted: '#5e514d', accent: '#212121', alt: '#b5654a' } : { bg: '#1f1b1a', surface: '#2a2523', border: '#3d3633', text: '#efded9', muted: '#b9a9a3', accent: '#efded9', alt: '#e0957a' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { luxury_minimal: 3, creative_studio: 2, fashion_retail: 2, real_estate: 2, events_wedding: 2, home_services: 1, beauty_wellness: 1 },
+  },
+  {
+    id: 'neon-arcade',
+    label: 'Neon arcade',
+    blurb: 'A playful interactive world: deep indigo night, hot pink and cyan neon, chunky rounded shapes, a hand-made feel.',
+    keywords: ['neon arcade', 'bruno simon style', 'arcade look', 'game world look'],
+    mode: 'dark',
+    font: { family: 'Space Grotesk', weights: '400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-3xl', heading: 'font-bold tracking-tight', fontClass: 'font-sans', surface: 'shadow-[0_0_28px_rgba(255,79,216,0.25)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'dark' ? { bg: '#140a2e', surface: '#1e1245', border: '#3a2570', text: '#f5edff', muted: '#bfaee6', accent: '#ff4fd8', alt: '#22d3ee' } : { bg: '#fbf5ff', surface: '#ffffff', border: '#e7d3fa', text: '#1c0f3d', muted: '#5b4a85', accent: '#c026a8', alt: '#0891b2' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { playful_vibrant: 3, creative_studio: 3, modern_tech: 2, education: 1 },
+  },
+  {
+    id: 'studio-index',
+    label: 'Studio index',
+    blurb: 'An agency portfolio: light grey page, black type at a giant size, thin rules, a numbered index of work, text links instead of buttons.',
+    keywords: ['studio index', 'obys style', '14islands style', 'agency portfolio look'],
+    mode: 'light',
+    font: { family: 'Inter Tight', weights: '300;400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-none', heading: 'font-medium tracking-tighter', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-none uppercase tracking-widest', secondary: 'rounded-none uppercase tracking-widest' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#f8f8f8', surface: '#ffffff', border: '#d9d9d9', text: '#0a0a0a', muted: '#5c5c5c', accent: '#0a0a0a', alt: '#ff4d1a' } : { bg: '#0a0a0a', surface: '#151515', border: '#2c2c2c', text: '#f4f4f4', muted: '#a3a3a3', accent: '#f4f4f4', alt: '#ff6a3d' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain'] },
+    affinity: { creative_studio: 3, general_business: 2, professional_services: 2, modern_tech: 2, luxury_minimal: 1 },
+  },
 ]
 
 /** the designs read from live sites: a fixed signature, not a recolouring of the business's hue */
-export const SIGNATURE_MOODS = new Set<MoodId>(['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral', 'maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white'])
+export const SIGNATURE_MOODS = new Set<MoodId>(['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral', 'maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white', 'noir-lab', 'blush-serif', 'neon-arcade', 'studio-index'])
 /** the picture-led designs: they use the showcase kit (src/components/showkit) */
-export const SHOWCASE_MOODS = new Set<MoodId>(['maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white'])
+export const SHOWCASE_MOODS = new Set<MoodId>(['maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white', 'noir-lab', 'blush-serif', 'neon-arcade', 'studio-index'])
 
 export const MOOD_IDS = MOODS.map((m) => m.id)
 
@@ -429,7 +478,11 @@ export function showcaseMood(prompt: string): MoodId | undefined {
   if (w(/(?<![a-z])(?:electric (?:car|vehicle|bike|scooter)|ev |car showroom|car dealer\w*|motorcycle|solar|powerwall|automaker|automotive)(?![a-z])/)) return 'showroom-white'
   if (w(/(?<![a-z])(?:couture|fashion house|handbags?|maison|haute)(?![a-z])/)) return 'maison-noir'
   if (w(/(?<![a-z])(?:film|films|cinema|video magazine|documentary|photograph\w*|art gallery|magazine|editorial)(?![a-z])/)) return 'film-editorial'
-  if (w(/(?<![a-z])(?:3d|webgl|animation studio|motion studio|interactive studio|creative agency|design studio|digital studio)(?![a-z])/)) return 'atelier-3d'
+  if (w(/(?<![a-z])(?:immersive|experiential|installation\w*|creative technolog\w*|xr|virtual reality|interactive experience\w*)(?![a-z])/)) return 'noir-lab'
+  if (w(/(?<![a-z])(?:game|games|gaming|arcade|esports|gamer\w*|game studio)(?![a-z])/)) return 'neon-arcade'
+  if (w(/(?<![a-z])(?:furniture|lighting|homeware|home decor|interior design|ceramics|design house|brand studio|branding studio|creative production)(?![a-z])/)) return 'blush-serif'
+  if (w(/(?<![a-z])(?:3d|webgl|animation studio|motion studio|interactive studio)(?![a-z])/)) return 'atelier-3d'
+  if (w(/(?<![a-z])(?:creative agency|design agency|design studio|digital studio|digital agency|branding agency|portfolio|creative studio)(?![a-z])/)) return 'studio-index'
   if (w(/(?<![a-z])(?:gadget\w*|smartphone|laptop|headphones|wearable|consumer electronics|product launch|apple)(?![a-z])/)) return 'apple-tile'
   return undefined
 }

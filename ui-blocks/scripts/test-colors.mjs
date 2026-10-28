@@ -39,6 +39,7 @@ ok(hues.size >= 14, `the colours cover the whole wheel (${hues.size} of 18 hue b
 const named = generateWebsite('a red coffee shop', 5)
 ok(Math.abs(hexToHsl(named.palette.light.accent).h - 2) < 25 || hexToHsl(named.palette.light.accent).h > 340, 'a colour named in the prompt wins')
 
+const { SIGNATURE_MOODS } = await loadGeneratorModule('moods.ts')
 // ── evolved palettes (the genetic algorithm): new, readable, varied
 setCreativity('wild')
 let evolved = 0
@@ -47,7 +48,8 @@ const evolvedHues = new Set()
 for (const prompt of prompts) {
   for (let v = 1; v <= 12; v += 1) {
     const site = generateWebsite(prompt, v * 53)
-    evolvedTotal += 1
+    // the designs read from live sites have fixed colours of their own: they do not count as sites without an evolved palette
+    if (!SIGNATURE_MOODS.has(site.mood?.id)) evolvedTotal += 1
     if (/evolved/.test(site.palette.name)) {
       evolved += 1
       evolvedHues.add(Math.round(hexToHsl(site.palette.light.accent).h / 20))
@@ -59,7 +61,7 @@ for (const prompt of prompts) {
     }
   }
 }
-ok(evolved / evolvedTotal > 0.3, `at a wild creativity many palettes are evolved (the fixed signature designs of jewellery, car or film sites are not evolved) (${evolved}/${evolvedTotal})`)
+ok(evolved / evolvedTotal > 0.35, `at a wild creativity many palettes are evolved (sites in a fixed signature design are not counted) (${evolved}/${evolvedTotal})`)
 ok(evolvedHues.size >= 10, `evolved palettes cover the wheel (${evolvedHues.size} hue bands)`)
 const one = evolvePalette('food_dining', seededRandom(5), 0.9)
 const again = evolvePalette('food_dining', seededRandom(5), 0.9)

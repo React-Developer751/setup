@@ -88,6 +88,30 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       })
       break
     }
+    case 'show-type-hero': {
+      setImg(one(root, 'image'), 0, 1600, 800)
+      put(root, 'eyebrow', short(sentence(c.subject) || c.brandName, 46))
+      put(root, 'meta', c.contact.hoursText ? short(c.contact.hoursText, 40) : c.contact.address ? short(c.contact.address, 40) : c.brandName)
+      put(root, 'title', c.hero.title)
+      put(root, 'subtitle', c.hero.subtitle)
+      put(root, 'button', c.hero.button)
+      put(root, 'button2', features.length ? short(c.features.title, 24) : '')
+      break
+    }
+    case 'show-index': {
+      put(root, 'title', c.features.title)
+      put(root, 'lead', `${sentence(andList(features.slice(0, 4).map((f) => lowerFirst(f.title))))}.`)
+      repeat(root, 'row', features.slice(0, 6), (el, item, i) => {
+        const set = (slot: string, text: string) => {
+          const n = el.querySelector(`[data-slot="${slot}"]`)
+          if (n) n.textContent = text
+        }
+        set('row-number', String(i + 1).padStart(2, '0'))
+        set('row-title', item.title)
+        set('row-text', short(item.text, 80))
+      })
+      break
+    }
     case 'show-cta': {
       put(root, 'title', c.cta.title)
       put(root, 'lead', c.contact.hoursText ? `${c.brandName}: ${c.contact.hoursText}.` : `Get in touch with ${c.brandName}.`)

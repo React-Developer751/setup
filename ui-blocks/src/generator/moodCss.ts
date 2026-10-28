@@ -130,6 +130,50 @@ ${tints(['#f1ebff', '#ffe9f4', '#e2f8fd', '#f1ebff', '#ffe9f4', '#e2f8fd'])}
 [data-gen-theme] .show-stack .show-btn-second{border-color:currentColor}
 [data-gen-theme] .show-stack img{border-radius:4px}
 [data-gen-theme] .show-cta h2{font-weight:500}`,
+  'noir-lab': `${SHOW}
+[data-gen-theme] :is(h1,h2,h3){letter-spacing:-.045em}
+[data-gen-theme] .show-hero{background:#000}
+[data-gen-theme] .show-hero-inner{min-height:92vh;align-items:flex-start;text-align:left;justify-content:flex-end}
+[data-gen-theme] .show-hero-scrim{background:linear-gradient(to top,rgba(0,0,0,.8),rgba(0,0,0,.1) 65%)}
+[data-gen-theme] .show-hero-img{filter:contrast(1.08) saturate(.8)}
+[data-gen-theme] .show-hero h1{font-weight:500;font-size:clamp(2.6rem,8vw,8rem);line-height:.95;letter-spacing:-.05em}
+[data-gen-theme] .show-btn{background:transparent!important;border:0!important;border-bottom:1px solid #e8e8e8!important;border-radius:0;padding:.3rem 0;color:#e8e8e8!important;text-transform:uppercase;letter-spacing:.22em;font-size:.72rem}
+[data-gen-theme] .show-row{transition:background .25s}
+[data-gen-theme] .show-row:hover{background:rgba(255,255,255,.05)}
+[data-gen-theme] .show-cta h2{font-weight:500;font-size:clamp(2.4rem,7vw,7rem);letter-spacing:-.05em;line-height:.95}
+[data-gen-theme] .show-cta .show-btn{color:#e8e8e8!important;border-bottom-color:#e8e8e8!important}`,
+  'blush-serif': `${SHOW}
+[data-gen-theme] :is(h1,h2,h3){letter-spacing:-.02em;font-weight:400}
+[data-gen-theme] .show-type-hero h1{font-family:var(--font-serif);font-weight:400;font-size:clamp(3rem,10.5vw,10.5rem);line-height:.88;letter-spacing:-.035em}
+[data-gen-theme] .show-type-hero .show-strip{border-radius:2px}
+[data-gen-theme] .show-link{font-size:.72rem;letter-spacing:.2em}
+[data-gen-theme] [data-ref=show-tiles] .grid{gap:1.5rem;padding:0 1.5rem 1.5rem}
+[data-gen-theme] [data-ref=show-tiles] [data-slot=tile] > div{aspect-ratio:3/4;border-radius:2px}
+[data-gen-theme] [data-ref=show-tiles] [data-slot=tile-title]{font-family:var(--font-serif);font-size:1.7rem;font-weight:400;letter-spacing:-.01em;text-transform:none}
+[data-gen-theme] [data-ref=show-tiles] h2{font-family:var(--font-serif);font-size:2.4rem;text-transform:none;letter-spacing:-.02em;font-weight:400}
+[data-gen-theme] .show-cta h2{font-family:var(--font-serif);font-weight:400;font-size:clamp(2.8rem,8vw,7.5rem);letter-spacing:-.035em;line-height:.92}
+[data-gen-theme] .show-cta .show-btn{border-radius:0;background:#212121;color:#efded9}`,
+  'neon-arcade': `${SHOW}
+[data-gen-theme] :is(h1,h2,h3){letter-spacing:-.03em}
+[data-gen-theme] .show-hero{background:#140a2e}
+[data-gen-theme] .show-hero-scrim{background:linear-gradient(to top,rgba(20,10,46,.9),rgba(20,10,46,.15) 65%)}
+[data-gen-theme] .show-hero h1{font-weight:700;font-size:clamp(2.6rem,7vw,6.5rem);text-shadow:0 0 28px rgba(255,79,216,.55)}
+[data-gen-theme] .show-btn{border-radius:9999px;font-weight:700}
+[data-gen-theme] .show-hero .show-btn-primary{background:#ff4fd8;color:#140a2e;box-shadow:0 0 24px rgba(255,79,216,.6)}
+[data-gen-theme] .show-hero .show-btn-second{border-color:#22d3ee;color:#22d3ee}
+[data-gen-theme] [data-ref=show-tiles] .grid{gap:20px;padding:0 20px 20px}
+[data-gen-theme] [data-ref=show-tiles] [data-slot=tile] > div{border-radius:28px;box-shadow:0 0 0 2px #ff4fd8,0 0 26px rgba(255,79,216,.4)}
+[data-gen-theme] .show-cta .show-btn-primary{background:#ff4fd8;color:#140a2e;box-shadow:0 0 24px rgba(255,79,216,.6)}
+[data-gen-theme] .show-cta h2{font-weight:700;text-shadow:0 0 30px rgba(34,211,238,.45)}`,
+  'studio-index': `${SHOW}
+[data-gen-theme] :is(h1,h2,h3){letter-spacing:-.045em}
+[data-gen-theme] .show-type-hero h1{font-weight:500;font-size:clamp(2.8rem,10vw,10rem);line-height:.9;letter-spacing:-.05em}
+[data-gen-theme] .show-link{font-size:.72rem;letter-spacing:.2em}
+[data-gen-theme] .show-row{transition:padding .25s}
+[data-gen-theme] .show-row:hover{padding-left:1rem}
+[data-gen-theme] .show-row:hover [data-slot=row-title]{font-style:italic}
+[data-gen-theme] .show-cta h2{font-weight:500;font-size:clamp(2.6rem,8vw,8rem);line-height:.92;letter-spacing:-.05em}
+[data-gen-theme] .show-cta .show-btn{border-radius:0;background:#0a0a0a;color:#fff;letter-spacing:.2em;text-transform:uppercase;font-size:.72rem}`,
 }
 
 /** the extra rules of a design mood for the library engine ('' for the other moods) */
