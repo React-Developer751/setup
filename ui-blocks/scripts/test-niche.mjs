@@ -137,6 +137,17 @@ for (const prompt of ['ek german cafe ke liye website banao', 'German cafe in Pu
 const priced = generateWebsite('German cafe called Kaffeehaus Berlin: pretzel 150 rupees, black forest cake 250 rupees', 0, 'premium', true, 'auto')
 ok(priced.content.pricing.fromPrompt === true && priced.content.brandName === 'Kaffeehaus Berlin', 'prices the person wrote are kept and shown')
 
+// simple Hinglish requests: the scaffolding words are never content
+for (const prompt of ['mera restaurant hai Jaipur me, uski website banao', 'meri dukaan ke liye website banao', 'doctor ki website', 'ek salon ki website', 'coaching institute for UPSC']) {
+  const g = generateWebsite(prompt, 0, 'premium', true, 'auto')
+  const text = JSON.stringify(g.content)
+  ok(!/\b(?:mera|meri|uski|banao|chahiye|liye|hai Jaipur)\b/i.test(text), `"${prompt}": no Hinglish filler in the page`)
+}
+ok(!/Upsc/.test(JSON.stringify(generateWebsite('coaching institute for UPSC', 0, 'premium', true, 'auto').content)), 'UPSC keeps its capitals')
+ok(generateWebsite('coaching institute for UPSC', 0, 'premium', true, 'auto').content.brandName !== 'UPSC', 'an exam is not the brand')
+const jp = JSON.stringify(generateWebsite('japanese restaurant', 0, 'premium', true, 'auto').content)
+ok(/Sushi|Ramen/.test(jp) && !/Regional Favourites/.test(jp), 'a japanese restaurant serves japanese food')
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

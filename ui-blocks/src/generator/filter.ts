@@ -39,6 +39,8 @@ function nameFromCapitals(rawPrompt: string) {
     if (!words.length || words.length !== parts.length) continue
     // at the very start of the prompt a single capitalised word is just the first word of a sentence
     if (match.index === 0 && words.length < 2) continue
+    // an acronym after "for" or "of" ("coaching institute for UPSC", "classes for NEET") is what the business teaches, not its name
+    if (words.length === 1 && /^[A-Z]{2,6}$/.test(words[0]) && /(?:\bfor|\bof|\bin|\babout|\bon)\s+$/i.test(userPrompt.slice(0, match.index))) continue
     return parts.join(' ').replace(/^(Dr|Mr|Mrs|Ms|Prof|Er|Adv) /, '$1. ')
   }
   return undefined

@@ -1,6 +1,7 @@
 // Makes the page about THIS business: the services, the place and the little promises the person wrote in the prompt
 // ("pest control for homes and offices in Pune, 24x7, free inspection") are put into the hero line, the feature cards, the FAQ and the
 // keyword strip. Only what the prompt says is used: nothing is invented (no numbers, no years unless the person wrote them).
+import { hasFiller } from './hinglish'
 import type { WebsiteContent } from './finalPrompt'
 import { KNOWN_CITIES } from './siteBanks'
 
@@ -23,7 +24,7 @@ export type Facts = {
   currency?: string
 }
 
-const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy)\b/gi
+const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy)\b/gi
 const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase())
 const titleCase = (s: string) => fixAcronyms(s.replace(/(^|[\s/-])([a-z])/g, (_m, a: string, c: string) => a + c.toUpperCase()))
 const lowerFirst = (s: string) => (/^[A-Z]{2,}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
@@ -126,6 +127,8 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   const seen = new Set<string>()
   const fromExplicit = new Set(lists.filter((l) => explicit.has(l)).flatMap(splitList))
   for (const raw0 of lists.flatMap(splitList)) {
+    // a piece of the request itself ("mera restaurant hai Jaipur me", "uski website banao") is not a service
+    if (hasFiller(raw0)) continue
     // "monthly membership 1999": the thing and its price
     const priced = /(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|trial|shipping|delivery|orders?)(?![\p{L}])/iu.test(raw0) ? null : raw0.match(/^(.*?[a-z])\s*(?:@|at|for|rs\.?|inr|₹|£|€|\$)?\s*(\d{3,6}|\d{1,2}(?=\s*(?:rupees?|rs\.?|pounds?|euros?|dollars?|usd|inr)$))(?:\s*(?:rupees?|rs\.?|inr|₹|pounds?|euros?|dollars?|usd|only|\/-))?$/i)
     if (priced) facts.prices.push({ name: cleanItem(priced[1]), amount: Number(priced[2]) })

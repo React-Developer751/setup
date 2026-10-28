@@ -11,6 +11,7 @@
 //                      so the text is polished but never the same twice.
 //   5. Seeded        : everything comes from a seeded random generator: the same prompt always gives the same
 //                      page, a new variation number gives a new one.
+import { stripFiller } from './hinglish'
 import { contentTemplates } from './contentTemplates'
 import { temperature } from './creativity'
 import { LEXICONS } from './lexicon'
@@ -154,7 +155,8 @@ function corpusFor(theme: ThemeKey) {
 const REQUEST_WORDS = new Set(['create', 'make', 'build', 'generate', 'design', 'a', 'an', 'the', 'website', 'site', 'web', 'page', 'landing', 'for', 'my', 'our', 'me', 'i', 'need', 'want', 'new', 'please'])
 const businessPhrase = (prompt: string | undefined) => {
   if (!prompt) return ''
-  const head = prompt.split(/\b(?:called|named)\b/i)[0].split(/\s+(?:in|at|near|from)\s+(?=[A-Z])/)[0]
+  // (a Hinglish request: "doctor ki website" is the business "doctor", "meri dukaan ke liye website banao" names no business)
+  const head = stripFiller(prompt.split(/\b(?:called|named|naam)\b/i)[0].split(/\s+(?:in|at|near|from)\s+(?=[A-Z])/)[0]).replace(/\b(?:me|mein)$/i, '').trim()
   let words = head
     .split(/\s+/)
     .filter((w, i) => !(i > 0 && /^[A-Z][\p{L}&'-]*$/u.test(w)) && !REQUEST_WORDS.has(w.toLowerCase().replace(/[^\p{L}]/gu, '')) )
@@ -163,7 +165,7 @@ const businessPhrase = (prompt: string | undefined) => {
   while (words.length > 2 && /^(?:service|services|company|firm|business|agency)$/i.test(words[words.length - 1])) words = words.slice(0, -1)
   const phrase = words.join(' ').toLowerCase()
   if (phrase.length < 4 || words.length > 5) return ''
-  if (/^(?:business|website|site|company|startup|brand|page|store|shop|project)$/.test(phrase)) return ''
+  if (/^(?:business|website|site|company|startup|brand|page|store|shop|project|dukaan|dukan)$/.test(phrase)) return ''
   return phrase
 }
 
