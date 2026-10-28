@@ -108,7 +108,7 @@ ok(generateLibraryPage('bakery called Crumb', 4, 'better').sections.every((x) =>
 
 // ── every group has a decision: a part of a page (in the pools) or a widget (not)
 const U = await loadGeneratorModule('library/componentUse.ts')
-const inPool = new Set([...all.map(({ id }) => id), ...tiers.map(({ id }) => id)].map((id) => id.split('/')[0]))
+const inPool = new Set([...all.map(({ id }) => id), ...tiers.map(({ id }) => id), ...Object.values(R.refPools).flat()].map((id) => id.split('/')[0]))
 ok([...groups].every((g) => U.componentUse[g]), `every stored group is listed in componentUse.ts (${[...groups].filter((g) => !U.componentUse[g]).join(', ')})`)
 ok(Object.entries(U.componentUse).every(([g, { use }]) => (use === 'page') === inPool.has(g)), `page groups are in the pools and widgets are not (${Object.entries(U.componentUse).filter(([g, { use }]) => (use === 'page') !== inPool.has(g)).map(([g]) => g)})`)
 ok(all.length >= 160, `the pools hold ${all.length} components`)

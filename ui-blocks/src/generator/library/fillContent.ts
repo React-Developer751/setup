@@ -1,6 +1,7 @@
 // Replaces the placeholder text of a rendered stored component with the generated content.
 // It works on the DOM, so the components' source code is never modified: headings, paragraphs,
 // buttons, numbers and links are matched by position and structure, not by their original wording.
+import { fillRef } from './fillRef'
 import type { WebsiteContent } from '../finalPrompt'
 import type { Role } from './libraryRoles'
 
@@ -82,7 +83,7 @@ const andList = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).j
  */
 function leadFor(role: Role, c: WebsiteContent): string | undefined {
   const brand = c.brandName
-  const lower = (t: string) => t.charAt(0).toLowerCase() + t.slice(1)
+  const lower = (t: string) => (/^[A-Z]{2,}\b/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1))
   switch (role) {
     case 'features':
     case 'links':
@@ -1139,6 +1140,8 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     }
   }
   if (role === 'pagehead') return step('title block', () => fillPageHead(root))
+  // the components of the reference kit mark their parts with data-slot: they are filled by name
+  if (root.querySelector('[data-ref]')) return step('reference kit', () => fillRef(root, role, c))
   let original = new Set<string>()
   step('read', () => (original = new Set(textsOf(root))))
   // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already

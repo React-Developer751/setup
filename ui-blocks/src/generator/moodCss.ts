@@ -11,7 +11,10 @@ const INNER = '[data-gen-theme] [data-role]:not([data-role=nav]):not([data-role=
 
 const base = (b: Base) => `[data-gen-theme] :is(h1,h2,h3){letter-spacing:${b.heading}}
 [data-gen-theme] [data-role]:not([data-role=nav]) :is(${CARD}){border-radius:${b.radius}}
-${INNER} .bg-white:is(${CARD}){box-shadow:0 0 0 1px ${b.ring},${b.shadow}}${b.pill === false ? '' : `\n[data-gen-theme] ${BUTTON}{border-radius:9999px}`}`
+${INNER} .bg-white:is(${CARD}){box-shadow:0 0 0 1px ${b.ring},${b.shadow}}
+[data-gen-theme]:not(.dark) [data-ref] .bg-white{background-color:#ffffff}
+[data-gen-theme] .ref-cta-box :is(h2,p,li,a:not(.bg-white)){color:#ffffff}
+[data-gen-theme] .ref-cta-box a.bg-white{color:#111111}${b.pill === false ? '' : `\n[data-gen-theme] ${BUTTON}{border-radius:9999px}`}`
 
 /** pastel tints that cycle over the cards of a grid */
 const tints = (colors: string[], to = '#ffffff') =>
@@ -23,22 +26,26 @@ const WAVES = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 const CSS: Record<string, string> = {
   'clinic-mesh': `${base({ radius: '1.5rem', ring: 'rgba(188,209,202,.55)', shadow: '0 14px 34px -18px rgba(13,110,99,.35)', heading: '-0.03em' })}
 [data-gen-theme]:not(.dark) [data-role=hero]{background-image:radial-gradient(60% 70% at 10% 8%,#b7f0e2 0,transparent 62%),radial-gradient(55% 60% at 90% 18%,#cfe0ff 0,transparent 64%),radial-gradient(50% 60% at 55% 100%,#e6dcff 0,transparent 66%)}
-${tints(['#dff7ee', '#e3efff', '#ece4ff', '#ffeede', '#e6f7da', '#ffe4e8'])}`,
+${tints(['#dff7ee', '#e3efff', '#ece4ff', '#ffeede', '#e6f7da', '#ffe4e8'])}
+[data-gen-theme] .ref-cta-box{background-image:linear-gradient(135deg,#0a574e,#12897b);color:#fff}`,
   'plum-ivory': `${base({ radius: '1rem', ring: 'rgba(160,92,124,.18)', shadow: '0 10px 26px -18px rgba(43,23,34,.45)', heading: '-0.025em' })}
 [data-gen-theme] [data-role=hero]{background-image:${WAVES}}
 [data-gen-theme]:not(.dark) ${BUTTON}{background-color:#2b1722;color:#fff}
-[data-gen-theme] [data-role=cta]{background-image:${WAVES}}`,
+[data-gen-theme] [data-role=hero] [data-slot=title] span{color:#e8c1d3}
+[data-gen-theme] [data-role=hero] [data-slot=eyebrow]{color:#e8c1d3}
+[data-gen-theme] .ref-cta-box{background-image:linear-gradient(135deg,#150a11,#3e2233),${WAVES};color:#fff}`,
   'trust-navy': `${base({ radius: '1.25rem', ring: 'rgba(0,48,120,.12)', shadow: '0 12px 28px -18px rgba(0,48,120,.45)', heading: '-0.03em' })}
 [data-gen-theme]:not(.dark) [data-role=hero]{background-image:radial-gradient(70% 60% at 88% 0,#d5e5f2 0,transparent 70%),radial-gradient(40% 40% at 0 100%,#eaf3ff 0,transparent 70%)}
 [data-gen-theme]:not(.dark) [data-role]:not([data-role=nav]):not([data-role=hero]) .grid > .bg-white{background-image:linear-gradient(180deg,#eaf3ff,#ffffff 62%)}
-[data-gen-theme] [data-role=cta]{background-image:linear-gradient(135deg,#0b1b2e,#003078 72%,#012169)}`,
+[data-gen-theme] .ref-cta-box{background-image:linear-gradient(135deg,#0b1b2e,#003078 72%,#012169);color:#fff}`,
   'violet-glow': `${base({ radius: '1.25rem', ring: 'rgba(91,33,230,.14)', shadow: '0 16px 36px -18px rgba(91,33,230,.45)', heading: '-0.035em' })}
 [data-gen-theme]:not(.dark) [data-role=hero]{background-image:radial-gradient(60% 60% at 8% 4%,#ebe3ff 0,transparent 62%),radial-gradient(50% 55% at 92% 10%,#ffe0f0 0,transparent 64%),radial-gradient(45% 50% at 60% 100%,#d9f5fb 0,transparent 66%)}
 [data-gen-theme] ${BUTTON}{background-image:linear-gradient(90deg,#5b21e6,#ec4899)}
-[data-gen-theme] [data-role=cta]{background-image:linear-gradient(120deg,#4713c2,#5b21e6 46%,#ec4899)}`,
+${tints(['#f1ebff', '#ffe9f4', '#e2f8fd', '#f1ebff', '#ffe9f4', '#e2f8fd'])}
+[data-gen-theme] .ref-cta-box{background-image:linear-gradient(120deg,#4713c2,#5b21e6 46%,#ec4899);color:#fff}`,
   'cream-coral': `${base({ radius: '1.25rem', ring: 'rgba(236,228,216,.9)', shadow: '0 16px 36px -20px rgba(27,13,68,.4)', heading: '-0.035em' })}
 [data-gen-theme]:not(.dark) [data-role=hero]{background-image:radial-gradient(52% 60% at 92% 0,#ffe5da 0,transparent 70%),radial-gradient(40% 45% at 0 100%,#efe6ff 0,transparent 70%)}
-[data-gen-theme] [data-role=cta]{background-image:radial-gradient(60% 80% at 85% 0,rgba(109,61,242,.45) 0,transparent 70%)}`,
+[data-gen-theme] .ref-cta-box{background-image:radial-gradient(60% 90% at 88% 0,rgba(109,61,242,.5) 0,transparent 70%),#0e0b1f;color:#fff}`,
 }
 
 /** the extra rules of a design mood for the library engine ('' for the other moods) */

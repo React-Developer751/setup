@@ -104,3 +104,13 @@ export const tierPools: Record<'normal' | 'premium', Partial<Record<Role, string
     footer: ['footer/Footer3', 'footer/Footer5'],
   },
 }
+
+/** the parts of the reference kit (src/components/refkit: the pattern of the translation-service sites): used instead of the stored components when the page wears one of those designs */
+export const refPools: Partial<Record<Role, string[]>> = {
+  hero: ['refkit/RefHero1'],
+  stats: ['refkit/RefStats1'],
+  features: ['refkit/RefFeatures1'],
+  steps: ['refkit/RefSteps1'],
+  pricing: ['refkit/RefPricing1'],
+  cta: ['refkit/RefCta1'],
+}

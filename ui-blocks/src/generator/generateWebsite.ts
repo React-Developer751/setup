@@ -29,7 +29,7 @@ import { targetOfLayout } from './edit/sectionColors'
 import { detectNiche } from './niche/applyNiche'
 import { NICHES } from './niche/niches'
 import { detectLocale } from './siteData'
-import { PALETTE_COUNT, defaultMode, paletteTokensByMode, presetPalette, themes, type ThemeKey } from './themes'
+import { PALETTE_COUNT, defaultMode, paletteTokensByMode, presetPalette, themes, type Palette, type ThemeKey } from './themes'
 
 /** True when this business type has hand-written template texts (the original five). */
 export const hasTemplates = (theme: ThemeKey) => theme in contentTemplates
@@ -47,6 +47,10 @@ export { hash, seededRandom }
  */
 /** the moods whose look does not depend on their own colours */
 const PREMIUM_MOODS = new Set<string>(['minimal-light', 'minimal-dark', 'editorial', 'luxe-dark', ...SIGNATURE_MOODS])
+
+/** a design read from a live site keeps its own main colour; the second colour may be quietened by the colour check */
+const keepSignature = (signature: Palette | undefined, checked: Palette): Palette =>
+  signature ? { ...checked, light: { ...checked.light, accent: signature.light.accent }, dark: { ...checked.dark, accent: signature.dark.accent } } : checked
 
 export function planWebsite(
   userPrompt: string,
@@ -123,7 +127,7 @@ export function planWebsite(
     // a designer's pair keeps its own second colour inside a mood (a charcoal second colour must not turn into the mood's blue)
     const signature = !!mood && SIGNATURE_MOODS.has(mood.id)
     const generated = premiumColours && !askedMood && !signature ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' && !signature ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
-    const palette = applyColorEdits(harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || signature || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) }), themeKey, edits)
+    const palette = applyColorEdits(keepSignature(signature ? generated : undefined, harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || signature || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) })), themeKey, edits)
     return { colors, mood, moodMade, palette, judgement: judgePalette(palette, themeKey, prompt) }
   }
   let look = makeLook(0)

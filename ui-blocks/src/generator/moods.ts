@@ -238,7 +238,7 @@ export const MOODS: Mood[] = [
     font: { family: 'Roboto Flex', weights: '400;500;600;700', variable: '--font-sans', fallback: 'sans' },
     shape: { radius: 'rounded-3xl', heading: 'tracking-tight font-bold', fontClass: 'font-sans', surface: 'shadow-[0_12px_32px_-14px_rgba(13,110,99,0.35)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
     colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#eef7f4', surface: '#ffffff', border: '#cfe3dc', text: '#07201b', muted: '#4a6760', accent: '#12897b', alt: '#4e3781' } : { bg: '#07130f', surface: '#0d1f1a', border: '#1d3a32', text: '#e7f5f1', muted: '#9bb8af', accent: '#4fd1bd', alt: '#a78bfa' }),
-    roles: { hero: 'plain', footer: 'ink', cta: 'deep', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
     affinity: { healthcare: 3, beauty_wellness: 2, education: 2, professional_services: 2, nonprofit: 2, general_business: 1, home_services: 1 },
   },
   {
@@ -250,7 +250,7 @@ export const MOODS: Mood[] = [
     font: { family: 'Plus Jakarta Sans', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
     shape: { radius: 'rounded-xl', heading: 'tracking-tight font-bold', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
     colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#f7f1f4', surface: '#ffffff', border: '#e9e1e5', text: '#2b1722', muted: '#5f5159', accent: '#a05c7c', alt: '#553049' } : { bg: '#150a11', surface: '#201019', border: '#3a2331', text: '#f6edf1', muted: '#b9a3af', accent: '#d08aaa', alt: '#e8c1d3' }),
-    roles: { hero: 'ink', footer: 'ink', cta: 'ink', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
+    roles: { hero: 'ink', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
     affinity: { professional_services: 3, luxury_minimal: 2, events_wedding: 2, nonprofit: 2, beauty_wellness: 1, healthcare: 1, general_business: 1 },
   },
   {
@@ -262,7 +262,7 @@ export const MOODS: Mood[] = [
     font: { family: 'Plus Jakarta Sans', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
     shape: { radius: 'rounded-2xl', heading: 'tracking-tight font-extrabold', fontClass: 'font-sans', surface: 'shadow-[0_10px_28px_-16px_rgba(0,48,120,0.4)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
     colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#f8f8f7', surface: '#ffffff', border: '#dfe3e6', text: '#0b0c0c', muted: '#505a5f', accent: '#003078', alt: '#c8102e' } : { bg: '#08111d', surface: '#0f1c2e', border: '#1f3350', text: '#eef3f9', muted: '#9fb2c8', accent: '#6ea8ff', alt: '#ff6b81' }),
-    roles: { hero: 'plain', footer: 'ink', cta: 'ink', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
     affinity: { professional_services: 3, general_business: 3, education: 2, healthcare: 2, real_estate: 2, home_services: 1, nonprofit: 1 },
   },
   {
@@ -274,7 +274,7 @@ export const MOODS: Mood[] = [
     font: { family: 'Plus Jakarta Sans', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
     shape: { radius: 'rounded-2xl', heading: 'tracking-tight font-extrabold', fontClass: 'font-sans', surface: 'shadow-[0_14px_34px_-16px_rgba(91,33,230,0.4)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
     colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#fbf9ff', surface: '#ffffff', border: '#e6dcff', text: '#0b0620', muted: '#5a5373', accent: '#5b21e6', alt: '#ec4899' } : { bg: '#0b0620', surface: '#150d33', border: '#2b1d57', text: '#f4efff', muted: '#b7acd9', accent: '#a78bfa', alt: '#f472b6' }),
-    roles: { hero: 'plain', footer: 'ink', cta: 'accent', stats: 'band', testimonials: 'soft-alt', rhythm: ['plain', 'band'] },
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'band', testimonials: 'soft-alt', rhythm: ['plain', 'band'] },
     affinity: { modern_tech: 3, creative_studio: 3, general_business: 2, education: 2, fashion_retail: 1, playful_vibrant: 1, professional_services: 1 },
   },
   {
@@ -286,7 +286,7 @@ export const MOODS: Mood[] = [
     font: { family: 'Mulish', weights: '400;500;600;700;800', variable: '--font-sans', fallback: 'sans' },
     shape: { radius: 'rounded-2xl', heading: 'tracking-tight font-extrabold', fontClass: 'font-sans', surface: 'shadow-[0_14px_34px_-18px_rgba(27,13,68,0.35)]', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
     colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#faf7f2', surface: '#ffffff', border: '#ece4d8', text: '#0e0b1f', muted: '#5b556b', accent: '#ff5a3c', alt: '#6d3df2' } : { bg: '#0e0b1f', surface: '#17132e', border: '#2b2552', text: '#f6f2ea', muted: '#b4aed0', accent: '#ff8a6b', alt: '#a78bfa' }),
-    roles: { hero: 'plain', footer: 'alt-ink', cta: 'alt-ink', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
+    roles: { hero: 'plain', footer: 'alt-ink', cta: 'plain', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
     affinity: { general_business: 3, food_dining: 2, travel_tourism: 2, home_services: 2, real_estate: 2, professional_services: 2, education: 1 },
   },
 ]
@@ -331,9 +331,26 @@ const PROMPT_LOOK: { words: RegExp; suit: MoodId[]; avoid: MoodId[]; /** an avoi
  */
 const LOUD_MOODS = new Set<MoodId>(['cyberpunk', 'bold-contrast', 'playful-pop', 'retro'])
 
+
+/**
+ * A prompt about translation or certified documents has a look of its own (the five reference sites): the medical one wears the mint mesh, a death or probate
+ * one the plum and ivory, a court, divorce, visa or Home Office one the navy, a marketing one the violet, a Singapore or ICA one the cream and coral.
+ */
+export function referenceMood(prompt: string): MoodId | undefined {
+  const t = prompt.toLowerCase()
+  if (!/translat|interpret|transcreat|notaris|apostille|certificate|ukvi|home office|localis|localiz/.test(t)) return undefined
+  if (/medical|health ?care|nhs|hospital|patient|clinical|pharma|prescription/.test(t)) return 'clinic-mesh'
+  if (/death|bereave|funeral|memorial|probate|deceased/.test(t)) return 'plum-ivory'
+  if (/singapore|(?<![a-z])ica(?![a-z])|citizenship|ltvp|malaysia|dubai|(?<![a-z])pr(?![a-z])/.test(t)) return 'cream-coral'
+  if (/marketing|advert|campaign|brand|creative|seo|software|(?<![a-z])app(?![a-z])|website/.test(t)) return 'violet-glow'
+  return 'trust-navy'
+}
+
 export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, temp: number): Mood | undefined {
   const named = moodFromText(prompt)
   if (named) return named
+  const reference = referenceMood(prompt)
+  if (reference) return moodById(reference)
   if (temp < 0.3) return undefined
   if (rand() > 0.55 + temp * 0.45) return undefined
   // a roulette wheel: the moods that suit the business have bigger slices; the higher the temperature, the flatter the slices

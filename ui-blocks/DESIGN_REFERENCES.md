@@ -35,6 +35,18 @@ Five new design moods in `moods.ts`: `clinic-mesh`, `plum-ivory`, `trust-navy`, 
 * choice: translation, legal, immigration and document prompts prefer these designs (never the loud moods); clinics, professional services, general business, home services and tech get them often.
 Say "clinic mesh", "plum and ivory", "trust navy", "violet glow" or "cream and coral" in a prompt or in the chat to ask for one.
 
+## The layout kit (src/components/refkit)
+The pattern of the references is also built as components, filled by name (`data-slot`, `fillRef.ts`), never guessed:
+* `RefHero1`: eyebrow chip, headline with the last words in the accent colour, tick chips from the services, two pill buttons, a quote form card with a coloured header;
+* `RefStats1`: four stat tiles (only when the page has real facts; otherwise hidden);
+* `RefFeatures1`: centred head and a grid of tinted cards with a dark icon tile;
+* `RefSteps1`: numbered cards with a small label and a ghost numeral;
+* `RefPricing1`: a price table next to a dark quote card (only when there are prices);
+* `RefCta1`: a boxed closing panel in the signature gradient, two buttons, a row of ticks.
+A page in one of the five designs uses them for hero, stats, services, steps, prices and closing panel (`refPools`); the other parts (menu, about, FAQ, contact, footer) stay the stored components.
+Translation / certificate prompts choose their design by kind: medical -> clinic-mesh, death or probate -> plum-ivory, court, divorce, visa or Home Office -> trust-navy, marketing -> violet-glow, Singapore or ICA -> cream-coral (`referenceMood`).
+
 ## What it cannot copy yet
-* The **layout** of the references (floating quote form, stat tiles, tag chips, mono eyebrow pills, gradient accent words, mega menu, ghost numerals) comes from components. The 92 stored components are fixed, so a card grid appears only when the component chosen has one. Next step: a layout kit written for this pattern (hero with a form card, tinted card grid, pricing table + quote card, closing panel).
+* The mega menu, the floating mini-cards on the hero, the gradient on single headline words (violet-to-pink) and the "most ordered" featured card.
+* The form of the hero card is a design element: it opens the visitor's mail program on the exported site (no form service is used).
 * Light-mode decorations are not drawn in dark mode.

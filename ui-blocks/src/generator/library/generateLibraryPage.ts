@@ -6,8 +6,8 @@ import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
-import { rolePools, tierPools, type Role } from './libraryRoles'
-import { moodFontTokens, panelColors } from '../moods'
+import { refPools, rolePools, tierPools, type Role } from './libraryRoles'
+import { moodFontTokens, panelColors, SIGNATURE_MOODS } from '../moods'
 import { moodCss } from '../moodCss'
 import { chosenFont, editCss } from './editCss'
 
@@ -55,7 +55,9 @@ export function generateLibraryPage(
   base.content = { ...base.content, contact: { ...base.content.contact, email: own(base.content.contact.email), phone: own(base.content.contact.phone), address: MADE_UP.test(place) ? '' : place } }
   const tier = base.tier
   const rand = seededRandom(hash(`${userPrompt.trim().toLowerCase()}|library|${variation}`))
-  const poolFor = (role: Role) => (tier === 'better' ? undefined : tierPools[tier][role]) ?? rolePools[role]
+  // a page in one of the designs read from live sites uses the parts of the reference kit where there is one
+  const refKit = !!generated.mood && SIGNATURE_MOODS.has(generated.mood.id)
+  const poolFor = (role: Role) => (refKit ? refPools[role] : undefined) ?? (tier === 'better' ? undefined : tierPools[tier][role]) ?? rolePools[role]
   const pickFrom = (role: Role) => {
     const pool = poolFor(role)
     return pool[Math.floor(rand() * pool.length)]
@@ -153,7 +155,7 @@ export function generateLibraryPage(
     const band = body && bodyIndex++ % 2 === 1 && role !== 'cta'
     const t = targetOfRole(role) as Target
     const own = edits?.sectionColors[t] ?? auto?.[t]
-    return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
+    return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' && !refKit ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
   // the design mood's own rules first, then what the person asked for (theirs win)
