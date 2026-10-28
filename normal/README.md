@@ -24,7 +24,7 @@ python3 -m pixelmath "लाल घर और पेड़" -o hindi.png        
 python3 train.py my_data --model my_model.json
 python3 -m pixelmath "aqua mossy" --model my_model.json -o out.png
 
-# studio: premium website pictures for 50 niches, hero/about/tiles with a judge (see "Studio")
+# studio: premium website pictures for 97 niches, hero/about/tiles with a judge (see "Studio")
 python3 -m pixelmath "gym with dumbbells in red light" --studio --text-zone left --width 1280 --height 640 -o hero.jpg
 python3 -m pixelmath "dental clinic reception, calm blue" --set 6 -o site_pictures/
 
@@ -52,6 +52,7 @@ changes it). Everything stays on your machine unless you pass `--host 0.0.0.0`, 
 | Tab | What you do |
 |---|---|
 | **Create** | Type a prompt, pick **Plain**, **Creative** (temperature, population, generations, explore) or **Mash-up**, size and seed, press Generate. You see the picture, how the prompt was understood, and in creative modes what the engine thought: critic scores, per-generation progress and "other good ones" you can click to draw. *Save pictures to the gallery* is on by default. *Download PNG*, *Use this prompt & seed* and *Copy API call* (a ready `curl` command for other projects) sit under the picture. |
+| **Studio** | The website-picture studio in the browser: describe the business, pick *One picture* or *Site set*, niche (auto or one of 50), mood, accent colour and text area. It shows the picture with a **sample headline in the recommended text colour on the text area** (so you can see the contrast yourself), the judge's report (niche, fallback, scores, contrast, redraws), the set's checks, per-file downloads and *Download all (zip)*. A phrase that fits no business shows a clear fallback note. |
 | **Gallery** | Every saved picture (newest first) with search, a favourites filter and "load more". Click one for the big image, its prompt, seed and, for creative pictures, what the engine thought. *Favourite* (kept forever), *Download*, *Use prompt & seed* (jumps to Create and redraws the same picture), *Delete*, or *Clear (keep favourites)*. |
 | **Train** | *Pick images*, *Pick a folder* (captions are read from `captions.csv` or `.txt` files next to the images if there are any) or *Use a ready zip*. Each image gets a caption box prefilled from its file name; edit it. Press **Train**: the browser packs a zip, uploads it, and a progress bar follows the job (epochs, error, skipped files). Below it, the **training history** lists every earlier run, also after a restart. Identical image + caption pairs count once. |
 | **Dataset** | Everything the model currently learns from, with a preview, caption and file name per image. Search, select (one or many) and **Delete selected**, or click *edit caption*: the model is retrained on what is left (a few seconds, with a progress bar). Removing everything resets the model (the old file is kept as `.bak`). |
@@ -194,7 +195,7 @@ size (about 10 ms each) and breeds from the best few; `python3 examples/generati
 160 px, then smoothly enlarged (a full-size Mandelbrot in pure Python would take minutes); L-systems and flow fields are drawn at the
 real size. A flow field takes about 2 s at 384 px.
 
-## Studio: premium website pictures for 50 business niches
+## Studio: premium website pictures for 97 business niches
 
 ```bash
 python3 -m pixelmath "wood fired pizza on a board" --studio -o hero.jpg                       # one picture, niche read from the prompt
@@ -206,8 +207,10 @@ curl -s localhost:8000/set -H 'Content-Type: application/json' -d '{"prompt":"ba
 
 What it is: for a website's first screen, About section and gallery. Not clip-art stickers but layered scenes: an out-of-focus backdrop (depth
 of field), a sharp middle layer with contact shadows and ambient occlusion, soft foreground accents, a key light, mood grading, vignette and film
-grain. 50 niches (restaurants, cafes, bakeries, thali, sushi, retail, clinics, gym, yoga, spa, salon, SaaS, apps, law, school, real estate,
-construction, trades, solar, farm, car repair / wash / showroom, photography, weddings, events, travel, logistics), each with its own props,
+grain. 97 niches (restaurants and street food, cafes, bakeries, retail and boutiques, clinics, dental, eye care, physio, ayurveda, gym, yoga, spa, salon,
+mehendi, tattoo, pets, SaaS, apps, law, accounting, insurance, architects, consulting, recruitment, coworking, schools, tuition, music, driving school,
+real estate, construction, plumbing, painting, welding, AC repair, movers, security, solar, farm, car repair / wash / showroom, tyres, taxi, hotel, photography,
+weddings, events, tent house, catering, travel, visa, NGO, logistics), each with its own props,
 backdrop and surface. Pure Python, no model, no internet. It is illustrated, not photo-realistic.
 
 | You control | How |
@@ -238,23 +241,37 @@ written blind); `examples/make_studio_dataset.py` rebuilds it, `tools/export_nic
 **Measured** (`python3 examples/studio_eval.py --model studio_model.json --sheets`, results in `samples/studio_eval.json`, proof sheets
 `samples/studio-<niche>.jpg` for restaurant-italian, gym, dental, saas, kurti-store, salon, bakery, yoga, real-estate, school):
 
-| Test | Before training (keywords only) | After training (keywords + trained classifier) |
-|---|---|---|
-| 300 hold-out prompts (50 niches x 6, written blind, never trained on): right niche | 76.0% | **97.0%** |
-| ... fallback (refused, neutral abstract) | 22.3% | 3.0% |
-| ... **wrong niche** | 1.7% (5 prompts) | **0.0% (0)** |
-| 20 off-niche prompts (submarine, pottery, pirate ship ...): wrongly matched | 1 | **0** |
-| Colour prediction on 50 hold-out pictures (RMSE 0-255, lower is better) | untrained 63.0, average picture 59.2 | **34.0** |
+The numbers come from five sets of prompts. Only `blind_v4` has never been used to fix anything; each earlier set was used for some fix after it was first measured, so its figure is optimistic:
 
-| Pictures: 50 niche prompts x 3 seeds (256x160) | |
+| Prompt set | Prompts | Right niche | Fallback (neutral abstract) | Wrong niche | Off-niche prompts wrongly matched |
+|---|---|---|---|---|---|
+| `holdout_prompts.json` (used to find keyword gaps): keywords only | 582 | 70.1% | 27.0% | 2.9% | 0 of 36 |
+| ... with trained classifier | 582 | 97.3% | 2.7% | 0.0% | 2 of 36 |
+| `blind_v2.json`, first half (used to add vocabulary) | 291 | 97.9% | 1.7% | 0.3% | 1 of 20 |
+| `blind_v2.json`, second half (used to pick the classifier thresholds) | 291 | 90.4% | 8.9% | 0.7% | 1 of 20 |
+| `blind_v3.json` (its misses were fixed afterwards) | 485 | 96.9% | 3.1% | 0.0% | 2 of 40 |
+| **`blind_v4.json` (written blind, never used for any fix)** | 485 | **92.2%** | 6.0% | **1.9% (9 prompts)** | **9 of 40** |
+
+Read `blind_v4` as the honest figure for prompts a client types: about 92% right, 6% refused (safe), and about 2% a wrong niche. Its wrong matches are neighbouring
+niches (coaching vs school, logistics vs movers, "wedding shoot" vs wedding, playschool vs toy store) and 9 of 40 off-niche or scene-only prompts (a mushroom farm,
+a cup of tea by a window, an autumn path) still got a niche picture; the fallback is meant to catch those, so this is the main open weakness of the prompt
+matcher. A website generator that passes the business *type* (`pixelmath/studio/site.py`) does not go through this matcher at all.
+Every miss is listed by `python3 examples/blind_eval.py studio_data/blind_v4.json show`.
+Colour prediction on 97 hold-out pictures (RMSE 0-255, lower is better): untrained 60.6, average picture 57.6, **trained 33.6**.
+
+| Pictures: 97 niche prompts x 3 seeds (256x160) | |
 |---|---|
-| right subject | **98.0%** (147 of 150) |
-| fallback | 2.0% (3) |
+| right subject | **94.8%** (276 of 291) |
+| fallback | 5.2% (15) |
 | **wrong subject** | **0** |
-| off-niche prompts, 60 pictures: neutral fallback | 60 of 60, wrong subject 0 |
+| off-niche prompts, 108 pictures: neutral fallback | 102 of 108 (the 6 others are the cricket stadium and robot-arm prompts, near real niches) |
 
-Sets of 6 (hero 1280x640 + about + 4 tiles), 10 niches: time 6.4 to 8.2 s (limit 20), min perceptual distance 14 to 24 bits (limit 14), palette family 0.76 to 0.96,
-hero text contrast 4.59 to 6.17 (limit 4.5), hero 29610 to 45093 bytes (limit 60000), largest tile 24906 bytes (limit 25000), judge ok in all.
+Weak spots: fallbacks on the old hold-out are mostly Hindi and Hinglish phrasing the keyword lists do not know yet (add words in `pixelmath/studio/vocab.py`,
+retrain with `examples/make_studio_dataset.py`, `train.py --fresh`, `tools/export_niche_nb.py`). The newer 47 niches are less polished than the first 50
+(for example catering, recruitment, architect); in a hero the subject fills about 40% of the width (the right side, so the headline keeps the left).
+
+Sets of 6 (hero 1280x640 + about + 4 tiles), 10 niches: time 6.5 to 8.7 s (limit 20), min perceptual distance 14 to 24 bits (limit 14), palette family 0.76 to 0.96,
+hero text contrast 4.73 to 6.26 (limit 4.5), hero 31395 to 50083 bytes (limit 60000), largest tile 24715 bytes (limit 25000), judge ok in all.
 
 **Real-example check** (16 client-style prompts through `POST /scene` and a `POST /set`, pictures and reports in `samples/real_examples/`): it found
 and fixed these bugs, each now covered by a test: "underwater scuba diving school" drew the *school* scene (the word "school" alone was decisive: now a
@@ -263,10 +280,32 @@ lookalike-word guard, avoid terms and near-miss training captions make it a fall
 needlessly (smooth is the point of a fallback; only contrast is judged now); a 1280x640 picture from `/scene` was squeezed to the 25 KB tile budget
 (the budget now follows the picture size); the Italian restaurant hero showed a hard edge where its table ended (backdrop extended).
 
-What these numbers do not say: the prompts are the kind a client types for these 50 niches; unusual businesses fall back (that is the intended behaviour, not
+What these numbers do not say: the prompts are the kind a client types for these 97 niches; unusual businesses fall back (that is the intended behaviour, not
 a failure), and the engine draws illustrations, not photographs. Two of the ten sets sit exactly at the distance limit (14 bits) and tiles are within
 0.3 KB of their 25 KB budget: the judge redraws or lowers JPEG quality when needed, but there is no spare room. Neighbouring niches can still be swapped
 for each other on borderline wording ("furniture showroom" gives interior design, "pilates studio" gives yoga): the hold-out shows no such case, real prompts will.
+
+### Website bridge: pictures that fit a generated business site
+
+`pixelmath/studio/site.py` is for a website generator (for example Core-Craft AI). It takes the business, not a prompt:
+
+```python
+from pixelmath.studio.site import site_pictures
+out = site_pictures({"business_type": "dental", "profile": None, "brand": "Harmony Dental", "mood": "calm"},
+                    {"primary": "#0e7490", "dark": False}, seed=1, count=6, out_dir="site/images", text="braces implants", subdir="images")
+# out["images"]["hero"|"about"|"tiles"] -> {src, width, height, bytes, alt, text_color, contrast}; out["niche"], out["fallback"], out["mood"]
+```
+
+* Business type (77 Core-Craft types) and sub-niche (profile) map to a picture niche; the business words refine it (a "school" that says "JEE tuition" gets
+  the tuition scene, a "garage" that says "car wash" the wash scene, "events" + "mandap" the wedding scene).
+* The site's primary colour becomes the picture accent and its mood the picture mood (a dark site gets a dark picture).
+* The hero keeps the left side free for the headline and reports the headline colour (`text_color`) with contrast >= 4.5:1.
+* A business with no fitting niche gets a neutral abstract in the brand colour and `fallback: true`, never a wrong scene.
+* Files are written as `images/hero.jpg`, `about.jpg`, `tile-N.jpg` plus `images.json`: about 110 to 190 KB of pictures per site instead of base64 inside the page.
+
+Tested on 54 real sites generated by Core-Craft (`samples/final_sites/` holds the last 30: open `<site>/preview.html`) (restaurant, dental, bakery, gym, yoga, SaaS, kurti, salon, tattoo, taxi, hotel, catering, physio, architect,
+driving school, pet shop, furniture, welding, south Indian restaurant, optical, mehendi, coworking, robotics lab, plumber): every one got its own niche,
+no fallback, hero contrast 4.56 to 13.2. `tests/test_site.py` covers the mapping and the files.
 
 **Adding a niche** (about 100 lines): write `@sprop` props and a `@niche(...)` scene function in a new module of `pixelmath/studio/niches/`; see
 `stage.py` (docstring), `craft.py` and the reference `niches/food.py`; check it with `python3 examples/check_niches.py sheet.png your-niche`.

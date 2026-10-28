@@ -12,6 +12,7 @@
   <div class="brand"><span class="logo" aria-hidden="true"></span><strong>PixelMath</strong><span class="muted"> Studio</span></div>
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab active" role="tab" data-tab="create" aria-selected="true">Create</button>
+    <button class="tab" role="tab" data-tab="studio" aria-selected="false">Studio</button>
     <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Gallery</button>
     <button class="tab" role="tab" data-tab="train" aria-selected="false">Train</button>
     <button class="tab" role="tab" data-tab="dataset" aria-selected="false">Dataset</button>
@@ -157,6 +158,61 @@
   <div class="card" id="history-card" hidden>
     <h3>Training history</h3>
     <div id="job-history" class="jobs"></div>
+  </div>
+</section>
+
+<!-- ============================================================== STUDIO -->
+<section id="tab-studio" class="panel">
+  <div class="grid two">
+    <div class="card controls">
+      <h2>Website pictures</h2>
+      <p class="hint">Premium scenes for a business website: first screen (hero), About and gallery. The niche is read from your words; if none fits you get a neutral abstract and a clear "fallback" note, never a wrong picture.</p>
+      <label for="st-prompt" class="lbl">Describe the business</label>
+      <textarea id="st-prompt" rows="2" maxlength="2000" placeholder="e.g. wood fired pizza on a board, gym with dumbbells in red light, dental clinic reception calm blue">wood fired pizza on a board</textarea>
+      <div id="st-chips" class="chips"></div>
+
+      <div class="lbl">What to make</div>
+      <div class="seg" id="st-kind" role="radiogroup" aria-label="What to make">
+        <button type="button" role="radio" data-kind="one" class="on" aria-checked="true">One picture</button>
+        <button type="button" role="radio" data-kind="set" aria-checked="false">Site set</button>
+      </div>
+      <div class="row3">
+        <label id="st-size-wrap">Picture
+          <select id="st-size"><option value="1280x640" selected>Hero 1280&times;640</option><option value="640x600">About 640&times;600</option><option value="640x400">Tile 640&times;400</option><option value="480x480">Square 480&times;480</option></select></label>
+        <label id="st-count-wrap" hidden>Pictures in the set
+          <select id="st-count"><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label>
+        <label>Seed <input type="number" id="st-seed" min="0" max="2147483647" value="1"></label>
+        <label>Text area
+          <select id="st-zone"><option value="left" selected>left</option><option value="center">center</option><option value="bottom">bottom</option><option value="none">none</option></select></label>
+      </div>
+      <div class="row3">
+        <label>Niche
+          <select id="st-niche"><option value="">auto (from the words)</option></select></label>
+        <label>Mood
+          <select id="st-mood"><option value="">auto</option><option>warm</option><option>cool</option><option>dark</option><option>light</option></select></label>
+        <label>Accent colour
+          <span class="inline"><input type="color" id="st-accent" value="#c0392b" aria-label="Accent colour"><label class="check mini"><input type="checkbox" id="st-accent-on"> use</label></span></label>
+      </div>
+      <div class="actions">
+        <button id="st-go" class="primary">Create</button>
+        <button id="st-cancel" class="ghost" hidden>Cancel</button>
+        <span id="st-busy" class="muted" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <div class="card result">
+      <div id="st-empty" class="empty">Your website pictures appear here.</div>
+      <div id="st-out" hidden>
+        <div id="st-banner" class="notice" hidden></div>
+        <div id="st-main" class="stage-wrap"><img id="st-img" alt="Generated website picture"><div id="st-overlay" class="st-overlay" hidden><b>Your headline here</b><span>Sample text: it uses the text colour the judge recommends.</span></div></div>
+        <div id="st-meta" class="meta"></div>
+        <div class="actions wrap"><a id="st-dl" class="btn" download="picture.jpg">Download JPEG</a>
+          <button id="st-toggle" class="ghost" type="button">Hide sample text</button>
+          <button id="st-zip" class="ghost" type="button" hidden>Download all (zip)</button></div>
+        <div id="st-report"></div>
+        <div id="st-set" class="st-set" hidden></div>
+      </div>
+    </div>
   </div>
 </section>
 

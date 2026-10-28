@@ -12,7 +12,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corecraft import detector as D   # noqa: E402
 from corecraft.business_types import T, type_scores   # noqa: E402
-from labelled import TRAIN   # noqa: E402
+from labelled import TRAIN as LABELLED   # noqa: E402
+from corecraft import feedback   # noqa: E402
+
+TRAIN = LABELLED + feedback.pairs()   # the shipped labels plus what the owner corrected in the web UI
 
 FOLDS = 5
 WEIGHTS = [0.0, 0.25, 0.5, 1.0, 2.0, 4.0]

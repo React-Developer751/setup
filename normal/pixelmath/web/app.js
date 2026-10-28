@@ -90,6 +90,7 @@ function showTab(name) {
   $$('.tab').forEach((t) => { const on = t.dataset.tab === name; t.classList.toggle('active', on); t.setAttribute('aria-selected', on); });
   $$('.panel').forEach((p) => p.classList.toggle('active', p.id === 'tab-' + name));
   if (name === 'model') loadModel();
+  if (name === 'studio') initStudio();
   if (name === 'gallery') loadGallery(true);
   if (name === 'dataset') loadDataset(true);
   if (name === 'train') loadJobHistory();
@@ -660,6 +661,137 @@ async function loadJobHistory() {
     });
   } catch (e) { /* history is a convenience */ }
 }
+
+
+// ------------------------------------------------------------------------------------------------ studio: website pictures
+const st = { ready: false, kind: 'one', images: [], cur: 0, ctrl: null, busy: false, zone: null, textColor: null };
+const ST_EXAMPLES = ['wood fired pizza on a board', 'gym with dumbbells in red light', 'dental clinic reception, calm blue', 'kurti store, ethnic wear',
+  'B2B SaaS analytics dashboard', 'bakery with sourdough and croissants', 'yoga and meditation studio', 'luxury real estate apartments', 'school with smart classrooms',
+  'मिठाई की दुकान', 'daant ka doctor', 'submarine under the sea'];
+const ZONE_BOX = { left: [0.05, 0.14, 0.50, 0.86], center: [0.14, 0.20, 0.86, 0.56], bottom: [0.05, 0.64, 0.95, 0.94] };
+
+async function initStudio() {
+  if (st.ready) return;
+  st.ready = true;
+  ST_EXAMPLES.forEach((t) => $('#st-chips').append(h('button', { class: 'chip', type: 'button', text: t, onclick: () => { $('#st-prompt').value = t; $('#st-prompt').focus(); } })));
+  try {
+    const d = await api('/niches');
+    d.niches.sort((a, b) => a.title.localeCompare(b.title)).forEach((n) => $('#st-niche').append(h('option', { value: n.id, text: n.title })));
+  } catch (e) { banner(e.message, true); }
+}
+$$('#st-kind button').forEach((b) => b.addEventListener('click', () => {
+  st.kind = b.dataset.kind;
+  $$('#st-kind button').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); });
+  $('#st-size-wrap').hidden = st.kind === 'set'; $('#st-count-wrap').hidden = st.kind !== 'set';
+  $('#st-go').textContent = st.kind === 'set' ? 'Create site set' : 'Create';
+}));
+$('#st-go').addEventListener('click', () => studioGo());
+$('#st-prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); studioGo(); } });
+$('#st-cancel').addEventListener('click', () => { if (st.ctrl) st.ctrl.abort(); });
+$('#st-toggle').addEventListener('click', () => { const o = $('#st-overlay'); o.hidden = !o.hidden; $('#st-toggle').textContent = o.hidden ? 'Show sample text' : 'Hide sample text'; });
+
+function studioBody() {
+  const body = { prompt: $('#st-prompt').value.trim(), seed: Math.max(0, numv('#st-seed', 1)), response: 'base64' };
+  const zone = $('#st-zone').value;
+  body.text_zone = zone;
+  if ($('#st-niche').value) body.niche = $('#st-niche').value;
+  if ($('#st-mood').value) body.mood = $('#st-mood').value;
+  if ($('#st-accent-on').checked) body.accent = $('#st-accent').value;
+  if (st.kind === 'set') body.count = numv('#st-count', 6);
+  else { const [w, hh] = $('#st-size').value.split('x').map(Number); body.width = w; body.height = hh; }
+  return body;
+}
+
+async function studioGo() {
+  if (st.busy) return;
+  const body = studioBody();
+  if (!body.prompt && !body.niche) { banner('Describe the business first.', true); return; }
+  if (!body.prompt) body.prompt = $('#st-niche').selectedOptions[0].textContent;
+  banner('');
+  st.busy = true; st.ctrl = new AbortController();
+  $('#st-go').disabled = true; $('#st-cancel').hidden = false;
+  const t0 = Date.now();
+  const tick = () => { $('#st-busy').replaceChildren(h('span', { class: 'spin' }), ((Date.now() - t0) / 1000).toFixed(1) + ' s'); };
+  tick(); const timer = setInterval(tick, 200);
+  try {
+    const data = await api(st.kind === 'set' ? '/set' : '/scene', { method: 'POST', json: body, signal: st.ctrl.signal });
+    st.kind === 'set' ? showStudioSet(data, body) : showStudioOne(data, body);
+  } catch (e) {
+    if (e.name === 'AbortError') banner('Cancelled.', false); else banner(e.status === 503 ? 'The server is busy. Try again in a moment.' : e.message, true);
+  } finally {
+    clearInterval(timer); st.busy = false; st.ctrl = null; $('#st-go').disabled = false; $('#st-cancel').hidden = true; $('#st-busy').textContent = '';
+  }
+}
+
+function showStudioOne(data, body) {
+  const item = { src: 'data:' + data.mime + ';base64,' + data.image_base64, report: data.report, file: 'picture.jpg', w: data.width, h: data.height, bytes: atob(data.image_base64).length };
+  st.images = [item]; st.cur = 0;
+  $('#st-set').hidden = true; $('#st-zip').hidden = true;
+  renderStudioMain(item, data.render_seconds);
+}
+
+function showStudioSet(data, body) {
+  st.images = data.images.map((im) => ({ src: 'data:' + im.mime + ';base64,' + im.image_base64, file: im.file, role: im.role, w: im.width, h: im.height,
+    report: data.report.images.find((r) => r.file === im.file) || {}, bytes: atob(im.image_base64).length }));
+  st.setReport = data.report; st.cur = 0;
+  const grid = $('#st-set'); clear(grid); grid.hidden = false;
+  st.images.forEach((im, i) => {
+    const fig = h('figure', { class: i === 0 ? 'cur' : '', title: im.file }, h('img', { src: im.src, alt: im.file }),
+      h('figcaption', { text: im.file + ' · ' + im.w + '×' + im.h + ' · ' + Math.round(im.bytes / 1024) + ' KB' }));
+    fig.addEventListener('click', () => { st.cur = i; $$('figure', grid).forEach((f, k) => f.classList.toggle('cur', k === i)); renderStudioMain(im, null); });
+    grid.append(fig);
+  });
+  $('#st-zip').hidden = false;
+  renderStudioMain(st.images[0], data.report.seconds);
+  const r = data.report;
+  const note = $('#st-banner'); note.hidden = false; note.className = 'notice ok';
+  note.textContent = r.fallback ? '' : 'Set judged: smallest difference between two pictures ' + r.min_distance + ' bits (needs 14), palette family ' + r.palette_family +
+    ', hero text contrast ' + r.hero_contrast + ' (needs 4.5), ' + r.redrawn + ' redraw(s), ' + r.seconds + ' s.';
+  if (r.fallback) fallbackNote(r.images[0]);
+}
+
+function fallbackNote(rep) {
+  const note = $('#st-banner'); note.hidden = false; note.className = 'notice';
+  note.textContent = 'No business type fits these words (' + (rep.fallback_reason || 'not recognised') + '), so this is a neutral abstract in the accent colour instead of a wrong picture. Try adding the kind of business or choose a niche.';
+}
+
+function renderStudioMain(item, secs) {
+  $('#st-empty').hidden = true; $('#st-out').hidden = false;
+  $('#st-img').src = item.src;
+  const dl = $('#st-dl'); dl.href = item.src; dl.download = item.file;
+  const r = item.report || {};
+  const banner_ = $('#st-banner');
+  if (st.kind === 'one') { banner_.hidden = true; if (r.fallback) fallbackNote(r); }
+  $('#st-meta').textContent = [r.title || '', item.w + '×' + item.h, Math.round(item.bytes / 1024) + ' KB', 'mood ' + (r.mood || ''), 'accent ' + (r.accent || ''), secs ? secs + ' s' : ''].filter(Boolean).join(' · ');
+  // sample headline on the text zone, in the colour the judge recommends: the quickest way to see the contrast with your own eyes
+  const o = $('#st-overlay');
+  const zone = r.text_zone && ZONE_BOX[r.text_zone];
+  if (zone && r.text_color) {
+    o.hidden = false; $('#st-toggle').hidden = false; $('#st-toggle').textContent = 'Hide sample text';
+    o.style.left = zone[0] * 100 + '%'; o.style.top = zone[1] * 100 + '%'; o.style.width = (zone[2] - zone[0]) * 100 + '%'; o.style.height = (zone[3] - zone[1]) * 100 + '%';
+    o.style.color = r.text_color;
+  } else { o.hidden = true; $('#st-toggle').hidden = true; }
+  const rep = $('#st-report'); clear(rep);
+  const cell = (k, v, sub) => h('div', {}, h('b', { text: String(v) }), h('span', { text: k + (sub ? ' · ' + sub : '') }));
+  const box = h('div', { class: 'rep' });
+  box.append(cell('niche', r.niche || 'none (fallback)'), cell('fallback', r.fallback ? 'yes' : 'no'));
+  if (r.contrast) {
+    const sw = h('span', { class: 'sw' }); sw.style.background = r.text_color;
+    box.append(h('div', {}, h('b', {}, sw, r.text_color), h('span', { text: 'text colour for the ' + r.text_zone + ' area' })), cell('text contrast', r.contrast + ':1', 'needs 4.5'));
+  }
+  box.append(cell('redrawn by the judge', r.redrawn == null ? '' : r.redrawn));
+  Object.entries(r.scores || {}).forEach(([k, v]) => box.append(cell('score ' + k.replace('_', ' '), typeof v === 'number' ? v.toFixed(2) : v)));
+  rep.append(box);
+}
+
+$('#st-zip').addEventListener('click', async () => {
+  if (!st.images.length) return;
+  const entries = st.images.map((im) => ({ name: im.file, data: Uint8Array.from(atob(im.src.split(',')[1]), (c) => c.charCodeAt(0)) }));
+  entries.push({ name: 'report.json', data: new TextEncoder().encode(JSON.stringify(st.setReport || {}, null, 2)) });
+  const url = URL.createObjectURL(makeZip(entries));
+  const a = h('a', { href: url, download: 'site-pictures.zip' }); document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+});
 
 // ------------------------------------------------------------------------------------------------ boot
 $('#prompt').value = store.get('pm_prompt', $('#prompt').value);
