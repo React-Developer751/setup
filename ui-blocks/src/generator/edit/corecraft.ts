@@ -4,6 +4,7 @@
 //   - its niche must be one this business type belongs to (a "shop" page is not for a clinic),
 //   - the line must name the business of the prompt (a line that could be on any page is no use),
 //   - sizes, no numbers or links, no corporate button texts ("Learn more", "Download the app"), no lines that end on a group of people without "for".
+import { hasFiller, stripFiller } from '../hinglish'
 import type { CoreBlocks, EditOp, TextField } from './edits'
 import type { ThemeKey } from '../themes'
 
@@ -99,7 +100,9 @@ export function gateCandidates(candidates: CoreCandidate[], ctx: GateContext): {
 
 /** pages of copy from Core-Craft through the server of this project; undefined when it is not running */
 /** Core-Craft finds the place in English prompts ("... in Pune" at the end): "Pune mein" is moved there for it */
-export const forCore = (prompt: string) => {
+export const forCore = (rawPrompt: string) => {
+  // a Hinglish request ("mujhe ek dental clinic chahiye"): the scaffolding words would be read as part of the business
+  const prompt = /[\u0900-\u097F]/.test(rawPrompt) ? rawPrompt : stripFiller(rawPrompt)
   const found = /\b([A-Z][\p{L}]+)\s+(?:mein|me|main|mai|ke\s+liye|ke\s+lie)\b/u.exec(prompt)
   return found ? `${prompt.replace(found[0], '').replace(/\s{2,}/g, ' ').trim()} in ${found[1]}` : prompt
 }
@@ -188,7 +191,7 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   const review = page.needs_review ?? []
   const hindi = page.lang === 'hi'
   const strict = /^strict/i.test(page.generated_by?.mode ?? '')
-  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i))
+  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i) && !hasFiller(i))
   if (!page.features?.length || !page.about?.length) return { use: false, reason: 'Core-Craft returned an incomplete page', review }
   if (hindi) {
     const t = (en: string, hi: string) => (hi ? hi : en)

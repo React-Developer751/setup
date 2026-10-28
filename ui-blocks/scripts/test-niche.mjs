@@ -160,6 +160,21 @@ ok(!/Veg/.test(JSON.stringify(jp2.stats)), 'a japanese restaurant has no veg/non
 const chai = generateWebsite('ek chai ki tapri ki website', 0, 'premium', true, 'auto').content
 ok(!/oven/i.test(JSON.stringify(chai.hero)) && /chai/i.test(JSON.stringify(chai.features)), 'a chai stall is not baked in an oven')
 
+// real-example findings: places are not brands, exams are not brands, Hinglish is not sent to the content AI as the business
+{
+  const brand = (p) => generateWebsite(p, 0, 'premium', true, 'auto').content.brandName
+  ok(brand('wedding photographer Udaipur') !== 'Udaipur', 'a city is not the brand (Udaipur)')
+  ok(brand('law firm in Chandigarh, property and family cases') !== 'Chandigarh', 'a city is not the brand (Chandigarh)')
+  ok(!/UPSC|NEET/.test(brand('coaching for UPSC and NEET in Kota')), 'two exams are not the brand')
+  ok(!/IELTS|PTE/.test(brand('IELTS and PTE coaching')), 'IELTS and PTE are not the brand')
+  const { forCore } = await loadGeneratorModule('edit/corecraft.ts')
+  ok(!/mujhe|chahiye|\bek\b/i.test(forCore('mujhe ek dental clinic chahiye Pune mein, braces, implants')), 'Hinglish scaffolding is not sent to the content AI')
+  const { studioQueries } = await loadGeneratorModule('edit/imageAiClient.ts')
+  ok(studioQueries('kurti boutique online, free shipping above 999').includes('kurti boutique'), 'the image AI is asked in plain words (kurti boutique)')
+  ok(studioQueries('school Sunrise Public School Lucknow').includes('school classroom'), 'a bare school is asked as a classroom')
+  ok(studioQueries('chai ki tapri').includes('chai cafe'), 'a chai stall is asked as a chai cafe')
+}
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

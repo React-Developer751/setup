@@ -5,6 +5,7 @@
 // or at odds with the colours of the site. A picture that fails is drawn again (another seed, then other words, then another scene of the business),
 // up to four tries; the best one is kept. Every decision is sent to the server (image-feedback.jsonl) so that `npm run images:learn` can find the
 // scenes the engine draws badly and leave them out of the next plans.
+import { stripFiller } from '../hinglish'
 import { sceneUrl, type Scene, type ScenePlan } from '../imageAi'
 import type { EditOp } from './edits'
 import { assessPixels, cleanPrompt, promptUnderstood, type ParseAnswer, type PixelReport } from './imageCheck'
@@ -161,15 +162,35 @@ export async function redrawScene(scene: UsedScene, options: { accent?: string; 
  * judges them itself. undefined when the engine is not running or the business fits none of its niches (it then answers with a neutral picture: the
  * scenes of the plan are drawn instead, as before).
  */
+/** words of the person that the image engine reads badly: the Hinglish scaffolding, offers and numbers, a business name after "school" */
+export function studioQueries(prompt: string): string[] {
+  const asked = prompt.replace(/\b(fashion|luxury|publishing|auction|opera|production|fashion|design|record|tea|coffee)\s+house\b/gi, '$1')
+  const cleaned = stripFiller(asked.split(/[,;:.]/)[0])
+    .replace(/\b(?:free|cash|order|above|over|open|online|website|site|banao|chahiye)\b.*$/i, '')
+    .replace(/\b(?:chai ki tapri|tapri|tea stall)\b/i, 'chai cafe')
+  // the words that start in lower case say the business; capitals are a name or a place ("Sunrise Public", "Lucknow") and only confuse the engine
+  const plain = cleaned.split(/\s+/).filter((w) => w && /^[a-z]/.test(w) && !/^(?:for|in|of|at|a|an|the|and|with)$/.test(w))
+  const head = (plain.length ? plain : cleaned.split(/\s+/)).filter((w, i, all) => w !== all[i - 1]).join(' ').trim()
+  const words = head.split(' ').filter(Boolean)
+  // the engine refuses the bare word "school" (a diving school is not a classroom): a classroom is asked for
+  if (head === 'school') return [asked, 'school classroom']
+  return [...new Set([asked, head, words.slice(0, 2).join(' ')].filter((q) => q.length >= 2))]
+}
+
 async function studioSet(prompt: string, accent: string | undefined, seed: number): Promise<{ ops: EditOp[]; report: PictureReport } | undefined> {
   try {
-    // "fashion house" or "publishing house" is not a building: the engine would draw a house for sale
-    const asked = prompt.replace(/\b(fashion|luxury|publishing|auction|opera|production|fashion|design|record|tea|coffee)\s+house\b/gi, '$1')
-    const query = new URLSearchParams({ prompt: asked, count: '6', seed: String(Math.abs(Math.round(seed)) % 999_999) })
-    if (accent && /^#[0-9a-f]{6}$/i.test(accent)) query.set('accent', accent)
-    const res = await fetch(`/api/ai-set?${query}`, { signal: AbortSignal.timeout(100_000) })
-    if (!res.ok) return undefined
-    const body = (await res.json()) as { report?: { niche?: string | null; title?: string; fallback?: boolean; redrawn?: number }; images?: { role: string; mime: string; image_base64: string }[] }
+    // "fashion house" or "publishing house" is not a building: the engine would draw a house for sale. When it refuses the words as typed
+    // (a fallback), the same business is asked again in plainer words
+    type SetBody = { report?: { niche?: string | null; title?: string; fallback?: boolean; redrawn?: number }; images?: { role: string; mime: string; image_base64: string }[] }
+    let body: SetBody = {}
+    for (const asked of studioQueries(prompt)) {
+      const query = new URLSearchParams({ prompt: asked, count: '6', seed: String(Math.abs(Math.round(seed)) % 999_999) })
+      if (accent && /^#[0-9a-f]{6}$/i.test(accent)) query.set('accent', accent)
+      const res = await fetch(`/api/ai-set?${query}`, { signal: AbortSignal.timeout(100_000) })
+      if (!res.ok) return undefined
+      body = (await res.json()) as SetBody
+      if (body.report && !body.report.fallback && body.report.niche) break
+    }
     if (!body.report || body.report.fallback || !body.report.niche) return undefined
     const pictures = (body.images ?? []).map((i) => `data:${i.mime};base64,${i.image_base64}`)
     if (pictures.length < 3) return undefined
