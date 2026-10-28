@@ -8,7 +8,7 @@ import type { ThemeKey, Theme, Palette, PaletteMode, ColorMode } from './themes'
 import type { Target } from './edit/edits'
 import { sectionTokens, mixHex } from './edit/sectionColors'
 
-export type MoodId = 'minimal-light' | 'minimal-dark' | 'soft-neo' | 'retro' | 'cyberpunk' | 'glass' | 'bold-contrast' | 'editorial' | 'playful-pop' | 'luxe-dark' | 'clinic-mesh' | 'plum-ivory' | 'trust-navy' | 'violet-glow' | 'cream-coral'
+export type MoodId = 'minimal-light' | 'minimal-dark' | 'soft-neo' | 'retro' | 'cyberpunk' | 'glass' | 'bold-contrast' | 'editorial' | 'playful-pop' | 'luxe-dark' | 'clinic-mesh' | 'plum-ivory' | 'trust-navy' | 'violet-glow' | 'cream-coral' | 'maison-noir' | 'film-editorial' | 'atelier-3d' | 'apple-tile' | 'techno-black' | 'showroom-white'
 export type MoodChoice = MoodId | 'none'
 
 /** how a panel of the page is coloured */
@@ -289,10 +289,85 @@ export const MOODS: Mood[] = [
     roles: { hero: 'plain', footer: 'alt-ink', cta: 'plain', stats: 'plain', testimonials: 'band', rhythm: ['plain', 'band'] },
     affinity: { general_business: 3, food_dining: 2, travel_tourism: 2, home_services: 2, real_estate: 2, professional_services: 2, education: 1 },
   },
+  // ───────────── six designs read from famous picture-led sites (Gucci, Nowness, Lusion, Apple, teenage engineering, Tesla) ─────────────
+  {
+    id: 'maison-noir',
+    label: 'Maison noir',
+    blurb: 'A fashion house: a full-bleed picture, a tiny wordmark, square edges, black and white only, small capitals with wide spacing.',
+    keywords: ['maison noir', 'gucci style', 'gucci look', 'fashion house look', 'noir luxury'],
+    mode: 'light',
+    font: { family: 'Montserrat', weights: '400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-none', heading: 'uppercase tracking-[0.2em] font-semibold', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-none uppercase tracking-widest', secondary: 'rounded-none uppercase tracking-widest' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#ffffff', surface: '#ffffff', border: '#e5e5e5', text: '#000000', muted: '#555555', accent: '#000000', alt: '#6b5b3e' } : { bg: '#000000', surface: '#0b0b0b', border: '#2a2a2a', text: '#ffffff', muted: '#a8a8a8', accent: '#ffffff', alt: '#c9b37e' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain'] },
+    affinity: { luxury_minimal: 3, fashion_retail: 3, beauty_wellness: 2, events_wedding: 2, real_estate: 2, automotive: 1 },
+  },
+  {
+    id: 'film-editorial',
+    label: 'Film editorial',
+    blurb: 'A film magazine: a thin spaced wordmark, wide stills, quiet captions, light lettering, black on white.',
+    keywords: ['film editorial', 'editorial film', 'nowness style', 'magazine film look'],
+    mode: 'light',
+    font: { family: 'Jost', weights: '300;400;500;600', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-none', heading: 'font-light uppercase tracking-[0.25em]', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-none uppercase tracking-widest', secondary: 'rounded-none uppercase tracking-widest' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#ffffff', surface: '#ffffff', border: '#e0e0e0', text: '#111111', muted: '#666666', accent: '#111111', alt: '#8f7a55' } : { bg: '#0c0c0c', surface: '#141414', border: '#2b2b2b', text: '#f4f4f4', muted: '#a6a6a6', accent: '#f4f4f4', alt: '#c9b37e' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain'] },
+    affinity: { creative_studio: 3, luxury_minimal: 2, fashion_retail: 2, events_wedding: 2, travel_tourism: 2, beauty_wellness: 1 },
+  },
+  {
+    id: 'atelier-3d',
+    label: 'Atelier 3D',
+    blurb: 'A digital studio: a cool lavender-white page, a big rounded picture card, cobalt blue and black, light oversized type, pill buttons.',
+    keywords: ['atelier 3d', 'lusion style', 'lusion look', '3d studio look', 'studio 3d'],
+    mode: 'light',
+    font: { family: 'Manrope', weights: '300;400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-3xl', heading: 'font-light tracking-tight', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#f0f1fa', surface: '#ffffff', border: '#dcdfef', text: '#0b0c14', muted: '#555a70', accent: '#1a2ffb', alt: '#0b0c14' } : { bg: '#0b0c14', surface: '#14162a', border: '#262a4a', text: '#f0f1fa', muted: '#a2a8c8', accent: '#6b7bff', alt: '#ffffff' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { creative_studio: 3, modern_tech: 3, general_business: 1, education: 1 },
+  },
+  {
+    id: 'apple-tile',
+    label: 'Product tiles',
+    blurb: 'Full-width product tiles, light grey and black in turn: a short headline, one line, two pill buttons and the product below.',
+    keywords: ['apple style', 'apple look', 'product tiles', 'apple tile'],
+    mode: 'light',
+    font: { family: 'Inter', weights: '400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded-3xl', heading: 'font-semibold tracking-tighter', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded-full', secondary: 'rounded-full' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#ffffff', surface: '#f5f5f7', border: '#d2d2d7', text: '#1d1d1f', muted: '#6e6e73', accent: '#0071e3', alt: '#000000' } : { bg: '#000000', surface: '#1d1d1f', border: '#424245', text: '#f5f5f7', muted: '#a1a1a6', accent: '#2997ff', alt: '#ffffff' }),
+    roles: { hero: 'plain', footer: 'band', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { modern_tech: 3, general_business: 1, fashion_retail: 1, creative_studio: 1 },
+  },
+  {
+    id: 'techno-black',
+    label: 'Techno black',
+    blurb: 'Instrument-maker black: spotlit product, off-white mono lettering in capitals, thin outlined buttons, one orange accent.',
+    keywords: ['techno black', 'teenage engineering', 'instrument look', 'techno look'],
+    mode: 'dark',
+    font: { family: 'Space Mono', weights: '400;700', variable: '--font-mono', fallback: 'mono' },
+    shape: { radius: 'rounded-none', heading: 'uppercase tracking-wider font-bold', fontClass: 'font-mono', surface: '', border: 'border-(--g-border)', primary: 'rounded-none uppercase tracking-wider', secondary: 'rounded-none uppercase tracking-wider' },
+    colors: (_h, _h2, mode) => finish(mode === 'dark' ? { bg: '#000000', surface: '#0e0e0e', border: '#2b2b2b', text: '#f1f2f2', muted: '#b2b2b2', accent: '#ff5a1f', alt: '#f1f2f2' } : { bg: '#f1f2f2', surface: '#ffffff', border: '#cfcfcf', text: '#0a0a0a', muted: '#555555', accent: '#d9410c', alt: '#0a0a0a' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { modern_tech: 3, automotive: 2, creative_studio: 2, bold_fitness: 1 },
+  },
+  {
+    id: 'showroom-white',
+    label: 'Showroom',
+    blurb: 'A car maker: a full-screen picture, a small centred menu, a solid blue and a white button side by side, rectangular with a 4 px corner.',
+    keywords: ['showroom white', 'tesla style', 'tesla look', 'showroom look'],
+    mode: 'light',
+    font: { family: 'Figtree', weights: '400;500;600;700', variable: '--font-sans', fallback: 'sans' },
+    shape: { radius: 'rounded', heading: 'font-medium tracking-tight', fontClass: 'font-sans', surface: '', border: 'border-(--g-border)', primary: 'rounded', secondary: 'rounded' },
+    colors: (_h, _h2, mode) => finish(mode === 'light' ? { bg: '#ffffff', surface: '#f4f4f4', border: '#e2e3e3', text: '#171a20', muted: '#5c5e62', accent: '#3e6ae1', alt: '#171a20' } : { bg: '#171a20', surface: '#20242b', border: '#363b44', text: '#f4f4f4', muted: '#a9adb4', accent: '#6f93f5', alt: '#f4f4f4' }),
+    roles: { hero: 'plain', footer: 'ink', cta: 'plain', stats: 'plain', testimonials: 'plain', rhythm: ['plain', 'band'] },
+    affinity: { automotive: 3, modern_tech: 2, home_services: 1, general_business: 1, real_estate: 1 },
+  },
 ]
 
 /** the designs read from live sites: a fixed signature, not a recolouring of the business's hue */
-export const SIGNATURE_MOODS = new Set<MoodId>(['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral'])
+export const SIGNATURE_MOODS = new Set<MoodId>(['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral', 'maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white'])
+/** the picture-led designs: they use the showcase kit (src/components/showkit) */
+export const SHOWCASE_MOODS = new Set<MoodId>(['maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white'])
 
 export const MOOD_IDS = MOODS.map((m) => m.id)
 
@@ -346,10 +421,24 @@ export function referenceMood(prompt: string): MoodId | undefined {
   return 'trust-navy'
 }
 
+/** a business whose site is about pictures and products has the design of the famous site of its kind */
+export function showcaseMood(prompt: string): MoodId | undefined {
+  const t = prompt.toLowerCase()
+  const w = (re: RegExp) => re.test(t)
+  if (w(/(?<![a-z])(?:synth\w*|audio gear|instrument\w*|hardware studio|robot\w*|pocket operator|sampler|drum machine|gaming gear)(?![a-z])/)) return 'techno-black'
+  if (w(/(?<![a-z])(?:electric (?:car|vehicle|bike|scooter)|ev |car showroom|car dealer\w*|motorcycle|solar|powerwall|automaker|automotive)(?![a-z])/)) return 'showroom-white'
+  if (w(/(?<![a-z])(?:couture|fashion house|handbags?|maison|haute)(?![a-z])/)) return 'maison-noir'
+  if (w(/(?<![a-z])(?:film|films|cinema|video magazine|documentary|photograph\w*|art gallery|magazine|editorial)(?![a-z])/)) return 'film-editorial'
+  if (w(/(?<![a-z])(?:3d|webgl|animation studio|motion studio|interactive studio|creative agency|design studio|digital studio)(?![a-z])/)) return 'atelier-3d'
+  if (w(/(?<![a-z])(?:gadget\w*|smartphone|laptop|headphones|wearable|consumer electronics|product launch|apple)(?![a-z])/)) return 'apple-tile'
+  return undefined
+}
+
 export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, temp: number): Mood | undefined {
   const named = moodFromText(prompt)
-  if (named) return named
-  const reference = referenceMood(prompt)
+  const reference = referenceMood(prompt) ?? showcaseMood(prompt)
+  // a look the person named wins; only the loose words of the editorial look ("magazine", "classic", "elegant") give way to the design of the kind of site
+  if (named && !(reference && (named.id === 'editorial' || named.id === 'luxe-dark'))) return named
   if (reference) return moodById(reference)
   if (temp < 0.3) return undefined
   if (rand() > 0.55 + temp * 0.45) return undefined

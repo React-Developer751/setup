@@ -1,5 +1,6 @@
 // The designs read from live translation-service sites: a translation / certificate prompt gets the design of its kind, and the parts of the reference kit.
 globalThis.document = { styleSheets: [] }
+import fs from 'node:fs'
 import { loadGeneratorModule } from './lib/load-generator.mjs'
 
 let pass = 0
@@ -7,8 +8,8 @@ const fail = []
 const ok = (c, n) => (c ? (pass += 1) : fail.push(n))
 
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
-const { referenceMood, moodFromText } = await loadGeneratorModule('moods.ts')
-const { refPools, rolePools } = await loadGeneratorModule('library/libraryRoles.ts')
+const { referenceMood, showcaseMood, moodFromText } = await loadGeneratorModule('moods.ts')
+const { refPools, rolePools, showPools } = await loadGeneratorModule('library/libraryRoles.ts')
 
 const CASES = [
   ['Medical translation service in the UK called MediLingua: certified medical report translation, NHS and hospital documents', 'clinic-mesh'],
@@ -43,10 +44,35 @@ for (const [role, ids] of Object.entries(refPools)) {
   ok(ids.every((id) => !(rolePools[role] ?? []).includes(id)), `the stored pool of "${role}" does not hold a kit part`)
 }
 // every slot of the kit is marked, the fill needs it
-import fs from 'node:fs'
 for (const f of fs.readdirSync('src/components/refkit')) {
   const code = fs.readFileSync(`src/components/refkit/${f}`, 'utf8')
   ok(/data-ref="[a-z]+"/.test(code) && /data-slot="/.test(code), `${f}: has data-ref and data-slot parts`)
+}
+// ── the six designs read from picture-led sites: Gucci, Nowness, Lusion, Apple, teenage engineering, Tesla
+const SHOW = [
+  ['Luxury fashion house called Maison Verre in Milan: couture, handbags, silk scarves', 'maison-noir', 'showkit/ShowTiles1'],
+  ['Film magazine and documentary studio called Slow Reel: short films, photography essays', 'film-editorial', 'showkit/ShowTiles1'],
+  ['3D interactive digital studio called Orbit Lab: WebGL experiences, motion design', 'atelier-3d', 'showkit/ShowTiles1'],
+  ['Consumer electronics brand called Lumen: wireless headphones, smartwatch, smartphone', 'apple-tile', 'showkit/ShowStack1'],
+  ['Synth and audio instrument maker called Pocket Waves: drum machines, samplers', 'techno-black', 'showkit/ShowStack1'],
+  ['Electric car showroom called Volt Motors: electric cars, home solar, wall chargers', 'showroom-white', 'showkit/ShowStack1'],
+]
+for (const [prompt, mood, features] of SHOW) {
+  ok(showcaseMood(prompt) === mood, `${mood}: recognised (${prompt.slice(0, 22)})`)
+  for (const variation of [1, 5]) for (const tier of ['normal', 'premium']) {
+    const page = generateLibraryPage(prompt, variation, tier)
+    const ids = Object.fromEntries(page.sections.map((x) => [x.role, x.componentId]))
+    ok(ids.hero === 'showkit/ShowHero1' && ids.cta === 'showkit/ShowCta1', `${mood}: picture-led first screen and closing statement`)
+    ok(page.sections.filter((x) => x.role === 'features').every((x) => x.componentId === features), `${mood}: its services are ${features}`)
+    ok(page.css.includes('.show-hero') && page.fontTokens?.['--g-font'], `${mood}: its rules and typeface are in the page`)
+  }
+}
+ok(['maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white'].every((m) => showPools[m]?.hero?.[0] === 'showkit/ShowHero1'), 'every picture-led design has its kit parts')
+ok(showcaseMood('bakery called Sweet Crumbs') === undefined && referenceMood('Electric car showroom') === undefined, 'a bakery has no picture-led design, and a car showroom is not a translation site')
+ok(moodFromText('apple style website for a bakery')?.id === 'apple-tile', 'the famous sites can be asked for by name')
+for (const f of fs.readdirSync('src/components/showkit')) {
+  const code = fs.readFileSync(`src/components/showkit/${f}`, 'utf8')
+  ok(/data-ref="show-[a-z]+"/.test(code) && /data-slot="/.test(code), `${f}: has data-ref and data-slot parts`)
 }
 console.log(`refkit: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) { console.log(fail.map((f) => ` - ${f}`).join('\n')); process.exit(1) }

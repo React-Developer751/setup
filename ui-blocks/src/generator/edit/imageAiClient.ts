@@ -163,7 +163,9 @@ export async function redrawScene(scene: UsedScene, options: { accent?: string; 
  */
 async function studioSet(prompt: string, accent: string | undefined, seed: number): Promise<{ ops: EditOp[]; report: PictureReport } | undefined> {
   try {
-    const query = new URLSearchParams({ prompt, count: '6', seed: String(Math.abs(Math.round(seed)) % 999_999) })
+    // "fashion house" or "publishing house" is not a building: the engine would draw a house for sale
+    const asked = prompt.replace(/\b(fashion|luxury|publishing|auction|opera|production|fashion|design|record|tea|coffee)\s+house\b/gi, '$1')
+    const query = new URLSearchParams({ prompt: asked, count: '6', seed: String(Math.abs(Math.round(seed)) % 999_999) })
     if (accent && /^#[0-9a-f]{6}$/i.test(accent)) query.set('accent', accent)
     const res = await fetch(`/api/ai-set?${query}`, { signal: AbortSignal.timeout(100_000) })
     if (!res.ok) return undefined

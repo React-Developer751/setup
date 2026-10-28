@@ -59,7 +59,7 @@ for (const prompt of prompts) {
     }
   }
 }
-ok(evolved / evolvedTotal > 0.35, `at a wild creativity many palettes are evolved (${evolved}/${evolvedTotal})`)
+ok(evolved / evolvedTotal > 0.3, `at a wild creativity many palettes are evolved (the fixed signature designs of jewellery, car or film sites are not evolved) (${evolved}/${evolvedTotal})`)
 ok(evolvedHues.size >= 10, `evolved palettes cover the wheel (${evolvedHues.size} hue bands)`)
 const one = evolvePalette('food_dining', seededRandom(5), 0.9)
 const again = evolvePalette('food_dining', seededRandom(5), 0.9)

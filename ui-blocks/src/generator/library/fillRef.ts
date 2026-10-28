@@ -40,7 +40,69 @@ function accentTitle(el: HTMLElement, title: string) {
   el.append(span)
 }
 
-export function fillRef(root: Element, role: Role, c: WebsiteContent) {
+/** a picture for slot i of a part (the page's own photos first, else the drawn art of the page's colours) */
+export type PictureFor = (index: number, width: number, height: number) => string
+
+/** the parts of the showcase kit (src/components/showkit): picture-led, filled by name like the reference kit */
+function fillShow(root: Element, kind: string, c: WebsiteContent, picture: PictureFor) {
+  const features = c.features.items
+  const setImg = (el: Element | null, index: number, w: number, h: number) => {
+    if (!el) return
+    el.setAttribute('src', picture(index, w, h))
+    el.removeAttribute('srcset')
+    el.setAttribute('alt', c.brandName)
+  }
+  switch (kind) {
+    case 'show-hero': {
+      setImg(one(root, 'image'), 0, 1440, 800)
+      put(root, 'eyebrow', short(sentence(c.subject) || c.brandName, 46))
+      put(root, 'title', c.hero.title)
+      put(root, 'subtitle', c.hero.subtitle)
+      put(root, 'button', c.hero.button)
+      put(root, 'button2', features.length ? short(c.features.title, 24) : '')
+      break
+    }
+    case 'show-tiles': {
+      put(root, 'title', c.features.title)
+      put(root, 'lead', `${sentence(andList(features.slice(0, 4).map((f) => lowerFirst(f.title))))}.`)
+      repeat(root, 'tile', features.slice(0, 6), (el, item, i) => {
+        setImg(el.querySelector('[data-slot="tile-image"]'), i + 1, 900, 1100)
+        const t = el.querySelector('[data-slot="tile-title"]')
+        const x = el.querySelector('[data-slot="tile-text"]')
+        if (t) t.textContent = item.title
+        if (x) x.textContent = short(item.text, 70)
+      })
+      break
+    }
+    case 'show-stack': {
+      repeat(root, 'tile', features.slice(0, 4), (el, item, i) => {
+        setImg(el.querySelector('[data-slot="tile-image"]'), i + 1, 1200, 800)
+        const set = (slot: string, text: string) => {
+          const n = el.querySelector(`[data-slot="${slot}"]`)
+          if (n) n.textContent = text
+        }
+        set('tile-title', item.title)
+        set('tile-text', short(item.text, 90))
+        set('tile-link', c.labels?.learnMore ?? 'Learn more')
+        set('tile-link2', c.hero.button)
+      })
+      break
+    }
+    case 'show-cta': {
+      put(root, 'title', c.cta.title)
+      put(root, 'lead', c.contact.hoursText ? `${c.brandName}: ${c.contact.hoursText}.` : `Get in touch with ${c.brandName}.`)
+      put(root, 'button', c.cta.button)
+      put(root, 'button2', c.contact.title)
+      break
+    }
+    default:
+      break
+  }
+}
+
+export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: PictureFor) {
+  const showKind = root.querySelector('[data-ref^="show-"]')?.getAttribute('data-ref')
+  if (showKind && picture) return fillShow(root, showKind, c, picture)
   const features = c.features.items
   switch (role) {
     case 'hero': {

@@ -50,3 +50,31 @@ Translation / certificate prompts choose their design by kind: medical -> clinic
 * The mega menu, the floating mini-cards on the hero, the gradient on single headline words (violet-to-pink) and the "most ordered" featured card.
 * The form of the hero card is a design element: it opens the visitor's mail program on the exported site (no form service is used).
 * Light-mode decorations are not drawn in dark mode.
+
+---
+
+# Part 2: famous picture-led sites (read 2026-10-28)
+Gucci, Lusion, Apple, teenage engineering, Tesla, Nowness (opened and measured); the lists of bmgmediaco (blocked), Awwwards luxury and Eleken (headings and "why it stands out" read).
+
+## What they share
+* **Type and picture first**: an oversized headline, a few words, one or two buttons, and a picture that fills the screen or a rounded card. Very few colours: black, white and one accent.
+* **No frames**: tiles meet edge to edge (Gucci, Nowness), or full-width tiles follow one another (Apple, Tesla); captions are tiny capitals with wide spacing.
+* **One voice of colour**: Lusion cobalt `#1a2ffb` on lavender-white `#f0f1fa`, Apple blue `#0071e3` on `#f5f5f7` / black, Tesla blue `#3e6ae1` on white, teenage engineering orange on black, Gucci and Nowness only black and white.
+* Eleken's takeaways agree: dark high-contrast UI with one neon accent, bold typography, generous white space, a primary and a quiet secondary button, storytelling pictures.
+
+| Site | Page | Type | Look |
+|---|---|---|---|
+| gucci.com | white | Gucci Sans (wide humanist), small uppercase, tracked | full-bleed photograph, a tiny centred wordmark, one square white "SHOP NOW", picture tiles with no gap and a one-line caption |
+| nowness.com | white | Futura, light, capitals | a very wide thin wordmark, a wide film still, small caption nav, a strip of film stills |
+| lusion.co | `#f0f1fa` | Aeonik, light, huge | a large rounded 3D picture card inset from the edges, a black pill and a white pill, "+" markers |
+| apple.com | white / `#f5f5f7` / black | SF Pro, 600, tight tracking | tiles one under the other: headline, one line, a blue pill and an outlined pill, the product below; light and black tiles alternate |
+| teenage.engineering | black | technical mono capitals | a spotlit product, thin outlined rectangular buttons, one orange accent, grayscale |
+| tesla.com | white | Universal Sans, 500 | a full-screen picture, small centred menu, a solid blue and a white 4 px button side by side |
+
+## What the generator learned
+Six more design moods: `maison-noir`, `film-editorial`, `atelier-3d`, `apple-tile`, `techno-black`, `showroom-white` (fixed signature palettes and typefaces, 21 moods in all), and a **showcase kit** (`src/components/showkit`): `ShowHero1` (the picture fills the screen; each design places the text, rounds the picture and styles the buttons), `ShowTiles1` (edge-to-edge picture tiles with a small caption), `ShowStack1` (full-width product tiles, light and dark in turn), `ShowCta1` (a large closing statement). Pictures are the page's own (the image engine's set) or drawn art of the page's colours.
+They are chosen by the kind of business (`showcaseMood`): fashion house, couture, handbags -> maison-noir; film, photography, magazine -> film-editorial; 3D, WebGL, digital studio -> atelier-3d; gadgets, headphones, smartphone -> apple-tile; synths, instruments, robots -> techno-black; electric cars, solar, showroom -> showroom-white. Any business can also ask by name ("apple style", "tesla style", "gucci style", "lusion style", "teenage engineering").
+
+## Limits
+* The pictures of the image engine are illustrations: the designs lean on photography, so the look is closer in structure and colour than in feeling. Upload real photos ("Real photos" panel) for the full effect.
+* No WebGL, scroll-driven motion, custom cursors or video.

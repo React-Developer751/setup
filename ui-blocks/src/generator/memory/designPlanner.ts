@@ -112,6 +112,8 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
       scored = evaluate(gap)
     }
   }
+  // a design with fixed colours (the designs read from live sites: always the same black, navy or violet) has no free hue to move to: its candidates are used as they are
+  if (!scored.length) scored = made.map((record) => ({ record, shifted: false, score: 0.5, dropped: [] as string[] }))
   const fresh = scored.filter((s) => !s.shifted)
   // designs with a text that people sent back are dropped as long as other designs are left
   const clean = scored.filter((s) => !s.dropped.length)

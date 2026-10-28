@@ -6,7 +6,7 @@ import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
-import { refPools, rolePools, tierPools, type Role } from './libraryRoles'
+import { refPools, rolePools, showPools, tierPools, type Role } from './libraryRoles'
 import { moodFontTokens, panelColors, SIGNATURE_MOODS } from '../moods'
 import { moodCss } from '../moodCss'
 import { chosenFont, editCss } from './editCss'
@@ -57,7 +57,7 @@ export function generateLibraryPage(
   const rand = seededRandom(hash(`${userPrompt.trim().toLowerCase()}|library|${variation}`))
   // a page in one of the designs read from live sites uses the parts of the reference kit where there is one
   const refKit = !!generated.mood && SIGNATURE_MOODS.has(generated.mood.id)
-  const poolFor = (role: Role) => (refKit ? refPools[role] : undefined) ?? (tier === 'better' ? undefined : tierPools[tier][role]) ?? rolePools[role]
+  const poolFor = (role: Role) => (refKit ? (showPools[generated.mood!.id]?.[role] ?? refPools[role]) : undefined) ?? (tier === 'better' ? undefined : tierPools[tier][role]) ?? rolePools[role]
   const pickFrom = (role: Role) => {
     const pool = poolFor(role)
     return pool[Math.floor(rand() * pool.length)]

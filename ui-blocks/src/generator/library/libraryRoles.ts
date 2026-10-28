@@ -114,3 +114,13 @@ export const refPools: Partial<Record<Role, string[]>> = {
   pricing: ['refkit/RefPricing1'],
   cta: ['refkit/RefCta1'],
 }
+
+/** the picture-led parts (src/components/showkit) of the showcase designs: the first screen, the services (tiles or stacked product tiles) and the closing statement; the rest uses the reference kit */
+export const showPools: Partial<Record<string, Partial<Record<Role, string[]>>>> = {
+  'maison-noir': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowTiles1'], cta: ['showkit/ShowCta1'] },
+  'film-editorial': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowTiles1'], cta: ['showkit/ShowCta1'] },
+  'atelier-3d': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowTiles1'], cta: ['showkit/ShowCta1'] },
+  'apple-tile': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowStack1'], cta: ['showkit/ShowCta1'] },
+  'techno-black': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowStack1'], cta: ['showkit/ShowCta1'] },
+  'showroom-white': { hero: ['showkit/ShowHero1'], features: ['showkit/ShowStack1'], cta: ['showkit/ShowCta1'] },
+}

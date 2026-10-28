@@ -1141,7 +1141,11 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   }
   if (role === 'pagehead') return step('title block', () => fillPageHead(root))
   // the components of the reference kit mark their parts with data-slot: they are filled by name
-  if (root.querySelector('[data-ref]')) return step('reference kit', () => fillRef(root, role, c))
+  if (root.querySelector('[data-ref]')) {
+    const own = [c.photos?.hero, c.photos?.about, ...(c.photos?.gallery ?? [])].filter((p): p is string => !!p)
+    const picture = (index: number, w: number, h: number) => own.length ? own[index % own.length] : ((colors && artFor(`ref|${role}|${index}`, colors, w, h)) || blank(w, h))
+    return step('reference kit', () => fillRef(root, role, c, picture))
+  }
   let original = new Set<string>()
   step('read', () => (original = new Set(textsOf(root))))
   // the heroes of the other kits bring a menu bar of their own ("glasses Search", a shopping cart): the page has its navigation already

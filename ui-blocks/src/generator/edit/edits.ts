@@ -24,7 +24,7 @@ export const TARGETS = ['header', 'hero', 'footer', ...SECTIONS] as const
 export type Target = (typeof TARGETS)[number]
 
 /** design moods (moods.ts): a whole look, none (the look of the business type) or auto (the generator chooses) */
-export const MOOD_CHOICES = ['minimal-light', 'minimal-dark', 'soft-neo', 'retro', 'cyberpunk', 'glass', 'bold-contrast', 'editorial', 'playful-pop', 'luxe-dark', 'clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral', 'none', 'auto'] as const
+export const MOOD_CHOICES = ['minimal-light', 'minimal-dark', 'soft-neo', 'retro', 'cyberpunk', 'glass', 'bold-contrast', 'editorial', 'playful-pop', 'luxe-dark', 'clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral', 'maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white', 'none', 'auto'] as const
 export type MoodChoice = (typeof MOOD_CHOICES)[number]
 
 /** the look of one kind of thing on a part of the page (or the whole page): the colour of the buttons, of the headings, of the text, the roundness of corners, the typeface */

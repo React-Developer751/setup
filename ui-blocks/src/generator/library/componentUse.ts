@@ -29,6 +29,7 @@ export const componentUse: Record<string, GroupUse> = {
   footer: { use: 'page', note: 'footer' },
   pagehead: { use: 'page', note: 'the title of the inner pages of a multi-page site' },
   refkit: { use: 'page', note: 'the reference kit (hero with a quote form, stat tiles, tinted service cards, step cards, price table, closing panel): used instead of the stored parts by the five designs read from live sites (refPools in libraryRoles.ts)' },
+  showkit: { use: 'page', note: 'the showcase kit (full-screen picture first screen, picture tiles, stacked product tiles, a large closing statement): used by the six designs read from Gucci, Nowness, Lusion, Apple, teenage engineering and Tesla (showPools in libraryRoles.ts)' },
   banner: { use: 'page', note: 'announcement bar above the menu (made a plain bar; 3 is a floating pop-up: left out)' },
   card: { use: 'widget', note: 'single cards; only the four that suit any business became a section (cardgrid/), the others are shop, wallet, course, profile or login cards' },
   carousel: { use: 'widget', note: 'slides are moved by a script: static they show nothing' },

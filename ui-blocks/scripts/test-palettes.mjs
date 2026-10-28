@@ -19,6 +19,7 @@ const { setCreativity } = await loadGeneratorModule('creativity.ts')
 const { planDesign } = await loadGeneratorModule('memory/designPlanner.ts')
 const { MemoryStore } = await loadGeneratorModule('memory/designStore.ts')
 const { seededRandom } = await loadGeneratorModule('random.ts')
+const { SIGNATURE_MOODS } = await loadGeneratorModule('moods.ts')
 setCreativity('balanced')
 
 // ── the pair check itself
@@ -41,7 +42,8 @@ for (const p of prompts) {
   for (let v = 1; v <= 40; v += 1) {
     const s = generateWebsite(`website for a ${p}`, v * 37)
     sites += 1
-    for (const mode of ['light', 'dark']) for (const i of pairIssues(s.palette[mode].accent, s.palette[mode].alt)) count[i] += 1
+    // the designs read from live sites keep their own strong colours (checked for contrast in test-moods.mjs)
+    if (!SIGNATURE_MOODS.has(s.mood?.id)) for (const mode of ['light', 'dark']) for (const i of pairIssues(s.palette[mode].accent, s.palette[mode].alt)) count[i] += 1
     const m = s.palette.light
     if (contrast(m.text, m.bg) >= 4.5 && contrast(m.accent, m.bg) >= 3) readableOk += 1
   }
