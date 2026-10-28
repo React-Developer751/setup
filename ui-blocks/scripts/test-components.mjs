@@ -44,6 +44,9 @@ ok(formy.length === 0, `forms only live in contact, hero, call-to-action, pricin
 // ── library pages: the same prompt gives the same page, and the new components are used
 globalThis.document = { styleSheets: [] }
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
+// (the variety of the stored components is looked at with no design on top: a page in a learned design uses the parts of its kit)
+const { setCreativity } = await loadGeneratorModule('creativity.ts')
+setCreativity('safe')
 const seen = new Set()
 let faqPages = 0
 let bannerPages = 0
@@ -105,6 +108,8 @@ ok(generateLibraryPage('bakery called Crumb', 4, 'better').sections.every((x) =>
   ok(renamed.pages?.some((p) => p.label === 'Rates'), 'library: renaming the pricing heading renames its page in the menu')
   ok(make([{ op: 'sectionColor', target: 'gallery', hex: '#bbf7d0' }]).sections.length === make([]).sections.length, 'library: a colour does not add parts to the page')
 }
+
+setCreativity('balanced')
 
 // ── every group has a decision: a part of a page (in the pools) or a widget (not)
 const U = await loadGeneratorModule('library/componentUse.ts')

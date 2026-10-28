@@ -126,7 +126,9 @@ ok(!base.single.html.includes('--g-bg:#16a34a'), 'without the change the page ha
 const gal = all(E({ op: 'add', section: 'gallery' }, { op: 'sectionColor', target: 'gallery', hex: '#1e3a8a' }))
 ok(gal.single.html.includes('--g-bg:#1e3a8a'), 'a section can have its own colour')
 const cleared = all(E({ op: 'sectionColor', target: 'footer', hex: '#16a34a' }, { op: 'clearSectionColor', target: 'footer' }))
-ok(text(cleared.single.html) === text(base.single.html), 'clearing a part colour restores the page')
+// (a design paints the footer by itself: clearing removes the colour the person gave, and the design's own too)
+const clearedOnly = all(E({ op: 'clearSectionColor', target: 'footer' }))
+ok(text(cleared.single.html) === text(clearedOnly.single.html), 'clearing a part colour leaves nothing of the colour that was asked for')
 // the text on a painted part is readable (dark text on light, light on dark)
 const { sectionTokens, contrast } = await loadGeneratorModule('edit/sectionColors.ts')
 let bad = 0

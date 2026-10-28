@@ -98,3 +98,12 @@ Chosen by the kind of business: immersive or experiential studios -> noir-lab; g
 
 ## Limits
 No WebGL, 3D worlds, scroll-driven motion, cursor effects or preloaders: only their type, colour, layout and pace are taken.
+
+---
+
+# Part 4: the learned designs are now the default look
+Before, only prompts with the right keywords (translation, fashion, 3D ...) wore the designs read from live sites; a dentist, a lawyer or a bakery still got the old generic look (7 of 12 real prompts). Now:
+* **Every business kind has its own ordered list of learned designs** (`LEARNED_FOR` in `moods.ts`): local services (clinic, law, plumber, school, NGO) wear the content-first designs of the translation sites (quote card, tinted cards, steps); brands, products, studios and fashion wear the picture-led ones.
+* **Below a wild creativity only these designs are chosen** (about 90% of the sites in a plain run); the ten general moods stay for a person who names one and for wild creativity. A **safe** creativity keeps the stored components with no design on top.
+* **A colour the person names ("red pizza shop") is theirs**: the designs with fixed colours are not chosen on their own, and the colour judge is not run over them.
+* The tests that assumed made-up palettes (premium share, unique hues, colour judge, design memory) run at a wild creativity; the learned designs are checked for contrast in `test-moods.mjs` and for structure in `test-refkit.mjs`.

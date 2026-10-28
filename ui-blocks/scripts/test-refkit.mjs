@@ -31,8 +31,12 @@ for (const [prompt, mood] of CASES) {
   }
 }
 // a business that is not a translation site keeps the stored components and its own mood
+const { setCreativity } = await loadGeneratorModule('creativity.ts')
+setCreativity('safe')
 const bakery = generateLibraryPage('bakery called Sweet Crumbs in Mumbai', 3, 'premium')
-ok(bakery.sections.every((s) => !s.componentId.startsWith('refkit/')), 'a bakery does not get the reference kit')
+ok(bakery.sections.every((s) => !/^(refkit|showkit)\//.test(s.componentId)), 'at a safe creativity a bakery keeps the stored components')
+setCreativity('balanced')
+ok(generateLibraryPage('bakery called Sweet Crumbs in Mumbai', 3, 'premium').sections.some((s) => /^(refkit|showkit)\//.test(s.componentId)), 'at the usual creativity a bakery wears a learned design')
 ok(referenceMood('bakery called Sweet Crumbs') === undefined && referenceMood('gym in Pune') === undefined, 'only translation and certificate prompts have a reference design')
 // asked by name: any business can wear it
 ok(moodFromText('a plumber website, trust navy look')?.id === 'trust-navy', 'a design can be asked for by name')

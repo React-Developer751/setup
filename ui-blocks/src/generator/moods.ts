@@ -3,7 +3,7 @@
 // (soft shadows, hard shadows, glow, thick borders) and which colour each PANEL of the page gets (hero, stats, testimonials, call to action, footer).
 // The copywriting and the layout are made as before; the mood only restyles them, so a business of any kind can wear any mood.
 import { rgbToHsl, hexToRgb, hslToRgb } from './art/color'
-import { contrast } from './colorBrain'
+import { contrast, namesColor } from './colorBrain'
 import type { ThemeKey, Theme, Palette, PaletteMode, ColorMode } from './themes'
 import type { Target } from './edit/edits'
 import { sectionTokens, mixHex } from './edit/sectionColors'
@@ -418,6 +418,37 @@ export const SIGNATURE_MOODS = new Set<MoodId>(['clinic-mesh', 'plum-ivory', 'tr
 /** the picture-led designs: they use the showcase kit (src/components/showkit) */
 export const SHOWCASE_MOODS = new Set<MoodId>(['maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white', 'noir-lab', 'blush-serif', 'neon-arcade', 'studio-index'])
 
+/**
+ * Which of the designs read from live sites suit which kind of business, best first. The first two are the natural choice, the others are good too.
+ * (Local businesses wear the content-first designs of the translation sites: a quote card, tinted cards, steps; brands, products and studios wear the picture-led ones.)
+ */
+const LEARNED_FOR: Record<string, MoodId[]> = {
+  modern_tech: ['apple-tile', 'violet-glow', 'atelier-3d', 'techno-black', 'noir-lab'],
+  organic_nature: ['blush-serif', 'clinic-mesh', 'cream-coral', 'film-editorial'],
+  bold_fitness: ['techno-black', 'noir-lab', 'showroom-white', 'neon-arcade'],
+  luxury_minimal: ['maison-noir', 'blush-serif', 'noir-lab', 'film-editorial'],
+  playful_vibrant: ['neon-arcade', 'violet-glow', 'cream-coral'],
+  professional_services: ['trust-navy', 'plum-ivory', 'studio-index', 'cream-coral'],
+  healthcare: ['clinic-mesh', 'trust-navy', 'cream-coral'],
+  food_dining: ['cream-coral', 'blush-serif', 'maison-noir', 'film-editorial'],
+  education: ['violet-glow', 'trust-navy', 'clinic-mesh', 'cream-coral'],
+  creative_studio: ['studio-index', 'atelier-3d', 'film-editorial', 'noir-lab', 'neon-arcade'],
+  general_business: ['trust-navy', 'cream-coral', 'studio-index', 'violet-glow'],
+  real_estate: ['maison-noir', 'blush-serif', 'trust-navy', 'cream-coral'],
+  travel_tourism: ['film-editorial', 'cream-coral', 'blush-serif'],
+  automotive: ['showroom-white', 'techno-black', 'noir-lab'],
+  beauty_wellness: ['blush-serif', 'clinic-mesh', 'plum-ivory', 'maison-noir'],
+  events_wedding: ['blush-serif', 'plum-ivory', 'maison-noir', 'film-editorial'],
+  pets_animals: ['cream-coral', 'violet-glow', 'neon-arcade'],
+  fashion_retail: ['maison-noir', 'film-editorial', 'studio-index', 'blush-serif'],
+  home_services: ['trust-navy', 'cream-coral', 'showroom-white'],
+  nonprofit: ['plum-ivory', 'trust-navy', 'blush-serif', 'clinic-mesh'],
+}
+for (const mood of MOODS) {
+  if (!['clinic-mesh', 'plum-ivory', 'trust-navy', 'violet-glow', 'cream-coral', 'maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white', 'noir-lab', 'blush-serif', 'neon-arcade', 'studio-index'].includes(mood.id)) continue
+  mood.affinity = Object.fromEntries(Object.entries(LEARNED_FOR).flatMap(([theme, list]) => (list.includes(mood.id) ? [[theme, list.indexOf(mood.id) < 2 ? 3 : 2]] : [])))
+}
+
 export const MOOD_IDS = MOODS.map((m) => m.id)
 
 /** words that mean a mood only when "style", "look" or "mood" is said with them (they mean other things too) */
@@ -483,22 +514,28 @@ export function showcaseMood(prompt: string): MoodId | undefined {
   if (w(/(?<![a-z])(?:furniture|lighting|homeware|home decor|interior design|ceramics|design house|brand studio|branding studio|creative production)(?![a-z])/)) return 'blush-serif'
   if (w(/(?<![a-z])(?:3d|webgl|animation studio|motion studio|interactive studio)(?![a-z])/)) return 'atelier-3d'
   if (w(/(?<![a-z])(?:creative agency|design agency|design studio|digital studio|digital agency|branding agency|portfolio|creative studio)(?![a-z])/)) return 'studio-index'
-  if (w(/(?<![a-z])(?:gadget\w*|smartphone|laptop|headphones|wearable|consumer electronics|product launch|apple)(?![a-z])/)) return 'apple-tile'
+  if (w(/(?<![a-z])(?:gadget\w*|smartphone|laptop|headphones|wearable|consumer electronics|product launch)(?![a-z])/)) return 'apple-tile'
   return undefined
 }
 
 export function chooseMood(prompt: string, theme: ThemeKey, rand: () => number, temp: number): Mood | undefined {
   const named = moodFromText(prompt)
-  const reference = referenceMood(prompt) ?? showcaseMood(prompt)
+  // a colour the person named ("red pizza shop") is theirs: the designs with fixed colours are not chosen on their own
+  const colourAsked = namesColor(prompt)
+  const reference = colourAsked ? undefined : (referenceMood(prompt) ?? showcaseMood(prompt))
   // a look the person named wins; only the loose words of the editorial look ("magazine", "classic", "elegant") give way to the design of the kind of site
   if (named && !(reference && (named.id === 'editorial' || named.id === 'luxe-dark'))) return named
   if (reference) return moodById(reference)
   if (temp < 0.3) return undefined
-  if (rand() > 0.55 + temp * 0.45) return undefined
+  // a creative site always wears a design: the ones read from the live sites first (they are what the generator learned), the ten general moods less often
   // a roulette wheel: the moods that suit the business have bigger slices; the higher the temperature, the flatter the slices
   const look = PROMPT_LOOK.filter((l) => l.words.test(prompt))
   const slices = MOODS.map((m) => {
     let w = (0.06 + (m.affinity[theme] ?? 0) / 3) ** (1 / (0.25 + temp))
+    // below a wild creativity only the designs read from live sites are chosen (the ten general moods are for a person who names one, and for wild creativity)
+    if (colourAsked && SIGNATURE_MOODS.has(m.id)) w = 0
+    else if (SIGNATURE_MOODS.has(m.id)) w *= temp >= 0.8 ? 1.5 : 12
+    else if (temp < 0.8 && !colourAsked) w = 0
     // a mood the business type has no affinity with (cyberpunk for a school, retro for a clinic) is rare, even when the creativity is high
     if ((m.affinity[theme] ?? 0) < 2) w *= 0.1
     for (const l of look) w *= l.suit.includes(m.id) ? 3 : l.avoid.includes(m.id) ? (l.hard ? 0 : 0.04) : 1

@@ -131,7 +131,8 @@ export function planWebsite(
     return { colors, mood, moodMade, palette, judgement: judgePalette(palette, themeKey, prompt) }
   }
   let look = makeLook(0)
-  if (useBrains && !personChoseColours && look.judgement.score < GOOD_ENOUGH) {
+  // (a design read from a live site keeps its own colours: the colour judge is for the colours the generator makes up)
+  if (useBrains && !personChoseColours && look.judgement.score < GOOD_ENOUGH && !(look.mood && SIGNATURE_MOODS.has(look.mood.id))) {
     for (let attempt = 1; attempt <= 24 && look.judgement.score < GOOD_ENOUGH; attempt += 1) {
       const other = makeLook(attempt)
       if (other.judgement.score > look.judgement.score) look = other
