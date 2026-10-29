@@ -1130,6 +1130,27 @@ function scrubLeftovers(root: Element, before: Set<string>, role: Role, c: Websi
   }
 }
 
+/** the phone number and the e-mail of the business, written as plain text in a part, become links (call, write) */
+function linkContacts(root: Element, c: WebsiteContent) {
+  const wanted: [string | undefined, (v: string) => string][] = [
+    [c.contact.phone, (v) => `tel:${v.replace(/[^\d+]/g, '')}`],
+    [c.contact.email, (v) => `mailto:${v}`],
+  ]
+  root.querySelectorAll('p, span, li, div, dd').forEach((el) => {
+    if (!isLeaf(el) || el.closest('a, button, form')) return
+    const text = visibleText(el)
+    for (const [value, href] of wanted) {
+      if (!value || text !== value || !/[\d@]/.test(value)) continue
+      const link = el.ownerDocument.createElement('a')
+      link.setAttribute('href', href(value))
+      link.className = 'underline-offset-2 hover:underline'
+      link.textContent = value
+      el.textContent = ''
+      el.appendChild(link)
+    }
+  })
+}
+
 /**
  * Some kits draw a form without a <form> (fields and a button in a div): the smallest block that holds the fields of one button becomes the form.
  */
@@ -1216,7 +1237,21 @@ export function dropRepeats(root: Element, c: WebsiteContent) {
     if (next) {
       setText(el, next)
       seen.add(next)
-    } else el.remove()
+    } else {
+      // no line left for it: a card that would show a title only goes, so that no card stands empty
+      const card = ((): Element | null => {
+        let node: Element | null = el.parentElement
+        while (node && node !== root) {
+          const parent: Element | null = node.parentElement
+          const alike = parent ? [...parent.children].filter((k) => k.tagName === node!.tagName && k.className === node!.className).length : 0
+          if (alike >= 2) return node
+          node = parent
+        }
+        return null
+      })()
+      el.remove()
+      if (card && visibleText(card).length <= 40) card.remove()
+    }
   })
 }
 
@@ -1268,6 +1303,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     step('footer', () => fillFooter(root, c, links))
     // the footer kit spells "Terms" as "Teams"
     step('forms', () => readyForms(root))
+    step('contact links', () => linkContacts(root, c))
     step('footer typo', () => root.querySelectorAll('a').forEach((a) => { if (visibleText(a) === 'Teams') setText(a, 'Terms') }))
     return step('dead links', () => fixDeadLinks(root, role, c))
   }
@@ -1284,6 +1320,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
 
   step('fields', () => setPlaceholders(root))
   step('forms', () => readyForms(root))
+  step('contact links', () => linkContacts(root, c))
   step('title', () => ensureTitle(root, role, c))
   step('names', () => replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members))
 }

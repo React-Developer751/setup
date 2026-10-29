@@ -109,8 +109,12 @@ route();
  */
 const formScript = (lib: Library) => {
   const email = /^[^\s@"<>]+@[^\s@"<>]+\.[^\s@"<>]+$/.test(lib.content.contact.email ?? '') && !/example\.|your-?domain|yourbusiness/i.test(lib.content.contact.email) ? lib.content.contact.email : ''
+  // a WhatsApp number (digits, with the country code) opens a chat with the message written: it needs no server
+  const wa = String(lib.content.contact.whatsapp ?? '').replace(/\D/g, '')
+  const full = wa.length === 10 && /^[6-9]/.test(wa) ? `91${wa}` : wa
+  const whatsapp = full.length >= 11 && full.length <= 15 ? full : ''
   return `
-const LEAD = { email: ${jsString(email)}, brand: ${jsString(lib.content.brandName)} };
+const LEAD = { email: ${jsString(email)}, whatsapp: ${jsString(whatsapp)}, brand: ${jsString(lib.content.brandName)} };
 document.addEventListener('submit', (event) => {
   const form = event.target;
   if (!form || form.tagName !== 'FORM' || !form.hasAttribute('data-lead')) return;
@@ -135,6 +139,12 @@ document.addEventListener('submit', (event) => {
     const body = rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
     say('Your mail program is opening with the message written. Press send there to finish.', true);
     window.location.href = 'mailto:' + LEAD.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    return;
+  }
+  if (LEAD.whatsapp) {
+    const text = 'Message from the website of ' + LEAD.brand + '\\n' + rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
+    say('WhatsApp is opening with the message written. Press send there to finish.', true);
+    window.open('https://wa.me/' + LEAD.whatsapp + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
     return;
   }
   say('This form is not connected yet. Please contact us directly.', false);

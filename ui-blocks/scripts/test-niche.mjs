@@ -186,6 +186,20 @@ for (const n of NICHES) {
   ok(!/\b(?:licen[cs]ed|registered|certified|80G|police verified)\b/i.test(claims), `${n.id}: no licence, registration or certificate claimed for the business`)
 }
 
+// plain statements: "Booking" only for a business that takes bookings, "To order" for the others
+{
+  const { plainStats } = await loadGeneratorModule('personalize.ts')
+  const raw = [{ value: '15', label: 'Years' }, { value: '5k+', label: 'Orders' }, { value: '100%', label: 'Happy' }, { value: '30', label: 'Days' }]
+  let bad = 0
+  for (let i = 0; i < 40; i += 1) {
+    let n = i + 1
+    const rand = () => ((n = (n * 9301 + 49297) % 233280) / 233280)
+    if (plainStats(raw, rand, false).some((x) => /Booking/.test(x.label))) bad += 1
+    if (plainStats(raw, rand, true).some((x) => /To order/.test(x.label))) bad += 1
+  }
+  ok(bad === 0, 'a shop is not offered "Simple Booking", a salon is not offered "Easy to order"')
+}
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)
