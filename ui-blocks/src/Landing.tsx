@@ -29,13 +29,11 @@ const POINTS: { title: string; text: string }[] = [
   { title: 'Ready to use', text: 'Working forms, call and WhatsApp links, SEO files and a clean export you can host anywhere. No AI service or API key.' },
 ]
 
-export function Landing({ onSubmit, canContinue, onContinue, pages, onPages }: {
+export function Landing({ onSubmit, canContinue, onContinue }: {
   onSubmit: (text: string) => void
   /** the title of the work of the last visit, when there is one */
   canContinue?: string
   onContinue?: () => void
-  pages: 'multi' | 'single'
-  onPages: (next: 'multi' | 'single') => void
 }) {
   const box = useRef<HTMLTextAreaElement>(null)
   // what is typed here (empty at first: the grey example in the box changes every few seconds)
@@ -84,13 +82,7 @@ export function Landing({ onSubmit, canContinue, onContinue, pages, onPages }: {
           placeholder={ROTATING[hint]}
         />
         <div className="mt-3 flex items-center justify-between gap-3">
-          <div className="lv-pill-tabs" role="group" aria-label="Pages">
-            {([['single', 'One page'], ['multi', 'Several pages']] as const).map(([key, label]) => (
-              <button key={key} type="button" aria-pressed={pages === key} onClick={() => onPages(key)}>
-                {label}
-              </button>
-            ))}
-          </div>
+          <p className="text-xs text-stone-400">One page or several, the design, the colours and the words: I decide from what you write. Enter to send.</p>
           <button type="button" onClick={send} disabled={prompt.trim().length < 2} className="lv-btn lv-btn-primary px-5 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50">
             Build my website
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

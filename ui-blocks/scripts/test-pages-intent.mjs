@@ -1,6 +1,6 @@
 // "single page" / "landing page" in a prompt gives one page, "multi-page" gives a site with pages, nothing said changes nothing.
 import { loadGeneratorModule } from './lib/load-generator.mjs'
-const { pagesWanted } = await loadGeneratorModule('edit/pagesIntent.ts')
+const { pagesWanted, autoPages } = await loadGeneratorModule('edit/pagesIntent.ts')
 let pass = 0
 const fail = []
 const ok = (c, n) => (c ? (pass += 1) : fail.push(n))
@@ -23,5 +23,29 @@ for (const prompt of ['dental clinic called Smile Care in Pune with implants, br
     ok(!pages.some((p) => p.path === '/pricing' && rolesOf('/pricing').join() === 'faq'), 'the questions are not hidden on a page called Pricing')
   }
 }
+// nobody has to choose: the prompt says it, or the kind of business does
+const CASES = [
+  ['dental clinic Smile Care in Pune, braces, implants', 'healthcare', 'single'],
+  ['meri bakery hai Jaipur me, eggless cakes aur cookies, WhatsApp par order', 'food_dining', 'single'],
+  ['SaaS tool for invoicing small shops', 'modern_tech', 'single'],
+  ['kurti boutique Jaipur', 'fashion_retail', 'single'],
+  ['a landing page for my gym', 'bold_fitness', 'single'],
+  ['ek page ki website chahiye mujhe salon ke liye', 'beauty_wellness', 'single'],
+  ['hospital multi speciality 24x7 emergency with departments, doctors, appointment', 'healthcare', 'multi'],
+  ['school Sunrise Public School Lucknow admissions, fees, facilities, events', 'education', 'multi'],
+  ['portfolio for a photographer with gallery, about and contact', 'creative_studio', 'multi'],
+  ['restaurant with menu, gallery, reservations and about', 'food_dining', 'multi'],
+  ['company website for packers and movers across India', 'home_services', 'multi'],
+  ['multi page website for a law firm', 'professional_services', 'multi'],
+  ['Italian restaurant Forno Rosso in Mumbai, wood fired pizza, fresh pasta, tiramisu, open 12pm to 11pm, online booking, family seating', 'food_dining', 'multi'],
+]
+for (const [prompt, theme, mode] of CASES) {
+  const got = autoPages(prompt, theme)
+  ok(got.mode === mode && got.reason.length > 10, `"${prompt.slice(0, 40)}" is ${mode} (${got.mode}: ${got.reason})`)
+}
+// an explicit word always wins over the kind of business
+ok(autoPages('one page website for a hospital with departments, doctors, rooms', 'healthcare').mode === 'single', 'one page asked for: one page, even for a hospital')
+ok(autoPages('multiple pages for a tiny tea stall', 'food_dining').mode === 'multi', 'several pages asked for: several pages, even for a tea stall')
+
 console.log(`pages-intent: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) { console.log(fail.map((f) => ` - ${f}`).join('\n')); process.exit(1) }

@@ -15,12 +15,13 @@ import PhotosPanel from './PhotosPanel'
 import { scenePlan } from './generator/imageAi'
 import ProjectsPanel from './ProjectsPanel'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
-import EditChat, { type ChatMessage } from './EditChat'
+import EditChat, { ServerSetting, type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { BuildingScreen } from './BuildingScreen'
+import { ToolsDrawer } from './ToolsDrawer'
 import { CodeView } from './CodeView'
 import type { FileEdit } from './codeEdits'
 import { codeWithoutContent, opsFromEditedCode } from './generator/edit/codeSync'
@@ -51,7 +52,7 @@ import { parseEdit } from './generator/edit/understand'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
-import { pagesWanted } from './generator/edit/pagesIntent'
+import { autoPages, pagesWanted } from './generator/edit/pagesIntent'
 import { scoreThemes } from './generator/themeClassifier'
 import type { Tier } from './generator/designBrain'
 import type { MotionSetting } from './generator/motionBrain'
@@ -71,12 +72,12 @@ const EXAMPLES = [
 ]
 
 function GeneratorPage() {
-  const [prompt, setPrompt] = useState(EXAMPLES[0])
   const [submitted, setSubmitted] = useState(EXAMPLES[0])
   const [variation, setVariation] = useState(0)
   // counts every "Generate website" / "Another variation" click, so the pictures are drawn again for the same prompt too
   const [runs, setRuns] = useState(0)
   const autoMade = useRef(false)
+  const pagesNote = useRef('')
   // the design memory: the designs of this kind of business, the round the person is in, and the design on the page
   const [designs, setDesigns] = useState<DesignRecord[]>([])
   const [designStore, setDesignStore] = useState<DesignStore>()
@@ -95,7 +96,10 @@ function GeneratorPage() {
   setCreativity(creativityLevel)
   const [engine, setEngine] = useState<'templates' | 'library'>('library')
   const [view, setView] = useState<'preview' | 'code' | 'json'>('preview')
+  // one page or several: decided from the prompt and the kind of business (Auto), unless the person sets it in the tools
+  const [pagesMode, setPagesMode] = useState<'auto' | 'single' | 'multi'>('auto')
   const [pages, setPages] = useState<'multi' | 'single'>('single')
+  const [tools, setTools] = useState({ open: false, tab: 'design' })
   const [route, setRoute] = useState('/')
   // the preview starts as a phone
   const [device, setDevice] = useState<Device>('mobile')
@@ -318,11 +322,18 @@ function GeneratorPage() {
     applyOps('Texts from Core-Craft AI', ops, 'rules', `Core-Craft AI wrote the texts of this page about what you said (${decision.reason}). Say "undo" to go back to the built-in texts.`)
   }
 
+  const choosePagesMode = (mode: 'auto' | 'single' | 'multi') => {
+    setPagesMode(mode)
+    const next = mode === 'auto' ? autoPages(submitted, themeKey).mode : mode
+    setPages(next)
+    setRoute('/')
+  }
   const generate = async (text: string) => {
     if (!text.trim()) return
     // a new site: the files the person changed belonged to the old one
     setCodeEdits({})
     setCodeNote('')
+    setTools((t) => ({ ...t, open: false }))
     buildStart.current = Date.now()
     setBuild({ on: true, stage: 0, prompt: text.trim(), since: buildStart.current })
     // on a phone the preview is under the prompt: the build screen is brought into view
@@ -333,8 +344,11 @@ function GeneratorPage() {
     await understand(text)
     bumpBuild(1)
     // "a single page" / "landing page" in the prompt is an order: it wins over what was set before
-    const wanted = pagesWanted(text)
-    if (wanted) setPages(wanted)
+    const theme = generateWebsite(text, 0, undefined, creative, 'off').themeKey
+    const said = pagesWanted(text)
+    const choice = pagesMode === 'auto' || said ? autoPages(text, theme) : { mode: pagesMode, reason: 'you set it in the tools' }
+    setPages(choice.mode)
+    pagesNote.current = `${choice.mode === 'multi' ? 'I made a site with several pages' : 'I made one landing page'}: ${choice.reason}. You can change it in Tools, Design, Pages.`
     setSubmitted(text)
     setHistory([])
     setUndone([])
@@ -346,7 +360,8 @@ function GeneratorPage() {
     const plan: Awaited<ReturnType<typeof newDesign>> = await newDesign(text).catch(() => ({ reasons: ['Made without the design memory (it could not be read).'], ops: [], variation: 1 + Math.floor(Math.random() * 9000) }) as unknown as Awaited<ReturnType<typeof newDesign>>)
     bumpBuild(2)
     messageId.current += 1
-    setMessages([{ id: messageId.current, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
+    setMessages([{ id: messageId.current, role: 'ai', text: pagesNote.current }, { id: messageId.current + 1, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
+    messageId.current += 1
     setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])
     setVariation(plan.variation)
     setRuns((n) => n + 1)
@@ -378,7 +393,6 @@ function GeneratorPage() {
     setCodeEdits({})
     setCodeNote('')
     await understand(project.prompt)
-    setPrompt(project.prompt)
     setSubmitted(project.prompt)
     setVariation(project.variation)
     setLevel(project.level)
@@ -537,7 +551,6 @@ function GeneratorPage() {
     if (choice.action === 'newSite') {
       const last = [...messages].reverse().find((m) => m.role === 'user')
       if (last) {
-        setPrompt(last.text)
         void generate(last.text)
       }
       return
@@ -610,7 +623,6 @@ function GeneratorPage() {
       }
       if (parsed.kind === 'newSite') {
         say({ role: 'ai', text: 'That sounds like a new website, so I am making one from it (your earlier changes belong to the old one).' })
-        setPrompt(text)
         await generate(text)
         return
       }
@@ -720,71 +732,43 @@ function GeneratorPage() {
     return (
       <Landing
         onSubmit={(text) => {
-          setPrompt(text)
           setStarted(true)
           void generate(text)
         }}
         canContinue={resume ? `${resume.name || resume.prompt.slice(0, 40)}` : undefined}
         onContinue={resume ? () => { setStarted(true); void restore(resume) } : undefined}
-        pages={pages}
-        onPages={(next) => {
-          setPages(next)
-          setRoute('/')
-        }}
       />
     )
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       {/* ───────────── left: the prompt and everything that steers it ───────────── */}
-      <aside className="flex w-full shrink-0 flex-col border-b border-black/5 bg-white/55 backdrop-blur-md lg:h-full lg:w-[400px] lg:border-b-0 lg:border-r">
-        <div className="space-y-3 border-b border-black/5 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <label htmlFor="prompt" className="flex items-center gap-2 text-sm font-semibold text-stone-900">
-              <SparkIcon /> Describe your website
-            </label>
-            <button type="button" onClick={() => setStarted(false)} className="lv-btn lv-btn-ghost px-3 py-1 text-xs" title="Back to the first screen">
+      <aside className="flex h-[72vh] w-full shrink-0 flex-col border-b border-black/5 bg-white/55 backdrop-blur-md lg:h-full lg:w-[400px] lg:border-b-0 lg:border-r">
+        <div className="border-b border-black/5 px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="truncate text-[15px] font-bold tracking-tight text-stone-900">{brandName}</h1>
+              <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-stone-500" title={submitted}>
+                {submitted}
+              </p>
+            </div>
+            <button type="button" onClick={() => setStarted(false)} className="lv-btn lv-btn-ghost shrink-0 px-3 py-1 text-xs" title="Describe another business">
               New site
             </button>
           </div>
-          <textarea
-            id="prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void generate(prompt)
-            }}
-            rows={4}
-            className="w-full resize-none rounded-2xl border border-black/10 bg-white p-3.5 text-[15px] leading-relaxed shadow-sm placeholder:text-stone-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-200/60"
-            placeholder="e.g. Create a page for a gym called Iron Pulse"
-          />
-          <div className="flex gap-2">
-            <button type="button" onClick={() => void generate(prompt)} className="lv-btn lv-btn-primary flex-1 px-4 py-2.5 text-sm">
-              Generate website
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                void anotherDesign()
-              }}
-              className="lv-btn lv-btn-ghost px-4 py-2.5 text-sm"
-            >
-              Another variation
-            </button>
+          <div className="mt-2.5 flex flex-wrap gap-1.5 text-[11px] font-medium text-stone-600">
+            <span className="rounded-full bg-black/5 px-2.5 py-0.5">{isMulti ? 'Several pages' : 'One page'}</span>
+            <span className="rounded-full bg-black/5 px-2.5 py-0.5">{themeKey.replace(/_/g, ' ')}</span>
+            <span className="rounded-full bg-black/5 px-2.5 py-0.5 capitalize">{creativityLevel}</span>
           </div>
-          <p className="text-xs text-stone-400">Cmd / Ctrl + Enter to generate</p>
         </div>
-
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 lg:max-h-none">
+        <div className="min-h-0 flex-1">
           <EditChat
             messages={messages}
             busy={chatBusy}
             canUndo={history.length > 0}
             canRedo={undone.length > 0}
             changes={history.length}
-            serverReady={serverReady}
-            useServer={useServer}
-            onUseServer={setUseServer}
             onSend={(t) => void sendChat(t)}
             onChoose={choose}
             onColor={(hex, label, alt) => {
@@ -795,151 +779,32 @@ function GeneratorPage() {
             onRedo={redo}
             onReset={reset}
           />
+        </div>
+      </aside>
 
-          <RatePictures
-            items={drawn.map((scene, i) => {
-              const photos = edits.photos
-              const thumb = i === 0 ? photos?.hero : i === 1 ? photos?.about : photos?.gallery?.[i - 2]
-              return { label: i === 0 ? 'first screen' : i === 1 ? 'about' : `gallery ${i - 1}`, thumb: thumb ?? '', state: rated[i], busy: rateBusy === i, key: scene.prompt }
-            }).filter((item) => item.thumb)}
-            onRate={(i, verdict) => void ratePicture(i, verdict)}
-          />
-
-          {coreCraftReady && (
-            <CoreCraftPanel
-              prompt={submitted}
-              auto={coreAuto}
-              note={coreNote}
-              onAuto={(on) => {
-                setCoreAuto(on)
-                try {
-                  localStorage.setItem('ui-blocks:core-auto', on ? 'on' : 'off')
-                } catch {
-                  // the switch is remembered when it can be
-                }
-              }}
-              gate={() => ({ theme: themeKey, subject: textSite.content.subject, prompt: submitted, current: { heroTitle: textSite.content.hero.title, heroSubtitle: textSite.content.hero.subtitle, heroButton: textSite.content.hero.button }, avoid: turnedDown.current })}
-              onUse={(slot: CoreSlot, text: string) => applyOps(`Core-Craft AI: ${slot}`, [{ op: 'text', field: slot, text }], 'rules', `Used a line from Core-Craft AI: "${text}". Say "undo" to get the old one back.`)}
-            />
-          )}
-
-          <DesignHistory
-            designs={designs}
-            currentId={currentDesign}
-            insights={insightsOf(designs, submitted)}
-            where={designStore?.kind ?? 'browser'}
-            busy={designBusy}
-            onVerdict={(id, verdict, best) => void markDesign(id, verdict, best)}
-            onNew={() => void anotherDesign()}
-          />
-
-          {resume && (
-            <div role="status" className="space-y-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
-              <p>
-                Continue your last work? <b>{resume.prompt.slice(0, 70)}{resume.prompt.length > 70 ? '...' : ''}</b>
-              </p>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => void restore(resume)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
-                  Continue
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    forgetSession()
-                    setResume(undefined)
-                  }}
-                  className="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-800 hover:bg-indigo-100"
-                >
-                  Start fresh
-                </button>
-              </div>
-            </div>
-          )}
-
-          <ProjectsPanel
-            projects={projects}
-            message={projectNote}
-            onSave={(name) => {
-              const result = saveProject(name || brandName, snapshot())
-              setProjects(listProjects())
-              setProjectNote(result.ok ? (result.trimmed ? 'Saved. The pictures were too big to keep in the browser: use "Download file" to keep them.' : 'Saved in this browser.') : (result.error ?? 'Could not save.'))
-            }}
-            onLoad={(project) => void restore(project)}
-            onDelete={(id) => {
-              deleteProject(id)
-              setProjects(listProjects())
-            }}
-            onImport={(project) => void restore(project)}
-            onExportCurrent={(name) => ({ ...snapshot(), id: 'file', name: name.trim() || brandName, savedAt: new Date().toISOString() })}
-            onMessage={setProjectNote}
-          />
-
-          <BusinessForm
-            onApply={(ops) => {
-              say({ role: 'user', text: 'My business details' })
-              applyOps('My business details', ops, 'rules', 'Added your business details.')
-            }}
-          />
-
-          <PhotosPanel
-            defaultQuery={active.content.subject || brandName}
-            hasPhotos={!!edits.photos}
-            planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
-            accent={palette.light.accent}
-            alt={palette.light.alt}
-            prompt={submitted}
-            onApply={(ops, label, used) => {
-              autoMade.current = false
-              setDrawn(used ?? [])
-              setRated({})
-              say({ role: 'user', text: label })
-              applyOps(label, ops, 'rules', 'Put the photos on your site.')
-            }}
-            onClear={() => {
-              setDrawn([])
-              setRated({})
-              say({ role: 'user', text: 'Remove the photos' })
-              applyOps('Remove the photos', [{ op: 'clearPhotos' }], 'rules', 'The drawn pictures are back.')
-            }}
-          />
-
-          <details className="group lv-card">
-            <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-gray-700 [&::-webkit-details-marker]:hidden">Try an example ▾</summary>
-            <div className="flex flex-wrap gap-2 px-3 pb-3">
-              {EXAMPLES.map((example) => (
-                <button
-                  key={example}
-                  type="button"
-                  onClick={() => {
-                    setPrompt(example)
-                    void generate(example)
-                  }}
-                  className="lv-chip text-left"
-                >
-                  {example}
-                </button>
-              ))}
-            </div>
-          </details>
-
-          <UnderstandingPanel prompt={submitted} site={{ theme: themeKey, tier, variation, layout: `${isMulti ? 'multi' : 'single'}/${shownEngine}` }} onSmartReady={() => undefined} />
-
+      {/* ───────────── right: preview or code ───────────── */}
+      <section id="preview-section" className="relative flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
+        <BuildingScreen key={build.since} prompt={build.prompt} stage={build.stage} open={build.on} />
+        <ToolsDrawer
+          open={tools.open}
+          tab={tools.tab}
+          onTab={(tab) => setTools((t) => ({ ...t, tab }))}
+          onClose={() => setTools((t) => ({ ...t, open: false }))}
+          panes={[
+            { id: 'design', label: 'Design', content: <>
           <section className="space-y-3 lv-card p-3">
             <h2 className="text-sm font-semibold text-gray-900">Settings</h2>
-            <Setting label="Pages">
+            <Setting label="Pages" note={pagesMode === 'auto' ? `chosen for you: ${isMulti ? 'several pages' : 'one page'}` : undefined}>
               <Segmented
-                value={pages}
-                options={[['multi', 'Multi-page'], ['single', 'Single page']]}
-                onChange={(p) => {
-                  setPages(p)
-                  setRoute('/')
-                }}
+                value={pagesMode}
+                options={[['auto', 'Auto'], ['single', 'One page'], ['multi', 'Several pages']]}
+                onChange={(mode) => choosePagesMode(mode)}
               />
             </Setting>
-            <Setting label="Built with">
+            <Setting label="Engine">
               <Segmented
                 value={shownEngine}
-                options={[['library', 'My 560 components'], ['templates', 'Built-in templates']]}
+                options={[['library', 'My components'], ['templates', 'Built-in templates']]}
                 onChange={(e) => {
                   setEngine(e)
                 }}
@@ -985,7 +850,126 @@ function GeneratorPage() {
               <Segmented value={creative ? 'on' : 'off'} options={[['on', 'On'], ['off', 'Off']]} onChange={(v) => setCreative(v === 'on')} />
             </Setting>
           </section>
-
+          <ServerSetting serverReady={serverReady} useServer={useServer} onUseServer={setUseServer} />
+        </> },
+            { id: 'content', label: 'Business', content: <>
+          <BusinessForm
+            onApply={(ops) => {
+              say({ role: 'user', text: 'My business details' })
+              applyOps('My business details', ops, 'rules', 'Added your business details.')
+            }}
+          />
+          <PhotosPanel
+            defaultQuery={active.content.subject || brandName}
+            hasPhotos={!!edits.photos}
+            planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
+            accent={palette.light.accent}
+            alt={palette.light.alt}
+            prompt={submitted}
+            onApply={(ops, label, used) => {
+              autoMade.current = false
+              setDrawn(used ?? [])
+              setRated({})
+              say({ role: 'user', text: label })
+              applyOps(label, ops, 'rules', 'Put the photos on your site.')
+            }}
+            onClear={() => {
+              setDrawn([])
+              setRated({})
+              say({ role: 'user', text: 'Remove the photos' })
+              applyOps('Remove the photos', [{ op: 'clearPhotos' }], 'rules', 'The drawn pictures are back.')
+            }}
+          />
+          {coreCraftReady && (
+            <CoreCraftPanel
+              prompt={submitted}
+              auto={coreAuto}
+              note={coreNote}
+              onAuto={(on) => {
+                setCoreAuto(on)
+                try {
+                  localStorage.setItem('ui-blocks:core-auto', on ? 'on' : 'off')
+                } catch {
+                  // the switch is remembered when it can be
+                }
+              }}
+              gate={() => ({ theme: themeKey, subject: textSite.content.subject, prompt: submitted, current: { heroTitle: textSite.content.hero.title, heroSubtitle: textSite.content.hero.subtitle, heroButton: textSite.content.hero.button }, avoid: turnedDown.current })}
+              onUse={(slot: CoreSlot, text: string) => applyOps(`Core-Craft AI: ${slot}`, [{ op: 'text', field: slot, text }], 'rules', `Used a line from Core-Craft AI: "${text}". Say "undo" to get the old one back.`)}
+            />
+          )}
+          <section className="space-y-2 lv-card p-3 text-xs text-gray-500">
+            <h2 className="text-sm font-semibold text-gray-900">Your data</h2>
+            <p title="Blog posts, team, reviews, FAQ and gallery captions that you keep in src/data/dataPool.json">
+              Pool: <b className="text-gray-700">{pool.text}</b> ({pool.mode}) · <code>src/data/dataPool.json</code>
+              {pool.problems.length > 0 && <span className="text-amber-700"> · {pool.problems.length} left out: {pool.problems.slice(0, 2).join('; ')}</span>}
+            </p>
+            <ImportPanel />
+          </section>
+        </> },
+            { id: 'project', label: 'Project', content: <>
+          {resume && (
+            <div role="status" className="space-y-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
+              <p>
+                Continue your last work? <b>{resume.prompt.slice(0, 70)}{resume.prompt.length > 70 ? '...' : ''}</b>
+              </p>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => void restore(resume)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
+                  Continue
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    forgetSession()
+                    setResume(undefined)
+                  }}
+                  className="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-800 hover:bg-indigo-100"
+                >
+                  Start fresh
+                </button>
+              </div>
+            </div>
+          )}
+          <ProjectsPanel
+            projects={projects}
+            message={projectNote}
+            onSave={(name) => {
+              const result = saveProject(name || brandName, snapshot())
+              setProjects(listProjects())
+              setProjectNote(result.ok ? (result.trimmed ? 'Saved. The pictures were too big to keep in the browser: use "Download file" to keep them.' : 'Saved in this browser.') : (result.error ?? 'Could not save.'))
+            }}
+            onLoad={(project) => void restore(project)}
+            onDelete={(id) => {
+              deleteProject(id)
+              setProjects(listProjects())
+            }}
+            onImport={(project) => void restore(project)}
+            onExportCurrent={(name) => ({ ...snapshot(), id: 'file', name: name.trim() || brandName, savedAt: new Date().toISOString() })}
+            onMessage={setProjectNote}
+          />
+          <section className="space-y-2 lv-card p-3">
+            <h2 className="text-sm font-semibold text-gray-900">Export</h2>
+            <ExportPanel fileEdits={codeEdits} engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
+          </section>
+        </> },
+            { id: 'insights', label: 'Insights', content: <>
+          <UnderstandingPanel prompt={submitted} site={{ theme: themeKey, tier, variation, layout: `${isMulti ? 'multi' : 'single'}/${shownEngine}` }} onSmartReady={() => undefined} />
+          <DesignHistory
+            designs={designs}
+            currentId={currentDesign}
+            insights={insightsOf(designs, submitted)}
+            where={designStore?.kind ?? 'browser'}
+            busy={designBusy}
+            onVerdict={(id, verdict, best) => void markDesign(id, verdict, best)}
+            onNew={() => void anotherDesign()}
+          />
+          <RatePictures
+            items={drawn.map((scene, i) => {
+              const photos = edits.photos
+              const thumb = i === 0 ? photos?.hero : i === 1 ? photos?.about : photos?.gallery?.[i - 2]
+              return { label: i === 0 ? 'first screen' : i === 1 ? 'about' : `gallery ${i - 1}`, thumb: thumb ?? '', state: rated[i], busy: rateBusy === i, key: scene.prompt }
+            }).filter((item) => item.thumb)}
+            onRate={(i, verdict) => void ratePicture(i, verdict)}
+          />
           <details className="lv-card text-xs text-gray-600">
             <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-gray-700 [&::-webkit-details-marker]:hidden">About this site ▾</summary>
             <div className="space-y-2 px-3 pb-3">
@@ -1032,26 +1016,26 @@ function GeneratorPage() {
               <p className="text-gray-400">scores: {Object.entries(scores).map(([k, v]) => `${k}=${v}`).join(' · ')}</p>
             </div>
           </details>
-
-          <section className="space-y-2 lv-card p-3 text-xs text-gray-500">
-            <h2 className="text-sm font-semibold text-gray-900">Your data</h2>
-            <p title="Blog posts, team, reviews, FAQ and gallery captions that you keep in src/data/dataPool.json">
-              Pool: <b className="text-gray-700">{pool.text}</b> ({pool.mode}) · <code>src/data/dataPool.json</code>
-              {pool.problems.length > 0 && <span className="text-amber-700"> · {pool.problems.length} left out: {pool.problems.slice(0, 2).join('; ')}</span>}
-            </p>
-            <ImportPanel />
-          </section>
-
-          <section className="space-y-2 lv-card p-3">
-            <h2 className="text-sm font-semibold text-gray-900">Export</h2>
-            <ExportPanel fileEdits={codeEdits} engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
-          </section>
-        </div>
-      </aside>
-
-      {/* ───────────── right: preview or code ───────────── */}
-      <section id="preview-section" className="relative flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
-        <BuildingScreen key={build.since} prompt={build.prompt} stage={build.stage} open={build.on} />
+          <details className="group lv-card">
+            <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-gray-700 [&::-webkit-details-marker]:hidden">Try an example ▾</summary>
+            <div className="flex flex-wrap gap-2 px-3 pb-3">
+              {EXAMPLES.map((example) => (
+                <button
+                  key={example}
+                  type="button"
+                  onClick={() => {
+                    void generate(example)
+                  }}
+                  className="lv-chip text-left"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </details>
+        </> },
+          ]}
+        />
         <header className="lv-bar flex flex-wrap items-center gap-2 px-3 py-2">
           <div role="tablist" aria-label="What to show" className="lv-pill-tabs">
             {(['preview', 'code', 'json'] as const).map((v) => (
@@ -1088,12 +1072,28 @@ function GeneratorPage() {
             )}
           </div>
 
-          <button type="button" onClick={openPreview} className="lv-btn lv-btn-dark px-4 py-2 text-sm" title="Open the site full size in a new tab">
-            Preview
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M7 17 17 7M8 7h9v9" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => void anotherDesign()} disabled={designBusy} className="lv-btn lv-btn-ghost px-3 py-1.5 text-[13px] disabled:opacity-50" title="A different design for the same business">
+              Another design
+            </button>
+            <button type="button" onClick={() => setTools({ open: true, tab: 'design' })} className="lv-btn lv-btn-ghost px-3 py-1.5 text-[13px]" title="Settings, business details, projects, what the generator understood">
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" />
+                <circle cx="16" cy="6" r="2" />
+                <circle cx="10" cy="12" r="2" />
+                <circle cx="18" cy="18" r="2" />
+              </svg>
+              Tools
+            </button>
+            <button type="button" onClick={() => setTools({ open: true, tab: 'project' })} className="lv-btn lv-btn-primary px-3.5 py-1.5 text-[13px]" title="Download the site, or save the project">
+              Export
+            </button>
+            <button type="button" onClick={openPreview} className="lv-btn lv-btn-dark size-8" title="Open the site full size in a new tab" aria-label="Open the site in a new tab">
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7 17 17 7M8 7h9v9" />
+              </svg>
+            </button>
+          </div>
         </header>
 
         {view === 'preview' && isMulti && pageTabs.length > 0 && (
@@ -1163,11 +1163,6 @@ function Setting({ label, note, children }: { label: string; note?: string; chil
   )
 }
 
-const SparkIcon = () => (
-  <svg viewBox="0 0 24 24" className="size-4 text-violet-600" fill="currentColor" aria-hidden="true">
-    <path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2Zm7 11 .9 2.6L22.5 16.5l-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13ZM6 15l.7 2 2 .7-2 .7L6 20.5l-.7-2.1-2-.7 2-.7L6 15Z" />
-  </svg>
-)
 
 function DeviceIcon({ device }: { device: Device }) {
   const common = { viewBox: '0 0 24 24', className: 'size-5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }

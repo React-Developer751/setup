@@ -81,6 +81,12 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
 `header red footer green` / `header lal, footer hara` (one part gets its own background; its text adapts), `complementary colour`, `second colour orange`,
 `surprise me`, plus a colour picker and "colour from my logo / photo" (main + second colour) in the chat. Unknown names: the chat shows colour buttons.
 
+## The studio screens
+
+* **First screen**: one prompt box. Nothing else to choose: **one page or several, the design, the colours, the words and the motion are decided from the prompt** (`autoPages` in `generator/edit/pagesIntent.ts`: what the person said, three or more things to show, a full / school / hospital / company website, or a detailed brief for a business people look around in -> pages; a short brief -> one landing page). The chat says what it chose and why.
+* **Workspace**: the chat on the left (history, the box to write in at the bottom, quick ideas), the preview on the right with its own bar (Preview / Code / Json, phone / tablet / desktop, Another design, Tools, Export, open in a new tab). Everything else is in **Tools** (a panel that slides over the preview): *Design* (pages Auto / One page / Several pages, engine, design level, mood, creativity, motion), *Business* (details, photos, your data), *Project* (save, load, export), *Insights* (what it understood, design memory, picture ratings).
+* **Preview**: a real device frame; the desktop is as wide as the pane allows (1024 to 1440 px, not a thumbnail); a change keeps the place the person was at; a build screen with steps shows while a new site is made.
+
 ## Motion, page depth and the Code tab
 
 * **Motion by business type** (`src/generator/motionBrain.ts`, `motionRuntime.ts`): eight recipes (calm, energetic, elegant, appetite, tech, playful, creative, wander). Each business type uses one: parts arrive in three or four different ways (up, left, right, scale, fade, blur, picture wipe) and the extras fit the business (slow zoom of the first picture, scroll drift, card tilt, a light that follows the pointer, leaning buttons, wiggle). Pointer effects wait for a real mouse; `prefers-reduced-motion` switches everything off.

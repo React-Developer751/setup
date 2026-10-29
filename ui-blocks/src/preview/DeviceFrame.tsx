@@ -26,6 +26,10 @@ function DeviceFrame({ device, html, title, route, onRoute }: Props) {
   const frame = useRef<HTMLIFrameElement>(null)
   const [area, setArea] = useState({ width: 900, height: 700 })
   const routeRef = useRef(route)
+  // where the person was in the site: a change (a colour, a word) makes a new document, and the preview must not jump back to the top
+  const scrollRef = useRef(0)
+  const [loadedFor, setLoadedFor] = useState(-1)
+  const loaded = loadedFor === (html?.length ?? -2)
 
   // the space that the frame can use
   useLayoutEffect(() => {
@@ -63,7 +67,10 @@ function DeviceFrame({ device, html, title, route, onRoute }: Props) {
     }
   }, [route])
 
-  const { width, height: deviceHeight } = DEVICES[device]
+  // a desktop is as wide as the pane allows (between a small laptop and a big screen), so the site is shown big and not as a thumbnail
+  const fixed = DEVICES[device]
+  const width = device === 'desktop' ? Math.round(Math.min(1440, Math.max(1024, area.width - PADDING * 2))) : fixed.width
+  const deviceHeight = fixed.height
   const scale = Math.min(1, (area.width - PADDING * 2) / width)
   // the frame is as tall as the pane (a phone does not have to be 844 px tall on a small laptop), but never taller than the device
   const availableHeight = Math.max(320, area.height - PADDING * 2 - (device === 'desktop' ? 34 * scale : 0))
@@ -94,14 +101,23 @@ function DeviceFrame({ device, html, title, route, onRoute }: Props) {
                 srcDoc={html}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 style={{ width, height }}
-                className="block border-0 bg-white"
+                className={`block border-0 bg-white transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => {
                   const win = frame.current?.contentWindow
                   if (win && routeRef.current !== '/') goTo(win, routeRef.current)
+                  // back to where the person was, and remember where they go next
+                  try {
+                    const scroller = win?.document.scrollingElement
+                    if (scroller && scrollRef.current > 0) scroller.scrollTo({ top: scrollRef.current, behavior: 'instant' as ScrollBehavior })
+                    win?.addEventListener('scroll', () => (scrollRef.current = win.document.scrollingElement?.scrollTop ?? 0), { passive: true })
+                  } catch {
+                    // the frame cannot be reached: the preview simply starts at the top
+                  }
+                  setLoadedFor(html.length)
                 }}
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-gray-400">Building the preview…</div>
+              <div className="flex h-full items-center justify-center gap-3 text-sm text-stone-400"><span className="lv-spinner !size-5" aria-hidden="true" />Building the preview…</div>
             )}
           </div>
         </div>
