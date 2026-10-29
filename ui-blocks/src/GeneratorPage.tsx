@@ -650,20 +650,28 @@ function GeneratorPage() {
 
   // the component files the person saved are compiled; the preview and the exports use them in place of the stored ones
   useEffect(() => {
-    const used = new Map<string, ComponentType>()
-    const status: Record<string, string> = {}
-    for (const [path, edit] of Object.entries(codeEdits)) {
-      const id = componentIdOfPath(path)
-      if (!id) continue
-      const result = compileComponent(edit.content)
-      if (result.component) {
-        used.set(id, result.component)
-        status[path] = 'ok'
-      } else status[path] = result.error ?? 'The file could not be used.'
+    let stale = false
+    const work = async () => {
+      const used = new Map<string, ComponentType>()
+      const status: Record<string, string> = {}
+      for (const [path, edit] of Object.entries(codeEdits)) {
+        const id = componentIdOfPath(path)
+        if (!id) continue
+        const result = await compileComponent(edit.content)
+        if (result.component) {
+          used.set(id, result.component)
+          status[path] = 'ok'
+        } else status[path] = result.error ?? 'The file could not be used.'
+      }
+      if (stale) return
+      setComponentOverrides(used)
+      setCodeStatus(status)
+      setOverrideVersion((v) => v + 1)
     }
-    setComponentOverrides(used)
-    setCodeStatus(status)
-    setOverrideVersion((v) => v + 1)
+    void work()
+    return () => {
+      stale = true
+    }
   }, [codeEdits])
 
   // ── the Code tab: a file the person saves is kept as they wrote it; the words of the page file also change the site ──

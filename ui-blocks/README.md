@@ -81,6 +81,16 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
 `header red footer green` / `header lal, footer hara` (one part gets its own background; its text adapts), `complementary colour`, `second colour orange`,
 `surprise me`, plus a colour picker and "colour from my logo / photo" (main + second colour) in the chat. Unknown names: the chat shows colour buttons.
 
+## Motion, page depth and the Code tab
+
+* **Motion by business type** (`src/generator/motionBrain.ts`, `motionRuntime.ts`): eight recipes (calm, energetic, elegant, appetite, tech, playful, creative, wander). Each business type uses one: parts arrive in three or four different ways (up, left, right, scale, fade, blur, picture wipe) and the extras fit the business (slow zoom of the first picture, scroll drift, card tilt, a light that follows the pointer, leaning buttons, wiggle). Pointer effects wait for a real mouse; `prefers-reduced-motion` switches everything off.
+* **Page depth by business type** (`src/generator/experience.ts`): a clinic gets proof and answers first, a restaurant or a fashion house gets pictures and articles. A short prompt ("gym in Jaipur") is a full page; only words like "simple" or "basic" ask for the short one.
+* **Code tab**: the whole project in a folder tree, search, coloured code, Copy and Download above every file, **Export project (.zip)**. Every file can be changed and saved:
+  * the words of the page file (`const content = {...}`) change the site (`src/generator/edit/codeSync.ts`; undo works);
+  * a component file is compiled in the browser (`sucrase`, loaded on the first change; it runs as a module made from a blob, so the strict content security policy needs no `eval`) and replaces the stored component in the preview and the exports; a file with a mistake is explained and not used;
+  * the saved versions are in Copy, Download and the project .zip. A file the generator made again after the person changed it is marked, and they choose "Keep mine" or "Use the new file".
+* Tests: `test-experience.mjs`, `test-codesync.mjs`, `test-component-compile.mjs`.
+
 ## Niche packs and personal details
 
 * `src/data/niches/batch-*.json`: hand-written text for 60 specific kinds of business (pest control, tattoo studio, chartered accountant, scrap dealer,
