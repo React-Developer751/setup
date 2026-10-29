@@ -20,6 +20,7 @@ import { answerFor, clarify, type Choice, type Expect } from './generator/edit/c
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { BuildingScreen } from './BuildingScreen'
 import { CodeView } from './CodeView'
 import type { FileEdit } from './codeEdits'
 import { codeWithoutContent, opsFromEditedCode } from './generator/edit/codeSync'
@@ -123,6 +124,15 @@ function GeneratorPage() {
   const [resume, setResume] = useState<Project | undefined>(() => lastSession())
   // the first screen (a big prompt box) comes before the workspace; sending a prompt opens the workspace
   const [started, setStarted] = useState(false)
+  // the build screen while a new site is made: which step the generator has reached, and when it began (it stays long enough to be read)
+  const [build, setBuild] = useState({ on: false, stage: 0, prompt: '', since: 0 })
+  const bumpBuild = (stage: number) => setBuild((b) => (b.on && b.stage < stage ? { ...b, stage } : b))
+  const closeBuild = () => {
+    setBuild((b) => (b.on ? { ...b, stage: 4 } : b))
+    // (not before 2.5 s: a site that is ready at once would flash the screen)
+    window.setTimeout(() => setBuild((b) => (b.on ? { ...b, on: false } : b)), Math.max(700, 2500 - (Date.now() - buildStart.current)))
+  }
+  const buildStart = useRef(0)
   const messageId = useRef(0)
   // a question of the chat that waits for a typed value (a name, a business type ...)
   const pending = useRef<Expect | undefined>(undefined)
@@ -313,8 +323,15 @@ function GeneratorPage() {
     // a new site: the files the person changed belonged to the old one
     setCodeEdits({})
     setCodeNote('')
+    buildStart.current = Date.now()
+    setBuild({ on: true, stage: 0, prompt: text.trim(), since: buildStart.current })
+    // on a phone the preview is under the prompt: the build screen is brought into view
+    if (window.innerWidth < 1024) requestAnimationFrame(() => document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    // (whatever happens, the screen is gone after a minute)
+    window.setTimeout(() => setBuild((b) => (b.on && b.since === buildStart.current ? { ...b, on: false } : b)), 60_000)
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
     await understand(text)
+    bumpBuild(1)
     // "a single page" / "landing page" in the prompt is an order: it wins over what was set before
     const wanted = pagesWanted(text)
     if (wanted) setPages(wanted)
@@ -327,6 +344,7 @@ function GeneratorPage() {
     exported.current = false
     // the design memory (the server's database or the browser's) can fail: the site is then made without it, not left half made
     const plan: Awaited<ReturnType<typeof newDesign>> = await newDesign(text).catch(() => ({ reasons: ['Made without the design memory (it could not be read).'], ops: [], variation: 1 + Math.floor(Math.random() * 9000) }) as unknown as Awaited<ReturnType<typeof newDesign>>)
+    bumpBuild(2)
     messageId.current += 1
     setMessages([{ id: messageId.current, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
     setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])
@@ -334,7 +352,7 @@ function GeneratorPage() {
     setRuns((n) => n + 1)
     coreRun.current += 1
     setCoreNote('')
-    void applyCoreContent(text, plan.variation, coreRun.current)
+    void applyCoreContent(text, plan.variation, coreRun.current).finally(() => bumpBuild(3))
     autoMade.current = false
     setDrawn([])
     setRated({})
@@ -427,32 +445,36 @@ function GeneratorPage() {
   const drawnFor = useRef('')
   const hasPhotosRef = useRef(false)
   hasPhotosRef.current = history.some((h) => h.ops.some((o) => o.op === 'photos'))
-  const autoDraw = useRef<() => Promise<void>>(async () => undefined)
+  const autoDraw = useRef<() => Promise<boolean>>(async () => true)
   autoDraw.current = async () => {
     const key = `${submitted}|${variation}|${runs}`
-    if (drawnFor.current === key) return
+    // (already done for this site: nothing to wait for)
+    if (drawnFor.current === key) return false
     drawnFor.current = key
     // pictures the person added themselves stay; pictures drawn earlier by this page are drawn again for a new variation
-    if (hasPhotosRef.current && !autoMade.current) return
+    if (hasPhotosRef.current && !autoMade.current) return true
     if (!(await imageEngineUp())) {
       // no image engine: the maths makes the pictures, so that the site is never left with empty boxes
       const made = artPictures({ prompt: submitted, accent: palette.light.accent, alt: palette.light.alt, temperature: temperature(), round: runs })
       autoMade.current = true
       applyOps('Abstract art made with maths', made.ops, 'rules', 'The image engine is not running, so I made the pictures with maths (noise, fractals and your colours). Start it with npm run images for scene pictures.')
-      return
+      return true
     }
+    bumpBuild(3)
     say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
     const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, prompt: submitted })
-    if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return
+    if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return true
     autoMade.current = true
     if (answer.used) {
       setDrawn(answer.used)
       setRated({})
     }
     if (answer.ops) applyOps('Pictures from the image AI', answer.ops, 'rules', `Pictures added${answer.report && (answer.report.redrawn || answer.report.otherScene || answer.report.directed) ? ` (checked: ${answer.report.directed} scenes changed to show your business, ${answer.report.redrawn} drawn again because they looked empty)` : ' (all checked)'}${answer.report?.notes.find((n) => /new mixes/.test(n)) ? ` ${answer.report.notes.find((n) => /new mixes/.test(n))}.` : ''} You can draw other ones or use your own in "Real photos".`)
+      return true
   }
   useEffect(() => {
-    void autoDraw.current()
+    void autoDraw.current().then((ran) => ran && closeBuild())
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- closeBuild only touches refs and state setters
   }, [submitted, variation, runs])
 
   // a thumb on a picture: remembered for this kind of business; a thumb down draws another scene in its place right away
@@ -1028,7 +1050,8 @@ function GeneratorPage() {
       </aside>
 
       {/* ───────────── right: preview or code ───────────── */}
-      <section className="flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
+      <section id="preview-section" className="relative flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
+        <BuildingScreen key={build.since} prompt={build.prompt} stage={build.stage} open={build.on} />
         <header className="lv-bar flex flex-wrap items-center gap-2 px-3 py-2">
           <div role="tablist" aria-label="What to show" className="lv-pill-tabs">
             {(['preview', 'code', 'json'] as const).map((v) => (

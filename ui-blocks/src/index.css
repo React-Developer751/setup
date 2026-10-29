@@ -60,7 +60,18 @@
 @keyframes lv-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .lv-float { animation: lv-bob 7s ease-in-out infinite; }
 @keyframes lv-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+/* the build screen (BuildingScreen.tsx) */
+.lv-skeleton { background: linear-gradient(100deg, rgb(28 25 23 / 0.07) 20%, rgb(28 25 23 / 0.14) 40%, rgb(28 25 23 / 0.07) 60%); background-size: 220% 100%; animation: lv-shimmer 1.6s linear infinite; }
+@keyframes lv-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+.lv-spinner { width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: conic-gradient(from 0deg, transparent 0 25%, #6d5dfc 60%, #ff7a8a 85%, #ffa45c); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px)); mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px)); animation: lv-spin 0.9s linear infinite; }
+@keyframes lv-spin { to { transform: rotate(360deg); } }
+.lv-pulse { animation: lv-pulse 1.4s ease-in-out infinite; }
+@keyframes lv-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(109 93 252 / 0.45); } 50% { box-shadow: 0 0 0 7px rgb(109 93 252 / 0); } }
+.lv-orb { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: 0.5; pointer-events: none; }
+.lv-orb-a { width: 22rem; height: 22rem; left: -4rem; top: -5rem; background: radial-gradient(circle, #ffb08a, #ff8fb1 55%, transparent 72%); animation: lv-drift 9s ease-in-out infinite alternate; }
+.lv-orb-b { width: 24rem; height: 24rem; right: -5rem; bottom: -6rem; background: radial-gradient(circle, #9a8cff, #6fb8ff 55%, transparent 72%); animation: lv-drift 11s ease-in-out infinite alternate-reverse; }
 @media (prefers-reduced-motion: reduce) {
+  .lv-skeleton, .lv-spinner, .lv-pulse, .lv-orb { animation: none !important; }
   .lv-shell::before, .lv-shell::after, .lv-rise, .lv-float { animation: none !important; }
 }
 
