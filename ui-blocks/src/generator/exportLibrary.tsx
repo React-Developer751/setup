@@ -16,6 +16,7 @@ import { hoistImages, oneHeading } from './exportAssets'
 import { seededRandom } from './random'
 import finalPromptSource from './finalPrompt.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
+import { componentOverride } from './library/componentOverrides'
 import { libraryComponents } from './library/libraryComponents'
 import { repairContrast } from './library/pageAudit'
 import { libraryWithDetails, safeSiteUrl, xmlEscape } from './library/exportDetails'
@@ -161,7 +162,7 @@ function renderLibrary(lib: Library) {
       root.render(
         <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages} mode={lib.initialMode} css={lib.css} fontTokens={lib.fontTokens}>
           {lib.sections.map(({ role, componentId, paint, fit, band, page, head }, index) => {
-            const Component = libraryComponents[componentId]
+            const Component = componentOverride(componentId) ?? libraryComponents[componentId]
             // a part whose component is not known is left out, not a reason to lose the whole page
             if (!Component) return null
             return (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ComponentType } from 'react'
 import ExportPanel from './ExportPanel'
 import DeviceFrame from './preview/DeviceFrame'
 import { DEVICES, type Device } from './preview/devices'
@@ -23,6 +23,7 @@ import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serv
 import { CodeView } from './CodeView'
 import type { FileEdit } from './codeEdits'
 import { codeWithoutContent, opsFromEditedCode } from './generator/edit/codeSync'
+import { compileComponent, componentIdOfPath, setComponentOverrides } from './generator/library/componentOverrides'
 import { Landing } from './Landing'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
@@ -164,6 +165,9 @@ function GeneratorPage() {
   // what the person changed in the Code tab (by file) and what the last save did to the site
   const [codeEdits, setCodeEdits] = useState<Record<string, FileEdit>>({})
   const [codeNote, setCodeNote] = useState('')
+  // the component files the person saved are compiled and used by the preview; 'ok' or the reason they cannot be
+  const [codeStatus, setCodeStatus] = useState<Record<string, string>>({})
+  const [overrideVersion, setOverrideVersion] = useState(0)
 
   // The site as one HTML document (the same as the "One .html file" export): the preview frame and the Preview button show it.
   // Frames and new tabs have their own viewport, so mobile / tablet / desktop layouts really are the ones a visitor would see.
@@ -171,7 +175,7 @@ function GeneratorPage() {
     shownEngine === 'library'
       ? buildLibraryStandalone(libraryWithDetails(library, details))
       : buildStandalone(applyDetails(tplMulti ? sourceFromSite(multi) : sourceFromPage(site), details))
-  const previewHtml = usePreviewDocument(buildDocument, [shownEngine, isMulti, multi, site, library, details, poolVersion])
+  const previewHtml = usePreviewDocument(buildDocument, [shownEngine, isMulti, multi, site, library, details, poolVersion, overrideVersion])
 
   useEffect(() => {
     if (view !== 'code') return
@@ -644,6 +648,24 @@ function GeneratorPage() {
     }
   }
 
+  // the component files the person saved are compiled; the preview and the exports use them in place of the stored ones
+  useEffect(() => {
+    const used = new Map<string, ComponentType>()
+    const status: Record<string, string> = {}
+    for (const [path, edit] of Object.entries(codeEdits)) {
+      const id = componentIdOfPath(path)
+      if (!id) continue
+      const result = compileComponent(edit.content)
+      if (result.component) {
+        used.set(id, result.component)
+        status[path] = 'ok'
+      } else status[path] = result.error ?? 'The file could not be used.'
+    }
+    setComponentOverrides(used)
+    setCodeStatus(status)
+    setOverrideVersion((v) => v + 1)
+  }, [codeEdits])
+
   // ── the Code tab: a file the person saves is kept as they wrote it; the words of the page file also change the site ──
   const mainFile = projectFiles.find((f) => /(^|\/)src\/(GeneratedLandingPage|App)\.tsx$/.test(f.path) && typeof f.content === 'string' && f.content.includes('const content = '))?.path
   const saveFile = (path: string, content: string, base: string) => {
@@ -1072,7 +1094,7 @@ function GeneratorPage() {
             }}
           />
         ) : (
-          <CodeView files={projectFiles} edits={codeEdits} mainFile={mainFile} note={codeNote} onSave={saveFile} onReset={resetFile} onKeep={keepFile} loading={projectBusy} projectName={shownEngine === 'library' ? libraryProjectName(library) : projectName(tplMulti ? sourceFromSite(multi) : sourceFromPage(site))} />
+          <CodeView status={codeStatus} files={projectFiles} edits={codeEdits} mainFile={mainFile} note={codeNote} onSave={saveFile} onReset={resetFile} onKeep={keepFile} loading={projectBusy} projectName={shownEngine === 'library' ? libraryProjectName(library) : projectName(tplMulti ? sourceFromSite(multi) : sourceFromPage(site))} />
         )}
       </section>
     </div>

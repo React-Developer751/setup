@@ -130,7 +130,7 @@ const pickFirst = (entries: Entry[]) => {
 
 const ENGINE = /(^|\/)src\/(generator|data)\//
 
-export function CodeView({ files, edits, loading, projectName, mainFile, onSave, onReset, onKeep, note }: {
+export function CodeView({ files, edits, loading, projectName, mainFile, onSave, onReset, onKeep, note, status }: {
   /** the generated files */
   files: Entry[]
   /** the files the person changed */
@@ -145,6 +145,8 @@ export function CodeView({ files, edits, loading, projectName, mainFile, onSave,
   onKeep: (path: string, base: string) => void
   /** what the last save did to the site */
   note?: string
+  /** for a component file the person saved: 'ok' when the preview uses it, or why it cannot (a mistake in the file) */
+  status?: Record<string, string>
 }) {
   const [selected, setSelected] = useState<string | undefined>()
   const [open, setOpen] = useState<Set<string>>(new Set())
@@ -383,6 +385,16 @@ export function CodeView({ files, edits, loading, projectName, mainFile, onSave,
                   Use the new file
                 </button>
               </div>
+            )}
+            {selected && status?.[selected] && status[selected] !== 'ok' && (
+              <p role="alert" className="border-b border-red-400/25 bg-red-400/10 px-4 py-2 text-xs text-red-200">
+                {status[selected]} The preview keeps the generated component; your text stays in this file and in the download.
+              </p>
+            )}
+            {selected && status?.[selected] === 'ok' && (
+              <p role="status" className="border-b border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs text-emerald-200">
+                The preview uses your version of this component. The words in it are filled from the page (change them in the page file), the markup and the classes are yours.
+              </p>
             )}
             {note && selected === mainFile && (
               <p role="status" className="border-b border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs text-emerald-200">
