@@ -71,7 +71,7 @@ function DeviceFrame({ device, html, title, route, onRoute }: Props) {
   const bezel = device === 'mobile' ? 10 : device === 'tablet' ? 12 : 0
 
   return (
-    <div ref={wrapper} className="relative flex h-full w-full items-start justify-center overflow-auto bg-[radial-gradient(circle,#d1d5db_1px,transparent_1px)] [background-size:18px_18px] bg-gray-100 p-6">
+    <div ref={wrapper} className="relative flex h-full w-full items-start justify-center overflow-auto bg-transparent p-6">
       <div style={{ width: (width + bezel * 2) * scale, height: (height + bezel * 2 + (device === 'desktop' ? 34 : 0)) * scale }} className="shrink-0">
         <div
           style={{ width: width + bezel * 2, transform: `scale(${scale})`, transformOrigin: 'top left', padding: bezel }}

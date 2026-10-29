@@ -14,6 +14,55 @@
   .border-gray-200.border-opacity-60 { border-color: color-mix(in oklab, var(--color-gray-200) 60%, transparent); }
 }
 
+
+/* ───────────────────────── the generator's own look (the app around the sites it makes) ─────────────────────────
+   Warm paper, soft colour glows, white glass cards, one gradient for the main action. None of this is part of an exported site:
+   the exporter only takes what follows the motion marker below. */
+:root {
+  --lv-ink: #1c1917;
+  --lv-muted: #78716c;
+  --lv-paper: #fbf8f5;
+  --lv-line: rgb(28 25 23 / 0.08);
+  --lv-grad: linear-gradient(135deg, #6d5dfc 0%, #c25cf0 45%, #ff7a8a 78%, #ffa45c 100%);
+}
+.lv-shell { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: var(--lv-paper); color: var(--lv-ink); letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; position: relative; isolation: isolate; }
+/* two big soft glows behind everything: warm on the left, cool on the right */
+.lv-shell::before, .lv-shell::after { content: ''; position: fixed; z-index: -1; pointer-events: none; border-radius: 9999px; filter: blur(90px); opacity: 0.55; }
+.lv-shell::before { width: 46vw; height: 46vw; left: -12vw; top: -16vw; background: radial-gradient(circle, #ffb08a 0%, #ff8fb1 45%, transparent 70%); animation: lv-drift 26s ease-in-out infinite alternate; }
+.lv-shell::after { width: 44vw; height: 44vw; right: -14vw; top: -10vw; background: radial-gradient(circle, #9a8cff 0%, #6fb8ff 50%, transparent 72%); animation: lv-drift 32s ease-in-out infinite alternate-reverse; }
+@keyframes lv-drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(4vw, 3vw, 0) scale(1.12); } }
+
+.lv-card { background: rgb(255 255 255 / 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--lv-line); border-radius: 1.1rem; box-shadow: 0 1px 2px rgb(28 25 23 / 0.04), 0 14px 34px -22px rgb(28 25 23 / 0.28); }
+.lv-bar { background: rgb(255 255 255 / 0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--lv-line); }
+.lv-grad-text { background: var(--lv-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; border-radius: 9999px; font-weight: 600; transition: transform 0.15s ease, box-shadow 0.25s ease, filter 0.2s ease, background-color 0.2s ease; cursor: pointer; }
+.lv-btn:active { transform: scale(0.97); }
+.lv-btn-primary { background: var(--lv-grad); color: #fff; box-shadow: 0 8px 22px -8px rgb(194 92 240 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.35); }
+.lv-btn-primary:hover { filter: brightness(1.06) saturate(1.05); box-shadow: 0 12px 28px -8px rgb(194 92 240 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.35); }
+.lv-btn-dark { background: var(--lv-ink); color: #fff; }
+.lv-btn-dark:hover { background: #3a3532; }
+.lv-btn-ghost { background: rgb(255 255 255 / 0.7); color: #44403c; border: 1px solid var(--lv-line); }
+.lv-btn-ghost:hover { background: #fff; }
+.lv-chip { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 9999px; background: rgb(255 255 255 / 0.8); border: 1px solid var(--lv-line); padding: 0.4rem 0.85rem; font-size: 0.8rem; color: #44403c; transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: pointer; }
+.lv-chip:hover { transform: translateY(-1px); border-color: rgb(109 93 252 / 0.45); box-shadow: 0 8px 18px -10px rgb(109 93 252 / 0.55); }
+/* the big prompt box: a white card with a gradient edge that lights up while you type */
+.lv-composer { position: relative; background: #fff; border-radius: 1.6rem; box-shadow: 0 2px 4px rgb(28 25 23 / 0.04), 0 30px 60px -30px rgb(109 93 252 / 0.45); }
+.lv-composer::before { content: ''; position: absolute; inset: -1.5px; border-radius: inherit; padding: 1.5px; background: var(--lv-grad); opacity: 0.35; transition: opacity 0.25s ease; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
+.lv-composer:focus-within::before { opacity: 1; }
+.lv-composer textarea { width: 100%; resize: none; border: 0; outline: 0; background: transparent; box-shadow: none !important; font-size: 1.05rem; line-height: 1.55; color: var(--lv-ink); }
+.lv-composer textarea::placeholder { color: #a8a29e; }
+.lv-pill-tabs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 9999px; background: rgb(28 25 23 / 0.06); }
+.lv-pill-tabs button { border-radius: 9999px; padding: 0.35rem 0.9rem; font-size: 0.82rem; font-weight: 500; color: #57534e; transition: background-color 0.2s ease, color 0.2s ease; }
+.lv-pill-tabs button[aria-selected='true'], .lv-pill-tabs button[aria-pressed='true'] { background: #fff; color: var(--lv-ink); box-shadow: 0 1px 3px rgb(28 25 23 / 0.12); }
+.lv-canvas { background: radial-gradient(circle at 1px 1px, rgb(28 25 23 / 0.09) 1px, transparent 0) 0 0 / 22px 22px, linear-gradient(180deg, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0)); }
+.lv-rise { animation: lv-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes lv-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.lv-float { animation: lv-bob 7s ease-in-out infinite; }
+@keyframes lv-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (prefers-reduced-motion: reduce) {
+  .lv-shell::before, .lv-shell::after, .lv-rise, .lv-float { animation: none !important; }
+}
+
 /* ───────────────────────── motion ─────────────────────────
    Used by the generated pages (see src/generator/motionRuntime.ts).
    Nothing is hidden unless the runtime has switched the page to data-motion="on",

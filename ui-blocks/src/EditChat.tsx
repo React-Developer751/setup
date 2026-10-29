@@ -58,7 +58,7 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, serverReady, useS
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/40 p-3" aria-label="Edit the website by chatting">
+    <section className="lv-card space-y-3 p-3.5" aria-label="Edit the website by chatting">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-900">Ask for a change</h2>
         <div className="flex items-center gap-1">
@@ -82,7 +82,7 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, serverReady, useS
         )}
         {messages.map((m) => (
           <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
-            <div className={`max-w-[92%] rounded-2xl px-3 py-1.5 ${m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+            <div className={`max-w-[92%] rounded-2xl px-3 py-1.5 ${m.role === 'user' ? 'bg-stone-900 text-white' : 'bg-black/5 text-stone-800'}`}>
               <p className="whitespace-pre-wrap break-words">{m.text}</p>
               {m.ops && m.ops.length > 0 && (
                 <ul className="mt-1 flex flex-wrap gap-1">
@@ -128,16 +128,16 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, serverReady, useS
           onChange={(e) => setText(e.target.value)}
           aria-label="What should change?"
           placeholder='e.g. "FAQ hatao aur naam Zen Cafe rakho"'
-          className="min-w-0 flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          className="min-w-0 flex-1 rounded-full border border-black/10 bg-white px-4 py-2 text-sm shadow-sm focus:border-violet-400 focus:ring-4 focus:ring-violet-200/60"
         />
-        <button type="submit" disabled={busy || !text.trim()} className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
+        <button type="submit" disabled={busy || !text.trim()} className="lv-btn lv-btn-primary px-4 py-2 text-sm disabled:opacity-50">
           Send
         </button>
       </form>
 
       <div className="flex flex-wrap gap-1.5">
         {SUGGESTIONS.map((s) => (
-          <button key={s} type="button" onClick={() => send(s)} className="rounded-full bg-white px-2.5 py-1 text-[11px] text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100">
+          <button key={s} type="button" onClick={() => send(s)} className="lv-chip !px-2.5 !py-1 !text-[11px]">
             {s}
           </button>
         ))}

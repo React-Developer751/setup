@@ -20,6 +20,7 @@ import { answerFor, clarify, type Choice, type Expect } from './generator/edit/c
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { Landing } from './Landing'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
 import { makePictures, redrawScene, type UsedScene } from './generator/edit/imageAiClient'
@@ -118,6 +119,8 @@ function GeneratorPage() {
   const [projectNote, setProjectNote] = useState('')
   // the last session of this browser: offered at the start; it is only overwritten after the person has chosen
   const [resume, setResume] = useState<Project | undefined>(() => lastSession())
+  // the first screen (a big prompt box) comes before the workspace; sending a prompt opens the workspace
+  const [started, setStarted] = useState(false)
   const messageId = useRef(0)
   // a question of the chat that waits for a typed value (a name, a business type ...)
   const pending = useRef<Expect | undefined>(undefined)
@@ -628,14 +631,37 @@ function GeneratorPage() {
   const pageTabs: { path: string; label: string }[] = tplMulti ? multi.pages.filter((p) => !p.slug) : isMulti && shownEngine === 'library' ? (library.pages ?? []) : []
   const onPost = tplMulti && !!multi.pages.find((p) => p.path === route)?.slug
 
+  if (!started)
+    return (
+      <Landing
+        onSubmit={(text) => {
+          setPrompt(text)
+          setStarted(true)
+          void generate(text)
+        }}
+        canContinue={resume ? `${resume.name || resume.prompt.slice(0, 40)}` : undefined}
+        onContinue={resume ? () => { setStarted(true); void restore(resume) } : undefined}
+        pages={pages}
+        onPages={(next) => {
+          setPages(next)
+          setRoute('/')
+        }}
+      />
+    )
+
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       {/* ───────────── left: the prompt and everything that steers it ───────────── */}
-      <aside className="flex w-full shrink-0 flex-col border-b border-gray-200 bg-white lg:h-full lg:w-[380px] lg:border-b-0 lg:border-r">
-        <div className="space-y-3 border-b border-gray-100 p-4">
-          <label htmlFor="prompt" className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-            <SparkIcon /> Describe your website
-          </label>
+      <aside className="flex w-full shrink-0 flex-col border-b border-black/5 bg-white/55 backdrop-blur-md lg:h-full lg:w-[400px] lg:border-b-0 lg:border-r">
+        <div className="space-y-3 border-b border-black/5 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <label htmlFor="prompt" className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+              <SparkIcon /> Describe your website
+            </label>
+            <button type="button" onClick={() => setStarted(false)} className="lv-btn lv-btn-ghost px-3 py-1 text-xs" title="Back to the first screen">
+              New site
+            </button>
+          </div>
           <textarea
             id="prompt"
             value={prompt}
@@ -644,11 +670,11 @@ function GeneratorPage() {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void generate(prompt)
             }}
             rows={4}
-            className="w-full resize-none rounded-xl border border-gray-300 p-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            className="w-full resize-none rounded-2xl border border-black/10 bg-white p-3.5 text-[15px] leading-relaxed shadow-sm placeholder:text-stone-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-200/60"
             placeholder="e.g. Create a page for a gym called Iron Pulse"
           />
           <div className="flex gap-2">
-            <button type="button" onClick={() => void generate(prompt)} className="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
+            <button type="button" onClick={() => void generate(prompt)} className="lv-btn lv-btn-primary flex-1 px-4 py-2.5 text-sm">
               Generate website
             </button>
             <button
@@ -656,12 +682,12 @@ function GeneratorPage() {
               onClick={() => {
                 void anotherDesign()
               }}
-              className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100"
+              className="lv-btn lv-btn-ghost px-4 py-2.5 text-sm"
             >
               Another variation
             </button>
           </div>
-          <p className="text-xs text-gray-400">Cmd / Ctrl + Enter to generate</p>
+          <p className="text-xs text-stone-400">Cmd / Ctrl + Enter to generate</p>
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 lg:max-h-none">
@@ -792,7 +818,7 @@ function GeneratorPage() {
             }}
           />
 
-          <details className="group rounded-xl border border-gray-200 bg-gray-50/60">
+          <details className="group lv-card">
             <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-gray-700 [&::-webkit-details-marker]:hidden">Try an example ▾</summary>
             <div className="flex flex-wrap gap-2 px-3 pb-3">
               {EXAMPLES.map((example) => (
@@ -803,7 +829,7 @@ function GeneratorPage() {
                     setPrompt(example)
                     void generate(example)
                   }}
-                  className="rounded-full bg-white px-3 py-1 text-left text-xs text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100"
+                  className="lv-chip text-left"
                 >
                   {example}
                 </button>
@@ -813,7 +839,7 @@ function GeneratorPage() {
 
           <UnderstandingPanel prompt={submitted} site={{ theme: themeKey, tier, variation, layout: `${isMulti ? 'multi' : 'single'}/${shownEngine}` }} onSmartReady={() => undefined} />
 
-          <section className="space-y-3 rounded-xl border border-gray-200 p-3">
+          <section className="space-y-3 lv-card p-3">
             <h2 className="text-sm font-semibold text-gray-900">Settings</h2>
             <Setting label="Pages">
               <Segmented
@@ -875,7 +901,7 @@ function GeneratorPage() {
             </Setting>
           </section>
 
-          <details className="rounded-xl border border-gray-200 text-xs text-gray-600">
+          <details className="lv-card text-xs text-gray-600">
             <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-gray-700 [&::-webkit-details-marker]:hidden">About this site ▾</summary>
             <div className="space-y-2 px-3 pb-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -922,7 +948,7 @@ function GeneratorPage() {
             </div>
           </details>
 
-          <section className="space-y-2 rounded-xl border border-gray-200 p-3 text-xs text-gray-500">
+          <section className="space-y-2 lv-card p-3 text-xs text-gray-500">
             <h2 className="text-sm font-semibold text-gray-900">Your data</h2>
             <p title="Blog posts, team, reviews, FAQ and gallery captions that you keep in src/data/dataPool.json">
               Pool: <b className="text-gray-700">{pool.text}</b> ({pool.mode}) · <code>src/data/dataPool.json</code>
@@ -931,7 +957,7 @@ function GeneratorPage() {
             <ImportPanel />
           </section>
 
-          <section className="space-y-2 rounded-xl border border-gray-200 p-3">
+          <section className="space-y-2 lv-card p-3">
             <h2 className="text-sm font-semibold text-gray-900">Export</h2>
             <ExportPanel engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
           </section>
@@ -940,8 +966,8 @@ function GeneratorPage() {
 
       {/* ───────────── right: preview or code ───────────── */}
       <section className="flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
-        <header className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-3 py-2">
-          <div role="tablist" aria-label="What to show" className="flex rounded-lg bg-gray-100 p-0.5">
+        <header className="lv-bar flex flex-wrap items-center gap-2 px-3 py-2">
+          <div role="tablist" aria-label="What to show" className="lv-pill-tabs">
             {(['preview', 'code', 'json'] as const).map((v) => (
               <button
                 key={v}
@@ -949,7 +975,7 @@ function GeneratorPage() {
                 role="tab"
                 aria-selected={view === v}
                 onClick={() => setView(v)}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize ${view === v ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                className="capitalize"
               >
                 {v}
               </button>
@@ -958,7 +984,7 @@ function GeneratorPage() {
 
           <div className="flex flex-1 justify-center">
             {view === 'preview' && (
-              <div role="group" aria-label="Screen size" className="flex rounded-lg bg-gray-100 p-0.5">
+              <div role="group" aria-label="Screen size" className="lv-pill-tabs">
                 {(Object.keys(DEVICES) as Device[]).map((d) => (
                   <button
                     key={d}
@@ -967,7 +993,7 @@ function GeneratorPage() {
                     aria-pressed={device === d}
                     aria-label={`${DEVICES[d].label} (${DEVICES[d].width}px)`}
                     title={`${DEVICES[d].label} · ${DEVICES[d].width}px`}
-                    className={`rounded-md px-3 py-1.5 ${device === d ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                    className="flex items-center"
                   >
                     <DeviceIcon device={d} />
                   </button>
@@ -976,7 +1002,7 @@ function GeneratorPage() {
             )}
           </div>
 
-          <button type="button" onClick={openPreview} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-gray-700" title="Open the site full size in a new tab">
+          <button type="button" onClick={openPreview} className="lv-btn lv-btn-dark px-4 py-2 text-sm" title="Open the site full size in a new tab">
             Preview
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M7 17 17 7M8 7h9v9" />
@@ -985,13 +1011,13 @@ function GeneratorPage() {
         </header>
 
         {view === 'preview' && isMulti && pageTabs.length > 0 && (
-          <nav className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap border-b border-gray-200 bg-white px-3 py-2 text-sm" aria-label="Pages of the site">
+          <nav className="lv-bar flex items-center gap-1.5 overflow-x-auto whitespace-nowrap px-3 py-2 text-sm" aria-label="Pages of the site">
             {pageTabs.map((p) => (
               <button
                 key={p.path}
                 type="button"
                 onClick={() => setRoute(p.path)}
-                className={`rounded-md px-3 py-1 font-medium ${route === p.path ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`rounded-full px-3.5 py-1 font-medium transition-colors ${route === p.path ? 'bg-stone-900 text-white' : 'bg-black/5 text-stone-700 hover:bg-black/10'}`}
               >
                 {p.label}
               </button>
@@ -1001,7 +1027,7 @@ function GeneratorPage() {
         )}
 
         {view === 'preview' ? (
-          <div className="min-h-0 flex-1">
+          <div className="lv-canvas min-h-0 flex-1">
             <DeviceFrame device={device} html={previewHtml} title={brandName} route={route} onRoute={onRoute} />
           </div>
         ) : view === 'json' ? (
@@ -1061,7 +1087,7 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
           type="button"
           onClick={() => onChange(key)}
           aria-pressed={value === key}
-          className={`rounded-lg px-2.5 py-1 text-xs font-medium ${value === key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${value === key ? 'bg-stone-900 text-white shadow-sm' : 'bg-black/5 text-stone-700 hover:bg-black/10'}`}
         >
           {label}
         </button>
@@ -1083,7 +1109,7 @@ function Setting({ label, note, children }: { label: string; note?: string; chil
 }
 
 const SparkIcon = () => (
-  <svg viewBox="0 0 24 24" className="size-4 text-indigo-600" fill="currentColor" aria-hidden="true">
+  <svg viewBox="0 0 24 24" className="size-4 text-violet-600" fill="currentColor" aria-hidden="true">
     <path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2Zm7 11 .9 2.6L22.5 16.5l-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13ZM6 15l.7 2 2 .7-2 .7L6 20.5l-.7-2.1-2-.7 2-.7L6 15Z" />
   </svg>
 )
