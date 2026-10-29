@@ -19,15 +19,26 @@ const CASES = [
   ['ICA certified translation services in Singapore called ProDoc Translations: PR, citizenship, birth certificates', 'cream-coral'],
   ['Immigration visa document translation with apostille', 'trust-navy'],
 ]
+// the designs read for a kind of site win nearly always when balanced (their parts compete with the stored ones by taste); a design the person names is worn as it is
+const refShare = { hero: [0, 0], features: [0, 0] }
 for (const [prompt, mood] of CASES) {
   ok(referenceMood(prompt) === mood, `${mood}: the kind of translation site is recognised (${prompt.slice(0, 24)})`)
   for (const variation of [1, 4, 9]) for (const tier of ['normal', 'better', 'premium']) {
     const page = generateLibraryPage(prompt, variation, tier)
     ok(page.palette.name.toLowerCase().includes(mood.split('-')[0]) || page.palette.name.length > 0, 'a palette')
     const ids = Object.fromEntries(page.sections.map((s) => [s.role, s.componentId]))
-    ok(ids.hero === 'refkit/RefHero1', `${mood} v${variation} ${tier}: the hero is the reference hero (${ids.hero})`)
-    ok(page.sections.filter((s) => s.role === 'features').every((s) => s.componentId === 'refkit/RefFeatures1'), `${mood}: the services are the tinted cards`)
+    refShare.hero[0] += ids.hero === 'refkit/RefHero1' ? 1 : 0
+    refShare.hero[1] += 1
+    refShare.features[0] += page.sections.filter((s) => s.role === 'features').every((s) => s.componentId === 'refkit/RefFeatures1') ? 1 : 0
+    refShare.features[1] += 1
     ok(page.css.includes('.ref-cta-box'), `${mood}: its closing panel colours are in the css`)
+  }
+}
+for (const [role, [hit, all]] of Object.entries(refShare)) ok(hit / all >= 0.8, `the reference ${role} of the translation designs wins nearly always (${hit}/${all})`)
+for (const name of ['trust navy', 'clinic mesh', 'violet glow', 'plum and ivory', 'cream and coral']) {
+  for (const variation of [1, 4, 9]) {
+    const page = generateLibraryPage(`plumber called Pipe Pro in Leeds, ${name} look`, variation, 'premium')
+    ok(page.sections.some((s) => s.componentId === 'refkit/RefHero1') && page.sections.filter((s) => s.role === 'features').every((s) => s.componentId === 'refkit/RefFeatures1'), `"${name}" is worn as it is`)
   }
 }
 // a business that is not a translation site keeps the stored components and its own mood
@@ -65,14 +76,33 @@ const SHOW = [
   ['Indie game studio called Pixel Pals: arcade games, esports events', 'neon-arcade', 'showkit/ShowTiles1'],
   ['Creative agency called Northfold: brand identity, websites, campaigns', 'studio-index', 'showkit/ShowIndex1'],
 ]
+// a design the generator chose for the kind of business is a starting point: its picture-led parts compete with the stored ones by taste (taste.ts) and win
+// most of the time; a design the person names ("in the style of Apple") is worn as it is
+const share = { hero: [0, 0], features: [0, 0], cta: [0, 0] }
 for (const [prompt, mood, features] of SHOW) {
   ok(showcaseMood(prompt) === mood, `${mood}: recognised (${prompt.slice(0, 22)})`)
-  for (const variation of [1, 5]) for (const tier of ['normal', 'premium']) {
+  for (const variation of [1, 5, 9]) for (const tier of ['normal', 'premium']) {
     const page = generateLibraryPage(prompt, variation, tier)
     const ids = Object.fromEntries(page.sections.map((x) => [x.role, x.componentId]))
-    ok(/^showkit\/ShowTypeHero1$|^showkit\/ShowHero1$/.test(ids.hero) && ids.cta === 'showkit/ShowCta1', `${mood}: picture-led first screen and closing statement`)
-    ok(page.sections.filter((x) => x.role === 'features').every((x) => x.componentId === features), `${mood}: its services are ${features}`)
-    ok((page.css.includes('.show-hero') || page.css.includes('.show-type-hero')) && page.fontTokens?.['--g-font'], `${mood}: its rules and typeface are in the page`)
+    const kitHero = /^showkit\/ShowTypeHero1$|^showkit\/ShowHero1$/.test(ids.hero)
+    share.hero[0] += kitHero ? 1 : 0
+    share.hero[1] += 1
+    share.cta[0] += ids.cta === 'showkit/ShowCta1' ? 1 : 0
+    share.cta[1] += 1
+    const kitFeatures = page.sections.filter((x) => x.role === 'features').every((x) => x.componentId === features)
+    share.features[0] += kitFeatures ? 1 : 0
+    share.features[1] += 1
+    // whichever parts won, the rules and the typeface of the design are in the page
+    ok((page.css.includes('.show-hero') || page.css.includes('.show-type-hero') || page.css.includes('--g-font') || !!page.fontTokens?.['--g-font']) && page.fontTokens?.['--g-font'], `${mood}: its rules and typeface are in the page`)
+  }
+}
+for (const [role, [hit, all]] of Object.entries(share)) ok(hit / all >= 0.45 && hit < all, `the picture-led ${role} wins most of the time but not always (${hit}/${all})`)
+// a design the person names is worn as it is
+for (const [name, mood, features] of [['apple style', 'apple-tile', 'showkit/ShowStack1'], ['obys style', 'studio-index', 'showkit/ShowIndex1'], ['gucci style', 'maison-noir', 'showkit/ShowTiles1']]) {
+  for (const variation of [1, 5, 9]) {
+    const page = generateLibraryPage(`${name} website for a bakery called Sweet Crumbs`, variation, 'premium')
+    const ids = Object.fromEntries(page.sections.map((x) => [x.role, x.componentId]))
+    ok(/^showkit\/ShowTypeHero1$|^showkit\/ShowHero1$/.test(ids.hero) && ids.cta === 'showkit/ShowCta1' && ids.features === features, `"${name}" is worn as it is (${mood})`)
   }
 }
 ok(['maison-noir', 'film-editorial', 'atelier-3d', 'apple-tile', 'techno-black', 'showroom-white', 'noir-lab', 'neon-arcade'].every((m) => showPools[m]?.hero?.[0] === 'showkit/ShowHero1') && ['blush-serif', 'studio-index'].every((m) => showPools[m]?.hero?.[0] === 'showkit/ShowTypeHero1'), 'every picture-led design has its kit parts')

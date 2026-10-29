@@ -6,7 +6,7 @@
 // The analysis is plain counting (Laplace-smoothed), so it works from the first design on and gets surer with every verdict.
 import type { DesignRecord } from './designStore'
 
-export type Candidate = Pick<DesignRecord, 'accent' | 'alt' | 'hue' | 'sat' | 'light' | 'mode' | 'tier' | 'heroLayout' | 'kind' | 'theme'>
+export type Candidate = Pick<DesignRecord, 'accent' | 'alt' | 'hue' | 'sat' | 'light' | 'mode' | 'tier' | 'heroLayout' | 'kind' | 'theme'> & { parts?: string[] }
 
 export type Insights = {
   /** designs of this kind of business */
@@ -20,6 +20,8 @@ export type Insights = {
   badHues: number[]
   /** (kept + 1) / (kept + turned down + 2) for each value of a feature */
   taste: Record<'heroLayout' | 'mode' | 'tier' | 'kind' | 'strength', Record<string, number>>
+  /** the parts of the kept and of the turned-down pages (a part of this business counts 1, a part of another business 0.4) */
+  parts: { kept: Record<string, number>; turned: Record<string, number> }
   summary: string[]
 }
 
@@ -61,7 +63,15 @@ export function analyse(records: DesignRecord[], key: string): Insights {
     for (const v of values) out[v] = ((raw[`${v}|up`] ?? 0) + 1) / ((raw[`${v}|up`] ?? 0) + (raw[`${v}|down`] ?? 0) + 2)
     taste[f] = out
   }
-  const insights: Insights = { forKey, good, bad, seenHues: forKey.map((r) => r.hue), seenAccents: new Set(forKey.map((r) => r.accent.toLowerCase())), badHues: bad.map((r) => r.hue), taste, summary: [] }
+  // part by part: which stored components were in pages that were kept, and which in pages that were turned down (any business counts a little)
+  const parts: Insights['parts'] = { kept: {}, turned: {} }
+  for (const r of records) {
+    if (!r.parts?.length || r.verdict === 'unrated') continue
+    const weight = r.key === key ? 1 : 0.4
+    const into = r.verdict === 'good' ? parts.kept : parts.turned
+    for (const id of r.parts) into[id] = (into[id] ?? 0) + weight
+  }
+  const insights: Insights = { forKey, good, bad, parts, seenHues: forKey.map((r) => r.hue), seenAccents: new Set(forKey.map((r) => r.accent.toLowerCase())), badHues: bad.map((r) => r.hue), taste, summary: [] }
   insights.summary = describe(insights)
   return insights
 }
@@ -86,15 +96,37 @@ function describe(ins: Insights): string[] {
     const badNames = [...new Set(bad.map((r) => hueName(r.hue)))]
     lines.push(`Turned down: ${badNames.join(', ')} colours${bad.length > 2 ? ' (the next design stays away from them)' : ''}.`)
   }
+  const likedParts = Object.entries(ins.parts.kept).filter(([id, n]) => n > (ins.parts.turned[id] ?? 0)).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => id.split('/')[1])
+  if (likedParts.length) lines.push(`Parts of the kept pages (the next design leans to them and to parts like them): ${likedParts.join(', ')}.`)
   lines.push(`The next colour will be new: not one of the ${forKey.length} already used (${[...new Set(forKey.map((r) => hueName(r.hue)))].join(', ')}).`)
   return lines
 }
 
 /** how well a candidate fits the taste of this person for this business, 0 to 1 (0.5 = nothing is known) */
+/**
+ * How the parts of a page sit with what this person kept: a part that was in kept pages and not in turned-down ones counts for, the other way against,
+ * and a part that was never seen counts by what it is like (its taste numbers against the kept parts, taste.ts). 0 to 1, 0.5 = nothing is known.
+ */
+export function partsScore(parts: string[] | undefined, ins: Insights): number {
+  if (!parts?.length) return 0.5
+  const kept = Object.keys(ins.parts.kept)
+  const turned = Object.keys(ins.parts.turned)
+  if (!kept.length && !turned.length) return 0.5
+  let sum = 0
+  for (const id of parts) {
+    const k = ins.parts.kept[id] ?? 0
+    const t = ins.parts.turned[id] ?? 0
+    if (k || t) sum += (k - t) / (k + t + 1)
+  }
+  return 0.5 + 0.5 * Math.tanh(sum / 3)
+}
+
 export function tasteScore(c: Candidate, ins: Insights): number {
   // the first-screen layout and the mode show most; how the colours were made and how strong they are, least
   const parts: [number | undefined, number][] = [[ins.taste.heroLayout[c.heroLayout], 0.35], [ins.taste.mode[c.mode], 0.2], [ins.taste.tier[c.tier], 0.15], [ins.taste.kind[c.kind.replace(/\|.*/, '')], 0.15], [ins.taste.strength[strengthOf(c)], 0.15]]
   let score = parts.reduce((a, [v, w]) => a + (v ?? 0.5) * w, 0)
+  // the parts of the page (when the design has them and the person has kept or turned down pages)
+  if (c.parts?.length && (Object.keys(ins.parts.kept).length || Object.keys(ins.parts.turned).length)) score = score * 0.75 + partsScore(c.parts, ins) * 0.25
   // a hue that is close to one that was turned down is a poor choice
   const nearBad = ins.badHues.length ? Math.min(...ins.badHues.map((h) => hueGap(h, c.hue))) : 180
   if (nearBad < 30) score -= 0.25 * (1 - nearBad / 30)

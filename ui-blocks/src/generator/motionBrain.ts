@@ -127,6 +127,9 @@ const RECIPE_OF: Record<string, keyof typeof RECIPES> = {
   travel_tourism: 'wander', real_estate: 'wander',
 }
 
+/** the recipe (the kind of feel) of a business type: motion and the taste of the page both start from it */
+export const archetypeOf = (theme: string): string => RECIPE_OF[theme] ?? 'calm'
+
 const NONE: MotionFeatures = {
   reveal: false, hover: false, accordion: false, countUp: false, blobs: false, shimmer: false,
   draw: false, navShrink: false, marquee: false, carousel: false, split: false, progress: false,

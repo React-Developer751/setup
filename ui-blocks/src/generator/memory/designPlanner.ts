@@ -4,6 +4,7 @@ import { hexToRgb, hslToRgb, rgbToHsl } from '../art/color'
 import type { EditOp } from '../edit/edits'
 import { sampleTopK } from '../creativity'
 import { generateWebsite } from '../generateWebsite'
+import { generateLibraryPage } from '../library/generateLibraryPage'
 import { businessKey } from '../edit/imageRatings'
 import { analyse, hueGap, hueName, minGapFor, nearestFreeHue, tasteScore, type Candidate, type Insights } from './designMemory'
 import { allowedBand, inBand, namesColor } from '../colorBrain'
@@ -55,6 +56,7 @@ export function describeDesign(prompt: string, variation: number, creativity: st
     tier: site.tier,
     heroLayout: site.layoutIds.find((id) => id.startsWith('hero')) ?? '',
     layouts: site.layoutIds,
+    parts: generateLibraryPage(prompt, variation).sections.map((x) => x.componentId),
     heroTitle: site.content.hero.title,
     copy: copyOf(site.content),
     fit: !!site.niche || fitsBusiness(site.content.hero.title, site.content.subject, site.content.brandName),

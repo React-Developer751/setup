@@ -91,6 +91,13 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
   * the saved versions are in Copy, Download and the project .zip. A file the generator made again after the person changed it is marked, and they choose "Keep mine" or "Use the new file".
 * Tests: `test-experience.mjs`, `test-codesync.mjs`, `test-component-compile.mjs`.
 
+## Taste: parts chosen together, learned from your own components
+
+* `npm run learn:components` (`scripts/learn-components.mjs`) reads every component in `src/components` and writes `src/data/models/component-taste.json`: seven numbers between 0 and 1 for each (how dense, loud, soft, dark, picture-led, centred and airy). It is plain counting of the markup, no model and no network. Run it again whenever components are added.
+* `src/generator/library/taste.ts`: every kind of business has a target taste (a clinic is calm and soft, a gym is loud, a fashion house is airy and picture-led), moved by the design and by the variation (each variation is a different place of the taste space, so they are different designs). The parts are chosen **together**: by how close each is to the target and how well it goes with the parts already chosen; the hero first, the menu and the footer last. The parts of a design read from a live site compete with the stored ones (they win most of the time, not always). Several whole pages are drawn and the best-fitting one is kept (a soft check: every role filled, no part twice, a balanced length).
+* **Creativity** now means: *Safe* the stored layouts as they were; *Balanced* parts chosen by taste, the design's numbers/steps/prices kept; *Wild* every part competes and a variation may go far. A design the person names ("apple style") is worn as it is.
+* **It learns from what the person keeps**: every design now stores its parts; a part (or one like it) that was in kept pages is preferred in the next design, one from turned-down pages is avoided (`memory/designMemory.ts`, `partsScore`). Tests: `test-taste.mjs`.
+
 ## Niche packs and personal details
 
 * `src/data/niches/batch-*.json`: hand-written text for 60 specific kinds of business (pest control, tattoo studio, chartered accountant, scrap dealer,

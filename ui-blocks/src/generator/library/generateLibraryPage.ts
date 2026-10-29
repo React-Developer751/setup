@@ -5,10 +5,12 @@ import { applyPoolToContent } from '../siteData'
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { atLeast, priority as priorityOf, sectionWeights } from '../experience'
+import { creativityLevel } from '../creativity'
+import { composePage } from './taste'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
 import { refPools, rolePools, showPools, tierPools, type Role } from './libraryRoles'
-import { moodFontTokens, panelColors, SIGNATURE_MOODS } from '../moods'
+import { moodFontTokens, moodFromText, panelColors, referenceMood, SIGNATURE_MOODS } from '../moods'
 import { moodCss } from '../moodCss'
 import { chosenFont, editCss } from './editCss'
 
@@ -69,6 +71,24 @@ export function generateLibraryPage(
 
   // draw everything in a fixed order so the same prompt always gives the same page
   const chosen = Object.fromEntries((Object.keys(rolePools) as Role[]).map((role) => [role, pickFrom(role)])) as Record<Role, string>
+  // Balanced and wild creativity do not draw each part on its own from its list: the parts are chosen by taste (taste.ts), together, with the parts of the
+  // design read from a live site competing instead of being fixed. Safe creativity keeps the stored lists as they were. (The draws above still run, so
+  // everything that follows them in the random stream stays as it was.)
+  const level = creativityLevel()
+  if (level !== 'safe') {
+    const roles = Object.keys(rolePools) as Role[]
+    const kitOf = (role: Role) => (refKit ? (showPools[generated.mood!.id]?.[role] ?? refPools[role]) : undefined)
+    // a design the person asked for by name ("obys style") is worn as it is: its own parts stay. A design the generator chose for the business is a starting point:
+    // balanced keeps the numbers, steps and prices of the design (its look depends on them) and lets the first screen, the services and the closing part compete;
+    // wild lets every part compete
+    const asked = !!edits?.mood && edits.mood !== 'auto' ? true : !!moodFromText(userPrompt)
+    const keep = (role: Role) => !!kitOf(role) && (asked || (level === 'balanced' && !['hero', 'features', 'cta'].includes(role)))
+    const fixed = refKit ? (Object.fromEntries(roles.filter(keep).map((role) => [role, kitOf(role)![0]])) as Partial<Record<Role, string>>) : undefined
+    const picks = composePage({ roles, theme: base.themeKey, moodId: generated.mood?.id, tier, variation, level, rand: seededRandom(hash(`${userPrompt.trim().toLowerCase()}|taste|${variation}`)), kit: kitOf, fixed,
+      // the designs read for a kind of site (translation, certificates; picture-led brands) are what the generator learned for it: they win nearly always when balanced and often when wild
+      kitBonus: referenceMood(userPrompt) ? (level === 'wild' ? 0.6 : 1.6) : level === 'wild' ? 0.3 : 1.0 })
+    for (const role of roles) if (picks[role]) chosen[role] = picks[role]
+  }
   // the parts a page may have besides the always-there ones; a page that is too long is not read
   // (the chances depend on the kind of business: a clinic gets proof and answers, a restaurant gets pictures; see experience.ts)
   const weights = sectionWeights(base.themeKey)
@@ -171,7 +191,7 @@ export function generateLibraryPage(
     const band = body && bodyIndex++ % 2 === 1 && role !== 'cta'
     const t = targetOfRole(role) as Target
     const own = edits?.sectionColors[t] ?? auto?.[t]
-    return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' && !refKit ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
+    return { role, componentId: chosen[role], ...(page ? { page } : {}), ...(head ? { head } : {}), paint: own === '' ? undefined : (own ?? (role === 'cta' && !/^(refkit|showkit)\//.test(chosen.cta) ? base.palette.light.accent : undefined)), band: band || undefined, fit: fitOf(role) }
   })
 
   // the design mood's own rules first, then what the person asked for (theirs win)

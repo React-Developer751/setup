@@ -946,7 +946,7 @@ function GeneratorPage() {
                 ))}
               </select>
             </Setting>
-            <Setting label="Creativity">
+            <Setting label="Creativity" note={creativityLevel === 'safe' ? 'the stored layouts as they are' : creativityLevel === 'balanced' ? 'parts chosen together by taste learned from your components' : 'daring mixes, kept only when they hang together'}>
               <Segmented
                 value={creativityLevel}
                 options={CREATIVITY_LEVELS}
