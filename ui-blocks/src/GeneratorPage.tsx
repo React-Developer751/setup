@@ -14,6 +14,7 @@ import BusinessForm from './BusinessForm'
 import PhotosPanel from './PhotosPanel'
 import { scenePlan } from './generator/imageAi'
 import ProjectsPanel from './ProjectsPanel'
+import { saveRemote, deleteRemote } from './generator/projectSync'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
 import EditChat, { ServerSetting, type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
@@ -51,6 +52,7 @@ import { businessKey } from './generator/edit/imageRatings'
 import { artPictures } from './generator/edit/artPictures'
 import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, temperature, type CreativityLevel } from './generator/creativity'
 import { parseEdit } from './generator/edit/understand'
+import { widgetOps } from './generator/edit/widgetParse'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
@@ -373,7 +375,10 @@ function GeneratorPage() {
     messageId.current += 1
     setMessages([{ id: messageId.current, role: 'ai', text: pagesNote.current }, { id: messageId.current + 1, role: 'ai', text: plan.reasons.slice(-2).join(' '), site: true }])
     messageId.current += 1
-    setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])
+    // "a gym with a booking form and a map": the working parts the prompt asks for are there from the start (only those that need no more from the person)
+    const asked = (widgetOps(text)?.ops ?? []).filter((o) => o.op === 'widget' && (!!o.widget.value || ['booking', 'order', 'newsletter'].includes(o.widget.kind)))
+    setHistory([...(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : []), ...(asked.length ? [{ text: 'From your prompt', ops: asked }] : [])])
+    if (asked.length) say({ role: 'ai', text: 'You asked for these in the prompt, so they are on the page already.', ops: asked })
     setVariation(plan.variation)
     setRuns((n) => n + 1)
     coreRun.current += 1
@@ -670,7 +675,10 @@ function GeneratorPage() {
     setChatBusy(true)
     chatting.current = true
     try {
-      const parsed = parseEdit(text, tplMulti ? 'multi' : 'single')
+      // what the last change was about, so "make it bigger" / "isko hata do" know what "it" is
+      const lastOp = [...history].reverse().flatMap((h) => [...h.ops].reverse()).find((o) => ('section' in o && !!o.section) || ('target' in o && !!o.target && o.target !== 'page'))
+      const lastTarget = lastOp && 'section' in lastOp ? lastOp.section : lastOp && 'target' in lastOp ? lastOp.target : undefined
+      const parsed = parseEdit(text, tplMulti ? 'multi' : 'single', { target: typeof lastTarget === 'string' ? lastTarget : undefined })
       // an opinion ("heading boring hai", "this is not good") is answered and learned from; the edit parser would turn it into a command
       const feedback = pending.current ? undefined : analyseFeedback(text)
       if (feedback && parsed.kind !== 'newSite' && treatAsOpinion(feedback, text, parsed.kind === 'ops' ? parsed.ops : undefined)) {
@@ -999,10 +1007,15 @@ function GeneratorPage() {
             onSave={(name) => {
               const result = saveProject(name || brandName, snapshot())
               setProjects(listProjects())
+              // the copy on the server (a version of it: the last 30 stay)
+              const kept = listProjects().find((p) => p.name.toLowerCase() === (name || brandName).trim().slice(0, 60).toLowerCase())
+              if (result.ok && kept) void saveRemote(kept.name, kept)
               setProjectNote(result.ok ? (result.trimmed ? 'Saved. The pictures were too big to keep in the browser: use "Download file" to keep them.' : 'Saved in this browser.') : (result.error ?? 'Could not save.'))
             }}
             onLoad={(project) => void restore(project)}
             onDelete={(id) => {
+              const gone = projects.find((p) => p.id === id)
+              if (gone) void deleteRemote(gone.name)
               deleteProject(id)
               setProjects(listProjects())
             }}

@@ -168,7 +168,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'phr-'))
 const PORT = 9400 + Math.floor(Math.random() * 90)
 const srv = spawn(process.execPath, ['server/index.mjs'], { env: { ...process.env, PORT: String(PORT), EDIT_DATA_DIR: dir }, stdio: 'ignore' })
 for (let i = 0; i < 40; i += 1) { try { await fetch(`http://127.0.0.1:${PORT}/api/health`); break } catch { await new Promise((r) => setTimeout(r, 100)) } }
-const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined).then(async (r) => ({ status: r.status, ...(await r.json()) }))
+const call = (p, body) => fetch(`http://127.0.0.1:${PORT}${p}`, body ? { method: 'POST', headers: { 'content-type': 'application/json', 'x-user': 'c3'.repeat(16) }, body: JSON.stringify(body) } : { headers: { 'x-user': 'c3'.repeat(16) } }).then(async (r) => ({ status: r.status, ...(await r.json()) }))
 try {
   const good1 = ev('web1', -1, 'opinion')
   ok((await call('/api/phrase-events', { events: [{ ...good1, text: 'heading change karo badhiya nahi hai', sentiment: 'NEGATIVE' }, ev('web2', 1, 'export')] })).stored === 2, 'events are stored')

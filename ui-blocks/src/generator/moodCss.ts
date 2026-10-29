@@ -59,12 +59,12 @@ ${tints(['#f1ebff', '#ffe9f4', '#e2f8fd', '#f1ebff', '#ffe9f4', '#e2f8fd'])}
 [data-gen-theme] .show-hero-inner{min-height:90vh}
 [data-gen-theme] .show-hero h1{font-size:clamp(1.3rem,2.6vw,2.2rem);font-weight:600;text-transform:uppercase;letter-spacing:.14em}
 [data-gen-theme] .show-hero [data-slot=subtitle]{font-size:.8rem;letter-spacing:.04em}
-[data-gen-theme] .show-btn{border-radius:0;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase}
+[data-gen-theme] .show-btn{border-radius:0;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase}
 [data-gen-theme] .show-hero [data-slot=button2]{display:none}
 [data-gen-theme] .show-hero .show-btn-primary{background:#fff;color:#000}
 [data-gen-theme] .show-hero-scrim{background:linear-gradient(to top,rgba(0,0,0,.42),rgba(0,0,0,0) 55%)}
 [data-gen-theme] [data-ref=show-tiles] .grid{gap:0}
-[data-gen-theme] [data-ref=show-tiles] [data-slot=tile-title]{font-size:.68rem;letter-spacing:.22em}
+[data-gen-theme] [data-ref=show-tiles] [data-slot=tile-title]{font-size:.75rem;letter-spacing:.22em}
 [data-gen-theme] .show-cta h2{font-size:clamp(1.5rem,3vw,2.4rem);text-transform:uppercase;letter-spacing:.14em}
 [data-gen-theme] .show-cta .show-btn-primary{background:#000;color:#fff}`,
   'film-editorial': `${SHOW}
@@ -72,7 +72,7 @@ ${tints(['#f1ebff', '#ffe9f4', '#e2f8fd', '#f1ebff', '#ffe9f4', '#e2f8fd'])}
 [data-gen-theme] .show-hero{margin:0 .5rem}
 [data-gen-theme] .show-hero-inner{min-height:80vh;align-items:flex-start;text-align:left;justify-content:flex-end}
 [data-gen-theme] .show-hero h1{font-size:clamp(1.4rem,3vw,2.6rem);font-weight:300;text-transform:uppercase;letter-spacing:.24em}
-[data-gen-theme] .show-btn{border-radius:0;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500}
+[data-gen-theme] .show-btn{border-radius:0;font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500}
 [data-gen-theme] .show-hero [data-slot=button2]{display:none}
 [data-gen-theme] [data-ref=show-tiles] .grid{gap:.5rem;padding:0 .5rem}
 [data-gen-theme] [data-ref=show-tiles] [data-slot=tile-title]{font-weight:400;letter-spacing:.24em}

@@ -36,6 +36,8 @@ export type WebsiteContent = {
   testimonials: Quote[]
   blog: { title: string; posts: { tag: string; title: string; slug?: string }[] }
   contact: { title: string; text: string; email: string; phone: string; address: string; whatsapp?: string; hoursText?: string; /** the address is the person's own: show a real map */ showMap?: boolean }
+  /** working parts the person asked for (booking form, map, WhatsApp button, UPI pay button, countdown, newsletter, video, order list, announcement, analytics): see library/widgets.ts */
+  widgets?: { kind: string; value?: string; text?: string }[]
   /** the offers the person named ("free shipping above ₹999", "cash on delivery", "7-day returns"): the announcement bar of the page */
   offers?: string[]
   /** headings and menu labels the person changed (see edit/edits.ts) */

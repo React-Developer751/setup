@@ -1,7 +1,7 @@
 // The Export area: download buttons, and the details the person can fill in first (their own email, phone, address,
 // website address, a form service, a logo and a hero picture). Without them the placeholders stay.
 import { useState } from 'react'
-import { buildLibraryProject, buildLibraryStandalone, buildLibraryStaticZip, libraryProjectName, libraryWithDetails } from './generator/exportLibrary'
+import { buildLibraryProject, buildLibraryStandalone, buildLibraryStaticFiles, buildLibraryStaticZip, libraryProjectName, libraryWithDetails } from './generator/exportLibrary'
 import { withEdits, type FileEdit } from './codeEdits'
 import { applyDetails, buildProject, buildStandalone, projectName, sourceFromPage, sourceFromSite, type ExportDetails, type ExportSource } from './generator/exportSite'
 import { buildStaticZip } from './generator/exportStatic'
@@ -10,6 +10,7 @@ import type { generateWebsite } from './generator/generateWebsite'
 import type { generateLibraryPage } from './generator/library/generateLibraryPage'
 import { createZip, downloadFile } from './generator/zip'
 import { readPicture } from './generator/edit/imageFile'
+import { publishedFor, publishSite, unpublishSite, type Published } from './generator/publish'
 
 type Props = {
   /** which engine made the page on screen */
@@ -39,6 +40,9 @@ const FIELDS: { key: 'email' | 'phone' | 'address' | 'siteUrl' | 'formEndpoint';
 function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails, onExport, fileEdits = {} }: Props) {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState('')
+  const [published, setPublished] = useState<Published | undefined>(() => publishedFor(libraryProjectName(library)))
+  const [publishing, setPublishing] = useState(false)
+  const [copied, setCopied] = useState(false)
   const isLibrary = engine === 'library'
 
   const source = (): ExportSource => applyDetails(isMulti ? sourceFromSite(multi) : sourceFromPage(site), details)
@@ -75,6 +79,28 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
     downloadFile(`${projectName(s)}.html`, buildStandalone(s), 'text/html')
   }
 
+  const publish = async () => {
+    setError('')
+    setPublishing(true)
+    try {
+      onExport?.()
+      setPublished(await publishSite(libraryProjectName(library), buildLibraryStaticFiles(lib(), details)))
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : 'Could not publish the site.')
+    } finally {
+      setPublishing(false)
+    }
+  }
+  const takeDown = async () => {
+    setError('')
+    try {
+      await unpublishSite(libraryProjectName(library))
+      setPublished(undefined)
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : 'Could not take the site down.')
+    }
+  }
+
   const filled = Object.values(details).filter(Boolean).length
 
   return (
@@ -92,6 +118,11 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
         >
           SEO-ready HTML (.zip)
         </button>
+        {isLibrary && (
+          <button type="button" onClick={publish} disabled={publishing} title="Puts the finished site on this server and gives you a link to open or share" className="rounded-md bg-violet-600 px-3 py-1.5 font-medium text-white hover:bg-violet-700 disabled:opacity-60">
+            {publishing ? 'Publishing ...' : published ? 'Update published site' : 'Publish (get a link)'}
+          </button>
+        )}
         <button type="button" onClick={html} className="rounded-md bg-gray-100 px-3 py-1.5 font-medium text-gray-700 hover:bg-gray-200">
           One .html file
         </button>
@@ -99,6 +130,24 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
           Your details{filled > 0 ? ` (${filled})` : ''} {open ? '▴' : '▾'}
         </button>
       </div>
+
+      {isLibrary && published && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm" role="status">
+          <span className="font-medium text-violet-900">Published:</span>
+          <a href={published.url} target="_blank" rel="noopener noreferrer" className="break-all text-violet-700 underline">
+            {published.url}
+          </a>
+          <button type="button" onClick={() => void navigator.clipboard?.writeText(published.url).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1500) })} className="rounded-md border border-violet-300 px-2 py-1 text-xs text-violet-800 hover:bg-violet-100">
+            {copied ? 'Copied' : 'Copy link'}
+          </button>
+          <button type="button" onClick={() => void takeDown()} className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100">
+            Take down
+          </button>
+          <p className="basis-full text-xs text-gray-600">
+            The link works while this server runs and for whoever can reach it (on your computer: only you). For a public address, run this server on a host or upload the &quot;SEO-ready HTML&quot; files to Netlify, Vercel or GitHub Pages.
+          </p>
+        </div>
+      )}
 
       {open && (
         <div className="grid gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm sm:grid-cols-2">

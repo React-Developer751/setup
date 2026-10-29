@@ -163,6 +163,10 @@ const businessPhrase = (prompt: string | undefined) => {
     .map((w) => w.replace(/[^\p{L}\p{N}'&-]+/gu, ''))
     .filter(Boolean)
   while (words.length > 2 && /^(?:service|services|company|firm|business|agency)$/i.test(words[words.length - 1])) words = words.slice(0, -1)
+  // "organic farm selling vegetables" is the business "organic farm"; "coaching institute for upsc and" ends at "institute"
+  const cut = words.findIndex((w, k) => k > 0 && /^(?:for|with|selling|offering|that|which|who|where|providing|having|in|at|near)$/i.test(w))
+  if (cut > 0) words = words.slice(0, cut)
+  while (words.length > 1 && /^(?:and|or|with|for|of|the|a|an|to|at|in|near|from)$/i.test(words[words.length - 1])) words = words.slice(0, -1)
   const phrase = words.join(' ').toLowerCase()
   if (phrase.length < 4 || words.length > 5 || isVague(phrase)) return ''
   if (/^(?:business|website|site|company|startup|brand|page|store|shop|project|dukaan|dukan)$/.test(phrase)) return ''
@@ -239,7 +243,10 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
   const bizRand = biz ? seededRandom(Math.floor(rand() * 2 ** 31)) : rand
   const Biz = titleCase(biz)
   const oneWord = !biz.includes(' ')
-  const bizTitles = oneWord ? [`Your Trusted ${Biz}`, `${Biz} You Can Count On`, `Better ${Biz} Starts Here`] : [`${Biz}, Done Right`, `${Biz} You Can Count On`, `Better ${Biz} Starts Here`, `${Biz} Made Simple`]
+  // headlines about the business of the prompt: none of them is a stock ending ("Made Simple", "Starts Here"), each one says something about how the place works
+  const bizTitles = oneWord
+    ? [`A ${Biz} That Listens`, `Your Neighbourhood ${Biz}`, `Honest ${Biz}, Start To Finish`, `Good ${Biz}, Fairly Priced`, `${Biz} With A Human Touch`, `${Biz} Without The Guesswork`]
+    : [`A ${Biz} That Listens`, `Your Neighbourhood ${Biz}`, `Honest ${Biz}, Start To Finish`, `Good ${Biz}, Fairly Priced`, `${Biz} With A Human Touch`, `${Biz} Without The Guesswork`, `${Biz} Built Around You`, `Where ${Biz} Feels Personal`]
   const heroMarkov = fresh(markov?.hero, heroPlain)
   // no business in the prompt, only the wish to stand out: a headline about the page itself, not a made-up service
   const standOut = ['Made To Be Noticed', 'Not Like The Others', 'Built To Stand Out', 'Ordinary Was Never The Plan', 'Seen Once, Remembered Always', 'Where Bold Ideas Move']

@@ -1,0 +1,502 @@
+[
+ {
+  "prompt": "cafe website in Jaipur",
+  "theme": "food_dining",
+  "kind": "niche"
+ },
+ {
+  "prompt": "modern restaurant website with online menu",
+  "theme": "food_dining",
+  "kind": "niche"
+ },
+ {
+  "prompt": "bakery website for eggless cakes in Pune",
+  "theme": "food_dining",
+  "kind": "niche"
+ },
+ {
+  "prompt": "gym website with personal training and a free trial",
+  "theme": "bold_fitness",
+  "kind": "niche"
+ },
+ {
+  "prompt": "yoga studio website in Rishikesh",
+  "theme": "beauty_wellness",
+  "kind": "niche"
+ },
+ {
+  "prompt": "dental clinic website in Delhi",
+  "theme": "healthcare",
+  "kind": "niche"
+ },
+ {
+  "prompt": "hospital website with departments and doctors",
+  "theme": "healthcare",
+  "kind": "niche"
+ },
+ {
+  "prompt": "law firm website",
+  "theme": "professional_services",
+  "kind": "niche"
+ },
+ {
+  "prompt": "chartered accountant website",
+  "theme": "professional_services",
+  "kind": "niche"
+ },
+ {
+  "prompt": "coaching institute for UPSC and NEET in Kota",
+  "theme": "education",
+  "kind": "niche"
+ },
+ {
+  "prompt": "school website with admissions",
+  "theme": "education",
+  "kind": "niche"
+ },
+ {
+  "prompt": "real estate agency website in Mumbai",
+  "theme": "real_estate",
+  "kind": "niche"
+ },
+ {
+  "prompt": "interior designer portfolio website",
+  "theme": [
+   "creative_studio",
+   "luxury_minimal"
+  ],
+  "kind": "niche"
+ },
+ {
+  "prompt": "wedding photographer website",
+  "theme": "creative_studio",
+  "kind": "niche"
+ },
+ {
+  "prompt": "travel agency website for Goa tours",
+  "theme": "travel_tourism",
+  "kind": "niche"
+ },
+ {
+  "prompt": "hotel website with rooms and booking",
+  "theme": "travel_tourism",
+  "kind": "niche"
+ },
+ {
+  "prompt": "car repair garage website",
+  "theme": "automotive",
+  "kind": "niche"
+ },
+ {
+  "prompt": "used car dealer website",
+  "theme": "automotive",
+  "kind": "niche"
+ },
+ {
+  "prompt": "beauty salon website in Chandigarh",
+  "theme": "beauty_wellness",
+  "kind": "niche"
+ },
+ {
+  "prompt": "boutique clothing store website",
+  "theme": "fashion_retail",
+  "kind": "niche"
+ },
+ {
+  "prompt": "SaaS startup landing page for project management",
+  "theme": "modern_tech",
+  "kind": "niche"
+ },
+ {
+  "prompt": "mobile app landing page for a fitness tracker",
+  "theme": [
+   "modern_tech",
+   "bold_fitness"
+  ],
+  "kind": "niche"
+ },
+ {
+  "prompt": "NGO website for girl education",
+  "theme": "nonprofit",
+  "kind": "niche"
+ },
+ {
+  "prompt": "pet shop and grooming website",
+  "theme": "pets_animals",
+  "kind": "niche"
+ },
+ {
+  "prompt": "plumber website in Bangalore",
+  "theme": "home_services",
+  "kind": "niche"
+ },
+ {
+  "prompt": "pest control website",
+  "theme": "home_services",
+  "kind": "niche"
+ },
+ {
+  "prompt": "florist website with bouquets",
+  "theme": "organic_nature",
+  "kind": "niche"
+ },
+ {
+  "prompt": "organic farm website selling vegetables",
+  "theme": "organic_nature",
+  "kind": "niche"
+ },
+ {
+  "prompt": "event planner and wedding decorator website",
+  "theme": "events_wedding",
+  "kind": "niche"
+ },
+ {
+  "prompt": "kids toy store website",
+  "theme": "playful_vibrant",
+  "kind": "niche"
+ },
+ {
+  "prompt": "electrician website in Hyderabad",
+  "theme": "home_services",
+  "kind": "niche"
+ },
+ {
+  "prompt": "veterinary clinic website",
+  "theme": [
+   "pets_animals",
+   "healthcare"
+  ],
+  "kind": "niche"
+ },
+ {
+  "prompt": "fitness app landing page",
+  "theme": [
+   "modern_tech",
+   "bold_fitness"
+  ],
+  "kind": "niche"
+ },
+ {
+  "prompt": "bike rental website in Goa",
+  "theme": [
+   "travel_tourism",
+   "automotive"
+  ],
+  "kind": "niche"
+ },
+ {
+  "prompt": "ice cream parlour website",
+  "theme": [
+   "food_dining",
+   "playful_vibrant"
+  ],
+  "kind": "niche"
+ },
+ {
+  "prompt": "mujhe ek cafe ki website banakar do",
+  "theme": "food_dining",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "meri bakery ke liye website banao, Jaipur me, eggless cakes",
+  "theme": "food_dining",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mere gym ke liye website chahiye",
+  "theme": "bold_fitness",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe dental clinic ki website banani hai",
+  "theme": "healthcare",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "meri kirana dukaan ke liye website banao",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe cloth ki website banakar do",
+  "theme": "fashion_retail",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "ek coaching center ki website chahiye",
+  "theme": "education",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe photographer ki website banao",
+  "theme": "creative_studio",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "meri salon ki website banao Delhi me",
+  "theme": "beauty_wellness",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe travel agency ki website chahiye",
+  "theme": "travel_tourism",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mere restaurant ki website banao",
+  "theme": "food_dining",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "ek school ki website banakar do",
+  "theme": "education",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe plumber ki website banani hai",
+  "theme": "home_services",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "meri chai ki dukaan ke liye website",
+  "theme": [
+   "food_dining",
+   "organic_nature"
+  ],
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe property dealer ki website chahiye",
+  "theme": "real_estate",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mere NGO ki website banao",
+  "theme": "nonprofit",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe mobile repair shop ki website banakar do",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "ek wedding planner ki website banao",
+  "theme": "events_wedding",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe jewellery shop ki website chahiye",
+  "theme": [
+   "fashion_retail",
+   "luxury_minimal"
+  ],
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "meri tuition classes ki website banao",
+  "theme": "education",
+  "kind": "hinglish"
+ },
+ {
+  "prompt": "mujhe ek unique website banakar do",
+  "kind": "vague"
+ },
+ {
+  "prompt": "mujhe business website banakar do",
+  "kind": "vague"
+ },
+ {
+  "prompt": "sabse alag hatke website banao",
+  "kind": "vague"
+ },
+ {
+  "prompt": "create a stunning website",
+  "kind": "vague"
+ },
+ {
+  "prompt": "attractive unique website with animation",
+  "kind": "vague"
+ },
+ {
+  "prompt": "mujhe kuch alag type ki website chahiye jisme animation ho",
+  "kind": "vague"
+ },
+ {
+  "prompt": "a website that nobody has seen before",
+  "kind": "vague"
+ },
+ {
+  "prompt": "normal si website banao",
+  "kind": "vague"
+ },
+ {
+  "prompt": "simple business website",
+  "kind": "vague"
+ },
+ {
+  "prompt": "premium website with high class animation",
+  "kind": "vague"
+ },
+ {
+  "prompt": "mujhe ek website chahiye",
+  "kind": "vague"
+ },
+ {
+  "prompt": "wow website banao jo sabse alag ho",
+  "kind": "vague"
+ },
+ {
+  "prompt": "make me a modern website",
+  "kind": "vague"
+ },
+ {
+  "prompt": "best website for my business",
+  "kind": "vague"
+ },
+ {
+  "prompt": "website banao",
+  "kind": "vague"
+ },
+ {
+  "prompt": "Create a website for a pottery studio called Clay Room in Pune with workshops, mugs and online orders, a gallery and a contact form, warm earthy colours",
+  "theme": "creative_studio",
+  "kind": "long"
+ },
+ {
+  "prompt": "Premium Italian restaurant called Forno Rosso in Mumbai with wood-fired pizza, pasta, a wine list, reservations and a private dining room",
+  "theme": "food_dining",
+  "kind": "long"
+ },
+ {
+  "prompt": "Dental clinic called Smile Care in Delhi offering braces, implants, root canal and teeth whitening, with online appointment booking",
+  "theme": "healthcare",
+  "kind": "long"
+ },
+ {
+  "prompt": "Online clothing store for men with kurtas, shirts and accessories, free shipping above 999, cash on delivery and 7-day returns",
+  "theme": "fashion_retail",
+  "kind": "long"
+ },
+ {
+  "prompt": "Yoga and meditation retreat in Rishikesh with 7-day packages, accommodation, teachers and a booking form",
+  "theme": "beauty_wellness",
+  "kind": "long"
+ },
+ {
+  "prompt": "Law firm called Sharma and Associates in Delhi for property disputes, family law and corporate matters, with free first consultation",
+  "theme": "professional_services",
+  "kind": "long"
+ },
+ {
+  "prompt": "Gym called Iron Pulse in Gurgaon with strength training, zumba, personal trainers, diet plans and membership pricing",
+  "theme": "bold_fitness",
+  "kind": "long"
+ },
+ {
+  "prompt": "Coaching institute for class 10 and 12 maths and science in Kota with test series, doubt sessions and a demo class",
+  "theme": "education",
+  "kind": "long"
+ },
+ {
+  "prompt": "Architecture firm called Studio North with residential and commercial projects, a portfolio and a team page",
+  "theme": [
+   "creative_studio",
+   "luxury_minimal"
+  ],
+  "kind": "long"
+ },
+ {
+  "prompt": "Luxury boutique hotel in Udaipur with lake view rooms, a spa, a restaurant and wedding venues",
+  "theme": "travel_tourism",
+  "kind": "long"
+ },
+ {
+  "prompt": "cafe",
+  "theme": "food_dining",
+  "kind": "short"
+ },
+ {
+  "prompt": "gym",
+  "theme": "bold_fitness",
+  "kind": "short"
+ },
+ {
+  "prompt": "lawyer",
+  "theme": "professional_services",
+  "kind": "short"
+ },
+ {
+  "prompt": "bakery",
+  "theme": "food_dining",
+  "kind": "short"
+ },
+ {
+  "prompt": "salon",
+  "theme": "beauty_wellness",
+  "kind": "short"
+ },
+ {
+  "prompt": "clinic",
+  "theme": "healthcare",
+  "kind": "short"
+ },
+ {
+  "prompt": "school",
+  "theme": "education",
+  "kind": "short"
+ },
+ {
+  "prompt": "photographer",
+  "theme": "creative_studio",
+  "kind": "short"
+ },
+ {
+  "prompt": "saas",
+  "theme": "modern_tech",
+  "kind": "short"
+ },
+ {
+  "prompt": "ngo",
+  "theme": "nonprofit",
+  "kind": "short"
+ },
+ {
+  "prompt": "caffe website",
+  "kind": "edge"
+ },
+ {
+  "prompt": "dentsit website",
+  "kind": "edge"
+ },
+ {
+  "prompt": "resturant website banao",
+  "kind": "edge"
+ },
+ {
+  "prompt": "gyym ki website",
+  "kind": "edge"
+ },
+ {
+  "prompt": "bakry website for my shop",
+  "kind": "edge"
+ },
+ {
+  "prompt": "tea stall",
+  "kind": "edge"
+ },
+ {
+  "prompt": "paan shop website",
+  "kind": "edge"
+ },
+ {
+  "prompt": "tailor shop website",
+  "kind": "edge"
+ },
+ {
+  "prompt": "astrologer website",
+  "kind": "edge"
+ },
+ {
+  "prompt": "mehndi artist website",
+  "kind": "edge"
+ }
+]

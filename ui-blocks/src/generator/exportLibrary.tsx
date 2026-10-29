@@ -29,6 +29,9 @@ import { deployFiles } from './deploy'
 import { fontLinksFor } from './fonts'
 import { Section, ThemeScope } from './library/ThemeScope'
 import { MOTION_RUNTIME_JS } from './motionRuntimeJs'
+import { WIDGET_RUNTIME_JS } from './library/widgetRuntimeJs'
+import { analyticsHead } from './library/widgets'
+import { legalLinks, notFoundPage, privacyPage, termsPage } from './library/legalPages'
 import siteTypesSource from './siteTypes.ts?raw'
 import { onColor, type ColorMode } from './themes'
 import { createZip, type ZipEntry } from './zip'
@@ -268,7 +271,10 @@ document.addEventListener('click', (event) => {
 });
 
 ${needsPreline ? 'if (window.HSStaticMethods) window.HSStaticMethods.autoInit();\n' : ''}initMotion(page, MOTION);
-${pagesScript(lib)}${formScript(lib)}</script>
+${pagesScript(lib)}${formScript(lib)}
+${WIDGET_RUNTIME_JS}
+initWidgets(document);
+</script>
 </body>
 </html>
 `
@@ -322,7 +328,10 @@ document.addEventListener('click', (event) => {
 });
 if (window.HSStaticMethods) window.HSStaticMethods.autoInit();
 initMotion(page, MOTION);
-${pagesScript(lib)}${formScript(lib)}`
+${pagesScript(lib)}${formScript(lib)}
+${WIDGET_RUNTIME_JS}
+initWidgets(document);
+`
   const index = `<!doctype html>
 <html lang="en">
 <head>
@@ -340,10 +349,12 @@ ${fontLinksFor(lib.themeKey, lib.fontTokens)}
 <meta name="theme-color" content="${palette.bg}" />
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
 <link rel="stylesheet" href="assets/style.css" />
+${analyticsHead(lib.content)}
 <script type="application/ld+json">${JSON.stringify(business).replace(/</g, '\\u003c')}</script>
 </head>
 <body>
 ${html}
+${legalLinks(palette)}
 ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src="assets/site.js" defer></script>
 </body>
 </html>
@@ -354,9 +365,12 @@ ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src=
     { path: 'assets/style.css', content: `${css}\nhtml{scroll-behavior:smooth;scroll-padding-top:5rem}body{margin:0}\n` },
     { path: 'assets/site.js', content: script },
     { path: 'assets/favicon.svg', content: favicon + '\n' },
+    { path: 'privacy.html', content: privacyPage(lib.content, palette) },
+    { path: 'terms.html', content: termsPage(lib.content, palette) },
+    { path: '404.html', content: notFoundPage(lib.content, palette) },
     ...(needsPreline ? [{ path: 'assets/preline.js', content: prelineScript }] : []),
     ...hoisted.files,
-    { path: 'sitemap.xml', content: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${xmlEscape(siteUrl)}/</loc><lastmod>${today}</lastmod></url>\n</urlset>\n` },
+    { path: 'sitemap.xml', content: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${xmlEscape(siteUrl)}/</loc><lastmod>${today}</lastmod></url>\n  <url><loc>${xmlEscape(siteUrl)}/privacy.html</loc><lastmod>${today}</lastmod></url>\n  <url><loc>${xmlEscape(siteUrl)}/terms.html</loc><lastmod>${today}</lastmod></url>\n</urlset>\n` },
     { path: 'robots.txt', content: `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl.replace(/\s/g, '')}/sitemap.xml\n` },
     ...deployFiles(brand),
     {

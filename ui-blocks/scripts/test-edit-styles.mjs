@@ -60,10 +60,12 @@ ok(ops('menu ko right side karo').some((o) => o.op === 'align' && o.target === '
 ok(!ops('menu mein Services ko Classes naam do').some((o) => o.op === 'align'), 'renaming a menu item is not an alignment')
 
 // ── things that do not exist: an answer, and no other change
-const cannot = ['instagram link add karo', 'footer mein instagram link add karo', 'whatsapp button add karo', 'cookie banner hatao', 'chat widget lagao', 'map add karo', 'hero me video lagao', 'newsletter form add karo', 'heading bold karo', 'italic karo', 'letter spacing badhao', 'shadow hatao', 'gradient lagao hero par', 'border add karo', 'sections ke beech divider lagao', 'pricing plans ka price 999 karo', 'cards ka color white karo']
+const cannot = ['instagram link add karo', 'footer mein instagram link add karo', 'cookie banner hatao', 'chat widget lagao', 'heading bold karo', 'italic karo', 'letter spacing badhao', 'shadow hatao', 'gradient lagao hero par', 'border add karo', 'sections ke beech divider lagao', 'pricing plans ka price 999 karo', 'cards ka color white karo']
 for (const text of cannot) {
   ok(ops(text).length === 0 && notes(text).length > 20, `"${text}" gets an answer and no wrong edit (${JSON.stringify(ops(text)).slice(0, 80)})`)
 }
+// the working parts that these words used to be refused for are real now (test-widgets.mjs)
+for (const text of ['whatsapp button add karo', 'map add karo', 'hero me video lagao', 'newsletter form add karo']) ok(ops(text).some((o) => o.op === 'widget') && (text.startsWith('newsletter') || notes(text).length > 20), `"${text}" adds a working part and says what it still needs`)
 // pictures
 ok(ops('hero image hatao').some((o) => o.op === 'clearPhotos') && !ops('hero image hatao').some((o) => o.op === 'remove'), '"hero image hatao" removes pictures, not the gallery section')
 ok(ops('image hero me lagao').length === 0 && /Real photos/.test(notes('image hero me lagao')), '"image lagao" points to Real photos, it does not add a gallery')

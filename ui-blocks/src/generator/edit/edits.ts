@@ -6,6 +6,7 @@
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { THEME_KEYS, type PaletteMode, type ThemeKey } from '../themes'
+import { cleanWidget, WIDGET_KINDS, WIDGET_LABEL, withWidget, type Widget, type WidgetKind } from '../library/widgets'
 
 /** parts of a page that can be removed or added */
 export const SECTIONS = ['stats', 'marquee', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact'] as const
@@ -103,6 +104,9 @@ export type EditOp =
   | { op: 'tier'; tier: Tier }
   | { op: 'motion'; level: MotionSetting }
   | { op: 'theme'; theme: ThemeKey }
+  /** a working part: booking form, map, WhatsApp button, UPI pay button, countdown, newsletter, video, order list, announcement, analytics (library/widgets.ts) */
+  | { op: 'widget'; widget: Widget }
+  | { op: 'removeWidget'; kind: WidgetKind }
 
 /**
  * The generator's own idea of how a business should look (concept.ts): a whole palette of its own for both modes, a typeface, and the words that say why.
@@ -170,9 +174,11 @@ export type SiteEdits = {
   tier?: Tier
   motion?: MotionSetting
   theme?: ThemeKey
+  /** the working parts that were added, one per kind */
+  widgets: Widget[]
 }
 
-export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
+export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {}, widgets: [] })
 
 const HEX = /^#[0-9a-f]{6}$/i
 const CONCEPT_FONTS: Record<string, true> = { serif: true, sans: true, mono: true, elegant: true, rounded: true, display: true }
@@ -359,6 +365,12 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       return o.level === 'auto' || o.level === 'off' || o.level === 'subtle' || o.level === 'rich' ? { op: 'motion', level: o.level } : undefined
     case 'theme':
       return (THEME_KEYS as readonly unknown[]).includes(o.theme) ? { op: 'theme', theme: o.theme as ThemeKey } : undefined
+    case 'widget': {
+      const widget = cleanWidget(o.widget)
+      return widget ? { op: 'widget', widget } : undefined
+    }
+    case 'removeWidget':
+      return (WIDGET_KINDS as readonly unknown[]).includes(o.kind) ? { op: 'removeWidget', kind: o.kind as WidgetKind } : undefined
     default:
       return undefined
   }
@@ -506,6 +518,12 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'theme':
         e.theme = op.theme
         break
+      case 'widget':
+        e.widgets = withWidget(e.widgets, op.widget)
+        break
+      case 'removeWidget':
+        e.widgets = e.widgets.filter((w) => w.kind !== op.kind)
+        break
     }
   }
   return e
@@ -588,6 +606,10 @@ export function describeOp(op: EditOp): string {
       return `Design level: ${op.tier}`
     case 'motion':
       return `Animations: ${op.level}`
+    case 'widget':
+      return `Added the ${WIDGET_LABEL[op.widget.kind]}${op.widget.value && op.widget.kind !== 'analytics' ? ` (${op.widget.value.slice(0, 40)})` : ''}`
+    case 'removeWidget':
+      return `Removed the ${WIDGET_LABEL[op.kind]}`
     case 'theme':
       return `Treated the business as ${op.theme.replace(/_/g, ' ')}`
   }

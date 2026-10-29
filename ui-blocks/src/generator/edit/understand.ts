@@ -4,6 +4,7 @@
 // operations (see edits.ts); the learned model (intent.ts) produce the same thing.
 import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
+import { widgetOps } from './widgetParse'
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
 import { styleOps } from './styleParse'
@@ -823,8 +824,10 @@ function fixTypos(input: string): string {
   return fixed + tail
 }
 
+const PRONOUN = /(?<![\p{L}])(?:it|this|that|isko|isse|ise|iska|iski|usko|isme|yeh|yah|ye|woh|wo)(?![\p{L}])/iu
+
 /** Reads one message. `context` says whether the site has pages ("multi") or is one long page ("single"). */
-export function parseEdit(input: string, context: EditContext = 'single'): Understood {
+export function parseEdit(input: string, context: EditContext = 'single', last?: { target?: string }): Understood {
   const raw = input.replace(/\s+/g, ' ').trim()
   if (!raw) return { kind: 'none', reason: 'Nothing was typed.' }
   const hidden = hideQuotes(raw)
@@ -834,6 +837,15 @@ export function parseEdit(input: string, context: EditContext = 'single'): Under
   const control = controlOf(plain)
   if (control) return { kind: 'control', control }
   if (isNewSite(plain)) return { kind: 'newSite' }
+
+  // the working parts (booking form, map, WhatsApp button, UPI button, countdown ...): what is about them is read here, the rest of the message goes on as usual
+  const widgets = widgetOps(plain)
+  if (widgets) {
+    const more = widgets.rest ? parseEdit(widgets.rest, context, last) : undefined
+    const moreOps = more?.kind === 'ops' ? more.ops : []
+    const moreNotes = more?.kind === 'ops' ? more.notes : []
+    return { kind: 'ops', ops: [...widgets.ops, ...moreOps], notes: [...widgets.notes, ...moreNotes] }
+  }
 
   // a list with commas ("services: haircut 300, facial 800") must not be cut into commands
   const listed = parseServices(plain) ?? parseServices(plain.replace(/^(?:add|jodo|rakho|put|daalo)\s+\d*\s*(?:new\s+)?(?=services?\b)/i, ''))
@@ -887,6 +899,11 @@ export function parseEdit(input: string, context: EditContext = 'single'): Under
   if (!ops.length && !notes.length) {
     const note = unsupportedNote(plain)
     if (note) notes.push(note)
+  }
+  // "make it bigger", "isko hata do": nothing was named, so it is the part the last change was about
+  if (!ops.length && !notes.length && last?.target && PRONOUN.test(plain)) {
+    const again = parseEdit(plain.replace(PRONOUN, `the ${last.target}`), context)
+    if (again.kind === 'ops' && again.ops.length) return again
   }
   if (!ops.length) return notes.length ? { kind: 'ops', ops, notes } : { kind: 'none', reason: 'I could not find a change in that. Try, for example: "remove the FAQ", "rename it to Green Leaf" or "make the buttons blue".' }
   return { kind: 'ops', ops, notes }

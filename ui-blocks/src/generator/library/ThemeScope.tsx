@@ -9,6 +9,8 @@ import { defaultMode, presetPalette, type ColorMode, type Palette, type ThemeKey
 import { dropRepeats, fillContent } from './fillContent'
 import { rewritePageLinks } from './pageLinks'
 import { LIBRARY_CSS, artColors, libraryThemeStyle } from './libraryTheme'
+import { renderWidgets } from './widgets'
+import { initWidgets } from './widgetRuntime'
 import { sectionIds } from './sectionIds'
 import type { Role } from './libraryRoles'
 
@@ -134,6 +136,8 @@ export function ThemeScope({
       console.warn('dropRepeats skipped:', error)
     }
     if (pages) rewritePageLinks(root)
+    // a picture with no description is decorative for a screen reader: an empty alt says so (no alt makes it read the file name)
+    root.querySelectorAll('img:not([alt])').forEach((img) => img.setAttribute('alt', ''))
     // Preline wires up collapse / dropdown behaviour of the navigation blocks
     import('preline').then(({ HSStaticMethods }) => HSStaticMethods.autoInit()).catch(() => {})
 
@@ -142,6 +146,33 @@ export function ThemeScope({
     // the avatars are drawn once, in the colours of the first mode; switching light / dark must not fill or restart the page again
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [content, motion])
+
+  // the working parts the person asked for (booking form, map, WhatsApp button ...): a bar on top, sections before the footer, a button that floats
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root || !content.widgets?.length) return
+    const { top, sections, floating } = renderWidgets(content, pages ? { contact: pages.some((p) => p.path === '/contact') ? '/contact' : '/' } : undefined)
+    const made: HTMLElement[] = []
+    const add = (html: string, place: (box: HTMLElement) => void) => {
+      if (!html) return
+      const box = document.createElement('div')
+      box.setAttribute('data-widget-box', '')
+      box.style.display = 'contents'
+      box.innerHTML = html
+      place(box)
+      made.push(box)
+    }
+    const first = root.querySelector('[data-role]')
+    const footer = root.querySelector('[data-role="footer"]')
+    add(top, (box) => (first ? first.parentNode?.insertBefore(box, first) : root.appendChild(box)))
+    add(sections, (box) => (footer ? footer.parentNode?.insertBefore(box, footer) : root.appendChild(box)))
+    add(floating, (box) => root.appendChild(box))
+    const stop = initWidgets(root)
+    return () => {
+      stop()
+      made.forEach((box) => box.remove())
+    }
+  }, [content, pages])
 
   // the page of a multi-page site that is shown: the one of the address (#/about); the others are hidden (the exported site does the same with its own script)
   useLayoutEffect(() => {

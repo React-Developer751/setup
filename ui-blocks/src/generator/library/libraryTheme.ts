@@ -66,6 +66,10 @@ export const LIBRARY_CSS = `img[data-avatar]{border-radius:9999px;aspect-ratio:1
 [data-gen-theme] :is(.bg-indigo-500,.bg-indigo-600,.bg-indigo-700,.bg-blue-500,.bg-blue-600,.bg-blue-700,.bg-primary,.bg-brand,.bg-brand-strong).text-white{color:var(--g-on-accent)}
 [data-gen-theme].dark :is(.bg-gray-800,.bg-gray-900).text-white{color:var(--background)}
 @media (max-width:639px){
+/* links of the menu and the footer are easy to hit with a thumb (44px is the usual, 40px here) */
+[data-gen-theme] :is(nav,header,footer,aside,ul,ol) a:not(:has(*)):not(p a):not([class*="btn"]):not(.show-btn){display:inline-flex;align-items:center;min-height:2.5rem}
+[data-gen-theme] a:not(p a):not(.block):not(.show-btn):not([class*="btn"]):not(:has(img)):not([class*="absolute"]){display:inline-flex;align-items:center;min-height:2.5rem}
+[data-gen-theme] a.block:not(:has(*)):not(p a){display:flex;align-items:center;min-height:2.5rem}
 [data-gen-theme] :is(div,form):has(> input:not([type=checkbox]):not([type=radio])):has(> :is(button,a)),[data-gen-theme] :is(div,form):has(> :is(div,label) > input:not([type=checkbox]):not([type=radio])):has(> button){flex-direction:column!important;align-items:stretch!important;gap:.5rem}
 [data-gen-theme] .flex:has(> :is(div,label) > :is(input,textarea)){flex-direction:column!important;gap:.75rem}
 [data-gen-theme] .grid:has(> :is(div,label) > :is(input,textarea)){grid-template-columns:minmax(0,1fr)!important}
