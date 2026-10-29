@@ -3,8 +3,8 @@ import ExportPanel from './ExportPanel'
 import DeviceFrame from './preview/DeviceFrame'
 import { DEVICES, type Device } from './preview/devices'
 import { usePreviewDocument } from './preview/usePreviewDocument'
-import { buildLibraryStandalone, libraryWithDetails } from './generator/exportLibrary'
-import { applyDetails, buildStandalone, sourceFromPage, sourceFromSite, type ExportDetails } from './generator/exportSite'
+import { buildLibraryProject, buildLibraryStandalone, libraryWithDetails, libraryProjectName } from './generator/exportLibrary'
+import { applyDetails, buildProject, buildStandalone, projectName, sourceFromPage, sourceFromSite, type ExportDetails } from './generator/exportSite'
 import ImportPanel from './ImportPanel'
 import UnderstandingPanel from './UnderstandingPanel'
 import { getLearningVersion, subscribeLearning } from './generator/ml/learned'
@@ -20,6 +20,7 @@ import { answerFor, clarify, type Choice, type Expect } from './generator/edit/c
 import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
+import { CodeView } from './CodeView'
 import { Landing } from './Landing'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
@@ -90,10 +91,8 @@ function GeneratorPage() {
   setCreativity(creativityLevel)
   const [engine, setEngine] = useState<'templates' | 'library'>('library')
   const [view, setView] = useState<'preview' | 'code' | 'json'>('preview')
-  const [copied, setCopied] = useState(false)
   const [pages, setPages] = useState<'multi' | 'single'>('single')
   const [route, setRoute] = useState('/')
-  const [fileIndex, setFileIndex] = useState(0)
   // the preview starts as a phone
   const [device, setDevice] = useState<Device>('mobile')
   const [details, setDetails] = useState<ExportDetails>({})
@@ -156,7 +155,10 @@ function GeneratorPage() {
   const files = tplMulti
     ? multi.files
     : [{ path: 'GeneratedLandingPage.tsx', code: shownEngine === 'library' ? library.code : site.code }]
-  const file = files[Math.min(fileIndex, files.length - 1)]
+
+  // the Code tab shows the whole project (folders and files) the way it is exported, built when the tab is opened
+  const [projectFiles, setProjectFiles] = useState<{ path: string; content: string | Uint8Array }[]>([])
+  const [projectBusy, setProjectBusy] = useState(false)
 
   // The site as one HTML document (the same as the "One .html file" export): the preview frame and the Preview button show it.
   // Frames and new tabs have their own viewport, so mobile / tablet / desktop layouts really are the ones a visitor would see.
@@ -165,6 +167,31 @@ function GeneratorPage() {
       ? buildLibraryStandalone(libraryWithDetails(library, details))
       : buildStandalone(applyDetails(tplMulti ? sourceFromSite(multi) : sourceFromPage(site), details))
   const previewHtml = usePreviewDocument(buildDocument, [shownEngine, isMulti, multi, site, library, details, poolVersion])
+
+  useEffect(() => {
+    if (view !== 'code') return
+    let stale = false
+    setProjectBusy(true)
+    const build = async () => {
+      try {
+        const entries =
+          shownEngine === 'library'
+            ? await buildLibraryProject(libraryWithDetails(library, details))
+            : buildProject(applyDetails(tplMulti ? sourceFromSite(multi) : sourceFromPage(site), details))
+        if (!stale) setProjectFiles(entries)
+      } catch {
+        // the project could not be built: the single file of the page is shown instead
+        if (!stale) setProjectFiles(files.map((f) => ({ path: f.path, content: f.code })))
+      } finally {
+        if (!stale) setProjectBusy(false)
+      }
+    }
+    void build()
+    return () => {
+      stale = true
+    }
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- `files` follows the same inputs as the rest
+  }, [view, shownEngine, tplMulti, multi, site, library, details])
 
   const openPreview = () => {
     // building again keeps the tab independent of the frame (its own colour choice, its own page)
@@ -300,7 +327,6 @@ function GeneratorPage() {
     setDrawn([])
     setRated({})
     setRoute('/')
-    setFileIndex(0)
     setView('preview')
   }
 
@@ -335,7 +361,6 @@ function GeneratorPage() {
     messageId.current += 1
     setMessages([{ id: messageId.current, role: 'ai', text: `Opened "${project.name}".` }])
     setRoute('/')
-    setFileIndex(0)
     setView('preview')
     setResume(undefined)
   }
@@ -607,25 +632,6 @@ function GeneratorPage() {
       chatting.current = false
       setChatBusy(false)
     }
-  }
-
-  const copyText = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {
-      setCopied(false)
-    }
-  }
-
-  const downloadCode = () => {
-    const url = URL.createObjectURL(new Blob([file.code], { type: 'text/plain' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = file.path.split('/').pop() ?? 'GeneratedLandingPage.tsx'
-    a.click()
-    URL.revokeObjectURL(url)
   }
 
   const pageTabs: { path: string; label: string }[] = tplMulti ? multi.pages.filter((p) => !p.slug) : isMulti && shownEngine === 'library' ? (library.pages ?? []) : []
@@ -1039,38 +1045,7 @@ function GeneratorPage() {
             }}
           />
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col bg-gray-900">
-            <div className="flex flex-wrap items-center gap-2 border-b border-gray-800 bg-gray-950 px-3 py-2 text-xs">
-              {files.length > 1 &&
-                files.map((f, i) => (
-                  <button
-                    key={f.path}
-                    type="button"
-                    onClick={() => setFileIndex(i)}
-                    className={`rounded-md px-2.5 py-1 font-mono ${file.path === f.path ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-                  >
-                    {f.path}
-                  </button>
-                ))}
-              {files.length === 1 && <span className="font-mono text-gray-400">{file.path}</span>}
-              <span className="ml-auto flex gap-2">
-                <button type="button" onClick={() => void copyText(file.code)} className="rounded-md bg-gray-800 px-3 py-1 text-gray-200 hover:bg-gray-700">
-                  {copied ? 'Copied!' : 'Copy file'}
-                </button>
-                {files.length > 1 && (
-                  <button type="button" onClick={() => void copyText(files.map((f) => `// ===== ${f.path} =====\n${f.code}`).join('\n'))} className="rounded-md bg-gray-800 px-3 py-1 text-gray-200 hover:bg-gray-700">
-                    Copy all {files.length} files
-                  </button>
-                )}
-                <button type="button" onClick={downloadCode} className="rounded-md bg-gray-800 px-3 py-1 text-gray-200 hover:bg-gray-700">
-                  Download this file
-                </button>
-              </span>
-            </div>
-            <pre className="min-h-0 flex-1 overflow-auto p-4 text-xs leading-relaxed text-gray-100">
-              <code>{file.code}</code>
-            </pre>
-          </div>
+          <CodeView files={projectFiles} loading={projectBusy} projectName={shownEngine === 'library' ? libraryProjectName(library) : projectName(tplMulti ? sourceFromSite(multi) : sourceFromPage(site))} />
         )}
       </section>
     </div>
