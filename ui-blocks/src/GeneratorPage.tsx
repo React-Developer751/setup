@@ -26,6 +26,7 @@ import { CodeView } from './CodeView'
 import type { FileEdit } from './codeEdits'
 import { codeWithoutContent, opsFromEditedCode } from './generator/edit/codeSync'
 import { correctionStore } from './generator/memory/correctionMemory'
+import { lessonNote, lessonsFrom, openPromptMemory, similarPrompts, type PromptEdit, type PromptRow } from './generator/memory/promptMemory'
 import { compileComponent, componentIdOfPath, setComponentOverrides } from './generator/library/componentOverrides'
 import { Landing } from './Landing'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
@@ -84,6 +85,8 @@ function GeneratorPage() {
   const [designStore, setDesignStore] = useState<DesignStore>()
   const [designBusy, setDesignBusy] = useState(false)
   const designGroup = useRef(newId())
+  /** the row of the prompt memory for the page that is on the screen: it grows with every edit */
+  const promptRow = useRef<PromptRow | undefined>(undefined)
   const [currentDesign, setCurrentDesign] = useState<string>()
   // the scenes of the pictures on the page (for the thumbs) and what the person said about each
   const [drawn, setDrawn] = useState<UsedScene[]>([])
@@ -269,7 +272,14 @@ function GeneratorPage() {
   const newDesign = async (prompt: string) => {
     const store = designStore ?? (await openStore())
     if (!designStore) setDesignStore(store)
-    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature(), phrases: await loadPhraseScores(), corrections: correctionStore.list() })
+    // the earlier prompts that resemble this one teach it: the colour they ended with, the parts that were taken out
+    const earlier = await (await openPromptMemory()).list().catch(() => [] as PromptRow[])
+    const near = similarPrompts(prompt, earlier.filter((r) => r.id !== designGroup.current))
+    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature(), phrases: await loadPhraseScores(), corrections: [...correctionStore.list(), ...lessonsFrom(near, businessKey(prompt))] })
+    const note = lessonNote(near)
+    if (note) plan.reasons.push(note)
+    promptRow.current = { id: designGroup.current, at: new Date().toISOString(), prompt: prompt.slice(0, 600), key: businessKey(prompt), theme: plan.record.theme, niche: plan.record.niche, concept: plan.record.concept ?? '', hero: plan.record.heroTitle, pages: pages === 'multi' ? 'multi' : 'single', edits: promptRow.current?.id === designGroup.current ? promptRow.current.edits : [] }
+    void openPromptMemory().then((memory) => memory.save(promptRow.current!)).catch(() => undefined)
     await store.add(plan.record).catch(() => undefined)
     setCurrentDesign(plan.record.id)
     setDesigns(await store.list(businessKey(prompt)).catch(() => []))
@@ -441,7 +451,7 @@ function GeneratorPage() {
   }, [])
 
   /** what the person corrected (a colour they chose, a part they took out or put in): remembered, and the next idea for this kind of business starts from it */
-  const recordCorrections = (ops: EditOp[]) => {
+  const recordCorrections = (ops: EditOp[], text = '') => {
     const concept = [...history].reverse().flatMap((h) => h.ops).find((o) => o.op === 'concept')
     const base = { at: new Date().toISOString(), key: businessKey(submitted), theme: themeKey, conceptId: concept?.op === 'concept' ? concept.data.id : undefined }
     for (const op of ops) {
@@ -450,9 +460,20 @@ function GeneratorPage() {
       else if (op.op === 'mood') correctionStore.add({ ...base, kind: 'mood', to: op.mood })
       else if (op.op === 'mode') correctionStore.add({ ...base, kind: 'mode', to: op.mode })
     }
+    // the same edits go to the prompt memory, with the words the person used: later prompts that resemble this one learn from them
+    const row = promptRow.current
+    if (row) {
+      const mapped = ops.flatMap((op): PromptEdit['ops'] =>
+        op.op === 'accent' ? [{ k: 'accent', v: op.hex }] : op.op === 'remove' || op.op === 'add' ? [{ k: op.op, v: op.section }] : op.op === 'mood' ? [{ k: 'mood', v: op.mood }] : op.op === 'mode' ? [{ k: 'mode', v: op.mode }] : op.op === 'text' ? [{ k: 'text', v: `${op.field}: ${op.text.slice(0, 100)}` }] : [],
+      )
+      if (mapped.length) {
+        promptRow.current = { ...row, edits: [...row.edits, { at: new Date().toISOString(), text: text.slice(0, 300), ops: mapped }].slice(-60) }
+        void openPromptMemory().then((memory) => memory.save(promptRow.current!)).catch(() => undefined)
+      }
+    }
   }
   const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string, person = false) => {
-    if (person || chatting.current) recordCorrections(ops)
+    if (person || chatting.current) recordCorrections(ops, text)
     let logId: string | undefined
     // a text the person writes over is a text they did not want
     if (chatting.current) for (const o of ops) if (o.op === 'text' && (PHRASE_SLOTS as readonly string[]).includes(o.field)) learn([o.field as PhraseSlot], -1, 'replaced')

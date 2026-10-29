@@ -5,6 +5,7 @@
 // GET/POST /api/edit-log, POST /api/edit-log/undo -> the chat commands and which ones were undone;  GET/POST /api/image-ratings -> picture thumbs shared by all browsers
 // GET  /api/corecraft/page ?prompt=  -> one whole page of Core-Craft copy (services of the prompt, Hindi);  GET /api/corecraft ?prompt=&n=  -> pages of copy from Core-Craft AI (npm run corecraft); /api/health says corecraft: true when it runs
 // GET/POST /api/palettes -> premium colour palettes that people add (on top of src/data/premiumPalettes.json)
+// GET/POST /api/prompt-memory -> every prompt with what it became and the edits made to it (server/data/prompt-memory.jsonl); GET /api/prompt-memory/export (jsonl for training) and /keywords (word -> business type counts)
 // GET/POST /api/phrase-events -> what people say and do about the texts of the sites (the content AI's phrase scores)
 // GET  /api/designs ?key=&limit=  -> the designs made so far (server/data/designs.jsonl, the design memory);  POST /api/designs {record};  POST /api/designs/verdict {id, verdict, best?}
 // GET  /api/health    -> { ok, images, corecraft }
@@ -45,7 +46,7 @@ function readBody(req) {
 
 /** the address of the caller; behind a reverse proxy (TRUST_PROXY=1) the first address of X-Forwarded-For */
 const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || 'unknown'
-const STORED_READS = new Set(['/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events'])
+const STORED_READS = new Set(['/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events', '/api/prompt-memory', '/api/prompt-memory/export', '/api/prompt-memory/keywords'])
 const EXTRA_ORIGINS = new Set(String(process.env.EDIT_ALLOWED_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean))
 /** this machine's own pages (any port: Vite, preview), the page the server itself was reached from, and what the operator listed */
 function originAllowed(origin, host) {
@@ -301,6 +302,53 @@ export const server = http.createServer(async (req, res) => {
         // "this one is the right one, the others are not": the undecided designs of the same round are turned down
         if (verdict === 'good' && r.best === true) for (const x of rows) if (x.group && x.group === target.group && x.id !== target.id && x.verdict === 'unrated') x.verdict = 'bad'
         writeAll(rows)
+        return send(res, 200, { ok: true })
+      }
+    }
+    // the prompt memory: one row per page made (prompt, what it became, the edits that followed); a new prompt learns from the rows that resemble it
+    if (url.pathname.startsWith('/api/prompt-memory')) {
+      const file = path.join(DATA, 'prompt-memory.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      if (req.method === 'GET' && url.pathname === '/api/prompt-memory') {
+        const limit = Math.max(1, Math.min(5000, Number(url.searchParams.get('limit')) || 2000))
+        const rows = readAll()
+        return send(res, 200, { rows: rows.slice(-limit), total: rows.length })
+      }
+      if (req.method === 'GET' && url.pathname === '/api/prompt-memory/export') {
+        res.writeHead(200, { 'content-type': 'application/x-ndjson; charset=utf-8', 'cache-control': 'no-store' })
+        return res.end(readAll().map((r) => JSON.stringify(r)).join('\n') + '\n')
+      }
+      if (req.method === 'GET' && url.pathname === '/api/prompt-memory/keywords') {
+        // for every word of the prompts: how often it came with each business type, and how often with each colour or part the person changed
+        const table = {}
+        for (const r of readAll()) {
+          for (const w of new Set(String(r.prompt).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((x) => x.length > 2))) {
+            const e = (table[w] ??= { n: 0, themes: {}, niches: {} })
+            e.n += 1
+            e.themes[r.theme] = (e.themes[r.theme] ?? 0) + 1
+            if (r.niche) e.niches[r.niche] = (e.niches[r.niche] ?? 0) + 1
+          }
+        }
+        return send(res, 200, { words: Object.fromEntries(Object.entries(table).sort((a, b) => b[1].n - a[1].n).slice(0, 1500)) })
+      }
+      if (req.method === 'POST' && url.pathname === '/api/prompt-memory') {
+        const r = JSON.parse(await readBody(req))
+        const text = (v, n) => String(v ?? '').slice(0, n)
+        const KINDS = ['accent', 'remove', 'add', 'mood', 'mode', 'text']
+        const row = {
+          id: text(r.id, 40), at: text(r.at, 40) || new Date().toISOString(), updated: new Date().toISOString(), prompt: text(r.prompt, 600), key: text(r.key, 120), theme: text(r.theme, 40), niche: text(r.niche, 60),
+          concept: text(r.concept, 60), hero: text(r.hero, 160), pages: r.pages === 'multi' ? 'multi' : 'single',
+          edits: (Array.isArray(r.edits) ? r.edits : []).slice(0, 60).map((e) => ({ at: text(e?.at, 40), text: text(e?.text, 300), ops: (Array.isArray(e?.ops) ? e.ops : []).slice(0, 12).filter((o) => KINDS.includes(o?.k)).map((o) => ({ k: o.k, v: text(o.v, 120) })) })),
+        }
+        if (!row.id || !row.prompt.trim()) return send(res, 400, { error: 'a row needs an id and a prompt' })
+        const rows = readAll()
+        const i = rows.findIndex((x) => x.id === row.id)
+        if (i >= 0) rows[i] = { ...row, at: rows[i].at }
+        else rows.push(row)
+        if (rows.length > 20000) rows.splice(0, rows.length - 20000)
+        fs.mkdirSync(DATA, { recursive: true })
+        fs.writeFileSync(`${file}.tmp`, rows.map((x) => JSON.stringify(x)).join('\n') + '\n')
+        fs.renameSync(`${file}.tmp`, file)
         return send(res, 200, { ok: true })
       }
     }
