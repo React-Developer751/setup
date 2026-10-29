@@ -66,6 +66,7 @@ ok(galleries.rich >= 17 && galleries.rich > galleries.focused, `restaurants near
 // a short prompt is not a request for a short page; asking for a simple one is
 ok(analyzePrompt('gym in Jaipur').tier === 'better', 'a three-word prompt gets the full page')
 ok(analyzePrompt('simple basic gym page').tier === 'normal', 'asking for a simple page gets the short one')
+ok(analyzePrompt('SaaS tool for invoicing small shops').tier !== 'normal' && analyzePrompt('quick easy repairs for tiny phones').tier !== 'normal', 'small, quick, easy and tiny describe the business, not the page')
 
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)

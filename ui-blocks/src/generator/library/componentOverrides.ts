@@ -2,8 +2,6 @@
 // in the exports instead of the stored one. The components are plain functions that return markup, so their only import is React itself.
 import * as React from 'react'
 import * as jsxRuntime from 'react/jsx-runtime'
-import { flushSync } from 'react-dom'
-import { createRoot } from 'react-dom/client'
 import type { ComponentType } from 'react'
 
 const overrides = new Map<string, ComponentType>()
@@ -47,15 +45,13 @@ export async function compileComponent(source: string): Promise<{ component?: Co
     URL.revokeObjectURL(url)
   }
   if (typeof component !== 'function') return { error: 'The file must export a component with `export default function ...`.' }
-  // drawn once on its own: a component that throws while it is drawn would take the whole preview with it
-  const host = document.createElement('div')
-  const root = createRoot(host)
+  // drawn once on its own, as text (react-dom/server: no root, no flushSync, so it is safe at any moment): a component that throws while it is drawn
+  // would take the whole preview with it
   try {
-    flushSync(() => root.render(React.createElement(component as ComponentType)))
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    renderToStaticMarkup(React.createElement(component as ComponentType))
   } catch (error) {
     return { error: `The component fails when it is drawn: ${readable(error)}` }
-  } finally {
-    root.unmount()
   }
   return { component: component as ComponentType }
 }

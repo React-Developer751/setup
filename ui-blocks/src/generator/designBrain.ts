@@ -36,7 +36,8 @@ const CLUES: Clue[] = [
     label: 'simple words',
     points: -3,
     cap: -6,
-    words: ['simple', 'basic', 'plain', 'quick', 'normal', 'minimal', 'small', 'starter', 'easy', 'cheap', 'budget', 'tiny', 'short'],
+    // ("small", "quick", "easy" and "tiny" describe a business or its customers ("invoicing for small shops", "quick repairs"), not the page: they are not here)
+    words: ['simple', 'basic', 'plain', 'normal', 'minimal', 'starter', 'cheap', 'budget', 'short'],
   },
 ]
 

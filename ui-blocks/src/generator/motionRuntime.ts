@@ -66,7 +66,8 @@ function autoTag(root: HTMLElement, plan: MotionPlan): () => void {
   const hoverable = !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches
 
   const mark = (el: Element | null | undefined, kind: string, delay = 0) => {
-    if (!el || el.hasAttribute('data-reveal') || el.closest('[data-reveal]')) return
+    // (a part that holds another arriving part is left alone: two arrivals inside each other, or a clipped picture holder over text, would hide the text)
+    if (!el || el.hasAttribute('data-reveal') || el.closest('[data-reveal]') || el.querySelector('[data-reveal]')) return
     el.setAttribute('data-reveal', kind)
     if (delay) el.setAttribute('data-delay', String(Math.min(delay, 8)))
     tagged.push(el)
@@ -115,7 +116,8 @@ function autoTag(root: HTMLElement, plan: MotionPlan): () => void {
         if (box.width < 140 || box.height < 90) return
         const holder = img.parentElement
         if (!holder || holder === section) return
-        mark(holder, pictureKind)
+        // only a holder that is the picture alone arrives with the picture's wipe; a holder with words in it (a card, a contact block) keeps the words as they are
+        if (!/\S/.test(holder.textContent ?? '')) mark(holder, pictureKind)
         if (plan.features.imageZoom && hoverable) addClass(holder, 'm-zoom')
       })
     }
