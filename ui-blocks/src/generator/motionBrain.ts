@@ -135,7 +135,7 @@ const NONE: MotionFeatures = {
   draw: false, navShrink: false, marquee: false, carousel: false, split: false, progress: false,
 }
 
-export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting, rand: () => number): MotionPlan {
+export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting, rand: () => number, bold = false): MotionPlan {
   const base = STYLE_BY_THEME[theme] ?? STYLE_BY_THEME.general_business
   const reasons: string[] = []
 
@@ -148,7 +148,9 @@ export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting,
   )
 
   // 2) what moves at that level: the arrivals and the hover of every page, then the extras of the recipe of this kind of business
-  const recipe = RECIPES[RECIPE_OF[theme] ?? 'calm']
+  // a prompt that asks to stand out gets the showy recipe where the business type would otherwise move calmly
+  const key = RECIPE_OF[theme] ?? 'calm'
+  const recipe = RECIPES[bold && key === 'calm' ? 'creative' : key]
   const features: MotionFeatures =
     level === 'off'
       ? NONE
@@ -168,7 +170,7 @@ export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting,
           ...recipe.subtle,
           // the extras of the recipe: the rich level has its own, the premium design level the showy ones as well
           ...(level === 'rich' ? recipe.rich : {}),
-          ...(level === 'rich' && tier === 'premium' ? recipe.premium : {}),
+          ...(level === 'rich' && (tier === 'premium' || bold) ? recipe.premium : {}),
         }
   if (level !== 'off') reasons.push(`${base.style} style fits the ${theme.replace('_', ' ')} theme`)
   if (level !== 'off') reasons.push(`${recipe.name} recipe: parts arrive by ${recipe.mix.slice(0, level === 'rich' ? 4 : 3).join(', ')}${Object.entries(features).filter(([key, on]) => on && !['reveal', 'hover', 'accordion'].includes(key)).length ? `; also ${Object.entries(features).filter(([key, on]) => on && !['reveal', 'hover', 'accordion'].includes(key)).map(([key]) => key).join(', ')}` : ''}`)

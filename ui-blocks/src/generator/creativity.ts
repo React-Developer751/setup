@@ -9,6 +9,9 @@ export const CREATIVITY_LEVELS: [CreativityLevel, string][] = [['safe', 'Safe'],
 const TEMPERATURE: Record<CreativityLevel, number> = { safe: 0.1, balanced: 0.5, wild: 0.9 }
 const KEY = 'ui-blocks:creativity'
 
+/** a prompt that asks to stand out ("unique", "sabse alag hatke", "stunning", "with animation"): it is answered with bolder choices than the usual */
+export const asksForBold = (prompt: string | undefined) => !!prompt && /\b(?:unique|alag|hatke|stunning|standout|stand\s*out|wow|different|jhakaas|zabardast|eye.?catching|attractive|animation|animated|bold|extraordinary|one\s+of\s+a\s+kind)\b/i.test(prompt)
+
 let level: CreativityLevel = 'balanced'
 
 export const creativityLevel = () => level

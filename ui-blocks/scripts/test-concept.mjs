@@ -94,6 +94,14 @@ const sameType = conceptMemoryFor(store.list(), [], 'tea stall', 'food_dining')
 ok(sameType.chosenAccents.includes('#2f6f4f'), 'a business of the same type starts from what was taught for another one')
 ok(buildPalette({ name: 'x', why: '', bg: '#ffffff', ink: '#000000', accent: '#ffff00', alt: '#00ff00' }).light.accent !== '#ffff00', 'a colour that cannot be seen on its background is moved until it can')
 
+// vague prompts: looks and request words are not a business, and they ask for a bolder page
+for (const p of ['mujhe ek unique website banakar do', 'sabse alag hatke website banao', 'create a stunning website']) {
+  const c = thinkConcept({ prompt: p, theme: 'general_business', niche: '', variation: 0, level: 'balanced', rand: seeded(5) })
+  ok(c && c.id.startsWith('statement:'), `"${p}" gets a bold idea of its own (${c?.id})`)
+}
+const plainBiz = thinkConcept({ prompt: 'mujhe business website banakar do', theme: 'general_business', niche: '', variation: 0, level: 'balanced', rand: seeded(5) })
+ok(plainBiz && plainBiz.id.startsWith('general:'), `a plain business still gets a designed palette (${plainBiz?.id})`)
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

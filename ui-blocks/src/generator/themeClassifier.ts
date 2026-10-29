@@ -1,6 +1,7 @@
 // Picks a theme from the user's prompt with plain keyword scoring (no AI, no API, no Node-only
 // libraries). Same training words as before; each prompt word that appears in a theme's
 // vocabulary adds one point to that theme.
+import { isVague, withoutVibe } from './hinglish'
 import ensembleFile from '../data/models/ensemble.json'
 import { fromKits, KIT_KEYS } from './kits'
 import { blend, DEFAULT_WEIGHTS, ruleDistribution, type Distribution, type Weights } from './ml/ensemble'
@@ -145,7 +146,10 @@ export function businessHead(prompt: string): string {
 }
 
 /** the classification of the business itself first (the services it lists carry words of other businesses: "workshops" is no garage); the whole prompt when the head says nothing */
-export function decideTheme(userPrompt: string): ThemeDecision {
+export function decideTheme(rawPrompt: string): ThemeDecision {
+  // "unique website banakar do" / "create a stunning website": looks and request words say nothing about the business, so they must not vote
+  const userPrompt = /[a-z]/i.test(rawPrompt) ? withoutVibe(rawPrompt) || rawPrompt : rawPrompt
+  if (userPrompt === rawPrompt && isVague(rawPrompt)) return { theme: DEFAULT_THEME, confidence: 0, source: 'default', sources: [], probabilities: {} }
   const head = businessHead(userPrompt)
   if (head && head.length >= 3 && head.length < userPrompt.trim().length) {
     const d = decideThemeFor(head)

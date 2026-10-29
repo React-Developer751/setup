@@ -2,6 +2,7 @@
 import { KNOWN_CITIES } from './siteBanks'
 const KNOWN_CITY_WORDS = new Set(Object.keys(KNOWN_CITIES))
 import { isBusinessWord } from './themeClassifier'
+import { isVague as vagueWords } from './hinglish'
 
 const STOP_WORDS = new Set(['with', 'that', 'which', 'for', 'and', 'in', 'on', 'at', 'selling', 'offering', 'who', 'where'])
 
@@ -22,7 +23,8 @@ const NOT_A_NAME = new Set([
 ])
 
 // Hindi / Hinglish glue words: a prompt that uses them is not an English "for <business>" phrase
-const HINGLISH = new Set(['mere', 'meri', 'mera', 'ke', 'ki', 'ka', 'liye', 'banao', 'bana', 'do', 'hai', 'hain', 'jo', 'karti', 'karta', 'wali', 'wala', 'aur', 'se', 'me', 'mein', 'ko', 'dukan', 'chahiye', 'apni', 'apna'])
+const HINGLISH = new Set(['mere', 'meri', 'mera', 'ke', 'ki', 'ka', 'liye', 'banao', 'bana', 'do', 'hai', 'hain', 'jo', 'karti', 'karta', 'wali', 'wala', 'aur', 'se', 'me', 'mein', 'ko', 'dukan', 'chahiye', 'apni', 'apna', 'banakar', 'karke', 'dena', 'dijiye', 'jisme', 'jismein', 'dikhne', 'dikhe', 'sabse', 'kuch', 'kuchh', 'esi', 'aisi', 'ese', 'aise', 'koi', 'ek', 'mujhe'])
+
 
 // words that end the business description: "boutique hotel that offers ..." -> "boutique hotel"
 const CUT_WORDS = /\s+(?:that|which|who|whose|where|offers?|offering|with|having|has|and\s+has|jo|ke\s+liye)\b[\s\S]*$/i
@@ -114,7 +116,7 @@ const THEME_NOUN: Record<string, string> = {
   modern_tech: 'Labs', organic_nature: 'Harvest', bold_fitness: 'Fitness', luxury_minimal: 'Atelier', playful_vibrant: 'Play', professional_services: 'Associates',
   healthcare: 'Care', food_dining: 'Kitchen', education: 'Academy', creative_studio: 'Studio', real_estate: 'Homes', travel_tourism: 'Journeys',
   automotive: 'Motors', beauty_wellness: 'Wellness', events_wedding: 'Events', pets_animals: 'Pet Care', fashion_retail: 'Style', home_services: 'Services',
-  nonprofit: 'Foundation',
+  nonprofit: 'Foundation', general_business: 'Collective',
 }
 
 function inventName(subject: string, userPrompt: string, themeKey?: string, nicheLabel?: string) {
@@ -181,6 +183,8 @@ export function extractContentDetails(userPrompt: string, themeKey?: string, nic
     const words = (stop >= 0 ? after.slice(0, stop) : after).filter(Boolean)
     subject = words.join(' ').toLowerCase()
   }
+  // only looks and request words are left ("unique", "sabse alag hatke"): the prompt does not say what the business is
+  if (vagueWords(subject)) subject = ''
   // nothing that names a kind of business is left: the niche says what the business is
   if (nicheLabel && !subject.split(/\s+/).some((w) => isBusinessWord(w))) subject = nicheLabel.toLowerCase()
   return { businessName: named || inventName(subject, userPrompt, themeKey, nicheLabel), subject }

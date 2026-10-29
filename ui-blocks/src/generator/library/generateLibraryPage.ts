@@ -5,7 +5,7 @@ import { applyPoolToContent } from '../siteData'
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { atLeast, priority as priorityOf, sectionWeights } from '../experience'
-import { creativityLevel } from '../creativity'
+import { asksForBold, creativityLevel } from '../creativity'
 import { composePage } from './taste'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
@@ -74,7 +74,7 @@ export function generateLibraryPage(
   // Balanced and wild creativity do not draw each part on its own from its list: the parts are chosen by taste (taste.ts), together, with the parts of the
   // design read from a live site competing instead of being fixed. Safe creativity keeps the stored lists as they were. (The draws above still run, so
   // everything that follows them in the random stream stays as it was.)
-  const level = creativityLevel()
+  const level = creativityLevel() === 'balanced' && asksForBold(userPrompt) ? 'wild' : creativityLevel()
   if (level !== 'safe') {
     const roles = Object.keys(rolePools) as Role[]
     const kitOf = (role: Role) => (refKit ? (showPools[generated.mood!.id]?.[role] ?? refPools[role]) : undefined)

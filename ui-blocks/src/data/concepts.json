@@ -756,6 +756,91 @@
      "font": "sans"
     }
    ]
+  },
+  {
+   "id": "statement",
+   "words": "unique|alag|hatke|stunning|attractive|standout|stand out|wow|different|sabse|animation|animated|eye.?catching|bold|jhakaas|zabardast",
+   "niches": [],
+   "themes": [
+    "general_business"
+   ],
+   "seeds": [
+    {
+     "name": "Midnight and coral",
+     "why": "you asked for something that stands out: midnight blue with a hot coral that is seen first",
+     "bg": "#0f1226",
+     "ink": "#f3f1ff",
+     "accent": "#ff6b57",
+     "alt": "#7c8cff",
+     "font": "elegant",
+     "dark": true
+    },
+    {
+     "name": "Cream and cobalt",
+     "why": "a loud, confident pair: warm cream with a strong cobalt and a sun-yellow second colour",
+     "bg": "#faf5e9",
+     "ink": "#10162f",
+     "accent": "#2347e8",
+     "alt": "#ffb400",
+     "font": "display"
+    },
+    {
+     "name": "Plum and peach",
+     "why": "a rich plum with soft peach, unusual but warm",
+     "bg": "#fff4ee",
+     "ink": "#2a1230",
+     "accent": "#7b2d8e",
+     "alt": "#ff9a76",
+     "font": "elegant"
+    },
+    {
+     "name": "Forest and brass",
+     "why": "deep forest green with brass, calm but unlike the usual blue",
+     "bg": "#10201a",
+     "ink": "#f2efe4",
+     "accent": "#c9a24b",
+     "alt": "#5fa37b",
+     "font": "serif",
+     "dark": true
+    },
+    {
+     "name": "Ink and tangerine",
+     "why": "near-black ink on paper white with a tangerine that moves the eye",
+     "bg": "#f7f5f0",
+     "ink": "#15141a",
+     "accent": "#f26a1b",
+     "alt": "#3b3a8f",
+     "font": "display"
+    }
+   ]
+  },
+  {
+   "id": "general",
+   "words": "(?!)",
+   "niches": [],
+   "themes": [
+    "general_business"
+   ],
+   "seeds": [
+    {
+     "name": "Ink and teal",
+     "why": "a general business: clear teal on a clean paper white",
+     "bg": "#f6f8f8",
+     "ink": "#12232b",
+     "accent": "#0f8b8d",
+     "alt": "#e9a23b",
+     "font": "sans"
+    },
+    {
+     "name": "Sand and rust",
+     "why": "a warm local business: sand with a rust accent",
+     "bg": "#f7f1e8",
+     "ink": "#2a1d16",
+     "accent": "#b4532a",
+     "alt": "#4f7a6a",
+     "font": "serif"
+    }
+   ]
   }
  ]
 }

@@ -23,7 +23,7 @@ import { decideTheme } from './themeClassifier'
 import { fontChoiceTokens, withFont } from './fonts'
 import { onColor } from './themes'
 import { chooseMood, moodById, moodFontVars, moodFromText, moodPalette, moodTheme, panelColors, SIGNATURE_MOODS, type Mood } from './moods'
-import { temperature } from './creativity'
+import { asksForBold, temperature } from './creativity'
 import { hexToRgb, rgbToHsl } from './art/color'
 import { sectionOfLayout } from './edit/applyEdits'
 import { targetOfLayout } from './edit/sectionColors'
@@ -142,7 +142,7 @@ export function planWebsite(
   const { colors, mood, moodMade, palette, judgement } = look
 
   // the motion brain has its own seeded stream too; some motion needs its own sections
-  const motion = thinkMotion(themeKey, tier, edits?.motion ?? motionSetting, seededRandom(hash(`${prompt.toLowerCase()}|motion|${variation}`)))
+  const motion = thinkMotion(themeKey, tier, edits?.motion ?? motionSetting, seededRandom(hash(`${prompt.toLowerCase()}|motion|${variation}`)), asksForBold(prompt))
   if (size === 'full') {
     if (motion.features.marquee) choice.marquee = true
     if (motion.features.carousel && choice.testimonials !== 'none') choice.testimonials = 'carousel'
