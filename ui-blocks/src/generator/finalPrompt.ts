@@ -29,6 +29,8 @@ export type WebsiteContent = {
   steps: { title: string; items: { title: string; text: string }[] }
   /** `fromPrompt`: the prices are the ones the person wrote; the prices of a text pack are examples and are not shown on a page of their own */
   pricing: { title: string; plans: Plan[]; fromPrompt?: boolean }
+  /** a menu board (food businesses): categories with their items, no prices (the prices are the owner's to write) */
+  menu?: { title: string; lead?: string; categories: { name: string; items: string[] }[] }
   gallery: { title: string; captions: string[] }
   team: { title: string; members: { name: string; role: string; bio?: string }[] }
   testimonials: Quote[]

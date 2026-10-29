@@ -12,6 +12,9 @@ import { loadServerPalettes } from '../premiumPalettes'
 import { avoidsLime, LIME_BAND, pairScore } from '../colorHarmony'
 import { copyFactor, copyOf, fitsBusiness, type PhraseScores } from './phraseScores'
 import { newId, type DesignRecord, type DesignStore } from './designStore'
+import { conceptOps, thinkConcept } from '../concept'
+import { conceptMemoryFor, type Correction } from './correctionMemory'
+import { SECTIONS } from '../edit/edits'
 
 export type DesignPlan = {
   variation: number
@@ -64,7 +67,20 @@ export function describeDesign(prompt: string, variation: number, creativity: st
   }
 }
 
-export async function planDesign(prompt: string, store: DesignStore, options: { group: string; creativity: string; temperature: number; rand?: () => number; candidates?: number; /** what people said about the texts (phraseScores.ts): texts they sent back are left out, texts they kept are preferred */ phrases?: PhraseScores }): Promise<DesignPlan> {
+/** a seeded stream from a text (the same text always gives the same numbers) */
+const seededFrom = (text: string) => {
+  let h = 2166136261
+  for (let i = 0; i < text.length; i += 1) h = Math.imul(h ^ text.charCodeAt(i), 16777619)
+  let a = h >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+export async function planDesign(prompt: string, store: DesignStore, options: { group: string; creativity: string; temperature: number; rand?: () => number; candidates?: number; /** what people said about the texts (phraseScores.ts): texts they sent back are left out, texts they kept are preferred */ phrases?: PhraseScores; /** what the person corrected before (correctionMemory.ts): the next idea starts from it */ corrections?: Correction[] }): Promise<DesignPlan> {
   const rand = options.rand ?? Math.random
   const key = businessKey(prompt)
   // the palettes people added to the database are part of the premium set
@@ -124,8 +140,20 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
   const pool = clean.length ? clean : scored
   const demoted = scored.length - pool.length
   const winner = sampleTopK(pool.map((s) => ({ item: s, score: s.score })), options.temperature, rand)
-  const ops: EditOp[] = winner.shifted ? [{ op: 'accent', hex: winner.record.accent }] : []
+  // the generator's own idea of how this business should look (concept.ts): its colours, its typeface, and what it learned from the corrections of the person
+  const level = options.creativity === 'safe' || options.creativity === 'wild' ? options.creativity : 'balanced'
+  const memory = conceptMemoryFor(options.corrections ?? [], all, key, winner.record.theme)
+  const concept = thinkConcept({ prompt, theme: winner.record.theme, niche: winner.record.niche, variation: winner.record.variation, level, rand: seededFrom(`${prompt}|${winner.record.variation}`), memory, used: insights.seenHues, allowed: (hue) => inBand(hue, allowedBand(prompt, winner.record.theme as never)) && !(avoidsLime(winner.record.theme) && hue >= LIME_BAND[0] && hue <= LIME_BAND[1]) })
+  let ops: EditOp[] = winner.shifted ? [{ op: 'accent', hex: winner.record.accent }] : []
+  if (concept) {
+    // the idea has its own colours: the "new colour" of the design is not needed, and the memory of colours is about the idea's colour from now on
+    const accent = concept.data.light.accent
+    const hsl = rgbToHsl(hexToRgb(accent))
+    winner.record = { ...winner.record, accent, alt: concept.data.light.alt, hue: Math.round(hsl.h) % 360, sat: Math.round(hsl.s), light: Math.round(hsl.l), mode: concept.dark ? 'dark' : 'light', paletteName: concept.name, concept: concept.id }
+    ops = [...conceptOps(concept), ...concept.hide.filter((section): section is (typeof SECTIONS)[number] => (SECTIONS as readonly string[]).includes(section)).map((section) => ({ op: 'remove', section }) as EditOp)]
+  }
   const reasons = [...insights.summary, `New design: ${hueName(winner.record.hue)} colours (${winner.record.paletteName}${winner.shifted ? ', moved to a hue that was not used yet' : ''}), ${winner.record.mode} mode, first screen "${winner.record.heroLayout}". Chosen from ${made.length} designs.`, ...(demoted ? [`${demoted} design${demoted === 1 ? '' : 's'} left out: people did not like their texts before.`] : [])]
+  if (concept) reasons.push(`My idea for this business: ${concept.why}${concept.hide.length ? ` I left out ${concept.hide.join(', ')}, because you removed ${concept.hide.length === 1 ? 'it' : 'them'} before for this kind of business.` : ''}`)
   return { variation: winner.record.variation, record: winner.record, insights, ops, reasons, tried: made.length, fresh: fresh.length }
 }
 

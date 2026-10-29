@@ -73,6 +73,7 @@ export function applyNiche(content: WebsiteContent, niche: Niche, size: 'compact
       title: niche.pricing.title,
       plans: niche.pricing.plans.map((p) => ({ ...p, price: locale ? localizePrice(p.price, locale) : p.price })),
     },
+    ...(niche.menu ? { menu: niche.menu } : {}),
     gallery: { title: niche.gallery.title, captions: niche.gallery.captions },
     team: { title: niche.team.title, members: members.map((m, i) => ({ ...m, role: niche.team.roles[i % niche.team.roles.length] })) },
     blog: { title: niche.blog.title, posts: niche.blog.posts.map((p) => ({ tag: p.tag, title: fill(p.title, brand) })) },

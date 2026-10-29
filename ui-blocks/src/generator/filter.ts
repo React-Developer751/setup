@@ -133,7 +133,10 @@ function inventPlainName(subject: string, userPrompt: string, themeKey?: string,
   }
   if (nicheLabel) {
     const first = [...userPrompt.toLowerCase()].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7)
-    return `${FRESH_WORDS[first % FRESH_WORDS.length]} ${titleCase(nicheLabel.toLowerCase())}`.replace(/\b(?:Ngo|Pg|Hr|Ac|Cctv|Gst|Seo|Ev|Dj|Diy)\b/g, (m) => m.toUpperCase())
+    // ("Cafe, coffee and tea" is a label for the pack, not a name: the name uses the first thing the label says, "Summit Cafe")
+    const plain = nicheLabel.split(/\s*(?:,|\/|\band\b)\s*/i)[0]
+    const said = plain.length >= 3 ? plain : nicheLabel
+    return `${FRESH_WORDS[first % FRESH_WORDS.length]} ${titleCase(said.toLowerCase())}`.replace(/\b(?:Ngo|Pg|Hr|Ac|Cctv|Gst|Seo|Ev|Dj|Diy)\b/g, (m) => m.toUpperCase())
   }
   const words = subject.split(/\s+/).filter((w) => w && !GENERIC_TAIL.has(w))
   const last = words.pop() ?? ''

@@ -5,6 +5,7 @@
 // different prompts - or a different `variation` number - give a different one.
 import { namesColor, thinkColors } from './colorBrain'
 import { harmonisePalette } from './colorHarmony'
+import type { ConceptData } from './edit/edits'
 import { GOOD_ENOUGH, judgePalette } from './colorJudge'
 import { contentTemplates } from './contentTemplates'
 import { writeContent } from './creativeBrain'
@@ -110,7 +111,7 @@ export function planWebsite(
   const useBrains = creative || !hasTemplates(themeKey)
   const copy = useBrains ? writeContent(themeKey, brand, seededRandom(hash(`${prompt.toLowerCase()}|copy|${variation}`)), false, niche ? undefined : prompt) : undefined
   // the colours are judged (colorJudge.ts): a palette a designer would not keep is replaced by the best of several others; what the person chose themselves is never replaced
-  const personChoseColours = !!(edits?.accent || edits?.alt || edits?.harmony?.length || edits?.tones?.length || (edits?.mood && edits.mood !== 'none')) || namesColor(prompt) || !!moodFromText(prompt)
+  const personChoseColours = !!(edits?.concept || edits?.accent || edits?.alt || edits?.harmony?.length || edits?.tones?.length || (edits?.mood && edits.mood !== 'none')) || namesColor(prompt) || !!moodFromText(prompt)
   const makeLook = (attempt: number) => {
     const tag = attempt ? `|retry${attempt}` : ''
     const colors = useBrains ? thinkColors(prompt, themeKey, seededRandom(hash(`${prompt.toLowerCase()}|color|${variation}${tag}`)), tier) : undefined
@@ -127,7 +128,7 @@ export function planWebsite(
     // a designer's pair keeps its own second colour inside a mood (a charcoal second colour must not turn into the mood's blue)
     const signature = !!mood && SIGNATURE_MOODS.has(mood.id)
     const generated = premiumColours && !askedMood && !signature ? basePalette : moodMade && trustedPair && mood?.id !== 'glass' && !signature ? { ...moodMade.palette, light: { ...moodMade.palette.light, alt: basePalette.light.alt }, dark: { ...moodMade.palette.dark, alt: basePalette.dark.alt } } : (moodMade?.palette ?? basePalette)
-    const palette = applyColorEdits(keepSignature(signature ? generated : undefined, harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || signature || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) })), themeKey, edits)
+    const palette = applyColorEdits(withConcept(keepSignature(signature ? generated : undefined, harmonisePalette(generated, { theme: themeKey, trusted: colors?.harmony === 'curated' || colors?.harmony === 'premium', keepHue: namesColor(prompt) || signature || !!(askedMood && mood && (mood.id === 'cyberpunk' || mood.id === 'playful-pop')) })), edits?.concept), themeKey, edits)
     return { colors, mood, moodMade, palette, judgement: judgePalette(palette, themeKey, prompt) }
   }
   let look = makeLook(0)
@@ -188,6 +189,9 @@ export function planWebsite(
 }
 
 /** A single landing page: the plan above laid out as one scrolling page. */
+/** the generator's own idea of the look (concept.ts) replaces the colours of the page; the colours the person asks for afterwards are applied on top of it */
+const withConcept = (palette: Palette, concept: ConceptData | undefined): Palette => (concept ? { name: concept.name, light: concept.light, dark: concept.dark } : palette)
+
 export function generateWebsite(
   userPrompt: string,
   variation = 0,

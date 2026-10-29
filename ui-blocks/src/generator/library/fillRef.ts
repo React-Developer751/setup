@@ -191,6 +191,29 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
       break
     }
     case 'pricing': {
+      // the menu board (food businesses): categories with their items
+      if (root.querySelector('[data-ref="menu"]')) {
+        const categories = (c.menu?.categories ?? []).filter((cat) => cat.items.length).slice(0, 4)
+        if (!categories.length) return root.setAttribute('hidden', '')
+        put(root, 'eyebrow', c.brandName)
+        put(root, 'title', c.menu?.title)
+        put(root, 'lead', c.menu?.lead)
+        repeat(root, 'cat', categories, (card, cat) => {
+          put(card, 'cat-name', cat.name)
+          repeat(card, 'item', cat.items.slice(0, 6), (li, item) => {
+            const [name, note] = item.split(' | ')
+            put(li, 'item-name', name)
+            if (note) {
+              put(li, 'item-note', note)
+              li.querySelector('[data-slot="item-leader"]')?.classList.add('border-b', 'border-dotted', 'border-gray-300', 'mb-1')
+            } else {
+              li.querySelector('[data-slot="item-note"]')?.remove()
+              li.querySelector('[data-slot="item-leader"]')?.remove()
+            }
+          })
+        })
+        break
+      }
       const plans = c.pricing.plans.slice(0, 6)
       if (!plans.length) return root.setAttribute('hidden', '')
       put(root, 'eyebrow', c.brandName)

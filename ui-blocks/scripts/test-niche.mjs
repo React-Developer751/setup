@@ -200,6 +200,22 @@ for (const n of NICHES) {
   ok(bad === 0, 'a shop is not offered "Simple Booking", a salon is not offered "Easy to order"')
 }
 
+// a cafe is not named after its label, and a food business shows a menu board of its own items (no prices: those are the owner's)
+{
+  const cafe = generateWebsite('ek cafe ki website banao', 0, 'premium', true, 'auto')
+  ok(!/Coffee And Tea|Cafe, /.test(cafe.content.brandName), `a cafe is not named after its label (${cafe.content.brandName})`)
+  for (const prompt of ['ek cafe ki website banao', 'Italian restaurant Forno Rosso in Mumbai', 'bakery in Delhi', 'German cafe in Pune', 'chai ki tapri']) {
+    const g = generateWebsite(prompt, 0, 'premium', true, 'auto')
+    ok(g.content.menu?.categories.length >= 3 && g.content.menu.categories.every((c) => c.items.length >= 3), `"${prompt}": a menu board with categories and items`)
+    const lib = generateLibraryPage(prompt, 0, 'better')
+    ok(lib.sections.some((s) => s.role === 'pricing' && s.componentId === 'refkit/RefMenu1'), `"${prompt}": the page shows the menu board`)
+    ok(!/[$₹]\s?\d/.test(JSON.stringify(g.content.menu)), `"${prompt}": the menu has no invented prices`)
+  }
+  const priced = generateLibraryPage('cafe: espresso 120 rupees, cappuccino 150 rupees', 0, 'better')
+  ok(priced.sections.some((s) => s.role === 'pricing' && s.componentId !== 'refkit/RefMenu1'), 'prices the person wrote are shown as prices, not as a menu board')
+  ok(!generateLibraryPage('dental clinic Pune', 0, 'better').sections.some((s) => s.componentId === 'refkit/RefMenu1'), 'a clinic has no menu board')
+}
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

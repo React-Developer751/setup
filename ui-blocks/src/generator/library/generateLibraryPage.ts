@@ -135,7 +135,11 @@ export function generateLibraryPage(
   if (base.content.testimonials.length && base.content.testimonials.every((t) => /sample/i.test(t.author))) visible.delete('testimonial')
   visible.delete('team')
   // prices that nobody wrote (the examples of a text pack, in dollars) are not shown: the person adds real ones ("pricing 500 rupees ...")
-  if (!base.content.pricing.fromPrompt) visible.delete('pricing')
+  // (a menu board is shown for a food business whose prices nobody wrote: its items are the pack's own, and it has no prices)
+  const menuOn = !!base.content.menu?.categories.some((cat) => cat.items.length) && !base.content.pricing.fromPrompt
+  if (!base.content.pricing.fromPrompt && !menuOn) visible.delete('pricing')
+  if (menuOn && tier !== 'normal') visible.add('pricing')
+  if (menuOn) chosen.pricing = 'refkit/RefMenu1'
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)
@@ -167,7 +171,7 @@ export function generateLibraryPage(
   const PAGES: { path: string; label: string; text: string }[] = [
     { path: '/', label: nl.home ?? 'Home', text: base.content.hero.subtitle },
     { path: '/about', label: nl.about ?? 'About', text: base.content.about.paragraphs[0] ?? base.content.hero.subtitle },
-    { path: '/pricing', label: nl.pricing ?? 'Pricing', text: base.content.pricing.title },
+    { path: '/pricing', label: nl.pricing ?? (menuOn ? 'Menu' : 'Pricing'), text: menuOn ? (base.content.menu?.title ?? base.content.pricing.title) : base.content.pricing.title },
     { path: '/faq', label: nl.faq ?? 'FAQ', text: `Short answers to what guests ask ${base.content.brandName} most.` },
     { path: '/gallery', label: nl.gallery ?? 'Gallery', text: base.content.gallery.title },
     { path: '/blog', label: nl.blog ?? 'Blog', text: base.content.blog.title },

@@ -220,7 +220,49 @@
       "Filter Coffee",
       "Cake"
     ],
-    "contactText": "Planning a coffee date or a birthday table? Message {brand} and we will keep a table ready for you."
+    "contactText": "Planning a coffee date or a birthday table? Message {brand} and we will keep a table ready for you.",
+    "menu": {
+      "title": "On The Menu",
+      "lead": "German classics, baked and cooked in house: ask what came out of the oven this morning.",
+      "categories": [
+        {
+          "name": "Pretzels And Breads",
+          "items": [
+            "Soft pretzel | with butter",
+            "Pretzel roll",
+            "Rye bread",
+            "Brezel with mustard"
+          ]
+        },
+        {
+          "name": "Cakes And Strudel",
+          "items": [
+            "Apple strudel | with vanilla sauce",
+            "Black Forest cake",
+            "Cheesecake",
+            "Linzer torte"
+          ]
+        },
+        {
+          "name": "Savoury",
+          "items": [
+            "Bratwurst roll",
+            "Potato salad",
+            "Open sandwich",
+            "Soup of the day"
+          ]
+        },
+        {
+          "name": "Drinks",
+          "items": [
+            "Filter coffee",
+            "Hot chocolate",
+            "Apple spritzer",
+            "Herbal tea"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": "animal_welfare",
@@ -890,6 +932,38 @@
       "Masala",
       "Takeaway"
     ],
-    "contactText": "Drop by for a cup, or message us for an office order."
+    "contactText": "Drop by for a cup, or message us for an office order.",
+    "menu": {
+      "title": "What We Brew",
+      "lead": "Chai, snacks and a few minutes to yourself. The kettle is on from morning till late evening.",
+      "categories": [
+        {
+          "name": "Chai",
+          "items": [
+            "Kadak masala chai",
+            "Cutting chai",
+            "Ginger chai",
+            "Elaichi chai"
+          ]
+        },
+        {
+          "name": "Snacks",
+          "items": [
+            "Bun maska",
+            "Toast and butter",
+            "Pakoda",
+            "Samosa"
+          ]
+        },
+        {
+          "name": "Cold",
+          "items": [
+            "Lemon iced tea",
+            "Cold coffee",
+            "Nimbu pani"
+          ]
+        }
+      ]
+    }
   }
 ]

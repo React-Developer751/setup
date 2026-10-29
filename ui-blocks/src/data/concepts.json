@@ -1,0 +1,761 @@
+{
+ "version": 1,
+ "note": "What the generator knows about the colour of a business: families of palettes with a reason each. Add a family or a palette: it is used at once.",
+ "families": [
+  {
+   "id": "coffee",
+   "words": "cafe|caf[eé]|coffee|espresso|barista|roaster|latte|cappuccino|filter coffee",
+   "niches": [
+    "cafe_coffee_tea",
+    "german_cafe"
+   ],
+   "themes": [],
+   "seeds": [
+    {
+     "name": "Roastery",
+     "why": "coffee is brown and cream, not pink: roasted brown with caramel on warm cream",
+     "bg": "#f5ede3",
+     "ink": "#2e1f17",
+     "accent": "#7a4527",
+     "alt": "#c98a4b",
+     "font": "serif"
+    },
+    {
+     "name": "Latte and sage",
+     "why": "a calm corner cafe: sage green with a latte-brown second colour",
+     "bg": "#f3efe6",
+     "ink": "#2b2a23",
+     "accent": "#5d7a5e",
+     "alt": "#b88a5a",
+     "font": "rounded"
+    },
+    {
+     "name": "Terracotta brunch",
+     "why": "a sunny brunch place: terracotta and honey on cream",
+     "bg": "#fbf2e8",
+     "ink": "#33241c",
+     "accent": "#c1583a",
+     "alt": "#e1a95f",
+     "font": "elegant"
+    },
+    {
+     "name": "Dark espresso bar",
+     "why": "a late evening coffee bar: near-black brown with caramel light",
+     "bg": "#1b1411",
+     "ink": "#f1e6d8",
+     "accent": "#d9a066",
+     "alt": "#8c5a3b",
+     "font": "serif",
+     "dark": true
+    },
+    {
+     "name": "Matcha and cream",
+     "why": "a green tea and coffee house: matcha green, cream and a touch of sand",
+     "bg": "#f6f4e8",
+     "ink": "#26301f",
+     "accent": "#4e7a3a",
+     "alt": "#d8c58f",
+     "font": "sans"
+    }
+   ]
+  },
+  {
+   "id": "chai",
+   "words": "chai|tea\\b|tapri|kettle|masala tea|green tea|kadha",
+   "niches": [
+    "chai_tea_stall",
+    "tea_house"
+   ],
+   "themes": [],
+   "seeds": [
+    {
+     "name": "Masala chai",
+     "why": "chai is saffron, cardamom and clay: warm orange-brown on cream",
+     "bg": "#faf0dc",
+     "ink": "#3a2417",
+     "accent": "#b5521b",
+     "alt": "#d99a2b",
+     "font": "rounded"
+    },
+    {
+     "name": "Green tea house",
+     "why": "a quiet tea room: leaf green and bamboo gold",
+     "bg": "#f1f5ec",
+     "ink": "#22301f",
+     "accent": "#4c7c3e",
+     "alt": "#c9b46a",
+     "font": "elegant"
+    },
+    {
+     "name": "Clay and cardamom",
+     "why": "earthen cups and spice: clay red with olive",
+     "bg": "#f8efe4",
+     "ink": "#33241a",
+     "accent": "#a4492b",
+     "alt": "#6b7b3c",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "bakery",
+   "words": "bakery|cake|pastry|patisserie|dessert|sweets|mithai|cookies|bread",
+   "niches": [
+    "bakery_cakes",
+    "bakery"
+   ],
+   "themes": [],
+   "seeds": [
+    {
+     "name": "Butter and berry",
+     "why": "a cake shop: butter cream with raspberry",
+     "bg": "#fff6ec",
+     "ink": "#3b2a2a",
+     "accent": "#c2415d",
+     "alt": "#e8b04b",
+     "font": "rounded"
+    },
+    {
+     "name": "Cocoa and cream",
+     "why": "a chocolate counter: cocoa brown with cream and caramel",
+     "bg": "#f7efe9",
+     "ink": "#3a2a22",
+     "accent": "#7b4a35",
+     "alt": "#d9a37a",
+     "font": "serif"
+    },
+    {
+     "name": "Pistachio morning",
+     "why": "a fresh bakery: pistachio green with butter yellow",
+     "bg": "#f7f6ea",
+     "ink": "#2d3324",
+     "accent": "#6a8f4e",
+     "alt": "#e6b64c",
+     "font": "elegant"
+    }
+   ]
+  },
+  {
+   "id": "restaurant",
+   "words": "restaurant|dining|biryani|pizza|pasta|trattoria|dhaba|thali|kitchen|grill|bistro|buffet",
+   "niches": [
+    "restaurant_dining",
+    "restaurant"
+   ],
+   "themes": [
+    "food_dining"
+   ],
+   "seeds": [
+    {
+     "name": "Trattoria",
+     "why": "a warm family table: tomato red, basil green, cream paper",
+     "bg": "#faf3e7",
+     "ink": "#2f251d",
+     "accent": "#b8321f",
+     "alt": "#5f7a3a",
+     "font": "serif"
+    },
+    {
+     "name": "Spice route",
+     "why": "saffron, chilli and turmeric on warm ivory",
+     "bg": "#fcf1de",
+     "ink": "#351f14",
+     "accent": "#a8341f",
+     "alt": "#e0a21c",
+     "font": "elegant"
+    },
+    {
+     "name": "Night kitchen",
+     "why": "a dinner place after dark: charcoal with ember and gold",
+     "bg": "#151210",
+     "ink": "#f3e8d6",
+     "accent": "#e0a14a",
+     "alt": "#a8412b",
+     "font": "serif",
+     "dark": true
+    },
+    {
+     "name": "Olive and ember",
+     "why": "a grill house: olive green, ember orange, bone white",
+     "bg": "#f4f1e8",
+     "ink": "#23261c",
+     "accent": "#5b6b2f",
+     "alt": "#d2672a",
+     "font": "sans"
+    }
+   ]
+  },
+  {
+   "id": "fresh",
+   "words": "juice|smoothie|ice cream|gelato|shake|fruit|salad|health food",
+   "niches": [
+    "juice_bar",
+    "ice_cream"
+   ],
+   "themes": [],
+   "seeds": [
+    {
+     "name": "Fresh press",
+     "why": "a juice bar: leaf green with a mandarin spark",
+     "bg": "#f6fff0",
+     "ink": "#1d2a14",
+     "accent": "#55a630",
+     "alt": "#ff8a3c",
+     "font": "rounded"
+    },
+    {
+     "name": "Sorbet",
+     "why": "an ice cream parlour: strawberry with blueberry",
+     "bg": "#fff5f7",
+     "ink": "#3a1f2b",
+     "accent": "#e8508a",
+     "alt": "#7a5cff",
+     "font": "rounded"
+    }
+   ]
+  },
+  {
+   "id": "fitness",
+   "words": "gym|fitness|crossfit|workout|trainer|zumba|boxing|martial|bodybuilding",
+   "niches": [
+    "gym_fitness_studio"
+   ],
+   "themes": [
+    "bold_fitness"
+   ],
+   "seeds": [
+    {
+     "name": "Iron",
+     "why": "a hard gym: near-black with a lime strike",
+     "bg": "#0e0f10",
+     "ink": "#f2f2f2",
+     "accent": "#c6ff3d",
+     "alt": "#ff4d2e",
+     "font": "display",
+     "dark": true
+    },
+    {
+     "name": "Chalk and ember",
+     "why": "a bright gym: chalk white, ember red, steel blue",
+     "bg": "#f2f1ee",
+     "ink": "#151515",
+     "accent": "#e4411f",
+     "alt": "#1f6f8b",
+     "font": "sans"
+    }
+   ]
+  },
+  {
+   "id": "wellness",
+   "words": "yoga|meditation|spa|ayurved|wellness|massage|retreat|naturopath",
+   "niches": [
+    "yoga_studio",
+    "spa_wellness"
+   ],
+   "themes": [
+    "beauty_wellness"
+   ],
+   "seeds": [
+    {
+     "name": "Sage studio",
+     "why": "a calm studio: sage and sand",
+     "bg": "#f2f1ea",
+     "ink": "#2a3128",
+     "accent": "#6b8f71",
+     "alt": "#c9a27a",
+     "font": "elegant"
+    },
+    {
+     "name": "Clay and dawn",
+     "why": "warm clay with a soft grey-green",
+     "bg": "#f8efe7",
+     "ink": "#36281f",
+     "accent": "#b86f52",
+     "alt": "#8aa29a",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "beauty",
+   "words": "salon|hair|beauty|makeup|bridal|nail|barber|tattoo",
+   "niches": [
+    "hair_salon_spa",
+    "tattoo_studio"
+   ],
+   "themes": [],
+   "seeds": [
+    {
+     "name": "Mauve and champagne",
+     "why": "a salon: dusty mauve with champagne gold",
+     "bg": "#f8f1ee",
+     "ink": "#33232b",
+     "accent": "#9c4f6b",
+     "alt": "#d2a870",
+     "font": "elegant"
+    },
+    {
+     "name": "Noir rose",
+     "why": "a late night studio: black with rose gold",
+     "bg": "#141214",
+     "ink": "#f4e9e6",
+     "accent": "#d98b86",
+     "alt": "#b79a5b",
+     "font": "serif",
+     "dark": true
+    }
+   ]
+  },
+  {
+   "id": "health",
+   "words": "clinic|dental|dentist|doctor|hospital|physio|diagnostic|pharmacy|medical",
+   "niches": [
+    "dental_clinic",
+    "general_physician_clinic",
+    "physiotherapy"
+   ],
+   "themes": [
+    "healthcare"
+   ],
+   "seeds": [
+    {
+     "name": "Clean teal",
+     "why": "calm and clean: teal with a clinical blue",
+     "bg": "#f3f9f9",
+     "ink": "#12303a",
+     "accent": "#0f8a8f",
+     "alt": "#3a6ea5",
+     "font": "sans"
+    },
+    {
+     "name": "Calm navy",
+     "why": "trustworthy: navy with a healing green",
+     "bg": "#f5f8fc",
+     "ink": "#0f2742",
+     "accent": "#1f5fa8",
+     "alt": "#3aa57a",
+     "font": "sans"
+    }
+   ]
+  },
+  {
+   "id": "legal",
+   "words": "law|lawyer|advocate|attorney|chartered|accountant|consult|tax|audit|insurance",
+   "niches": [
+    "law_firm_advocate"
+   ],
+   "themes": [
+    "professional_services"
+   ],
+   "seeds": [
+    {
+     "name": "Chambers",
+     "why": "a law chamber: deep navy with old gold",
+     "bg": "#f6f4ef",
+     "ink": "#14202e",
+     "accent": "#1d3557",
+     "alt": "#b08d3c",
+     "font": "serif"
+    },
+    {
+     "name": "Ledger green",
+     "why": "an accounting desk: ledger green with brass",
+     "bg": "#f4f6f1",
+     "ink": "#15251d",
+     "accent": "#1f4d3a",
+     "alt": "#b08d3c",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "school",
+   "words": "school|coaching|tuition|college|academy|institute|class|course|upsc|neet|jee",
+   "niches": [],
+   "themes": [
+    "education"
+   ],
+   "seeds": [
+    {
+     "name": "Campus",
+     "why": "a school: royal blue with a pencil yellow",
+     "bg": "#f7f9ff",
+     "ink": "#14213d",
+     "accent": "#2f5bd2",
+     "alt": "#f2a900",
+     "font": "sans"
+    },
+    {
+     "name": "Chalkboard",
+     "why": "a classroom at dusk: board green with chalk and yellow",
+     "bg": "#10201a",
+     "ink": "#eef3e8",
+     "accent": "#f5d547",
+     "alt": "#7bc6a4",
+     "font": "rounded",
+     "dark": true
+    }
+   ]
+  },
+  {
+   "id": "property",
+   "words": "real estate|property|builder|construction|architect|interior|flat|apartment|realtor",
+   "niches": [
+    "real_estate_agent",
+    "architect_construction"
+   ],
+   "themes": [
+    "real_estate"
+   ],
+   "seeds": [
+    {
+     "name": "Blueprint",
+     "why": "blueprint teal with a brass line",
+     "bg": "#f4f6f8",
+     "ink": "#12202c",
+     "accent": "#1f6f78",
+     "alt": "#d08a2e",
+     "font": "sans"
+    },
+    {
+     "name": "Brick and stone",
+     "why": "brick red with stone and slate",
+     "bg": "#f6f1ec",
+     "ink": "#2a211c",
+     "accent": "#a2452b",
+     "alt": "#496a6f",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "travel",
+   "words": "travel|tour|hotel|resort|trip|holiday|homestay|cab|taxi|visa",
+   "niches": [
+    "travel_agency",
+    "hotel_guesthouse",
+    "travel_cab_taxi"
+   ],
+   "themes": [
+    "travel_tourism"
+   ],
+   "seeds": [
+    {
+     "name": "Lagoon",
+     "why": "sea and sun: lagoon blue with a sunset orange",
+     "bg": "#f1fafa",
+     "ink": "#0c2d3f",
+     "accent": "#0b7c93",
+     "alt": "#f0883e",
+     "font": "sans"
+    },
+    {
+     "name": "Sunset road",
+     "why": "a road trip: dusk orange with petrol blue",
+     "bg": "#fff3e6",
+     "ink": "#3a2013",
+     "accent": "#d2531e",
+     "alt": "#1f7a8c",
+     "font": "rounded"
+    }
+   ]
+  },
+  {
+   "id": "tech",
+   "words": "saas|software|app\\b|startup|agency|digital|it company|cloud|ai\\b|developer|marketing",
+   "niches": [
+    "saas_startup"
+   ],
+   "themes": [
+    "modern_tech"
+   ],
+   "seeds": [
+    {
+     "name": "Ink and indigo",
+     "why": "software: ink with indigo and cyan",
+     "bg": "#f6f7fb",
+     "ink": "#12142b",
+     "accent": "#4f46e5",
+     "alt": "#06b6d4",
+     "font": "sans"
+    },
+    {
+     "name": "Night code",
+     "why": "a developer tool: night blue with electric violet",
+     "bg": "#0b0d17",
+     "ink": "#e8eaf6",
+     "accent": "#7c8cff",
+     "alt": "#22d3ee",
+     "font": "display",
+     "dark": true
+    }
+   ]
+  },
+  {
+   "id": "kids",
+   "words": "kids|toy|play ?school|nursery|children|baby",
+   "niches": [
+    "toy_store"
+   ],
+   "themes": [
+    "playful_vibrant"
+   ],
+   "seeds": [
+    {
+     "name": "Crayon box",
+     "why": "crayon orange with a lagoon green on warm paper",
+     "bg": "#fffaf0",
+     "ink": "#2a2342",
+     "accent": "#ff6b3d",
+     "alt": "#2bb3a3",
+     "font": "rounded"
+    },
+    {
+     "name": "Bubblegum",
+     "why": "bubblegum pink with sky blue",
+     "bg": "#fff4fa",
+     "ink": "#33204a",
+     "accent": "#e4478e",
+     "alt": "#3aa0ff",
+     "font": "rounded"
+    }
+   ]
+  },
+  {
+   "id": "pets",
+   "words": "pet|dog|cat|vet|grooming|aquarium|animal",
+   "niches": [
+    "pet_grooming_vet"
+   ],
+   "themes": [
+    "pets_animals"
+   ],
+   "seeds": [
+    {
+     "name": "Paw and sky",
+     "why": "a friendly pet shop: warm orange with teal",
+     "bg": "#fff6ec",
+     "ink": "#2c2118",
+     "accent": "#e07a2f",
+     "alt": "#2a8c82",
+     "font": "rounded"
+    }
+   ]
+  },
+  {
+   "id": "flowers",
+   "words": "florist|flower|bouquet|gift|wedding|event|decor|mehendi|invitation|planner",
+   "niches": [],
+   "themes": [
+    "events_wedding"
+   ],
+   "seeds": [
+    {
+     "name": "Petal",
+     "why": "a florist: dusty rose with leaf green",
+     "bg": "#fbf3f3",
+     "ink": "#3a2a2f",
+     "accent": "#c0607a",
+     "alt": "#7b9a6b",
+     "font": "elegant"
+    },
+    {
+     "name": "Ivory and gold",
+     "why": "a wedding planner: ivory with antique gold and wine",
+     "bg": "#fbf7f0",
+     "ink": "#2f2420",
+     "accent": "#a8843b",
+     "alt": "#7b2f3a",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "fashion",
+   "words": "boutique|fashion|kurti|saree|clothing|jewel|garment|tailor|lehenga|designer",
+   "niches": [
+    "fashion_boutique",
+    "jewellery_shop",
+    "tailoring_alterations"
+   ],
+   "themes": [
+    "fashion_retail"
+   ],
+   "seeds": [
+    {
+     "name": "Atelier",
+     "why": "an atelier: black on bone with a gold thread",
+     "bg": "#f7f3ee",
+     "ink": "#1d1a17",
+     "accent": "#1d1a17",
+     "alt": "#b79a5b",
+     "font": "elegant"
+    },
+    {
+     "name": "Silk and ruby",
+     "why": "festive silk: ruby with antique gold",
+     "bg": "#fbf1ea",
+     "ink": "#2f1a1c",
+     "accent": "#8b1e3f",
+     "alt": "#d8a44a",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "creative",
+   "words": "photograph|photo studio|design studio|art studio|portfolio|video|film|music|dj\\b|band|animation|illustrat",
+   "niches": [
+    "photography_studio",
+    "drone_photography",
+    "video_editing_studio"
+   ],
+   "themes": [
+    "creative_studio"
+   ],
+   "seeds": [
+    {
+     "name": "Contact sheet",
+     "why": "a photographer: black and white with a darkroom red",
+     "bg": "#f4f4f2",
+     "ink": "#111111",
+     "accent": "#e4572e",
+     "alt": "#17bebb",
+     "font": "sans"
+    },
+    {
+     "name": "Darkroom",
+     "why": "a film studio after dark: black with amber",
+     "bg": "#0d0d0f",
+     "ink": "#ececec",
+     "accent": "#ffb454",
+     "alt": "#8a8f98",
+     "font": "display",
+     "dark": true
+    }
+   ]
+  },
+  {
+   "id": "cause",
+   "words": "ngo|charity|foundation|donate|rescue|shelter|volunteer|orphan|welfare",
+   "niches": [
+    "ngo_charity",
+    "animal_welfare"
+   ],
+   "themes": [
+    "nonprofit"
+   ],
+   "seeds": [
+    {
+     "name": "Hope",
+     "why": "hope: warm orange with a deep teal",
+     "bg": "#fff8ef",
+     "ink": "#26333b",
+     "accent": "#e07a1f",
+     "alt": "#1f8a8a",
+     "font": "rounded"
+    }
+   ]
+  },
+  {
+   "id": "auto",
+   "words": "car |car\\b|garage|mechanic|auto|bike|motor|tyre|showroom|repair|workshop",
+   "niches": [
+    "car_wash_detailing",
+    "mobile_repair"
+   ],
+   "themes": [
+    "automotive"
+   ],
+   "seeds": [
+    {
+     "name": "Garage",
+     "why": "a workshop: graphite with a safety orange",
+     "bg": "#14161a",
+     "ink": "#eef0f2",
+     "accent": "#ff6a1a",
+     "alt": "#8aa0b3",
+     "font": "display",
+     "dark": true
+    },
+    {
+     "name": "Showroom",
+     "why": "a showroom: pearl white with racing red",
+     "bg": "#f4f5f7",
+     "ink": "#14161a",
+     "accent": "#d4231a",
+     "alt": "#3a4756",
+     "font": "sans"
+    }
+   ]
+  },
+  {
+   "id": "field",
+   "words": "organic|farm|agri|solar|garden|nursery|plant|dairy|vegetable|grocery",
+   "niches": [
+    "solar_installer",
+    "landscaping_gardening"
+   ],
+   "themes": [
+    "organic_nature"
+   ],
+   "seeds": [
+    {
+     "name": "Field",
+     "why": "fields: young wheat green with a harvest gold",
+     "bg": "#f4f7ec",
+     "ink": "#1f2a14",
+     "accent": "#4a7c2b",
+     "alt": "#e0a31f",
+     "font": "rounded"
+    },
+    {
+     "name": "Soil and leaf",
+     "why": "soil brown with leaf green",
+     "bg": "#f6f1e7",
+     "ink": "#2a2218",
+     "accent": "#5f7f3a",
+     "alt": "#a4703b",
+     "font": "serif"
+    }
+   ]
+  },
+  {
+   "id": "trades",
+   "words": "plumb|electric|carpent|painter|pest|cleaning|repair|ac service|handyman|home service|packers|movers|laundry|security",
+   "niches": [
+    "plumber_electrician",
+    "ac_repair",
+    "cleaning_services",
+    "pest_control",
+    "packers_movers",
+    "painting_contractor",
+    "laundry_drycleaning",
+    "cctv_security_install"
+   ],
+   "themes": [
+    "home_services"
+   ],
+   "seeds": [
+    {
+     "name": "Trades",
+     "why": "a trade you can trust: work-blue with a safety amber",
+     "bg": "#f5f6f7",
+     "ink": "#14202b",
+     "accent": "#1565c0",
+     "alt": "#f59e0b",
+     "font": "sans"
+    },
+    {
+     "name": "Workwear",
+     "why": "workwear: deep teal with a hi-vis orange",
+     "bg": "#f6f4ef",
+     "ink": "#1c2b2d",
+     "accent": "#264653",
+     "alt": "#e07a00",
+     "font": "sans"
+    }
+   ]
+  }
+ ]
+}

@@ -28,6 +28,8 @@ export type DesignRecord = {
   layouts: string[]
   /** the stored components of the page (library engine), by order of the page: what the person kept or turned down, part by part (parts taste) */
   parts?: string[]
+  /** the design idea (concept.ts) that was on the page: what the person kept, turned down or corrected is about it */
+  concept?: string
   heroTitle: string
   /** the texts of the design by place (brand name replaced): what the phrase scores are about */
   copy?: Record<string, string>

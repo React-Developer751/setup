@@ -97,6 +97,13 @@ commands), `npm run eval:intents` (free-language examples; add `-- --meaning` fo
   * the saved versions are in Copy, Download and the project .zip. A file the generator made again after the person changed it is marked, and they choose "Keep mine" or "Use the new file".
 * Tests: `test-experience.mjs`, `test-codesync.mjs`, `test-component-compile.mjs`.
 
+## The generator's own idea, and learning from corrections
+
+* **A design idea** (`src/generator/concept.ts`, palettes in `src/data/concepts.json`): before a site is made, the generator thinks what the business should *look like*: coffee is brown and cream (not the pink of a default design), a gym is black with a strike of lime, a clinic is clean teal. 22 families of palettes with a reason each, built into a whole palette for both modes (every text readable). It is an edit like any other (`concept` op): it shows in the chat as "My idea for this business: ...", can be undone, and what the person changes afterwards is theirs. Add a family or a palette to `concepts.json` and it is used at once.
+* **Freedom**: at Balanced creativity now and then, at Wild often, the idea is a **bet**: a bolder turn of a known palette that is on no list, said as a bet ("tell me if it is wrong"). Bets stay inside the hues the business may wear and never repeat a hue already used by that business.
+* **It learns from corrections** (`memory/correctionMemory.ts`, kept in this browser): a colour the person changes the accent to becomes the accent of the next idea for that kind of business ("I used the colour you chose before ..."); a part they removed twice is left out by default; an idea they marked right is preferred and one they turned down (or changed the colour of) is avoided. Tests: `test-concept.mjs`.
+* **Menu board** (`refkit/RefMenu1`): food businesses (cafe, restaurant, bakery, German cafe, chai stall) show a menu of their own items, no invented prices; if the person writes prices they are shown as prices.
+
 ## Taste: parts chosen together, learned from your own components
 
 * `npm run learn:components` (`scripts/learn-components.mjs`) reads every component in `src/components` and writes `src/data/models/component-taste.json`: seven numbers between 0 and 1 for each (how dense, loud, soft, dark, picture-led, centred and airy). It is plain counting of the markup, no model and no network. Run it again whenever components are added.

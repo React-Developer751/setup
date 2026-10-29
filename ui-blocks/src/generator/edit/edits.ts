@@ -5,7 +5,7 @@
 // understanding layers (rules, learned model), which all only have to produce these operations.
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
-import { THEME_KEYS, type ThemeKey } from '../themes'
+import { THEME_KEYS, type PaletteMode, type ThemeKey } from '../themes'
 
 /** parts of a page that can be removed or added */
 export const SECTIONS = ['stats', 'marquee', 'features', 'about', 'steps', 'gallery', 'pricing', 'team', 'testimonials', 'blog', 'faq', 'cta', 'contact'] as const
@@ -99,9 +99,17 @@ export type EditOp =
   | ({ op: 'photos' } & PhotoSet)
   | { op: 'clearPhotos' }
   | { op: 'core'; data: CoreBlocks }
+  | { op: 'concept'; data: ConceptData }
   | { op: 'tier'; tier: Tier }
   | { op: 'motion'; level: MotionSetting }
   | { op: 'theme'; theme: ThemeKey }
+
+/**
+ * The generator's own idea of how a business should look (concept.ts): a whole palette of its own for both modes, a typeface, and the words that say why.
+ * It is an edit like any other: it shows in the chat, it can be undone, and what the person changes afterwards is theirs.
+ */
+export type ConceptData = { id: string; name: string; why: string; light: PaletteMode; dark: PaletteMode; font?: string }
+const CONCEPT_FIELDS = ['bg', 'surface', 'border', 'text', 'muted', 'accent', 'alt'] as const
 
 /** the texts of a page written by Core-Craft AI (the second Content AI) about what the person said: their own services, their place, their language */
 export type CoreBlocks = {
@@ -144,6 +152,8 @@ export type SiteEdits = {
   services?: ServiceItem[]
   /** texts of Core-Craft AI (op 'core') */
   core?: CoreBlocks
+  /** the generator's own idea of the look (op 'concept') */
+  concept?: ConceptData
   photos?: PhotoSet
   /** new headings of sections */
   titles: Partial<Record<TitleSection, string>>
@@ -165,6 +175,7 @@ export type SiteEdits = {
 export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {} })
 
 const HEX = /^#[0-9a-f]{6}$/i
+const CONCEPT_FONTS: Record<string, true> = { serif: true, sans: true, mono: true, elegant: true, rounded: true, display: true }
 const clean = (text: unknown, max: number) => (typeof text === 'string' ? text.replace(/\p{Cc}+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '')
 
 const noMarkup = (text: string) => text.replace(/[<>]/g, '')
@@ -310,6 +321,24 @@ export function cleanOp(raw: unknown): EditOp | undefined {
     case 'core': {
       const data = cleanCore(o.data)
       return data ? { op: 'core', data } : undefined
+    }
+    case 'concept': {
+      const d = (o.data ?? {}) as Record<string, unknown>
+      const mode = (raw: unknown) => {
+        const m = (raw ?? {}) as Record<string, unknown>
+        const out: Record<string, string> = {}
+        for (const field of CONCEPT_FIELDS) {
+          const value = String(m[field] ?? '').toLowerCase()
+          if (!HEX.test(value)) return undefined
+          out[field] = value
+        }
+        return out as unknown as PaletteMode
+      }
+      const light = mode(d.light)
+      const dark = mode(d.dark)
+      const text = (v: unknown, n: number) => String(v ?? '').replace(/\p{Cc}+/gu, ' ').trim().slice(0, n)
+      if (!light || !dark || !text(d.name, 40)) return undefined
+      return { op: 'concept', data: { id: text(d.id, 40) || 'idea', name: text(d.name, 40), why: text(d.why, 300), light, dark, ...(typeof d.font === 'string' && d.font in CONCEPT_FONTS ? { font: d.font } : {}) } }
     }
     case 'services': {
       const items = (Array.isArray(o.items) ? o.items : [])
@@ -465,6 +494,9 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'core':
         e.core = op.data
         break
+      case 'concept':
+        e.concept = op.data
+        break
       case 'tier':
         e.tier = op.tier
         break
@@ -544,6 +576,8 @@ export function describeOp(op: EditOp): string {
       return `Added photos: ${[op.hero ? 'first screen' : '', op.about ? 'about' : '', op.gallery ? `${op.gallery.length} in the gallery` : ''].filter(Boolean).join(', ')}`
     case 'clearPhotos':
       return 'Removed the photos'
+    case 'concept':
+      return `A design idea of its own: ${op.data.name}${op.data.why ? ` (${op.data.why.slice(0, 80)}${op.data.why.length > 80 ? '...' : ''})` : ''}`
     case 'core': {
       const blocks = [op.data.hero ? 'heading' : '', op.data.features ? `${op.data.features.items.length} services` : '', op.data.about ? 'about' : '', op.data.steps ? 'steps' : '', op.data.faq ? 'questions' : '', op.data.lang === 'hi' ? 'in Hindi' : ''].filter(Boolean)
       return `Texts from Core-Craft AI about your own services: ${blocks.join(', ')}`

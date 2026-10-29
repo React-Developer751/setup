@@ -25,6 +25,7 @@ import { ToolsDrawer } from './ToolsDrawer'
 import { CodeView } from './CodeView'
 import type { FileEdit } from './codeEdits'
 import { codeWithoutContent, opsFromEditedCode } from './generator/edit/codeSync'
+import { correctionStore } from './generator/memory/correctionMemory'
 import { compileComponent, componentIdOfPath, setComponentOverrides } from './generator/library/componentOverrides'
 import { Landing } from './Landing'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
@@ -268,7 +269,7 @@ function GeneratorPage() {
   const newDesign = async (prompt: string) => {
     const store = designStore ?? (await openStore())
     if (!designStore) setDesignStore(store)
-    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature(), phrases: await loadPhraseScores() })
+    const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature(), phrases: await loadPhraseScores(), corrections: correctionStore.list() })
     await store.add(plan.record).catch(() => undefined)
     setCurrentDesign(plan.record.id)
     setDesigns(await store.list(businessKey(prompt)).catch(() => []))
@@ -439,7 +440,19 @@ function GeneratorPage() {
     }
   }, [])
 
-  const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string) => {
+  /** what the person corrected (a colour they chose, a part they took out or put in): remembered, and the next idea for this kind of business starts from it */
+  const recordCorrections = (ops: EditOp[]) => {
+    const concept = [...history].reverse().flatMap((h) => h.ops).find((o) => o.op === 'concept')
+    const base = { at: new Date().toISOString(), key: businessKey(submitted), theme: themeKey, conceptId: concept?.op === 'concept' ? concept.data.id : undefined }
+    for (const op of ops) {
+      if (op.op === 'accent') correctionStore.add({ ...base, kind: 'accent', from: concept?.op === 'concept' ? concept.data.light.accent : undefined, to: op.hex })
+      else if (op.op === 'remove' || op.op === 'add') correctionStore.add({ ...base, kind: op.op, section: op.section })
+      else if (op.op === 'mood') correctionStore.add({ ...base, kind: 'mood', to: op.mood })
+      else if (op.op === 'mode') correctionStore.add({ ...base, kind: 'mode', to: op.mode })
+    }
+  }
+  const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string, person = false) => {
+    if (person || chatting.current) recordCorrections(ops)
     let logId: string | undefined
     // a text the person writes over is a text they did not want
     if (chatting.current) for (const o of ops) if (o.op === 'text' && (PHRASE_SLOTS as readonly string[]).includes(o.field)) learn([o.field as PhraseSlot], -1, 'replaced')
@@ -773,7 +786,7 @@ function GeneratorPage() {
             onChoose={choose}
             onColor={(hex, label, alt) => {
               say({ role: 'user', text: label })
-              applyOps(label, [{ op: 'accent', hex }, ...(alt ? [{ op: 'alt' as const, hex: alt }] : [])], 'rules', alt ? 'Took the main colour and a second colour from the picture.' : 'Took the main colour from the picture.')
+              applyOps(label, [{ op: 'accent', hex }, ...(alt ? [{ op: 'alt' as const, hex: alt }] : [])], 'rules', alt ? 'Took the main colour and a second colour from the picture.' : 'Took the main colour from the picture.', true)
             }}
             onUndo={undo}
             onRedo={redo}
@@ -820,6 +833,7 @@ function GeneratorPage() {
                 onChange={(e) => {
                   const mood = e.target.value as MoodChoice
                   say({ role: 'user', text: `Design mood: ${mood}` })
+                  recordCorrections([{ op: 'mood', mood }])
                   applyOps(`Design mood: ${mood}`, [{ op: 'mood', mood }], 'rules', mood === 'none' ? 'Back to the look of the business type.' : mood === 'auto' ? 'The mood is chosen by the generator.' : `The ${MOODS.find((m) => m.id === mood)?.label ?? mood} look: its colours, typeface, shapes and the colour of each panel.`)
                 }}
                 className="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm"

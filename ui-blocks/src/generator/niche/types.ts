@@ -16,6 +16,8 @@ export type Niche = {
   faq: { q: string; a: string }[]
   cta: { title: string; button: string }
   about: { title: string; paragraphs: string[]; points: string[] }
+  /** a menu board: categories with their items (an item may carry a short note after " | ") */
+  menu?: { title: string; lead?: string; categories: { name: string; items: string[] }[] }
   pricing: { title: string; plans: { name: string; price: string; period: string; perks: string[] }[] }
   gallery: { title: string; captions: string[] }
   team: { title: string; roles: string[] }

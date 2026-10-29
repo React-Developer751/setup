@@ -51,6 +51,6 @@ export function editCss(edits: SiteEdits | undefined): string {
 
 /** the typeface the person chose for the page ("serif font"): the CSS variables every font class of the page reads */
 export function chosenFont(edits: SiteEdits | undefined): Record<string, string> | undefined {
-  const key = edits?.styles?.page?.font
+  const key = edits?.styles?.page?.font ?? edits?.concept?.font
   return key && key !== 'default' ? fontChoiceTokens(key) : undefined
 }

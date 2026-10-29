@@ -1337,7 +1337,54 @@
       "Free Wifi",
       "Takeaway"
     ],
-    "contactText": "Drop in or message {brand} to ask about our menu, reserve a table or plan a small get together."
+    "contactText": "Drop in or message {brand} to ask about our menu, reserve a table or plan a small get together.",
+    "menu": {
+      "title": "On The Menu",
+      "lead": "A short menu, made fresh at the counter. Ask the barista for today's specials and for any milk you prefer.",
+      "categories": [
+        {
+          "name": "Coffee",
+          "items": [
+            "Espresso | single or double",
+            "Americano",
+            "Flat white | smooth and strong",
+            "Cappuccino",
+            "Cortado",
+            "Cold brew | slow steeped"
+          ]
+        },
+        {
+          "name": "Tea And Chai",
+          "items": [
+            "Masala chai | ginger and cardamom",
+            "Kadak chai | strong and sweet",
+            "Green tea",
+            "Lemon iced tea",
+            "Hot chocolate"
+          ]
+        },
+        {
+          "name": "Bites",
+          "items": [
+            "Grilled sandwich",
+            "Cheese toastie",
+            "Peri peri fries",
+            "Pasta of the day",
+            "Avocado toast"
+          ]
+        },
+        {
+          "name": "Sweet Things",
+          "items": [
+            "Brownie | warm on request",
+            "Cheesecake slice",
+            "Chocolate chip cookie",
+            "Banana bread",
+            "Tiramisu cup"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": "restaurant_dining",
@@ -1565,7 +1612,53 @@
       "Celebrations",
       "Chef Specials"
     ],
-    "contactText": "Call or message {brand} to book a table or plan a family celebration, and we will take care of the rest."
+    "contactText": "Call or message {brand} to book a table or plan a family celebration, and we will take care of the rest.",
+    "menu": {
+      "title": "From The Kitchen",
+      "lead": "A taste of what we cook. The full menu changes with the season: ask your server for today's specials.",
+      "categories": [
+        {
+          "name": "To Start",
+          "items": [
+            "Soup of the day",
+            "Bruschetta",
+            "Crispy corn",
+            "Paneer tikka | from the tandoor",
+            "Garlic bread"
+          ]
+        },
+        {
+          "name": "Main Course",
+          "items": [
+            "Wood fired pizza",
+            "Fresh pasta | red or white sauce",
+            "Butter chicken",
+            "Dal makhani | slow cooked",
+            "Veg biryani"
+          ]
+        },
+        {
+          "name": "On The Side",
+          "items": [
+            "Garden salad",
+            "Naan or roti",
+            "Steamed rice",
+            "Raita",
+            "French fries"
+          ]
+        },
+        {
+          "name": "To Finish",
+          "items": [
+            "Tiramisu",
+            "Gulab jamun | warm",
+            "Chocolate lava cake",
+            "Ice cream",
+            "Filter coffee"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": "bakery_cakes",
@@ -1787,7 +1880,53 @@
       "Custom Designs",
       "Delivery"
     ],
-    "contactText": "Message or call {brand} with your date, flavour and design idea, and we will confirm your cake order."
+    "contactText": "Message or call {brand} with your date, flavour and design idea, and we will confirm your cake order.",
+    "menu": {
+      "title": "Fresh From The Oven",
+      "lead": "Baked every morning in small batches. Order a custom cake a few days ahead and tell us the occasion.",
+      "categories": [
+        {
+          "name": "Cakes",
+          "items": [
+            "Chocolate truffle",
+            "Red velvet",
+            "Fresh fruit cake",
+            "Pineapple cake",
+            "Eggless vanilla | on request"
+          ]
+        },
+        {
+          "name": "Pastries",
+          "items": [
+            "Butter croissant",
+            "Danish",
+            "Cream roll",
+            "Choco eclair",
+            "Cupcakes"
+          ]
+        },
+        {
+          "name": "Breads",
+          "items": [
+            "Sourdough loaf",
+            "Garlic bread",
+            "Multigrain loaf",
+            "Pav",
+            "Focaccia"
+          ]
+        },
+        {
+          "name": "Cookies And Snacks",
+          "items": [
+            "Oatmeal cookies",
+            "Brownies",
+            "Cheese puffs",
+            "Muffins",
+            "Khari and toast"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": "pet_grooming_vet",
