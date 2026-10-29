@@ -19,7 +19,7 @@
       "Cockroaches Out, Peace Of Mind In"
     ],
     "heroSubtitles": [
-      "{brand} treats your home with licensed technicians and medicines that are safe around kids and pets.",
+      "{brand} treats your home with careful technicians and medicines that are safe around kids and pets.",
       "Call in the morning and our team can be at your door by evening, with a clear price before we start.",
       "From kitchen cockroaches to termites inside cupboards, {brand} clears the problem and keeps it from coming back."
     ],
@@ -57,8 +57,8 @@
         "label": "Inspection visit"
       },
       {
-        "value": "Licensed",
-        "label": "Technicians"
+        "value": "Careful",
+        "label": "Technicians at every visit"
       },
       {
         "value": "Safe",
@@ -1669,11 +1669,11 @@
     "about": {
       "title": "About Our Cleaning Team",
       "paragraphs": [
-        "{brand} provides trained and verified cleaners for homes, offices and shops, using machines that clean better than a mop alone.",
+        "{brand} provides trained cleaners for homes, offices and shops, using machines that clean better than a mop alone.",
         "We keep a checklist for each room so nothing is skipped, and we ask for your feedback before the team leaves."
       ],
       "points": [
-        "Verified, uniformed staff",
+        "Uniformed, briefed staff",
         "Room by room checklist",
         "Re-clean if something is missed"
       ]
@@ -2724,8 +2724,8 @@
         "label": "Common repairs"
       },
       {
-        "value": "Warranty",
-        "label": "On every repair"
+        "value": "Written",
+        "label": "Estimate before repair"
       }
     ],
     "steps": {

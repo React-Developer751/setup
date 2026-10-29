@@ -185,7 +185,8 @@ const garbled = (line: string) => {
 }
 /** an offer or a condition ("free shipping above 999", "7 day returns") is not a service: Core-Craft sometimes lists it as one */
 const OFFER = /free (?:shipping|delivery|trial)|cash on delivery|\bcod\b|\d+[- ]?day|returns?\b|% off|above \d|over \d|discount/i
-const cards = (page: CorePage) => [...page.features.filter((f) => !NAME_MARKERS.has(f.title.trim().toLowerCase()) && !OFFER.test(f.title) && !(page.type_label && page.type_label.trim().toLowerCase() === f.title.trim().toLowerCase())), ...page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase()))].slice(0, 6)
+// the highlights ("Easy to reach", "Local and personal") are values of the business, not things it sells: they fill the cards only when there are fewer than three services
+const cards = (page: CorePage) => [...page.features.filter((f) => !NAME_MARKERS.has(f.title.trim().toLowerCase()) && !OFFER.test(f.title) && !(page.type_label && page.type_label.trim().toLowerCase() === f.title.trim().toLowerCase())), ...(page.features.length >= 3 ? [] : page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase())))].slice(0, 6)
 
 export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   const review = page.needs_review ?? []

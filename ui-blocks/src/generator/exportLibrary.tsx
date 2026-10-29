@@ -103,6 +103,45 @@ route();
 `
     : ''
 
+/**
+ * The forms of the page send their fields to the e-mail of the business (the mail program of the visitor opens with the message written), or to the
+ * address in `data-endpoint` / `window.SITE_FORM_ENDPOINT` when the owner has a form service. A form that has nowhere to go says so instead of pretending.
+ */
+const formScript = (lib: Library) => {
+  const email = /^[^\s@"<>]+@[^\s@"<>]+\.[^\s@"<>]+$/.test(lib.content.contact.email ?? '') && !/example\.|your-?domain|yourbusiness/i.test(lib.content.contact.email) ? lib.content.contact.email : ''
+  return `
+const LEAD = { email: ${jsString(email)}, brand: ${jsString(lib.content.brandName)} };
+document.addEventListener('submit', (event) => {
+  const form = event.target;
+  if (!form || form.tagName !== 'FORM' || !form.hasAttribute('data-lead')) return;
+  event.preventDefault();
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const rows = [];
+  new FormData(form).forEach((value, key) => { const text = String(value).trim(); if (text) rows.push([key.replace(/[-_]+/g, ' '), text]); });
+  const say = (text, ok) => {
+    let note = form.querySelector('[data-lead-note]');
+    if (!note) { note = document.createElement('p'); note.setAttribute('data-lead-note', ''); note.setAttribute('role', 'status'); note.style.cssText = 'margin-top:.75rem;font-size:.9rem'; form.appendChild(note); }
+    note.textContent = text; note.style.color = ok ? '#15803d' : '#b45309';
+  };
+  const endpoint = form.getAttribute('data-endpoint') || window.SITE_FORM_ENDPOINT;
+  if (endpoint) {
+    fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(Object.fromEntries(rows)) })
+      .then((r) => { if (!r.ok) throw new Error('bad'); form.reset(); say('Thank you, your message was sent.', true); })
+      .catch(() => say('Sorry, the message could not be sent. Please contact us directly.', false));
+    return;
+  }
+  if (LEAD.email) {
+    const subject = form.getAttribute('data-subject') || ('Message from the website of ' + LEAD.brand);
+    const body = rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
+    say('Your mail program is opening with the message written. Press send there to finish.', true);
+    window.location.href = 'mailto:' + LEAD.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    return;
+  }
+  say('This form is not connected yet. Please contact us directly.', false);
+});
+`
+}
+
 function renderLibrary(lib: Library) {
   // draw the page once in memory: the components, then ThemeScope fills their text and sets the colours
   const host = document.createElement('div')
@@ -218,7 +257,7 @@ document.addEventListener('click', (event) => {
 });
 
 ${needsPreline ? 'if (window.HSStaticMethods) window.HSStaticMethods.autoInit();\n' : ''}initMotion(page, MOTION);
-${pagesScript(lib)}</script>
+${pagesScript(lib)}${formScript(lib)}</script>
 </body>
 </html>
 `
@@ -272,7 +311,7 @@ document.addEventListener('click', (event) => {
 });
 if (window.HSStaticMethods) window.HSStaticMethods.autoInit();
 initMotion(page, MOTION);
-${pagesScript(lib)}`
+${pagesScript(lib)}${formScript(lib)}`
   const index = `<!doctype html>
 <html lang="en">
 <head>
@@ -316,8 +355,8 @@ ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src=
   1. Upload everything in this folder to any web host, or open index.html by double-click.
   2. ${siteUrl !== PLACEHOLDER_URL ? `The address ${siteUrl} is already in the sitemap, robots.txt and the canonical link.` : `Replace ${PLACEHOLDER_URL} with your real address in sitemap.xml, robots.txt and index.html.`}
   3. Check the email, phone number and address (they are placeholders unless you filled them in).
-  4. The form layouts come from the stored components and are not connected to anything yet: connect them to a form service
-     such as Formspree or Netlify Forms.
+  4. The forms send their fields to the e-mail address of the site (the visitor's mail program opens with the message written). To receive
+     messages without that step, add a form service address as data-endpoint on the form or set window.SITE_FORM_ENDPOINT.
 `,
     },
   ].map((file) => ({ ...file, path: `${libraryProjectName(lib)}-static/${file.path}` }))

@@ -2693,7 +2693,7 @@
       },
       {
         "title": "Diamond Collection",
-        "text": "Rings, solitaires, pendants and earrings with certified stones, set in gold or platinum."
+        "text": "Rings, solitaires, pendants and earrings with every stone described on the bill, set in gold or platinum."
       },
       {
         "title": "Bridal Sets",
@@ -2718,8 +2718,8 @@
         "label": "Gold pieces"
       },
       {
-        "value": "Certified",
-        "label": "Diamond stones"
+        "value": "Detailed",
+        "label": "Bill for every stone"
       },
       {
         "value": "Custom",

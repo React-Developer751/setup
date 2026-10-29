@@ -2248,10 +2248,10 @@
     "heroTitles": [
       "Your Neighbourhood Medical Store",
       "Medicines With Careful Checking And Delivery",
-      "Prescriptions Filled By A Registered Pharmacist"
+      "Prescriptions Checked By The Pharmacist"
     ],
     "heroSubtitles": [
-      "{brand} stocks prescription and over-the-counter medicines, with a registered pharmacist checking every prescription.",
+      "{brand} stocks prescription and over-the-counter medicines, with a pharmacist checking every prescription.",
       "Send your prescription to {brand} on WhatsApp and have medicines delivered to your door in the neighbourhood.",
       "{brand} also keeps health devices, baby care and wellness items, and reminds regular customers about monthly refills."
     ],
@@ -2260,7 +2260,7 @@
     "features": [
       {
         "title": "Prescription Medicines",
-        "text": "Medicines filled as written and checked by a registered pharmacist before they are handed over."
+        "text": "Medicines filled as written and checked by the pharmacist before they are handed over."
       },
       {
         "title": "Home Delivery",
@@ -2285,8 +2285,8 @@
     ],
     "stats": [
       {
-        "value": "Registered",
-        "label": "Pharmacist"
+        "value": "Pharmacist",
+        "label": "At the counter"
       },
       {
         "value": "Local",
@@ -2321,7 +2321,7 @@
     "faq": [
       {
         "q": "Can I buy prescription medicines without a prescription?",
-        "a": "No. Prescription-only medicines are dispensed only against a valid prescription from a registered doctor."
+        "a": "No. Prescription-only medicines are dispensed only against a valid prescription from a doctor."
       },
       {
         "q": "Do you deliver outside your area?",
@@ -2347,7 +2347,7 @@
     "about": {
       "title": "A Pharmacy That Takes Time To Check",
       "paragraphs": [
-        "{brand} is a local medical store run by a registered pharmacist, serving regular customers and families who value careful counter service.",
+        "{brand} is a local medical store run by a pharmacist, serving regular customers and families who value careful counter service.",
         "We keep records of refills for those who need them and explain how and when to take each medicine as the doctor has advised."
       ],
       "points": [
@@ -2405,7 +2405,7 @@
     "team": {
       "title": "Meet The Staff",
       "roles": [
-        "Registered Pharmacist",
+        "Pharmacist In Charge",
         "Pharmacy Assistant",
         "Delivery Executive"
       ]

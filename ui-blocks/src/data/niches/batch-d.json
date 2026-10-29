@@ -241,7 +241,7 @@
       "Higher Angles, Sharper Stories"
     ],
     "heroSubtitles": [
-      "{brand} flies licensed pilots and 4K camera drones to capture weddings, property, events and sites from angles the ground cannot reach.",
+      "{brand} flies planned shoots with 4K camera drones to capture weddings, property, events and sites from angles the ground cannot reach.",
       "Need a smooth aerial reel or a clean overhead map of your land? {brand} plans the flight, shoots it safely and edits it for you.",
       "Weddings, farmhouses, factories and festivals look different from above, and {brand} films them with steady, cinematic drone footage."
     ],
@@ -279,8 +279,8 @@
         "label": "Video resolution"
       },
       {
-        "value": "Licensed",
-        "label": "Drone pilots"
+        "value": "Planned",
+        "label": "Flights before the shoot"
       },
       {
         "value": "Pre-planned",
@@ -341,7 +341,7 @@
         "Safety comes before the shot. We carry spare batteries, check wind and airspace, and never fly over people without clear distance."
       ],
       "points": [
-        "Licensed pilots",
+        "Planned flights",
         "Light and angle planning",
         "Safe flights only"
       ]
@@ -395,7 +395,7 @@
     "team": {
       "title": "The Flight Crew",
       "roles": [
-        "Licensed Drone Pilot",
+        "Drone Pilot",
         "Aerial Video Editor",
         "Flight Coordinator"
       ]
@@ -1576,7 +1576,7 @@
     "heroSubtitles": [
       "{brand} collects scrap metal, paper, plastic and old electronics from your door, weighs it in front of you and pays instantly.",
       "Homes, offices and factories can book a pickup with {brand}. We use a digital scale, quote today's rate and pay by cash or UPI.",
-      "Sorted and sent to licensed recyclers, your waste from {brand} pickups does not end up in a landfill or a roadside dump."
+      "Sorted and sent on for recycling, your waste from {brand} pickups does not end up in a landfill or a roadside dump."
     ],
     "button": "Book A Scrap Pickup",
     "featureTitle": "Scrap We Buy And Recycle",
@@ -1616,8 +1616,8 @@
         "label": "Weighing on your doorstep"
       },
       {
-        "value": "Licensed",
-        "label": "Recycling partners"
+        "value": "Sorted",
+        "label": "Metal, paper and plastic"
       }
     ],
     "steps": {
@@ -1671,12 +1671,12 @@
       "title": "Fair Weight, Fair Rate, Proper Recycling",
       "paragraphs": [
         "{brand} is a scrap buying and recycling business that works on a simple promise: honest weighing, a rate told upfront and payment before we leave.",
-        "We sort what we collect and pass it to licensed recyclers, so metal, paper and electronics are reused instead of burned or dumped."
+        "We sort what we collect and pass it on to recyclers, so metal, paper and electronics are reused instead of burned or dumped."
       ],
       "points": [
         "Honest digital weighing",
         "Rates told upfront",
-        "Licensed recycling only"
+        "Sorted before recycling"
       ]
     },
     "pricing": {
@@ -2953,8 +2953,8 @@
         "label": "Booking by phone"
       },
       {
-        "value": "Verified",
-        "label": "Drivers with licence"
+        "value": "Clear",
+        "label": "Driver details before pickup"
       }
     ],
     "steps": {
@@ -3133,7 +3133,7 @@
       "Security That Shows Up On Time, Every Shift"
     ],
     "heroSubtitles": [
-      "{brand} supplies verified, uniformed security guards for societies, offices, factories, shops and events, with supervisors who check in.",
+      "{brand} supplies uniformed security guards for societies, offices, factories, shops and events, with supervisors who check in.",
       "Whether you need one night guard or a full shift roster, {brand} handles recruitment, training, uniforms, attendance and replacements.",
       "From the gate register to patrol rounds, {brand} guards follow written duty instructions and report to a supervisor every day."
     ],
@@ -3157,7 +3157,7 @@
         "text": "Crowd control, entry management and bouncers for weddings, concerts and private parties."
       },
       {
-        "title": "Verified And Trained Staff",
+        "title": "Trained And Briefed Staff",
         "text": "Every guard has police verification and ID checks, plus training in basic fire safety and emergency response."
       },
       {
@@ -3167,8 +3167,8 @@
     ],
     "stats": [
       {
-        "value": "Verified",
-        "label": "Guards with ID checks"
+        "value": "Clear",
+        "label": "Duty instructions in writing"
       },
       {
         "value": "Same day",
@@ -3233,7 +3233,7 @@
         "Clients get a named supervisor, written duty instructions and quick replacements, so security stays steady even when staff change."
       ],
       "points": [
-        "Police verified staff",
+        "Briefed, uniformed staff",
         "Named field supervisor",
         "Written duty instructions"
       ]
@@ -3328,7 +3328,7 @@
       "Gate Duty",
       "Night Patrol",
       "Event Bouncers",
-      "Verified Staff",
+      "Briefed Staff",
       "Supervisors",
       "Access Control",
       "Site Safety"

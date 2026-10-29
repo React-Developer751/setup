@@ -1130,6 +1130,96 @@ function scrubLeftovers(root: Element, before: Set<string>, role: Role, c: Websi
   }
 }
 
+/**
+ * Some kits draw a form without a <form> (fields and a button in a div): the smallest block that holds the fields of one button becomes the form.
+ */
+function formsFromFields(root: Element) {
+  const loose = (el: Element) => !el.closest('form') && el.matches('input, textarea') && !['checkbox', 'radio', 'submit', 'button', 'hidden', 'file', 'search'].includes((el.getAttribute('type') ?? 'text').toLowerCase())
+  const sends = [...root.querySelectorAll('button, input[type="submit"], a[role="button"]')].filter((b) => !b.closest('form') && /send|submit|subscribe|book|request|join|sign ?up|get in touch|enquire|inquire/i.test(visibleText(b) || (b as HTMLInputElement).value || ''))
+  for (const button of sends) {
+    if (button.closest('form')) continue
+    let found: Element | null = button.parentElement
+    while (found && found !== root && ![...found.querySelectorAll('input, textarea')].some(loose)) found = found.parentElement
+    if (!found || found === root) continue
+    let box: Element = found
+    // climb while the parent holds nothing else that is a field or another sending button
+    while (box.parentElement && box.parentElement !== root) {
+      const up: Element = box.parentElement
+      const inside = box
+      const others = [...up.querySelectorAll('input, textarea')].filter((f) => loose(f) && !inside.contains(f)).length + sends.filter((b) => b !== button && up.contains(b) && !inside.contains(b)).length
+      if (others) break
+      box = up
+    }
+    const fields = [...box.querySelectorAll('input, textarea')].filter(loose)
+    if (!fields.length) continue
+    const form = box.ownerDocument.createElement('form')
+    for (const attr of [...box.attributes]) form.setAttribute(attr.name, attr.value)
+    while (box.firstChild) form.appendChild(box.firstChild)
+    box.replaceWith(form)
+    if (button.tagName === 'BUTTON') button.setAttribute('type', 'submit')
+    if (fields.length === 1 && /subscribe|join|sign ?up/i.test(visibleText(button))) form.setAttribute('data-subject', 'Newsletter signup')
+  }
+}
+
+/**
+ * A form of the kit is a drawing: no names on the fields, nothing required, nowhere to go. Every form gets named fields and the three that make a
+ * message worth reading (name, e-mail, message) required; the page script (exportLibrary.tsx, `formScript`) sends it to the e-mail of the business.
+ */
+function readyForms(root: Element) {
+  formsFromFields(root)
+  root.querySelectorAll('form').forEach((form) => {
+    form.setAttribute('data-lead', '')
+    form.setAttribute('novalidate', '')
+    const used = new Set<string>()
+    form.querySelectorAll('input, textarea').forEach((field, i) => {
+      const type = (field.getAttribute('type') ?? 'text').toLowerCase()
+      if (['checkbox', 'radio', 'submit', 'button', 'hidden', 'file'].includes(type)) return
+      const key = `${field.getAttribute('name') ?? ''} ${field.getAttribute('id') ?? ''} ${field.getAttribute('placeholder') ?? ''} ${field.getAttribute('aria-label') ?? ''}`.toLowerCase()
+      const needed = field.tagName === 'TEXTAREA' || type === 'email' || /message|how can/.test(key) || (/\bname\b|first/.test(key) && !/last|company|brand/.test(key))
+      if (needed) field.setAttribute('required', '')
+      let name = (field.getAttribute('name') ?? '').trim() || key.replace(/[^a-z]+/g, ' ').trim().split(' ').slice(0, 2).join('-') || `field-${i + 1}`
+      while (used.has(name)) name = `${name}-${i + 1}`
+      used.add(name)
+      field.setAttribute('name', name)
+    })
+  })
+}
+
+/** a link that goes nowhere ("#"): a "learn more" opens the contact part, a social icon without an address and a policy page that does not exist are taken out */
+function fixDeadLinks(root: Element, role: Role, c: WebsiteContent) {
+  root.querySelectorAll('a').forEach((a) => {
+    // (a link the kit left without any address is as dead as "#")
+    const href = (a.getAttribute('href') ?? '').trim()
+    if (href !== '#' && href !== '') return
+    const label = visibleText(a)
+    if (/^(privacy|terms|cookies?|legal|policy|disclaimer)\b/i.test(label)) return void (a.closest('li') ?? a).remove()
+    if (!label) return void (a.closest('li') ?? a).remove()
+    if (label.toLowerCase() === c.brandName.toLowerCase() || /^home$/i.test(label)) return a.setAttribute('href', '#home')
+    a.setAttribute('href', role === 'faq' ? '#faq' : '#contact')
+  })
+}
+
+/**
+ * The same sentence twice on the page (a kit shows three cards, the page has two paragraphs; the about part repeats a service): the second one is
+ * replaced by a line of this page that is not on it yet, or the paragraph goes. Called once the whole page is filled (ThemeScope).
+ */
+export function dropRepeats(root: Element, c: WebsiteContent) {
+  const onPage = visibleText(root)
+  const pool = [...c.features.items.map((f) => f.text), ...c.steps.items.map((s) => s.text), ...c.about.points].filter((t) => t.length >= 30 && !onPage.includes(t))
+  const seen = new Set<string>()
+  root.querySelectorAll('p, li, span').forEach((el) => {
+    if (!isLeaf(el)) return
+    const text = visibleText(el)
+    if (text.length < 40) return
+    if (!seen.has(text)) return void seen.add(text)
+    const next = pool.shift()
+    if (next) {
+      setText(el, next)
+      seen.add(next)
+    } else el.remove()
+  })
+}
+
 export function fillContent(root: Element, role: Role, c: WebsiteContent, links: Link[], colors?: { accent: string; alt: string }) {
   // every step is guarded on its own: one that throws on unusual markup or content must not leave the names and numbers of the kit in the finished page
   const step = (name: string, fn: () => void) => {
@@ -1144,7 +1234,9 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   if (root.querySelector('[data-ref]')) {
     const own = [c.photos?.hero, c.photos?.about, ...(c.photos?.gallery ?? [])].filter((p): p is string => !!p)
     const picture = (index: number, w: number, h: number) => own.length ? own[index % own.length] : ((colors && artFor(`ref|${role}|${index}`, colors, w, h)) || blank(w, h))
-    return step('reference kit', () => fillRef(root, role, c, picture))
+    step('reference kit', () => fillRef(root, role, c, picture))
+    step('forms', () => readyForms(root))
+    return step('dead links', () => fixDeadLinks(root, role, c))
   }
   let original = new Set<string>()
   step('read', () => (original = new Set(textsOf(root))))
@@ -1168,13 +1260,16 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     step('menu', () => fillNav(root, c, links))
     // entries of the kit that are still called "Link" after the page's own links are written are placeholders: they go
     step('menu leftovers', () => root.querySelectorAll('a').forEach((el) => { if (/^(link|menu item|nav link)$/i.test(visibleText(el))) (el.closest('li') ?? el).remove() }))
+    step('dead links', () => fixDeadLinks(root, role, c))
     // a made-up sentence of the kit inside the menu ("Some text as placeholder")
     return step('menu clean-up', () => root.querySelectorAll('p, div, span').forEach((el) => isLeaf(el) && /placeholder/i.test(visibleText(el)) && el.remove()))
   }
   if (role === 'footer') {
     step('footer', () => fillFooter(root, c, links))
     // the footer kit spells "Terms" as "Teams"
-    return step('footer typo', () => root.querySelectorAll('a').forEach((a) => { if (visibleText(a) === 'Teams') setText(a, 'Terms') }))
+    step('forms', () => readyForms(root))
+    step('footer typo', () => root.querySelectorAll('a').forEach((a) => { if (visibleText(a) === 'Teams') setText(a, 'Terms') }))
+    return step('dead links', () => fixDeadLinks(root, role, c))
   }
   step('text', () => (role === 'hero' ? fillHero(root, c) : fillSection(root, role, c)))
   step('buttons', () => fillGenericButtons(root, role === 'contact' ? 'Send message' : c.hero.button))
@@ -1185,8 +1280,10 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
     step('answers', () => fillFaqAnswers(root, c))
   }
   step('made-up contact', () => dropMadeUpContact(root, c))
+  step('dead links', () => fixDeadLinks(root, role, c))
 
   step('fields', () => setPlaceholders(root))
+  step('forms', () => readyForms(root))
   step('title', () => ensureTitle(root, role, c))
   step('names', () => replaceBrand(root, c, role === 'testimonial' ? c.testimonials.map((t) => ({ name: t.author, role: t.role })) : c.team.members))
 }

@@ -6,7 +6,7 @@ import type { WebsiteContent } from '../finalPrompt'
 import type { MotionPlan } from '../motionBrain'
 import { initMotion } from '../motionRuntime'
 import { defaultMode, presetPalette, type ColorMode, type Palette, type ThemeKey } from '../themes'
-import { fillContent } from './fillContent'
+import { dropRepeats, fillContent } from './fillContent'
 import { rewritePageLinks } from './pageLinks'
 import { LIBRARY_CSS, artColors, libraryThemeStyle } from './libraryTheme'
 import { sectionIds } from './sectionIds'
@@ -128,6 +128,11 @@ export function ThemeScope({
       el.dataset.filled = '1'
       fillContent(el, el.dataset.role as Role, content, links, artColors(pagePalette[mode].accent, pagePalette[mode].alt))
     })
+    try {
+      dropRepeats(root, content)
+    } catch (error) {
+      console.warn('dropRepeats skipped:', error)
+    }
     if (pages) rewritePageLinks(root)
     // Preline wires up collapse / dropdown behaviour of the navigation blocks
     import('preline').then(({ HSStaticMethods }) => HSStaticMethods.autoInit()).catch(() => {})

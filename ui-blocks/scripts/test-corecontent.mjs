@@ -40,7 +40,7 @@ ok(/Core-Craft AI/.test(E.describeOp(dirty)), 'the op describes itself')
 // ── the page: the texts are about the services of the person
 const blocks = C.decideCore(page(), ours).blocks
 const merged = generateWebsite(ours.prompt, 3, undefined, true, 'auto', E.editsFrom([{ op: 'core', data: blocks }]))
-ok(merged.content.features.items.slice(0, 3).map((f) => f.title).join() === 'Cycles,Helmets,Repairs' && merged.content.features.items.length === 6, 'the feature cards are the services of the person (and calm highlights)')
+ok(merged.content.features.items.slice(0, 3).map((f) => f.title).join() === 'Cycles,Helmets,Repairs' && merged.content.features.items.length >= 3, 'the feature cards are the services of the person (values like "Easy to reach" are not cards)')
 ok(merged.content.steps.items.map((s) => s.title).join() === 'Browse,Choose,Enjoy' && merged.content.faq[0].q === 'Do you offer cycles?', 'steps and questions come from Core-Craft')
 ok(!merged.content.features.items.some((f) => /rental|car care|drive/i.test(JSON.stringify(f))), 'no padding of another business type (car rental next to a bike shop) among the service cards')
 const typed = generateWebsite(ours.prompt, 3, undefined, true, 'auto', E.editsFrom([{ op: 'core', data: blocks }, { op: 'text', field: 'featuresTitle', text: 'My own title' }, { op: 'services', items: [{ name: 'Gears' }, { name: 'Bells' }] }]))

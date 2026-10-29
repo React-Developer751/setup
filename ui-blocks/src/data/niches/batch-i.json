@@ -445,5 +445,451 @@
       "Donate"
     ],
     "contactText": "Found an animal in need, want to adopt or volunteer? Write to us and we will reply quickly."
+  },
+  {
+    "id": "toy_store",
+    "label": "Toy store",
+    "theme": "playful_vibrant",
+    "keywords": [
+      "toy store",
+      "toy shop",
+      "kids toy store",
+      "kids toys",
+      "toys for kids",
+      "baby toys",
+      "educational toys",
+      "board games shop",
+      "खिलौने की दुकान"
+    ],
+    "heroTitles": [
+      "Toys That Kids Ask For Again",
+      "Play Time Starts With The Right Toy",
+      "Toys For Every Age And Every Birthday"
+    ],
+    "heroSubtitles": [
+      "{brand} stocks toys, games and puzzles for every age, with staff who help you pick a gift that fits the child.",
+      "Walk in or order online: building sets, dolls, board games, puzzles and outdoor toys, gift wrapped on request.",
+      "{brand} chooses toys that are safe, sturdy and fun, so parents can buy without second guessing."
+    ],
+    "button": "See The Toys",
+    "featureTitle": "What Fills Our Toy Shelves",
+    "features": [
+      {
+        "title": "Building Blocks And Sets",
+        "text": "Blocks, bricks and construction sets that grow with the child."
+      },
+      {
+        "title": "Dolls And Soft Toys",
+        "text": "Soft toys, dolls and play sets for pretend games and cuddles."
+      },
+      {
+        "title": "Board Games And Puzzles",
+        "text": "Family games and puzzles for rainy days and long evenings."
+      },
+      {
+        "title": "Educational Toys",
+        "text": "Counting, reading and science toys that make learning feel like play."
+      },
+      {
+        "title": "Outdoor And Ride-ons",
+        "text": "Cycles, balls and ride-ons for the park and the garden."
+      },
+      {
+        "title": "Gift Wrapping",
+        "text": "Birthday gifts wrapped neatly and ready to hand over at the party."
+      }
+    ],
+    "stats": [
+      {
+        "value": "All ages",
+        "label": "Toys from baby to teen"
+      },
+      {
+        "value": "Gift wrapped",
+        "label": "On request"
+      },
+      {
+        "value": "Safe",
+        "label": "Materials checked"
+      }
+    ],
+    "steps": {
+      "title": "How Buying A Toy Works",
+      "items": [
+        {
+          "title": "Tell Us The Age",
+          "text": "Share the child's age and what they enjoy."
+        },
+        {
+          "title": "See Some Options",
+          "text": "We show a few toys that suit the age and the budget."
+        },
+        {
+          "title": "Pick And Pay",
+          "text": "Choose in the shop or order online."
+        },
+        {
+          "title": "Gift Wrap Or Delivery",
+          "text": "Take it home wrapped, or have it delivered."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "Which toys suit a two year old?",
+        "a": "Soft blocks, stacking toys and picture books are good at that age. Tell us the child and we will suggest a few."
+      },
+      {
+        "q": "Do you wrap gifts?",
+        "a": "Yes. Gift wrapping is available on request for birthdays and return gifts."
+      },
+      {
+        "q": "Can I exchange a toy?",
+        "a": "Yes, an unused toy in its box can be exchanged. Please keep the bill."
+      },
+      {
+        "q": "Do you take bulk orders for return gifts?",
+        "a": "Yes. Tell us the number of children and your budget, and we will plan a set."
+      },
+      {
+        "q": "Are your toys safe for small children?",
+        "a": "We choose toys made for each age group and mark the age on the shelf. Please check the age label on every toy."
+      }
+    ],
+    "cta": {
+      "title": "Looking For The Right Birthday Gift?",
+      "button": "See The Toys"
+    },
+    "about": {
+      "title": "About Our Toy Shop",
+      "paragraphs": [
+        "{brand} is a toy shop for families who want a good gift without spending a long time searching.",
+        "We choose toys by age, keep the shelves tidy and help you pick something a child will actually use."
+      ],
+      "points": [
+        "Toys by age group",
+        "Gift wrapping on request",
+        "Help choosing a gift"
+      ]
+    },
+    "pricing": {
+      "title": "Gift Budgets",
+      "plans": [
+        {
+          "name": "Small Gift",
+          "price": "$5",
+          "period": "/visit",
+          "perks": [
+            "Puzzles and small toys",
+            "Gift wrapped",
+            "Bill included"
+          ]
+        },
+        {
+          "name": "Birthday Gift",
+          "price": "$20",
+          "period": "/visit",
+          "perks": [
+            "Games and building sets",
+            "Gift wrapped",
+            "Exchange within 7 days"
+          ]
+        },
+        {
+          "name": "Big Gift",
+          "price": "$60",
+          "period": "/visit",
+          "perks": [
+            "Ride-ons and large sets",
+            "Gift wrapped",
+            "Help with delivery"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "On The Shelves",
+      "captions": [
+        "Building sets",
+        "Soft toys",
+        "Board games",
+        "Puzzles",
+        "Ride-ons",
+        "Gift wrapping"
+      ]
+    },
+    "team": {
+      "title": "Meet The Shop Team",
+      "roles": [
+        "Owner",
+        "Toy Advisor",
+        "Gift Wrapper"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "They asked the age and the budget, and the toy they suggested was a hit at the party.",
+        "role": "Parent"
+      },
+      {
+        "quote": "Gift wrapping was ready when we picked up, which saved my evening.",
+        "role": "Customer"
+      },
+      {
+        "quote": "A good choice of board games for the whole family.",
+        "role": "Customer"
+      }
+    ],
+    "blog": {
+      "title": "Toy Guides",
+      "posts": [
+        {
+          "tag": "Gifts",
+          "title": "How To Pick A Birthday Gift By Age"
+        },
+        {
+          "tag": "Play",
+          "title": "Board Games The Whole Family Can Play"
+        },
+        {
+          "tag": "Safety",
+          "title": "Reading The Age Label On A Toy"
+        }
+      ]
+    },
+    "marquee": [
+      "Toys",
+      "Games",
+      "Puzzles",
+      "Gifts",
+      "Blocks",
+      "Dolls",
+      "Outdoor",
+      "Birthday"
+    ],
+    "contactText": "Tell us the child's age and your budget, and we will suggest a few toys."
+  },
+  {
+    "id": "chai_tea_stall",
+    "label": "Chai stall",
+    "theme": "food_dining",
+    "keywords": [
+      "chai ki tapri",
+      "chai tapri",
+      "tea stall",
+      "chai stall",
+      "chai shop",
+      "tea stall",
+      "tapri",
+      "चाय की टपरी",
+      "चाय की दुकान"
+    ],
+    "heroTitles": [
+      "Kadak Chai Made Fresh All Day",
+      "Your Corner For Chai And Bun Maska",
+      "Chai, Snacks And A Place To Sit"
+    ],
+    "heroSubtitles": [
+      "{brand} brews chai fresh all day and serves it with bun maska, toast and hot snacks.",
+      "Stop by for a cup of kadak chai, a quick snack and a few quiet minutes to yourself.",
+      "{brand} is a chai stall that keeps the kettle on from morning till late evening."
+    ],
+    "button": "See The Menu",
+    "featureTitle": "What We Brew And Serve Here",
+    "features": [
+      {
+        "title": "Kadak Masala Chai",
+        "text": "Brewed strong with fresh ginger, cardamom and full cream milk."
+      },
+      {
+        "title": "Bun Maska And Toast",
+        "text": "Soft, buttery bun maska and toast made to go with your chai."
+      },
+      {
+        "title": "Pakoda And Samosa",
+        "text": "Pakoda and samosa fried fresh through the evening, served hot."
+      },
+      {
+        "title": "Cutting Chai",
+        "text": "Small cups of cutting chai for a quick break between errands."
+      },
+      {
+        "title": "Cold Coffee And Lemon Tea",
+        "text": "Cold coffee and lemon tea for hot afternoons when chai feels heavy."
+      },
+      {
+        "title": "Takeaway Cups",
+        "text": "Your chai to go in a sturdy cup that will not leak on the way."
+      }
+    ],
+    "stats": [
+      {
+        "value": "Hot",
+        "label": "Brewed fresh"
+      },
+      {
+        "value": "Kadak",
+        "label": "Masala chai"
+      },
+      {
+        "value": "Quick",
+        "label": "Takeaway"
+      }
+    ],
+    "steps": {
+      "title": "How Chai Reaches You",
+      "items": [
+        {
+          "title": "Tell Us Your Cup",
+          "text": "Plain, masala, ginger or cutting."
+        },
+        {
+          "title": "We Brew It Fresh",
+          "text": "Milk, tea and spices boiled together."
+        },
+        {
+          "title": "Pick A Snack",
+          "text": "Bun maska, toast or something fried."
+        },
+        {
+          "title": "Sip And Relax",
+          "text": "Stand, sit or take it with you."
+        }
+      ]
+    },
+    "faq": [
+      {
+        "q": "What time do you open?",
+        "a": "We keep the kettle on from morning till late evening. Ask us for today's timings."
+      },
+      {
+        "q": "Do you have takeaway?",
+        "a": "Yes. Chai and snacks are available in takeaway cups."
+      },
+      {
+        "q": "Do you serve snacks with chai?",
+        "a": "Yes. Bun maska, toast, pakoda and samosa are made fresh through the day."
+      },
+      {
+        "q": "Can I order for an office?",
+        "a": "Yes. Tell us the number of cups and the time, and we will keep it ready."
+      },
+      {
+        "q": "Is there somewhere to sit?",
+        "a": "There is a small seating area. At busy times many people take their cup to go."
+      }
+    ],
+    "cta": {
+      "title": "Ready For A Cup Of Chai?",
+      "button": "See The Menu"
+    },
+    "about": {
+      "title": "About Our Tapri",
+      "paragraphs": [
+        "{brand} is a chai stall where the kettle stays on and the chai is made fresh for every cup.",
+        "We keep the menu short, the prices plain and the snacks hot, so there is no waiting around."
+      ],
+      "points": [
+        "Chai brewed fresh",
+        "Hot snacks all day",
+        "Takeaway cups"
+      ]
+    },
+    "pricing": {
+      "title": "Menu Prices",
+      "plans": [
+        {
+          "name": "Cutting Chai",
+          "price": "$1",
+          "period": "/visit",
+          "perks": [
+            "Small cup",
+            "Brewed fresh",
+            "Takeaway available"
+          ]
+        },
+        {
+          "name": "Masala Chai",
+          "price": "$2",
+          "period": "/visit",
+          "perks": [
+            "Full cup",
+            "Ginger and cardamom",
+            "Takeaway available"
+          ]
+        },
+        {
+          "name": "Chai And Snack",
+          "price": "$4",
+          "period": "/visit",
+          "perks": [
+            "Full cup",
+            "Bun maska or toast",
+            "Takeaway available"
+          ]
+        }
+      ]
+    },
+    "gallery": {
+      "title": "From The Tapri",
+      "captions": [
+        "Boiling chai",
+        "Bun maska",
+        "Hot pakoda",
+        "Cutting chai",
+        "Takeaway cups",
+        "Evening crowd"
+      ]
+    },
+    "team": {
+      "title": "Meet The Tapri Team",
+      "roles": [
+        "Owner",
+        "Chai Maker",
+        "Counter Helper"
+      ]
+    },
+    "testimonials": [
+      {
+        "quote": "The chai is strong and fresh every time.",
+        "role": "Regular"
+      },
+      {
+        "quote": "Bun maska and chai on a rainy evening is hard to beat.",
+        "role": "Customer"
+      },
+      {
+        "quote": "Quick service even when it is crowded.",
+        "role": "Customer"
+      }
+    ],
+    "blog": {
+      "title": "From The Kettle",
+      "posts": [
+        {
+          "tag": "Chai",
+          "title": "What Goes Into A Good Masala Chai"
+        },
+        {
+          "tag": "Snacks",
+          "title": "Why Bun Maska Goes So Well With Chai"
+        },
+        {
+          "tag": "Tips",
+          "title": "Chai At Home: Getting The Boil Right"
+        }
+      ]
+    },
+    "marquee": [
+      "Chai",
+      "Bun Maska",
+      "Pakoda",
+      "Samosa",
+      "Toast",
+      "Cutting",
+      "Masala",
+      "Takeaway"
+    ],
+    "contactText": "Drop by for a cup, or message us for an office order."
   }
 ]

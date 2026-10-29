@@ -900,9 +900,14 @@
       "ethnic wear",
       "saree shop",
       "kurti collection",
+      "kurti boutique",
+      "kurti store",
+      "kurti shop",
       "designer wear",
       "designer suits",
-      "बुटीक"
+      "kurta shop",
+      "बुटीक",
+      "कुर्ती"
     ],
     "heroTitles": [
       "Outfits Chosen With Care For You",
@@ -1357,7 +1362,7 @@
     "heroSubtitles": [
       "{brand} works with local families on education, food and care, and shares where every donation goes.",
       "Donate, volunteer or spread the word, because every kind of help makes our community work a little easier.",
-      "{brand} is a registered organisation that publishes its programs and welcomes visits from supporters."
+      "{brand} is an organisation that publishes its programs and welcomes visits from supporters."
     ],
     "button": "Donate Now",
     "featureTitle": "How Our Work Reaches People In Need",
@@ -1393,8 +1398,8 @@
         "label": "Reports for donors"
       },
       {
-        "value": "80G",
-        "label": "Receipts on request"
+        "value": "Receipts",
+        "label": "For every donation"
       },
       {
         "value": "Weekly",
@@ -1451,7 +1456,7 @@
     "about": {
       "title": "About Our Organisation",
       "paragraphs": [
-        "{brand} began with a few neighbours who wanted to help families around them, and it has grown into a registered organisation.",
+        "{brand} began with a few neighbours who wanted to help families around them, and it has grown into an organisation.",
         "We keep our work local, publish how funds are used and treat every family we meet with respect and dignity."
       ],
       "points": [
@@ -1901,7 +1906,7 @@
       "points": [
         "Clear rates upfront",
         "Tracked pickup and delivery",
-        "Trained and verified staff"
+        "Trained, briefed staff"
       ]
     },
     "pricing": {

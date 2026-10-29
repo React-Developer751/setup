@@ -91,7 +91,7 @@ ok(generateWebsite('bridal makeup artist called Glow in Lucknow', 3).niche === '
 
 // a business without a text pack: the cards of the business type next to it do not talk about another business
 const F = await loadGeneratorModule('foreignWords.ts')
-const noPack = ['pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 'tyre shop called Grip Point in Nagpur with tyres, alignment and batteries', 'robotics lab called Nova Bots in Chennai teaching kids arduino and drones', 'tarot reader called Mystic Sara online readings', 'hardware store called Patel Traders in Surat selling paint, pipes and tools', 'bike shop called Spoke in Bangalore selling cycles, helmets and repairs', 'furniture shop called Wood Craft in Rajkot with sofas, beds and tables', 'toy store called Funky in Indore selling puzzles, dolls and board games', 'candle maker called Glow in Jaipur', 'aquarium shop called Fishy in Pune', 'signboard maker called Neon Art in Surat', 'steel manufacturer called Iron Works in Raipur', 'packaging company called Box It in Vapi', 'tractor dealer called Kisan Motors in Karnal', 'dj service called Beat Box in Delhi', 'matrimonial site called Jodi in Pune']
+const noPack = ['pottery studio called Clay Room in Pondicherry with workshops and handmade mugs', 'tyre shop called Grip Point in Nagpur with tyres, alignment and batteries', 'robotics lab called Nova Bots in Chennai teaching kids arduino and drones', 'tarot reader called Mystic Sara online readings', 'hardware store called Patel Traders in Surat selling paint, pipes and tools', 'bike shop called Spoke in Bangalore selling cycles, helmets and repairs', 'furniture shop called Wood Craft in Rajkot with sofas, beds and tables', 'kite shop called Patang in Ahmedabad selling kites and manjha', 'candle maker called Glow in Jaipur', 'aquarium shop called Fishy in Pune', 'signboard maker called Neon Art in Surat', 'steel manufacturer called Iron Works in Raipur', 'packaging company called Box It in Vapi', 'tractor dealer called Kisan Motors in Karnal', 'dj service called Beat Box in Delhi', 'matrimonial site called Jodi in Pune']
 let left = []
 for (const p of noPack) {
   for (const v of [1, 2, 3]) {
@@ -173,6 +173,17 @@ ok(!/oven/i.test(JSON.stringify(chai.hero)) && /chai/i.test(JSON.stringify(chai.
   ok(studioQueries('kurti boutique online, free shipping above 999').includes('kurti boutique'), 'the image AI is asked in plain words (kurti boutique)')
   ok(studioQueries('school Sunrise Public School Lucknow').includes('school classroom'), 'a bare school is asked as a classroom')
   ok(studioQueries('chai ki tapri').includes('chai cafe'), 'a chai stall is asked as a chai cafe')
+}
+
+// real-example round 2: shops and stalls have their own packs, and no pack claims a licence, a registration or a certificate for the business
+for (const [prompt, id] of [['mera kurti boutique hai Jaipur me, online bhi bechti hoon, free shipping above 999', 'fashion_boutique'], ['kids toy store', 'toy_store'], ['chai ki tapri', 'chai_tea_stall'], ['kurti shop in Surat', 'fashion_boutique']]) {
+  const g = generateWebsite(prompt, 0, 'premium', true, 'auto')
+  ok(g.niche === id, `"${prompt}" is the ${id} pack (${g.niche})`)
+  ok(!/handbag|footwear|jewellery|accessories to busy/i.test(JSON.stringify(g.content)) || id !== 'fashion_boutique', `"${prompt}": no other shop's goods`)
+}
+for (const n of NICHES) {
+  const claims = JSON.stringify([n.stats, n.about, n.heroSubtitles, n.heroTitles])
+  ok(!/\b(?:licen[cs]ed|registered|certified|80G|police verified)\b/i.test(claims), `${n.id}: no licence, registration or certificate claimed for the business`)
 }
 
 console.log(`${pass} passed, ${fail.length} failed`)
