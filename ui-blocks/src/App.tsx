@@ -25,7 +25,7 @@ function App() {
               <path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2Zm7 11 .9 2.6 2.6.9-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13Z" />
             </svg>
           </span>
-          <span className="text-[15px] font-bold tracking-tight text-stone-900">Site Studio</span>
+          <span className="hidden text-[15px] font-bold tracking-tight text-stone-900 sm:inline">Site Studio</span>
         </div>
         <div className="lv-pill-tabs" role="tablist" aria-label="Sections">
           {(Object.keys(MODES) as Mode[]).map((key) => (

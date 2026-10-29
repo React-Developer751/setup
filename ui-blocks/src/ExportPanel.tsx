@@ -1,13 +1,14 @@
 // The Export area: download buttons, and the details the person can fill in first (their own email, phone, address,
 // website address, a form service, a logo and a hero picture). Without them the placeholders stay.
 import { useState } from 'react'
-import { buildLibraryStandalone, buildLibraryStaticZip, buildLibraryZip, libraryProjectName, libraryWithDetails } from './generator/exportLibrary'
-import { applyDetails, buildStandalone, buildZip, projectName, sourceFromPage, sourceFromSite, type ExportDetails, type ExportSource } from './generator/exportSite'
+import { buildLibraryProject, buildLibraryStandalone, buildLibraryStaticZip, libraryProjectName, libraryWithDetails } from './generator/exportLibrary'
+import { withEdits, type FileEdit } from './codeEdits'
+import { applyDetails, buildProject, buildStandalone, projectName, sourceFromPage, sourceFromSite, type ExportDetails, type ExportSource } from './generator/exportSite'
 import { buildStaticZip } from './generator/exportStatic'
 import type { generateSite } from './generator/generateSite'
 import type { generateWebsite } from './generator/generateWebsite'
 import type { generateLibraryPage } from './generator/library/generateLibraryPage'
-import { downloadFile } from './generator/zip'
+import { createZip, downloadFile } from './generator/zip'
 import { readPicture } from './generator/edit/imageFile'
 
 type Props = {
@@ -22,6 +23,8 @@ type Props = {
   onDetails: (next: ExportDetails | ((current: ExportDetails) => ExportDetails)) => void
   /** called when a file is downloaded: the person kept this site (a thumb up for its texts) */
   onExport?: () => void
+  /** the files the person changed in the Code tab: they are in the project .zip as they wrote them */
+  fileEdits?: Record<string, FileEdit>
 }
 
 /** Reads a picture and shrinks it, so that it can be embedded in the pages without making them heavy. */
@@ -33,7 +36,7 @@ const FIELDS: { key: 'email' | 'phone' | 'address' | 'siteUrl' | 'formEndpoint';
   { key: 'formEndpoint', label: 'Form service', placeholder: 'https://formspree.io/f/xxxxxxx', templatesOnly: true },
 ]
 
-function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails, onExport }: Props) {
+function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails, onExport, fileEdits = {} }: Props) {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState('')
   const isLibrary = engine === 'library'
@@ -55,9 +58,9 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
 
   const zip = async () => {
     onExport?.()
-    if (isLibrary) return downloadFile(`${libraryProjectName(library)}.zip`, await buildLibraryZip(lib()), 'application/zip')
+    if (isLibrary) return downloadFile(`${libraryProjectName(library)}.zip`, createZip(withEdits(await buildLibraryProject(lib()), fileEdits)), 'application/zip')
     const s = source()
-    downloadFile(`${projectName(s)}.zip`, buildZip(s), 'application/zip')
+    downloadFile(`${projectName(s)}.zip`, createZip(withEdits(buildProject(s), fileEdits)), 'application/zip')
   }
   const staticZip = () => {
     onExport?.()

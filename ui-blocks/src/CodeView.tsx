@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { type FileEdit, withEdits } from './codeEdits'
 import { createZip, type ZipEntry } from './generator/zip'
 
 // The Code tab: the files of the project in a folder tree on the left, the open file on the right with its own Copy and Download buttons at the top
@@ -15,7 +16,7 @@ const sizeLabel = (n: number) => (n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n 
 
 const MIME: Record<string, string> = { json: 'application/json', css: 'text/css', html: 'text/html', svg: 'image/svg+xml', md: 'text/markdown', txt: 'text/plain', xml: 'application/xml' }
 
-function save(name: string, data: string | Uint8Array<ArrayBuffer>, type: string) {
+function saveFile(name: string, data: string | Uint8Array<ArrayBuffer>, type: string) {
   const url = URL.createObjectURL(new Blob([data], { type }))
   const a = document.createElement('a')
   a.href = url
@@ -127,20 +128,44 @@ const pickFirst = (entries: Entry[]) => {
   return entries.find((e) => isText(e))?.path ?? entries[0]?.path
 }
 
-export function CodeView({ files, loading, projectName }: { files: Entry[]; loading?: boolean; projectName: string }) {
+const ENGINE = /(^|\/)src\/(generator|data)\//
+
+export function CodeView({ files, edits, loading, projectName, mainFile, onSave, onReset, onKeep, note }: {
+  /** the generated files */
+  files: Entry[]
+  /** the files the person changed */
+  edits: Record<string, FileEdit>
+  loading?: boolean
+  projectName: string
+  /** the file that holds the words of the page: saving it changes the site as well */
+  mainFile?: string
+  onSave: (path: string, content: string, base: string) => void
+  onReset: (path: string) => void
+  /** "keep my version" after the site moved on */
+  onKeep: (path: string, base: string) => void
+  /** what the last save did to the site */
+  note?: string
+}) {
   const [selected, setSelected] = useState<string | undefined>()
   const [open, setOpen] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState('')
   const [copied, setCopied] = useState(false)
   const [zipping, setZipping] = useState(false)
+  const [engine, setEngine] = useState(false)
+  const [drawer, setDrawer] = useState(false)
+  const [draft, setDraft] = useState<{ path: string; text: string } | undefined>()
   const scroller = useRef<HTMLDivElement>(null)
 
-  const tree = useMemo(() => buildTree(files), [files])
+  const shown = useMemo(() => withEdits(files, edits), [files, edits])
+  const visible = useMemo(() => (engine ? shown : shown.filter((f) => !ENGINE.test(f.path))), [shown, engine])
+  const hidden = shown.length - visible.length
+  const tree = useMemo(() => buildTree(visible), [visible])
   // when the files change (another site, another engine) the first file is opened and the folders on its way are opened
   const key = files.map((f) => f.path).join('|')
   useEffect(() => {
     const first = pickFirst(files)
     setSelected(first)
+    setDraft(undefined)
     const folders = new Set<string>()
     if (first) first.split('/').slice(0, -1).forEach((_, i, parts) => folders.add(parts.slice(0, i + 1).join('/')))
     // the top folders are open, so the shape of the project is visible at once
@@ -149,17 +174,32 @@ export function CodeView({ files, loading, projectName }: { files: Entry[]; load
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- only a different set of files resets the tree
   }, [key])
 
-  const current = files.find((f) => f.path === selected)
+  const current = shown.find((f) => f.path === selected)
+  const original = files.find((f) => f.path === selected)
   const lang = current ? extOf(current.path) : ''
-  const text = current && isText(current) ? current.content : undefined
+  const saved = current && isText(current) ? current.content : undefined
+  const editing = draft && draft.path === selected ? draft.text : undefined
+  const text = editing ?? saved
+  const dirty = editing !== undefined && editing !== saved
+  const changed = !!(selected && edits[selected] && original && isText(original) && edits[selected].content !== original.content)
+  // the site was changed (a chat message, another colour) after the person changed this file: their version is kept, and they choose
+  const moved = !!(selected && changed && original && isText(original) && edits[selected].base !== original.content)
+  const editedCount = shown.filter((f, i) => f !== files[i]).length
+  const deferred = useDeferredValue(text)
   const lines = useMemo((): Token[][] => {
-    if (text === undefined) return []
+    if (deferred === undefined) return []
     // a very large file is shown without colours: the colours would take longer than reading it
-    return text.length > 250_000 ? text.split('\n').map((t): Token[] => [{ text: t }]) : toLines(tokenize(text, lang))
-  }, [text, lang])
+    return deferred.length > 250_000 ? deferred.split('\n').map((t): Token[] => [{ text: t }]) : toLines(tokenize(deferred, lang))
+  }, [deferred, lang])
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 })
   }, [selected])
+
+  const save = () => {
+    if (editing === undefined || !selected || !original || !isText(original)) return
+    onSave(selected, editing, original.content)
+    setDraft(undefined)
+  }
 
   const copy = async () => {
     if (text === undefined) return
@@ -185,24 +225,32 @@ export function CodeView({ files, loading, projectName }: { files: Entry[]; load
     setCopied(done)
     if (done) window.setTimeout(() => setCopied(false), 1500)
   }
-  const download = () => current && save(baseName(current.path), isText(current) ? current.content : (current.content as Uint8Array<ArrayBuffer>), MIME[lang] ?? 'text/plain;charset=utf-8')
+  const download = () => current && saveFile(baseName(current.path), text ?? (current.content as Uint8Array<ArrayBuffer>), MIME[lang] ?? 'text/plain;charset=utf-8')
   const downloadAll = () => {
     setZipping(true)
     try {
-      save(`${projectName}.zip`, createZip(files as ZipEntry[]), 'application/zip')
+      saveFile(`${projectName}.zip`, createZip(shown as ZipEntry[]), 'application/zip')
     } finally {
       setZipping(false)
     }
   }
 
-  const matches = filter.trim() ? files.filter((f) => f.path.toLowerCase().includes(filter.trim().toLowerCase())) : []
+  const matches = filter.trim() ? shown.filter((f) => f.path.toLowerCase().includes(filter.trim().toLowerCase())) : []
+  const editedPaths = new Set(shown.filter((f, i) => f !== files[i]).map((f) => f.path))
   const row = (node: Node, depth: number): React.ReactNode => {
     const isOpen = open.has(node.path)
+    const edited = !node.folder && editedPaths.has(node.path)
     return (
       <div key={node.path}>
         <button
           type="button"
-          onClick={() => (node.folder ? setOpen((cur) => { const next = new Set(cur); if (next.has(node.path)) next.delete(node.path); else next.add(node.path); return next }) : setSelected(node.path))}
+          onClick={() => {
+            if (node.folder) setOpen((cur) => { const next = new Set(cur); if (next.has(node.path)) next.delete(node.path); else next.add(node.path); return next })
+            else {
+              setSelected(node.path)
+              setDrawer(false)
+            }
+          }}
           className={`flex w-full items-center gap-1.5 rounded-md py-1 pr-2 text-left text-[13px] ${!node.folder && selected === node.path ? 'bg-white/10 text-white' : 'text-stone-300 hover:bg-white/5'}`}
           style={{ paddingLeft: 8 + depth * 14 }}
           aria-expanded={node.folder ? isOpen : undefined}
@@ -210,6 +258,7 @@ export function CodeView({ files, loading, projectName }: { files: Entry[]; load
           {node.folder ? <Chevron open={isOpen} /> : <span className="size-3.5 shrink-0" />}
           {node.folder ? <FolderIcon open={isOpen} /> : <FileIcon path={node.path} />}
           <span className="truncate">{node.name}</span>
+          {edited && <span className="ml-auto size-2 shrink-0 rounded-full bg-amber-400" title="You changed this file" aria-label="changed" />}
         </button>
         {node.folder && isOpen && node.children.map((child) => row(child, depth + 1))}
       </div>
@@ -219,20 +268,38 @@ export function CodeView({ files, loading, projectName }: { files: Entry[]; load
   // a long path shows its last folders and the file name (the whole path is in the tooltip)
   const parts = current?.path.split('/') ?? []
   const crumbs = parts.length > 3 ? ['…', ...parts.slice(-3)] : parts
-  const lineCount = text === undefined ? 0 : lines.length
+  const lineCount = text === undefined ? 0 : text.split('\n').length
+  const mono = { fontFamily: "ui-monospace, 'SF Mono', Menlo, Consolas, monospace" }
+  const btn = 'lv-btn rounded-lg bg-white/10 px-3 py-1.5 text-xs text-stone-100 hover:bg-white/20 disabled:opacity-40'
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#0d0f14] text-stone-200 md:flex-row">
+      {/* ── on a small screen the files sit behind one button ── */}
+      <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-[#11141b] px-3 py-2 md:hidden">
+        <button type="button" onClick={() => setDrawer((v) => !v)} aria-expanded={drawer} className={btn}>
+          <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h10" />
+          </svg>
+          Files
+        </button>
+        <span className="min-w-0 flex-1 truncate text-xs text-stone-400">{current ? baseName(current.path) : ''}</span>
+        <button type="button" onClick={downloadAll} disabled={!shown.length || zipping} className={`${btn} !bg-violet-500/30`}>
+          Export .zip
+        </button>
+      </div>
+
       {/* ── the folders and files ── */}
-      <div className="flex max-h-56 w-full shrink-0 flex-col border-b border-white/10 bg-[#11141b] md:max-h-none md:w-[270px] md:border-b-0 md:border-r">
-        <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
-          <span className="truncate text-xs font-semibold uppercase tracking-wider text-stone-400">{files.length} files</span>
-          <button type="button" onClick={downloadAll} disabled={!files.length || zipping} className="lv-btn rounded-lg bg-white/10 px-2.5 py-1 text-xs text-stone-100 hover:bg-white/20 disabled:opacity-40" title="Download every file of the project as one .zip">
-            <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <div className={`${drawer ? 'flex' : 'hidden'} max-h-[55vh] w-full shrink-0 flex-col border-b border-white/10 bg-[#11141b] md:flex md:max-h-none md:w-[280px] md:border-b-0 md:border-r`}>
+        <div className="hidden flex-col gap-2 border-b border-white/10 p-3 md:flex">
+          <button type="button" onClick={downloadAll} disabled={!shown.length || zipping} className="lv-btn lv-btn-primary w-full px-3 py-2 text-[13px]" title="Download the whole project as one .zip, with the changes you made here">
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" />
             </svg>
-            Download all
+            Export project (.zip)
           </button>
+          <p className="text-[11px] leading-snug text-stone-500">
+            {shown.length} files{editedCount ? ` · ${editedCount} changed by you` : ''} · every file as you see it here
+          </p>
         </div>
         <div className="px-2 pt-2">
           <input
@@ -244,44 +311,60 @@ export function CodeView({ files, loading, projectName }: { files: Entry[]; load
           />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-2" role="tree" aria-label="Files of the project">
-          {loading && !files.length && <p className="px-2 py-3 text-xs text-stone-500">Building the files ...</p>}
+          {loading && !shown.length && <p className="px-2 py-3 text-xs text-stone-500">Building the files ...</p>}
           {filter.trim()
             ? matches.map((f) => (
-                <button key={f.path} type="button" onClick={() => setSelected(f.path)} className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-[13px] ${selected === f.path ? 'bg-white/10 text-white' : 'text-stone-300 hover:bg-white/5'}`} title={f.path}>
+                <button key={f.path} type="button" onClick={() => { setSelected(f.path); setDrawer(false) }} className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-[13px] ${selected === f.path ? 'bg-white/10 text-white' : 'text-stone-300 hover:bg-white/5'}`} title={f.path}>
                   <FileIcon path={f.path} />
                   <span className="truncate">{f.path}</span>
+                  {editedPaths.has(f.path) && <span className="ml-auto size-2 shrink-0 rounded-full bg-amber-400" aria-label="changed" />}
                 </button>
               ))
             : tree.map((n) => row(n, 0))}
           {filter.trim() && !matches.length && <p className="px-2 py-3 text-xs text-stone-500">No file has that name.</p>}
         </div>
+        <label className="flex cursor-pointer items-center gap-2 border-t border-white/10 px-3 py-2 text-[11px] text-stone-400" title="The engine that builds the site (the generator and its data). The project needs them to run; they are in the .zip either way.">
+          <input type="checkbox" checked={engine} onChange={(e) => setEngine(e.target.checked)} className="size-3.5 rounded border-white/20 bg-white/10" />
+          Show engine files{hidden ? ` (${hidden} more)` : ''}
+        </label>
       </div>
 
-      {/* ── the open file: its path, Copy and Download at the top, then the code with line numbers ── */}
+      {/* ── the open file: its path, then Save / Copy / Download, then the code you can change ── */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {current ? (
           <>
             <div className="flex flex-wrap items-center gap-2 border-b border-white/10 bg-[#11141b] px-4 py-2">
-              <div className="flex min-w-0 flex-1 items-center gap-1 text-[13px]" aria-label={`File ${current.path}`} title={current.path}>
+              <div className="flex min-w-0 basis-full flex-wrap items-center gap-1 text-[13px] md:flex-1 md:basis-0 md:flex-nowrap" aria-label={`File ${current.path}`} title={current.path}>
                 {crumbs.map((part, i) => (
                   <span key={i} className={`${i === crumbs.length - 1 ? 'min-w-0 truncate font-semibold text-white' : 'shrink-0 text-stone-500'}`}>
                     {i > 0 && <span className="px-1 text-stone-600">/</span>}
                     {part}
                   </span>
                 ))}
+                {(changed || dirty) && <span className="ml-2 shrink-0 rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] font-medium text-amber-300">{dirty ? 'unsaved' : 'changed by you'}</span>}
                 <span className="ml-2 hidden shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-stone-400 xl:inline">
-                  {lang || 'file'} · {sizeLabel(bytesOf(current))}
+                  {lang || 'file'} · {sizeLabel(text === undefined ? bytesOf(current) : new TextEncoder().encode(text).length)}
                   {text !== undefined ? ` · ${lineCount} lines` : ''}
                 </span>
               </div>
-              <div className="flex shrink-0 gap-2">
-                <button type="button" onClick={() => void copy()} disabled={text === undefined} className="lv-btn rounded-lg bg-white/10 px-3 py-1.5 text-xs text-stone-100 hover:bg-white/20 disabled:opacity-40" aria-live="polite">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {text !== undefined && (
+                  <button type="button" onClick={save} disabled={!dirty} className={`lv-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40 ${dirty ? 'bg-violet-500 hover:bg-violet-400' : 'bg-white/10'}`} title="Save your change (Ctrl or Cmd + S)">
+                    Save
+                  </button>
+                )}
+                {(dirty || changed) && (
+                  <button type="button" onClick={() => { setDraft(undefined); if (changed && !dirty) onReset(current.path) }} className={btn} title={dirty ? 'Throw away what you typed since the last save' : 'Go back to the file the generator made'}>
+                    {dirty ? 'Discard' : 'Reset file'}
+                  </button>
+                )}
+                <button type="button" onClick={() => void copy()} disabled={text === undefined} className={btn} aria-live="polite">
                   <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     {copied ? <path d="m5 12 5 5 9-10" /> : <><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h8" /></>}
                   </svg>
                   {copied ? 'Copied' : 'Copy'}
                 </button>
-                <button type="button" onClick={download} className="lv-btn rounded-lg bg-white/10 px-3 py-1.5 text-xs text-stone-100 hover:bg-white/20">
+                <button type="button" onClick={download} className={btn}>
                   <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" />
                   </svg>
@@ -289,22 +372,69 @@ export function CodeView({ files, loading, projectName }: { files: Entry[]; load
                 </button>
               </div>
             </div>
+
+            {moved && (
+              <div role="status" className="flex flex-wrap items-center gap-2 border-b border-amber-400/20 bg-amber-400/10 px-4 py-2 text-xs text-amber-200">
+                <span className="min-w-0 flex-1">The site changed after you edited this file. Your version is the one you see and the one that is downloaded.</span>
+                <button type="button" onClick={() => original && isText(original) && onKeep(current.path, original.content)} className={btn}>
+                  Keep mine
+                </button>
+                <button type="button" onClick={() => onReset(current.path)} className={btn}>
+                  Use the new file
+                </button>
+              </div>
+            )}
+            {note && selected === mainFile && (
+              <p role="status" className="border-b border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs text-emerald-200">
+                {note}
+              </p>
+            )}
+
             <div ref={scroller} className="min-h-0 flex-1 overflow-auto">
               {text === undefined ? (
                 <p className="p-6 text-sm text-stone-400">This is a binary file ({sizeLabel(bytesOf(current))}). Use Download to save it.</p>
               ) : (
-                <pre className="m-0 min-w-max py-3 text-[12.5px] leading-[1.65]" style={{ fontFamily: "ui-monospace, 'SF Mono', Menlo, Consolas, monospace" }}>
-                  <code>
-                    {lines.map((tokens, i) => (
-                      <div key={i} className="flex">
-                        <span className="sticky left-0 w-12 shrink-0 select-none bg-[#0d0f14] pr-3 text-right text-stone-600">{i + 1}</span>
-                        <span className="whitespace-pre pr-6">
-                          {tokens.length ? tokens.map((t, j) => <span key={j} style={t.cls ? { color: COLOUR[t.cls] } : undefined}>{t.text}</span>) : ' '}
-                        </span>
-                      </div>
+                <div className="flex min-w-max py-3 text-[12.5px] leading-[1.65]" style={mono}>
+                  <div aria-hidden="true" className="sticky left-0 z-10 w-12 shrink-0 select-none bg-[#0d0f14] pr-3 text-right text-stone-600">
+                    {Array.from({ length: lineCount }, (_, i) => (
+                      <div key={i}>{i + 1}</div>
                     ))}
-                  </code>
-                </pre>
+                  </div>
+                  {/* the coloured code is drawn under a see-through text box: what you type is what you see, with colours */}
+                  <div className="relative min-w-0 flex-1">
+                    <pre aria-hidden="true" className="m-0 whitespace-pre pr-6" style={mono}>
+                      {lines.map((tokens, i) => (
+                        <div key={i}>
+                          {tokens.length ? tokens.map((t, j) => <span key={j} style={t.cls ? { color: COLOUR[t.cls] } : undefined}>{t.text}</span>) : ' '}
+                        </div>
+                      ))}
+                    </pre>
+                    <textarea
+                      value={text}
+                      onChange={(e) => setDraft({ path: current.path, text: e.target.value })}
+                      onKeyDown={(e) => {
+                        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+                          e.preventDefault()
+                          save()
+                        }
+                        // Tab writes two spaces instead of leaving the box
+                        if (e.key === 'Tab' && !e.shiftKey) {
+                          e.preventDefault()
+                          const box = e.currentTarget
+                          const at = box.selectionStart
+                          const next = `${box.value.slice(0, at)}  ${box.value.slice(box.selectionEnd)}`
+                          setDraft({ path: current.path, text: next })
+                          requestAnimationFrame(() => box.setSelectionRange(at + 2, at + 2))
+                        }
+                      }}
+                      spellCheck={false}
+                      wrap="off"
+                      aria-label={`Edit ${current.path}`}
+                      className="absolute inset-0 m-0 h-full w-full resize-none overflow-hidden whitespace-pre border-0 bg-transparent p-0 pr-6 text-transparent caret-white outline-none selection:bg-violet-500/40 focus:ring-0"
+                      style={mono}
+                    />
+                  </div>
+                </div>
               )}
             </div>
           </>

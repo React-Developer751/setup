@@ -21,6 +21,8 @@ import { guessIntent } from './generator/edit/intent'
 import { describeOp, editsFrom, type EditOp, type MoodChoice } from './generator/edit/edits'
 import { imageEngineUp, sendFeedback, serverHealth } from './generator/edit/serverEdit'
 import { CodeView } from './CodeView'
+import type { FileEdit } from './codeEdits'
+import { codeWithoutContent, opsFromEditedCode } from './generator/edit/codeSync'
 import { Landing } from './Landing'
 import { askCorePage, coreCraftUp, decideCore, type CoreSlot } from './generator/edit/corecraft'
 import CoreCraftPanel from './CoreCraftPanel'
@@ -159,6 +161,9 @@ function GeneratorPage() {
   // the Code tab shows the whole project (folders and files) the way it is exported, built when the tab is opened
   const [projectFiles, setProjectFiles] = useState<{ path: string; content: string | Uint8Array }[]>([])
   const [projectBusy, setProjectBusy] = useState(false)
+  // what the person changed in the Code tab (by file) and what the last save did to the site
+  const [codeEdits, setCodeEdits] = useState<Record<string, FileEdit>>({})
+  const [codeNote, setCodeNote] = useState('')
 
   // The site as one HTML document (the same as the "One .html file" export): the preview frame and the Preview button show it.
   // Frames and new tabs have their own viewport, so mobile / tablet / desktop layouts really are the ones a visitor would see.
@@ -301,6 +306,9 @@ function GeneratorPage() {
 
   const generate = async (text: string) => {
     if (!text.trim()) return
+    // a new site: the files the person changed belonged to the old one
+    setCodeEdits({})
+    setCodeNote('')
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
     await understand(text)
     // "a single page" / "landing page" in the prompt is an order: it wins over what was set before
@@ -345,6 +353,8 @@ function GeneratorPage() {
   }, [resume, history, submitted])
 
   const restore = async (project: Project) => {
+    setCodeEdits({})
+    setCodeNote('')
     await understand(project.prompt)
     setPrompt(project.prompt)
     setSubmitted(project.prompt)
@@ -633,6 +643,23 @@ function GeneratorPage() {
       setChatBusy(false)
     }
   }
+
+  // ── the Code tab: a file the person saves is kept as they wrote it; the words of the page file also change the site ──
+  const mainFile = projectFiles.find((f) => /(^|\/)src\/(GeneratedLandingPage|App)\.tsx$/.test(f.path) && typeof f.content === 'string' && f.content.includes('const content = '))?.path
+  const saveFile = (path: string, content: string, base: string) => {
+    setCodeEdits((cur) => ({ ...cur, [path]: { content, base } }))
+    if (path !== mainFile || tplMulti) return setCodeNote('')
+    const sync = opsFromEditedCode(content, active.content)
+    if (sync.problem) return setCodeNote(sync.problem)
+    if (!sync.ops.length) return setCodeNote(sync.unsupported.length ? `Saved. These parts are not shown in the preview, but they are in your file and in the download: ${sync.unsupported.join(', ')}.` : 'Saved. The words of the page did not change.')
+    applyOps('Edited the page in the Code tab', sync.ops, 'rules', `Took your changes from the code: ${sync.applied.join(', ')}. Say "undo" to go back.`)
+    setView('code')
+    setCodeNote(`The site was updated from your code: ${sync.applied.join(', ')}.${sync.unsupported.length ? ` Not shown in the preview (kept in your file and in the download): ${sync.unsupported.join(', ')}.` : ''}`)
+    // the page file is made again from the words (the site now has yours); when nothing else in the file was changed, no second version is needed
+    if (codeWithoutContent(content) === codeWithoutContent(base)) setCodeEdits((cur) => Object.fromEntries(Object.entries(cur).filter(([key]) => key !== path)))
+  }
+  const resetFile = (path: string) => setCodeEdits((cur) => Object.fromEntries(Object.entries(cur).filter(([key]) => key !== path)))
+  const keepFile = (path: string, base: string) => setCodeEdits((cur) => (cur[path] ? { ...cur, [path]: { ...cur[path], base } } : cur))
 
   const pageTabs: { path: string; label: string }[] = tplMulti ? multi.pages.filter((p) => !p.slug) : isMulti && shownEngine === 'library' ? (library.pages ?? []) : []
   const onPost = tplMulti && !!multi.pages.find((p) => p.path === route)?.slug
@@ -965,7 +992,7 @@ function GeneratorPage() {
 
           <section className="space-y-2 lv-card p-3">
             <h2 className="text-sm font-semibold text-gray-900">Export</h2>
-            <ExportPanel engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
+            <ExportPanel fileEdits={codeEdits} engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
           </section>
         </div>
       </aside>
@@ -1045,7 +1072,7 @@ function GeneratorPage() {
             }}
           />
         ) : (
-          <CodeView files={projectFiles} loading={projectBusy} projectName={shownEngine === 'library' ? libraryProjectName(library) : projectName(tplMulti ? sourceFromSite(multi) : sourceFromPage(site))} />
+          <CodeView files={projectFiles} edits={codeEdits} mainFile={mainFile} note={codeNote} onSave={saveFile} onReset={resetFile} onKeep={keepFile} loading={projectBusy} projectName={shownEngine === 'library' ? libraryProjectName(library) : projectName(tplMulti ? sourceFromSite(multi) : sourceFromPage(site))} />
         )}
       </section>
     </div>
