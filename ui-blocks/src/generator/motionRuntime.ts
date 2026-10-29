@@ -51,10 +51,19 @@ const formatCount = (c: NonNullable<ReturnType<typeof parseCount>>, value: numbe
 // ───────────── pages built from the stored components ─────────────
 const signature = (el: Element) => `${el.tagName}|${el.getAttribute('class') ?? ''}`
 
+/** a part of a page arrives in the ways of its business (plan.mix), one way for a whole part, another for the next one */
+const TEXT_KINDS = new Set(['up', 'down', 'left', 'right', 'scale', 'fade', 'blur'])
+
 /** Adds reveal / hover attributes to a page made of the stored components, without touching their code. Returns an undo. */
 function autoTag(root: HTMLElement, plan: MotionPlan): () => void {
   const tagged: Element[] = []
   const lifted: Element[] = []
+  const classes: [Element, string][] = []
+  const mix: readonly string[] = plan.mix?.length ? plan.mix : ['up']
+  const textMix = mix.filter((k) => TEXT_KINDS.has(k))
+  const textKinds: readonly string[] = textMix.length ? textMix : ['up']
+  const pictureKind = mix.includes('mask') ? 'mask' : mix.includes('scale') ? 'scale' : 'fade'
+  const hoverable = !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches
 
   const mark = (el: Element | null | undefined, kind: string, delay = 0) => {
     if (!el || el.hasAttribute('data-reveal') || el.closest('[data-reveal]')) return
@@ -62,12 +71,19 @@ function autoTag(root: HTMLElement, plan: MotionPlan): () => void {
     if (delay) el.setAttribute('data-delay', String(Math.min(delay, 8)))
     tagged.push(el)
   }
+  const addClass = (el: Element, name: string) => {
+    el.classList.add(name)
+    classes.push([el, name])
+  }
 
+  let sectionIndex = 0
   root.querySelectorAll<HTMLElement>('[data-role]').forEach((section) => {
     const role = section.dataset.role
     if (role === 'nav' || role === 'footer') return
-    mark(section.querySelector('h1, h2'), 'up')
-    mark(section.querySelector('p'), 'up', 1)
+    // every part has its own arrival: the first one that the mix gives, then the next, so the page does not move one way from top to bottom
+    const kind = role === 'hero' ? 'up' : textKinds[sectionIndex++ % textKinds.length]
+    mark(section.querySelector('h1, h2'), kind)
+    mark(section.querySelector('p'), kind === 'blur' ? 'fade' : 'up', 1)
 
     const seen = new Set<Element>()
     section.querySelectorAll('div, ul, ol').forEach((container) => {
@@ -79,13 +95,30 @@ function autoTag(root: HTMLElement, plan: MotionPlan): () => void {
       if (!cards) return
       seen.add(container)
       kids.forEach((card, i) => {
-        mark(card, 'up', (i % 4) + 1)
-        if (plan.features.hover) {
+        // a row of cards comes from both sides when the recipe has left and right, else every card in the arrival of the part
+        const side = kind === 'left' || kind === 'right' ? (i % 2 === 0 ? 'left' : 'right') : kind
+        mark(card, side, (i % 4) + 1)
+        if (plan.features.tilt && hoverable) addClass(card, 'm-tilt')
+        else if (plan.features.hover) {
           card.classList.add('m-lift')
           lifted.push(card)
         }
+        if (plan.features.spotlight && hoverable) addClass(card, 'm-spot')
+        if (plan.features.wiggle && hoverable) addClass(card, 'm-wiggle')
       })
     })
+
+    // pictures of the part (not the first screen: that one drifts or moves with the page): they arrive in the way of the business and zoom when touched
+    if (role !== 'hero') {
+      section.querySelectorAll<HTMLImageElement>('img').forEach((img) => {
+        const box = img.getBoundingClientRect()
+        if (box.width < 140 || box.height < 90) return
+        const holder = img.parentElement
+        if (!holder || holder === section) return
+        mark(holder, pictureKind)
+        if (plan.features.imageZoom && hoverable) addClass(holder, 'm-zoom')
+      })
+    }
   })
 
   return () => {
@@ -95,6 +128,101 @@ function autoTag(root: HTMLElement, plan: MotionPlan): () => void {
       el.classList.remove('is-in')
     })
     lifted.forEach((el) => el.classList.remove('m-lift'))
+    classes.forEach(([el, name]) => el.classList.remove(name))
+  }
+}
+
+/**
+ * The effects that follow the pointer or the scroll (kept apart from the arrivals): the first picture drifts or moves slower than the page,
+ * cards tilt, a light follows the pointer, the main buttons lean. All of them wait for a real pointer (no touch screens) and for a page that has stopped.
+ */
+function livePieces(root: HTMLElement, plan: MotionPlan, sp: HTMLElement | Window, add: (fn: () => void) => void) {
+  const f = plan.features
+  const fine = !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches
+
+  // the first picture of the first screen: a slow zoom, and/or moving a little slower than the page
+  const hero = root.querySelector<HTMLElement>('[data-role="hero"]')
+  const picture = hero ? [...hero.querySelectorAll<HTMLImageElement>('img')].sort((a, b) => b.getBoundingClientRect().width - a.getBoundingClientRect().width)[0] : undefined
+  if (picture && (f.kenburns || f.parallax) && picture.getBoundingClientRect().width > 220) {
+    const holder = picture.parentElement
+    const held = holder && getComputedStyle(holder).overflow
+    if (holder && held === 'visible') {
+      holder.style.overflow = 'hidden'
+      add(() => (holder.style.overflow = ''))
+    }
+    if (f.kenburns) {
+      picture.classList.add('m-kenburns')
+      add(() => picture.classList.remove('m-kenburns'))
+    }
+    if (f.parallax) {
+      let frame = 0
+      const move = () => {
+        frame = 0
+        const box = picture.getBoundingClientRect()
+        const view = sp instanceof Window ? window.innerHeight : sp.clientHeight
+        const centre = box.top + box.height / 2 - (sp instanceof Window ? 0 : sp.getBoundingClientRect().top)
+        const shift = Math.max(-28, Math.min(28, (centre - view / 2) * -0.06))
+        picture.style.setProperty('--m-py', `${shift.toFixed(1)}px`)
+      }
+      const onScroll = () => {
+        if (!frame) frame = requestAnimationFrame(move)
+      }
+      picture.classList.add('m-parallax')
+      sp.addEventListener('scroll', onScroll, { passive: true })
+      move()
+      add(() => {
+        sp.removeEventListener('scroll', onScroll)
+        cancelAnimationFrame(frame)
+        picture.classList.remove('m-parallax')
+        picture.style.removeProperty('--m-py')
+      })
+    }
+  }
+
+  if (!fine) return
+
+  // cards: tilt towards the pointer, and a light that follows it
+  const onMove = (event: PointerEvent) => {
+    const card = (event.target as Element | null)?.closest<HTMLElement>('.m-tilt, .m-spot')
+    if (!card) return
+    const box = card.getBoundingClientRect()
+    const x = (event.clientX - box.left) / box.width
+    const y = (event.clientY - box.top) / box.height
+    if (card.classList.contains('m-tilt')) card.style.transform = `perspective(900px) rotateX(${((0.5 - y) * 7).toFixed(2)}deg) rotateY(${((x - 0.5) * 9).toFixed(2)}deg) translateZ(0)`
+    card.style.setProperty('--sx', `${(x * 100).toFixed(1)}%`)
+    card.style.setProperty('--sy', `${(y * 100).toFixed(1)}%`)
+  }
+  const onLeave = (event: PointerEvent) => {
+    const card = (event.target as Element | null)?.closest<HTMLElement>('.m-tilt')
+    if (card) card.style.transform = ''
+  }
+  if (f.tilt || f.spotlight) {
+    root.addEventListener('pointermove', onMove, { passive: true })
+    root.addEventListener('pointerout', onLeave, { passive: true })
+    add(() => {
+      root.removeEventListener('pointermove', onMove)
+      root.removeEventListener('pointerout', onLeave)
+      root.querySelectorAll<HTMLElement>('.m-tilt').forEach((el) => (el.style.transform = ''))
+    })
+  }
+
+  // the main buttons of the first screen and of the closing call lean a few pixels towards the pointer
+  if (f.magnetic) {
+    const buttons = [...root.querySelectorAll<HTMLElement>('[data-role="hero"] a, [data-role="hero"] button, [data-role="cta"] a, [data-role="cta"] button')].filter((b) => b.getBoundingClientRect().width > 80 && !b.closest('nav'))
+    const pull = (event: PointerEvent) => {
+      for (const button of buttons) {
+        const box = button.getBoundingClientRect()
+        const dx = event.clientX - (box.left + box.width / 2)
+        const dy = event.clientY - (box.top + box.height / 2)
+        const near = Math.hypot(dx, dy) < Math.max(box.width, 110)
+        button.style.translate = near ? `${(dx * 0.12).toFixed(1)}px ${(dy * 0.18).toFixed(1)}px` : ''
+      }
+    }
+    root.addEventListener('pointermove', pull, { passive: true })
+    add(() => {
+      root.removeEventListener('pointermove', pull)
+      buttons.forEach((b) => (b.style.translate = ''))
+    })
   }
 }
 
@@ -122,6 +250,7 @@ export function initMotion(root: HTMLElement, plan: MotionPlan): () => void {
 
   // library pages: tag cards and headings first
   if (root.hasAttribute('data-gen-theme') && plan.features.reveal) cleanups.push(autoTag(root, plan))
+  if (root.hasAttribute('data-gen-theme')) livePieces(root, plan, sp, (fn) => cleanups.push(fn))
 
   // ── count-up: show 0 until the number scrolls into view
   const counters = plan.features.countUp
@@ -184,7 +313,7 @@ export function initMotion(root: HTMLElement, plan: MotionPlan): () => void {
         el.classList.add('is-in')
         if (el.hasAttribute('data-reveal')) {
           // once it has arrived, drop the attributes so hover transitions are not slowed by the reveal delay
-          const wait = plan.duration + Number(el.dataset.delay ?? 0) * plan.stagger + 120
+          const wait = plan.duration * (el.dataset.reveal === 'mask' ? 1.5 : 1) + Number(el.dataset.delay ?? 0) * plan.stagger + 120
           later(() => {
             el.removeAttribute('data-reveal')
             el.removeAttribute('data-delay')

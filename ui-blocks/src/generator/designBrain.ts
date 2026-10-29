@@ -81,9 +81,10 @@ export function analyzePrompt(prompt: string, theme?: ThemeKey): BrainResult {
 
   // How much the user told us: a bare 3-word prompt asks for little, a detailed one expects more.
   const meaningful = words.filter((w) => w.length > 2).length
+  // a short prompt ("gym in Jaipur") is what a business owner types: it is not a request for a poor page, so it does not lower the score;
+  // only words that ask for it ("simple", "basic", "small") do
   if (meaningful <= 4) {
-    score -= 1.5
-    reasons.push(`very short prompt (${meaningful} words) -1.5`)
+    reasons.push(`short prompt (${meaningful} words): a full page all the same`)
   } else if (meaningful >= 30) {
     score += 2
     reasons.push(`detailed prompt (${meaningful} words) +2`)

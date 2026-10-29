@@ -4,6 +4,7 @@ import { generateWebsite, hash, seededRandom } from '../generateWebsite'
 import { applyPoolToContent } from '../siteData'
 import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
+import { atLeast, priority as priorityOf, sectionWeights } from '../experience'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
 import { refPools, rolePools, showPools, tierPools, type Role } from './libraryRoles'
@@ -69,15 +70,17 @@ export function generateLibraryPage(
   // draw everything in a fixed order so the same prompt always gives the same page
   const chosen = Object.fromEntries((Object.keys(rolePools) as Role[]).map((role) => [role, pickFrom(role)])) as Record<Role, string>
   // the parts a page may have besides the always-there ones; a page that is too long is not read
+  // (the chances depend on the kind of business: a clinic gets proof and answers, a restaurant gets pictures; see experience.ts)
+  const weights = sectionWeights(base.themeKey)
   const optional = {
-    stats: maybe(0.7),
+    stats: maybe(weights.stats),
     profile: false,
-    gallery: maybe(0.5),
+    gallery: maybe(weights.gallery),
     team: maybe(0.4),
-    blog: maybe(0.35),
-    links: maybe(0.1),
-    faq: maybe(0.5),
-    steps: maybe(0.6),
+    blog: maybe(weights.blog),
+    links: maybe(weights.links),
+    faq: maybe(weights.faq),
+    steps: maybe(weights.steps),
     pricing: maybe(0.5),
     banner: maybe(0.3),
   }
@@ -88,7 +91,7 @@ export function generateLibraryPage(
   // normal = short page, premium = the rich parts on (the team and the blog by turns)
   const premiumOn = new Set<keyof typeof optional>(['stats', 'steps'])
   const show = (role: keyof typeof optional) =>
-    tier === 'normal' ? false : tier === 'premium' ? premiumOn.has(role) || (role === 'gallery' || role === 'faq' || role === 'pricing' ? optional[role] || maybe(0.6) : role === 'banner' ? optional.banner : role === 'team' || role === 'blog' ? optional[role] || maybe(0.3) : false) : optional[role]
+    tier === 'normal' ? false : tier === 'premium' ? premiumOn.has(role) || (role === 'gallery' || role === 'faq' || role === 'pricing' ? optional[role] || maybe(0.6) : role === 'banner' ? optional.banner : role === 'team' || role === 'blog' ? optional[role] || maybe(role === 'blog' ? weights.blog * 0.8 : 0.3) : false) : optional[role]
 
   // which parts the page has: the short page (normal), or the long one with its optional parts; then what the person removed or added
   const FULL: Role[] = ['banner', 'nav', 'hero', 'stats', 'about', 'profile', 'features', 'steps', 'gallery', 'pricing', 'team', 'testimonial', 'faq', 'blog', 'links', 'cta', 'contact', 'footer']
@@ -100,6 +103,14 @@ export function generateLibraryPage(
       : ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
   if (hasOffers) visible.add('banner')
+  // a page of this business must not end too soon: the parts it needs most are added until it has the least its kind of business has (experience.ts)
+  if (!multiOn && tier !== 'normal') {
+    const need = atLeast(base.themeKey)
+    for (const part of priorityOf(base.themeKey)) {
+      if (priorityOf(base.themeKey).filter((p) => visible.has(p as Role)).length >= need) break
+      visible.add(part as Role)
+    }
+  }
   // reviews with a made-up name ("Sample Customer") and a team of made-up people are not shown: the person adds real ones ("add the team")
   if (base.content.testimonials.length && base.content.testimonials.every((t) => /sample/i.test(t.author))) visible.delete('testimonial')
   visible.delete('team')

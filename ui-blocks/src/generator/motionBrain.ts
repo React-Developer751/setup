@@ -41,7 +41,25 @@ export type MotionFeatures = {
   split: boolean
   /** thin scroll progress bar */
   progress: boolean
+  // the effects below were added with the business-type recipes (all optional: a plan saved before them has none)
+  /** pictures zoom slowly when the pointer is over their card */
+  imageZoom?: boolean
+  /** the first picture drifts very slowly (a long, gentle zoom) */
+  kenburns?: boolean
+  /** the first picture moves a little slower than the page */
+  parallax?: boolean
+  /** cards tilt towards the pointer */
+  tilt?: boolean
+  /** a soft light follows the pointer over the cards */
+  spotlight?: boolean
+  /** the main buttons lean towards the pointer */
+  magnetic?: boolean
+  /** cards and buttons wiggle when touched */
+  wiggle?: boolean
 }
+
+/** the ways a part can arrive while scrolling (data-reveal in the CSS) */
+export type RevealKind = 'up' | 'down' | 'left' | 'right' | 'scale' | 'fade' | 'blur' | 'mask'
 
 export type MotionPlan = {
   level: MotionLevel
@@ -54,6 +72,10 @@ export type MotionPlan = {
   /** milliseconds between cards */
   stagger: number
   features: MotionFeatures
+  /** the arrivals this business uses, in turn from one part of the page to the next (a plan saved before the recipes has none: 'up') */
+  mix?: RevealKind[]
+  /** the name of the recipe ("elegant", "energetic" ...), for the person to read */
+  recipe?: string
   reasons: string[]
 }
 
@@ -70,6 +92,39 @@ const STYLE_BY_THEME: Record<ThemeKey, { style: MotionStyle; duration: number; e
   creative_studio: { style: 'bold', duration: 700, easing: 'cubic-bezier(.7,0,.2,1)', distance: 36, stagger: 80 },
   general_business: { style: 'minimal', duration: 550, easing: 'ease-out', distance: 12, stagger: 80 },
   ...fromKits((kit) => kit.motion),
+}
+
+/**
+ * A motion recipe per kind of business: what arrives how, and which extras the kind can carry. A clinic arrives calmly, a gym punches in,
+ * a restaurant lingers on its pictures, a studio plays. `subtle` is what every level has; `rich` and `premium` add on top of it.
+ */
+type Recipe = {
+  name: string
+  mix: RevealKind[]
+  subtle: Partial<MotionFeatures>
+  rich: Partial<MotionFeatures>
+  premium: Partial<MotionFeatures>
+}
+const RECIPES: Record<string, Recipe> = {
+  elegant: { name: 'elegant', mix: ['blur', 'fade', 'mask', 'up'], subtle: { imageZoom: true }, rich: { kenburns: true, parallax: true, shimmer: true, navShrink: true, draw: true }, premium: { split: true, progress: true, carousel: true } },
+  energetic: { name: 'energetic', mix: ['left', 'right', 'scale', 'up'], subtle: { imageZoom: true }, rich: { countUp: true, shimmer: true, navShrink: true, magnetic: true, draw: true }, premium: { tilt: true, marquee: true, split: true, progress: true } },
+  playful: { name: 'playful', mix: ['scale', 'up', 'left', 'right'], subtle: { wiggle: true }, rich: { blobs: true, shimmer: true, countUp: true, navShrink: true, magnetic: true }, premium: { marquee: true, carousel: true, split: true } },
+  calm: { name: 'calm', mix: ['up', 'fade', 'left', 'up'], subtle: { imageZoom: true }, rich: { countUp: true, navShrink: true, draw: true }, premium: { carousel: true, progress: true, spotlight: true } },
+  appetite: { name: 'appetite', mix: ['up', 'mask', 'fade', 'scale'], subtle: { imageZoom: true }, rich: { kenburns: true, parallax: true, shimmer: true, navShrink: true, draw: true }, premium: { carousel: true, marquee: true, split: true } },
+  tech: { name: 'tech', mix: ['up', 'blur', 'scale', 'right'], subtle: { spotlight: true }, rich: { countUp: true, blobs: true, shimmer: true, navShrink: true, magnetic: true, draw: true }, premium: { tilt: true, split: true, progress: true, marquee: true } },
+  creative: { name: 'creative', mix: ['mask', 'up', 'left', 'blur'], subtle: { imageZoom: true }, rich: { parallax: true, kenburns: true, magnetic: true, navShrink: true }, premium: { split: true, marquee: true, spotlight: true, tilt: true, progress: true } },
+  wander: { name: 'wander', mix: ['fade', 'up', 'mask', 'scale'], subtle: { imageZoom: true }, rich: { kenburns: true, parallax: true, countUp: true, navShrink: true, draw: true }, premium: { carousel: true, split: true, progress: true } },
+}
+/** which recipe a business type uses (the type of the prompt decides: see themes.ts) */
+const RECIPE_OF: Record<string, keyof typeof RECIPES> = {
+  luxury_minimal: 'elegant', fashion_retail: 'elegant', events_wedding: 'elegant', beauty_wellness: 'elegant',
+  bold_fitness: 'energetic', automotive: 'energetic', home_services: 'energetic',
+  playful_vibrant: 'playful', pets_animals: 'playful',
+  healthcare: 'calm', professional_services: 'calm', general_business: 'calm', nonprofit: 'calm', education: 'calm', organic_nature: 'calm',
+  food_dining: 'appetite',
+  modern_tech: 'tech',
+  creative_studio: 'creative',
+  travel_tourism: 'wander', real_estate: 'wander',
 }
 
 const NONE: MotionFeatures = {
@@ -89,7 +144,8 @@ export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting,
       : `motion set to ${setting} by you`,
   )
 
-  // 2) what moves at that level
+  // 2) what moves at that level: the arrivals and the hover of every page, then the extras of the recipe of this kind of business
+  const recipe = RECIPES[RECIPE_OF[theme] ?? 'calm']
   const features: MotionFeatures =
     level === 'off'
       ? NONE
@@ -97,19 +153,22 @@ export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting,
           reveal: true,
           hover: true,
           accordion: true,
-          countUp: level === 'rich',
-          blobs: level === 'rich',
-          shimmer: level === 'rich',
-          draw: level === 'rich',
-          navShrink: level === 'rich',
-          // the showy extras are kept for the premium design level
-          marquee: level === 'rich' && tier === 'premium',
-          carousel: level === 'rich' && tier === 'premium',
-          split: level === 'rich' && tier === 'premium',
-          progress: level === 'rich' && tier === 'premium',
+          countUp: false,
+          blobs: false,
+          shimmer: false,
+          draw: false,
+          navShrink: false,
+          marquee: false,
+          carousel: false,
+          split: false,
+          progress: false,
+          ...recipe.subtle,
+          // the extras of the recipe: the rich level has its own, the premium design level the showy ones as well
+          ...(level === 'rich' ? recipe.rich : {}),
+          ...(level === 'rich' && tier === 'premium' ? recipe.premium : {}),
         }
   if (level !== 'off') reasons.push(`${base.style} style fits the ${theme.replace('_', ' ')} theme`)
-  if (features.marquee) reasons.push('premium extras: keyword strip, rotating testimonials, word-by-word headline, progress bar')
+  if (level !== 'off') reasons.push(`${recipe.name} recipe: parts arrive by ${recipe.mix.slice(0, level === 'rich' ? 4 : 3).join(', ')}${Object.entries(features).filter(([key, on]) => on && !['reveal', 'hover', 'accordion'].includes(key)).length ? `; also ${Object.entries(features).filter(([key, on]) => on && !['reveal', 'hover', 'accordion'].includes(key)).map(([key]) => key).join(', ')}` : ''}`)
 
   // 3) a little seeded variation so two pages of one theme do not move identically
   const jitter = 0.9 + rand() * 0.2
@@ -121,6 +180,9 @@ export function thinkMotion(theme: ThemeKey, tier: Tier, setting: MotionSetting,
     distance: base.distance,
     stagger: base.stagger,
     features,
+    // a quiet page keeps three arrivals, a rich one all four
+    mix: recipe.mix.slice(0, level === 'rich' ? 4 : 3),
+    recipe: recipe.name,
     reasons,
   }
 }
