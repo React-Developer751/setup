@@ -338,6 +338,9 @@ export const server = http.createServer(async (req, res) => {
         const row = {
           id: text(r.id, 40), at: text(r.at, 40) || new Date().toISOString(), updated: new Date().toISOString(), prompt: text(r.prompt, 600), key: text(r.key, 120), theme: text(r.theme, 40), niche: text(r.niche, 60),
           concept: text(r.concept, 60), hero: text(r.hero, 160), pages: r.pages === 'multi' ? 'multi' : 'single',
+          verdict: r.verdict === 'up' || r.verdict === 'down' ? r.verdict : undefined,
+          rejected: (Array.isArray(r.rejected) ? r.rejected : []).slice(-20).map((x) => text(x, 60)),
+          ratings: (Array.isArray(r.ratings) ? r.ratings : []).slice(-40).map((x) => ({ at: text(x?.at, 40), text: text(x?.text, 200), up: x?.up === true })),
           edits: (Array.isArray(r.edits) ? r.edits : []).slice(0, 60).map((e) => ({ at: text(e?.at, 40), text: text(e?.text, 300), ops: (Array.isArray(e?.ops) ? e.ops : []).slice(0, 12).filter((o) => KINDS.includes(o?.k)).map((o) => ({ k: o.k, v: text(o.v, 120) })) })),
         }
         if (!row.id || !row.prompt.trim()) return send(res, 400, { error: 'a row needs an id and a prompt' })

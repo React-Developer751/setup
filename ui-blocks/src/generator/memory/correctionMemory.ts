@@ -12,7 +12,7 @@ export type Correction = {
   /** the kind of business ("cafe") and its type ("food_dining") */
   key: string
   theme: string
-  kind: 'accent' | 'remove' | 'add' | 'mood' | 'mode'
+  kind: 'accent' | 'remove' | 'add' | 'mood' | 'mode' | 'like' | 'dislike'
   /** the idea that was on the page when they corrected it */
   conceptId?: string
   from?: string
@@ -80,6 +80,9 @@ export function conceptMemoryFor(corrections: Correction[], records: DesignRecor
     if (r.verdict === 'good') memory.liked.push(r.concept)
     else if (r.verdict === 'bad') memory.disliked.push(r.concept)
   }
+  // a page the person liked or did not like (the thumbs in the chat)
+  for (const c of same) if (c.conceptId && c.kind === 'like') memory.liked.push(c.conceptId)
+  for (const c of same) if (c.conceptId && c.kind === 'dislike') memory.disliked.push(c.conceptId)
   // an idea the person changed the colour of was not right as it was
   for (const c of own) if (c.kind === 'accent' && c.conceptId) memory.disliked.push(c.conceptId)
   return memory

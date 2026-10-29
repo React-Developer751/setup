@@ -12,6 +12,9 @@ export type ChatMessage = {
   via?: 'rules' | 'server' | 'guess'
   /** buttons that answer a question of the chat (the last message's buttons are the live ones) */
   choices?: Choice[]
+  /** the answer that built or rebuilt the whole site: it can be liked or not liked */
+  site?: boolean
+  rating?: 'up' | 'down'
 }
 
 type Props = {
@@ -27,11 +30,13 @@ type Props = {
   onUndo: () => void
   onRedo: () => void
   onReset: () => void
+  /** like (true) or not like (false) an answer of the chat */
+  onRate: (id: number, up: boolean) => void
 }
 
 const SUGGESTIONS = ['remove the FAQ', 'rename it to Green Leaf', 'make the buttons blue', 'dark mode', 'pricing hatao', 'add a gallery', 'no animations', 'rename pricing to Our Plans', 'move FAQ above pricing', 'make the gallery shorter', 'center the hero']
 
-function EditChat({ messages, busy, canUndo, canRedo, changes, onSend, onChoose, onColor, onUndo, onRedo, onReset }: Props) {
+function EditChat({ messages, busy, canUndo, canRedo, changes, onSend, onChoose, onColor, onUndo, onRedo, onReset, onRate }: Props) {
   const [text, setText] = useState('')
   const end = useRef<HTMLDivElement>(null)
   const [note, setNote] = useState('')
@@ -82,6 +87,26 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, onSend, onChoose,
                     </li>
                   ))}
                 </ul>
+              )}
+              {m.role === 'ai' && (m.site || (m.ops && m.ops.length > 0)) && (
+                <div className="mt-1.5 flex items-center gap-1 text-stone-400" role="group" aria-label="Rate this answer">
+                  {(['up', 'down'] as const).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      disabled={busy}
+                      aria-pressed={m.rating === kind}
+                      aria-label={kind === 'up' ? 'Like: this is right' : 'Not like: this is not right, change it'}
+                      title={kind === 'up' ? 'Like: this is right' : 'Not right: think again'}
+                      onClick={() => onRate(m.id, kind === 'up')}
+                      className={`flex size-6 items-center justify-center rounded-full transition hover:bg-stone-100 disabled:opacity-40 ${m.rating === kind ? (kind === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600') : ''}`}
+                    >
+                      <svg viewBox="0 0 24 24" className={`size-3.5 ${kind === 'down' ? 'rotate-180' : ''}`} fill={m.rating === kind ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M7 10v11H3V10h4Zm0 0 4-8a2 2 0 0 1 2 2v4h6.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 18.3 21H7" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
               )}
               {m.via === 'server' && <p className="mt-0.5 text-[10px] text-stone-400">understood by the local server</p>}
               {m.choices && m.choices.length > 0 && (

@@ -25,6 +25,11 @@ export type PromptRow = {
   hero: string
   pages: 'single' | 'multi'
   edits: PromptEdit[]
+  /** like (up) or not like (down) the person gave to the page, and to the answers after it */
+  verdict?: 'up' | 'down'
+  /** the ideas that were shown for this prompt and not liked (the page was made again each time) */
+  rejected?: string[]
+  ratings?: { at: string; text: string; up: boolean }[]
 }
 
 export interface PromptStore {
@@ -71,6 +76,9 @@ export function lessonsFrom(neighbours: Neighbour[], key: string): Correction[] 
   for (const { row, score } of neighbours) {
     const weight = score >= 0.7 ? 2 : 1
     const base = { at: row.at, key, theme: row.theme, conceptId: row.concept || undefined }
+    // a page that was liked is an idea to keep; one that was not liked is an idea to leave (and the next one starts away from it)
+    if (row.concept && row.verdict === 'up') out.push({ ...base, kind: 'like' })
+    for (const id of new Set([...(row.rejected ?? []), ...(row.verdict === 'down' && row.concept ? [row.concept] : [])])) out.push({ ...base, kind: 'dislike', conceptId: id })
     const accents = row.edits.flatMap((e) => e.ops.filter((o) => o.k === 'accent'))
     // the last colour they chose is the one they ended with
     if (accents.length) out.push({ ...base, kind: 'accent', to: accents[accents.length - 1].v })
@@ -88,6 +96,8 @@ export function lessonsFrom(neighbours: Neighbour[], key: string): Correction[] 
 export function lessonNote(neighbours: Neighbour[]): string {
   if (!neighbours.length) return ''
   const edited = neighbours.filter((n) => n.row.edits.some((e) => e.ops.length))
+  const disliked = neighbours.find((n) => n.row.verdict === 'down' || n.row.rejected?.length)
+  if (disliked && !edited.length) return `This prompt is like one you did not like before ("${disliked.row.prompt.slice(0, 60)}"), so I tried a different idea this time.`
   const best = neighbours[0].row.prompt.slice(0, 60)
   if (!edited.length) return `This prompt is like one you wrote before ("${best}"), so I started from that page's kind of business.`
   const accents = new Set(edited.flatMap((n) => n.row.edits.flatMap((e) => e.ops.filter((o) => o.k === 'accent').map((o) => o.v))))

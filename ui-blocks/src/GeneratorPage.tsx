@@ -278,7 +278,7 @@ function GeneratorPage() {
     const plan = await planDesign(prompt, store, { group: designGroup.current, creativity: creativityLevel, temperature: temperature(), phrases: await loadPhraseScores(), corrections: [...correctionStore.list(), ...lessonsFrom(near, businessKey(prompt))] })
     const note = lessonNote(near)
     if (note) plan.reasons.push(note)
-    promptRow.current = { id: designGroup.current, at: new Date().toISOString(), prompt: prompt.slice(0, 600), key: businessKey(prompt), theme: plan.record.theme, niche: plan.record.niche, concept: plan.record.concept ?? '', hero: plan.record.heroTitle, pages: pages === 'multi' ? 'multi' : 'single', edits: promptRow.current?.id === designGroup.current ? promptRow.current.edits : [] }
+    promptRow.current = { id: designGroup.current, at: new Date().toISOString(), prompt: prompt.slice(0, 600), key: businessKey(prompt), theme: plan.record.theme, niche: plan.record.niche, concept: plan.record.concept ?? '', hero: plan.record.heroTitle, pages: pages === 'multi' ? 'multi' : 'single', edits: promptRow.current?.id === designGroup.current ? promptRow.current.edits : [], ratings: promptRow.current?.id === designGroup.current ? promptRow.current.ratings : undefined, rejected: promptRow.current?.id === designGroup.current ? promptRow.current.rejected : undefined }
     void openPromptMemory().then((memory) => memory.save(promptRow.current!)).catch(() => undefined)
     await store.add(plan.record).catch(() => undefined)
     setCurrentDesign(plan.record.id)
@@ -290,7 +290,7 @@ function GeneratorPage() {
     // asking for another design is a (small) thumb down for the texts of this one
     learn(['heroTitle'], -1, 'regenerate')
     const plan = await newDesign(submitted)
-    say({ role: 'ai', text: plan.reasons.slice(-2).join(' ') })
+    say({ role: 'ai', text: plan.reasons.slice(-2).join(' '), site: true })
     setVariation(plan.variation)
     // the earlier colour change of a design is replaced, the edits of the person stay
     setHistory((list) => [...list.filter((h) => h.text !== DESIGN_COLOUR), ...(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])])
@@ -371,7 +371,7 @@ function GeneratorPage() {
     const plan: Awaited<ReturnType<typeof newDesign>> = await newDesign(text).catch(() => ({ reasons: ['Made without the design memory (it could not be read).'], ops: [], variation: 1 + Math.floor(Math.random() * 9000) }) as unknown as Awaited<ReturnType<typeof newDesign>>)
     bumpBuild(2)
     messageId.current += 1
-    setMessages([{ id: messageId.current, role: 'ai', text: pagesNote.current }, { id: messageId.current + 1, role: 'ai', text: plan.reasons.slice(-2).join(' ') }])
+    setMessages([{ id: messageId.current, role: 'ai', text: pagesNote.current }, { id: messageId.current + 1, role: 'ai', text: plan.reasons.slice(-2).join(' '), site: true }])
     messageId.current += 1
     setHistory(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : [])
     setVariation(plan.variation)
@@ -471,6 +471,34 @@ function GeneratorPage() {
         void openPromptMemory().then((memory) => memory.save(promptRow.current!)).catch(() => undefined)
       }
     }
+  }
+  /** the thumbs of the chat: like = this is right (kept, remembered); not like = this is not right, so the AI turns it down and thinks again */
+  const rateAnswer = async (id: number, up: boolean) => {
+    const m = messages.find((x) => x.id === id)
+    if (!m || m.rating === (up ? 'up' : 'down')) return
+    setMessages((list) => list.map((x) => (x.id === id ? { ...x, rating: up ? 'up' : 'down' } : x)))
+    const row = promptRow.current
+    if (row) {
+      const rating = { at: new Date().toISOString(), text: m.text.slice(0, 200), up }
+      promptRow.current = { ...row, ratings: [...(row.ratings ?? []), rating].slice(-40), verdict: m.site ? (up ? 'up' : 'down') : row.verdict, rejected: m.site && !up && row.concept ? [...new Set([...(row.rejected ?? []), row.concept])] : row.rejected }
+      if (m.site && row.concept) correctionStore.add({ at: rating.at, key: row.key, theme: row.theme, kind: up ? 'like' : 'dislike', conceptId: row.concept })
+      void openPromptMemory().then((memory) => memory.save(promptRow.current!)).catch(() => undefined)
+    }
+    if (m.site) {
+      if (currentDesign) await markDesign(currentDesign, up ? 'good' : 'bad', up)
+      if (!up) {
+        say({ role: 'ai', text: 'Understood: this one is not right. I will think of something different (another idea, colours and layout) and make it again.' })
+        await anotherDesign()
+      }
+      return
+    }
+    // an edit: liked = it stays (and the wording that gave it is trusted); not liked = it is taken back and the next reading is asked for
+    if (up) return say({ role: 'ai', text: 'Good, I will remember that this was what you meant.' })
+    const last = [...history].reverse().find((h) => h.ops.length)
+    if (last && m.ops && last.ops.length === m.ops.length) {
+      undo()
+      say({ role: 'ai', text: 'Taken back. Tell me what you wanted instead, in other words if you like, and I will read it differently.' })
+    } else say({ role: 'ai', text: 'Noted: that change was not right. Tell me what to change instead (or use Undo for that step).' })
   }
   const applyOps = (text: string, ops: EditOp[], via: 'rules' | 'server', reply?: string, person = false) => {
     if (person || chatting.current) recordCorrections(ops, text)
@@ -812,6 +840,7 @@ function GeneratorPage() {
             onUndo={undo}
             onRedo={redo}
             onReset={reset}
+            onRate={(id, up) => void rateAnswer(id, up)}
           />
         </div>
       </aside>

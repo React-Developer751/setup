@@ -39,6 +39,20 @@ ok(idea.learned && idea.data.light.accent === '#2f6f4f', `the new cafe page wear
 const fresh = thinkConcept({ prompt: 'cafe website for Jaipur with coffee', theme: 'food_dining', niche: 'cafe_coffee_tea', variation: 0, level: 'balanced', rand: seeded(3) })
 ok(!fresh.learned, 'without the memory the idea is the generator\'s own')
 
+// the thumbs: a page that was not liked is an idea the next similar prompt leaves; a liked one is kept
+const down = { ...row('c', 'coffee shop website in Pune', []), verdict: 'down' }
+const downLessons = lessonsFrom(similarPrompts('coffee shop website Pune', [down]), 'cafe')
+ok(downLessons.some((l) => l.kind === 'dislike' && l.conceptId === 'coffee:roastery'), 'a thumb down becomes a turned-down idea')
+const m2 = conceptMemoryFor(downLessons, [], 'cafe', 'food_dining')
+ok(m2.disliked.includes('coffee:roastery'), 'the idea is in the disliked list')
+const again = thinkConcept({ prompt: 'coffee shop website Pune', theme: 'food_dining', niche: 'cafe_coffee_tea', variation: 0, level: 'balanced', rand: seeded(3), memory: m2 })
+ok(again.id !== 'coffee:roastery', `the next page does not use the idea that was not liked (${again.id})`)
+ok(/did not like/.test(lessonNote(similarPrompts('coffee shop website Pune', [down]))), 'the chat says it tried a different idea')
+const redone = { ...row('e', 'coffee shop website in Pune', []), concept: 'coffee:latte-and-sage', rejected: ['coffee:roastery'] }
+ok(lessonsFrom(similarPrompts('coffee shop website Pune', [redone]), 'cafe').some((l) => l.kind === 'dislike' && l.conceptId === 'coffee:roastery'), 'an idea that was rejected and then replaced is still remembered as rejected')
+const up = { ...row('d', 'coffee shop website in Pune', []), verdict: 'up' }
+ok(conceptMemoryFor(lessonsFrom(similarPrompts('coffee shop website Pune', [up]), 'cafe'), [], 'cafe', 'food_dining').liked.includes('coffee:roastery'), 'a thumb up becomes a kept idea')
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail.slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)
