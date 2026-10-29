@@ -59,8 +59,9 @@ for (let v = 1; v <= 120 && (keptOnes.length < 3 || turnedDown.length < 4); v +=
   else if (d.heroLayout !== KEPT && turnedDown.length < 4 && turnedDown.every((x) => hueGap(x.hue, d.hue) > 8)) turnedDown.push(d)
 }
 ok(keptOnes.length >= 2 && turnedDown.length >= 3, `the test found two kinds of first screen to start from (${keptOnes.length} and ${turnedDown.length})`)
-for (const d of keptOnes.slice(0, 2)) await teach.add({ ...d, verdict: 'good' })
-for (const d of turnedDown.slice(0, 3)) await teach.add({ ...d, verdict: 'bad' })
+// (this test is about the taste for the first screen of the template engine: the parts of the pages are the subject of test-taste.mjs, so they are left out here)
+for (const d of keptOnes.slice(0, 2)) await teach.add({ ...d, parts: undefined, verdict: 'good' })
+for (const d of turnedDown.slice(0, 3)) await teach.add({ ...d, parts: undefined, verdict: 'bad' })
 const insights = analyse(await teach.list(), 'yoga studio')
 ok(insights.good.length === 2 && insights.bad.length === 3 && insights.summary.some((l) => /kept/i.test(l)) && insights.summary.some((l) => /turned down/i.test(l)), `the analysis says what was kept and turned down (${insights.summary.length} lines)`)
 ok(insights.taste.heroLayout[KEPT] > 0.5 && Object.entries(insights.taste.heroLayout).filter(([k]) => k !== KEPT).every(([, v]) => v < 0.5), 'the kept first screen scores above 0.5 and the turned down ones below')

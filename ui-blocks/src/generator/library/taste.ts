@@ -109,6 +109,9 @@ function spreadOf(role: string, ids: string[]): Axes {
   return out
 }
 
+/** how unlike two parts are (0 = the same) */
+export const axesDistance = (a: Axes, b: Axes) => distance(a, b, UNIT)
+
 const distance = (a: Axes, b: Axes, scale: Axes) => {
   let total = 0
   for (const axis of AXES) total += Math.min(((a[axis] - b[axis]) / scale[axis]) ** 2, 4)

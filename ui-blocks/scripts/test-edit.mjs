@@ -253,6 +253,19 @@ if (fs.existsSync(cmdFile)) {
   fs.rmSync(dataDir, { recursive: true, force: true })
 }
 
+// ── the design memory keeps the parts of a page (what the person kept or turned down, part by part): only real component ids are stored
+{
+  const dataDir = fs.mkdtempSync('/tmp/parts-data-')
+  const plain = start({ EDIT_DATA_DIR: dataDir })
+  await wait()
+  const post = await fetch(`http://127.0.0.1:${PORT}/api/designs`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: 'p1', key: 'gym', prompt: 'gym', parts: ['hero/Hero2', 'footer/Footer3', '../../etc/passwd', '<script>', 'x'.repeat(200), 42] }) })
+  ok(post.status === 200, 'parts: a design with parts is stored')
+  const got = await (await fetch(`http://127.0.0.1:${PORT}/api/designs?key=gym`)).json()
+  ok(JSON.stringify(got.designs?.[0]?.parts) === JSON.stringify(['hero/Hero2', 'footer/Footer3']), `parts: only component ids are kept (${JSON.stringify(got.designs?.[0]?.parts)})`)
+  plain.kill()
+  fs.rmSync(dataDir, { recursive: true, force: true })
+}
+
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

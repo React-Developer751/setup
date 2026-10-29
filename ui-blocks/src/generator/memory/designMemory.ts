@@ -5,6 +5,7 @@
 //             at least a few degrees away from every earlier one (the gap shrinks only when the colour wheel is full).
 // The analysis is plain counting (Laplace-smoothed), so it works from the first design on and gets surer with every verdict.
 import type { DesignRecord } from './designStore'
+import { axesDistance, axesOf } from '../library/taste'
 
 export type Candidate = Pick<DesignRecord, 'accent' | 'alt' | 'hue' | 'sat' | 'light' | 'mode' | 'tier' | 'heroLayout' | 'kind' | 'theme'> & { parts?: string[] }
 
@@ -107,18 +108,38 @@ function describe(ins: Insights): string[] {
  * How the parts of a page sit with what this person kept: a part that was in kept pages and not in turned-down ones counts for, the other way against,
  * and a part that was never seen counts by what it is like (its taste numbers against the kept parts, taste.ts). 0 to 1, 0.5 = nothing is known.
  */
+/** true when the person has kept or turned down at least one page that had its parts recorded */
+export const knowsParts = (ins: Insights) => Object.keys(ins.parts.kept).length + Object.keys(ins.parts.turned).length > 0
+
 export function partsScore(parts: string[] | undefined, ins: Insights): number {
   if (!parts?.length) return 0.5
   const kept = Object.keys(ins.parts.kept)
   const turned = Object.keys(ins.parts.turned)
   if (!kept.length && !turned.length) return 0.5
+  const folder = (id: string) => id.split('/')[0]
+  // how far the part is from the nearest kept (or turned-down) part of the same kind, by the taste numbers (taste.ts): an unseen part counts by what it is like
+  const nearest = (id: string, among: string[]) => {
+    const a = axesOf(id)
+    if (!a) return undefined
+    const same = among.filter((other) => folder(other) === folder(id) && axesOf(other))
+    if (!same.length) return undefined
+    return Math.min(...same.map((other) => axesDistance(a, axesOf(other)!)))
+  }
   let sum = 0
   for (const id of parts) {
     const k = ins.parts.kept[id] ?? 0
     const t = ins.parts.turned[id] ?? 0
-    if (k || t) sum += (k - t) / (k + t + 1)
+    let value = 0
+    if (k || t) value = (k - t) / (k + t + 1)
+    else {
+      const toKept = nearest(id, kept)
+      const toTurned = nearest(id, turned)
+      if (toKept !== undefined || toTurned !== undefined) value = Math.max(-0.6, Math.min(0.6, ((toTurned ?? 1.2) - (toKept ?? 1.2)) * 0.6))
+    }
+    // the first screen says most about a design
+    sum += value * (folder(id) === 'hero' || id.includes('Hero') ? 2 : 1)
   }
-  return 0.5 + 0.5 * Math.tanh(sum / 3)
+  return 0.5 + 0.5 * Math.tanh(sum / 1.5)
 }
 
 export function tasteScore(c: Candidate, ins: Insights): number {

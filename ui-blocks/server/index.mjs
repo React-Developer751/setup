@@ -283,7 +283,7 @@ export const server = http.createServer(async (req, res) => {
           at: new Date().toISOString(), key: text(r.key, 120), group: text(r.group, 80), prompt: text(r.prompt, 300), variation: Number(r.variation) || 0, creativity: text(r.creativity, 12),
           theme: text(r.theme, 40), niche: text(r.niche, 60), paletteName: text(r.paletteName, 80), kind: text(r.kind, 30), accent: hex(r.accent), alt: hex(r.alt), hue: Math.round(Number(r.hue) || 0) % 360,
           sat: Math.round(Number(r.sat) || 0), light: Math.round(Number(r.light) || 0), mode: r.mode === 'dark' ? 'dark' : 'light', tier: text(r.tier, 12), heroLayout: text(r.heroLayout, 40),
-          layouts: Array.isArray(r.layouts) ? r.layouts.slice(0, 30).map((l) => text(l, 40)) : [], heroTitle: text(r.heroTitle, 140), copy: r.copy && typeof r.copy === 'object' ? Object.fromEntries(Object.entries(r.copy).slice(0, 8).map(([k, v]) => [text(k, 20), text(v, 140)])) : undefined, verdict: ['good', 'bad'].includes(r.verdict) ? r.verdict : 'unrated',
+          layouts: Array.isArray(r.layouts) ? r.layouts.slice(0, 30).map((l) => text(l, 40)) : [], parts: Array.isArray(r.parts) ? r.parts.slice(0, 30).map((l) => text(l, 60)).filter((id) => /^[A-Za-z0-9-]+\/[A-Za-z0-9]+$/.test(id)) : [], heroTitle: text(r.heroTitle, 140), copy: r.copy && typeof r.copy === 'object' ? Object.fromEntries(Object.entries(r.copy).slice(0, 8).map(([k, v]) => [text(k, 20), text(v, 140)])) : undefined, verdict: ['good', 'bad'].includes(r.verdict) ? r.verdict : 'unrated',
         }
         const rows = readAll()
         if (rows.length >= 20000) rows.splice(0, rows.length - 19999)

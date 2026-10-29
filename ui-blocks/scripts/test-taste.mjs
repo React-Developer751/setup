@@ -82,11 +82,41 @@ const record = (id, verdict, parts, key = 'dental clinic') => ({ id, at: '', key
 const rows = [record('1', 'good', ['hero/Hero2', 'footer/Footer3']), record('2', 'good', ['hero/Hero2', 'footer/Footer1']), record('3', 'bad', ['hero/Hero8', 'footer/Footer4'])]
 const ins = analyse(rows, 'dental clinic')
 ok(ins.parts.kept['hero/Hero2'] === 2 && ins.parts.turned['hero/Hero8'] === 1, 'the parts of kept and turned-down pages are counted')
-ok(partsScore(['hero/Hero2', 'footer/Footer3'], ins) > 0.6 && partsScore(['hero/Hero8', 'footer/Footer4'], ins) < 0.4 && partsScore(['hero/Hero1'], ins) === 0.5 && partsScore(['hero/Hero2'], analyse([], 'x')) === 0.5, 'kept parts score high, turned-down parts low, unknown parts neutral')
+ok(partsScore(['hero/Hero2', 'footer/Footer3'], ins) > 0.6 && partsScore(['hero/Hero8', 'footer/Footer4'], ins) < 0.4 && Math.abs(partsScore(['gallery/Gallery1'], ins) - 0.5) < 1e-9 && partsScore(['hero/Hero2'], analyse([], 'x')) === 0.5, 'kept parts score high, turned-down parts low, unknown parts neutral')
 const base = { accent: '#336699', alt: '#996633', hue: 210, sat: 60, light: 40, mode: 'light', tier: 'better', heroLayout: 'hero/Hero2', kind: 'curated', theme: 'healthcare' }
 ok(tasteScore({ ...base, parts: ['hero/Hero2', 'footer/Footer3'] }, ins) > tasteScore({ ...base, parts: ['hero/Hero8', 'footer/Footer4'] }, ins), 'the next design leans to what was kept')
 ok(analyse(rows, 'gym').parts.kept['hero/Hero2'] === 0.8, 'a kept part of another business counts a little')
 ok(ins.summary.some((l) => /Hero2/.test(l)), 'the summary names the parts that were kept')
+
+// the whole loop: a person keeps pages with stored first screens and turns down the design's own; the next designs move that way (gently: the design read for the business stays the default)
+{
+  globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }
+  const { planDesign } = await loadGeneratorModule('memory/designPlanner.ts')
+  const { MemoryStore } = await loadGeneratorModule('memory/designStore.ts')
+  let seed = 12345
+  const rand = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296)
+  const prompt = 'dental clinic Smile Care in Pune, braces, implants, root canal'
+  const heroOf = (rec) => rec.parts.find((id) => /^(hero|jumbotron|refkit\/RefHero|showkit)/.test(id))
+  const isOwn = (id) => /RefHero|ShowHero/.test(id)
+  const runs = async (feedback, n) => {
+    const out = []
+    for (let i = 0; i < n; i += 1) {
+      const store = new MemoryStore()
+      for (const r of feedback) await store.add({ ...r, id: `${r.id}_${i}` })
+      out.push((await planDesign(prompt, store, { group: 'g', creativity: 'balanced', temperature: 0.6, rand })).record)
+    }
+    return out
+  }
+  const cold = await runs([], 36)
+  const kept = cold.filter((r) => !isOwn(heroOf(r))).slice(0, 10).map((r) => ({ ...r, verdict: 'good' }))
+  const turned = cold.filter((r) => isOwn(heroOf(r))).slice(0, 10).map((r) => ({ ...r, verdict: 'bad' }))
+  ok(kept.length >= 5 && turned.length >= 5, 'the cold designs have both kinds of first screen to rate')
+  const warm = await runs([...kept, ...turned], 36)
+  const share = (rows, pred) => rows.filter((r) => pred(heroOf(r))).length / rows.length
+  const keptIds = new Set(kept.map(heroOf))
+  ok(share(warm, isOwn) < share(cold, isOwn) - 0.03, `after the feedback the turned-down first screen is chosen less (${share(cold, isOwn).toFixed(2)} -> ${share(warm, isOwn).toFixed(2)})`)
+  ok(share(warm, (id) => keptIds.has(id)) > share(cold, (id) => keptIds.has(id)) + 0.02, `and the kept first screens are chosen more (${share(cold, (id) => keptIds.has(id)).toFixed(2)} -> ${share(warm, (id) => keptIds.has(id)).toFixed(2)})`)
+}
 
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)

@@ -6,7 +6,7 @@ import { sampleTopK } from '../creativity'
 import { generateWebsite } from '../generateWebsite'
 import { generateLibraryPage } from '../library/generateLibraryPage'
 import { businessKey } from '../edit/imageRatings'
-import { analyse, hueGap, hueName, minGapFor, nearestFreeHue, tasteScore, type Candidate, type Insights } from './designMemory'
+import { analyse, hueGap, hueName, knowsParts, minGapFor, nearestFreeHue, partsScore, tasteScore, type Candidate, type Insights } from './designMemory'
 import { allowedBand, inBand, namesColor } from '../colorBrain'
 import { loadServerPalettes } from '../premiumPalettes'
 import { avoidsLime, LIME_BAND, pairScore } from '../colorHarmony'
@@ -96,7 +96,9 @@ export async function planDesign(prompt: string, store: DesignStore, options: { 
     // a design that needed no change is worth a little more than one that was recoloured; far from the other businesses made lately, a little more
     // the texts of the design: sent back by people (score under 7) it is mostly left out, kept by people it is preferred
     const words = options.phrases ? copyFactor(options.phrases, record.niche || record.theme, record.copy) : { factor: 1, dropped: [] as string[] }
-    const score = Math.max(0.01, taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor * (record.fit === false ? 0.75 : 1) * pairScore(design.accent, design.alt))
+    // what the person kept or turned down, part by part: a page made of parts like the kept ones is worth more than twice a page of parts like the turned-down ones
+    const partsFactor = knowsParts(insights) ? 0.3 + 1.4 * partsScore(design.parts, insights) : 1
+    const score = Math.max(0.01, partsFactor * taste * (shifted ? Math.max(0.3, 0.85 - moved / 300) : 1) * (near < 14 ? 0.55 : 1) * words.factor * (record.fit === false ? 0.75 : 1) * pairScore(design.accent, design.alt))
     return [{ record: design, shifted, score, dropped: words.dropped }]
   })
   let scored = evaluate(gap)
