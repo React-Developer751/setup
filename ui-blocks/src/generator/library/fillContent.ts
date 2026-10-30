@@ -1247,7 +1247,8 @@ export function dropRepeats(root: Element, c: WebsiteContent) {
       // no line left for it: a card that would show a title only goes, so that no card stands empty
       const card = ((): Element | null => {
         let node: Element | null = el.parentElement
-        while (node && node !== root) {
+        // (never above the part itself: a part whose repeated line is taken out must not be taken out with it, that left a Contact page with nothing on it)
+        while (node && node !== root && !node.hasAttribute('data-role')) {
           const parent: Element | null = node.parentElement
           const alike = parent ? [...parent.children].filter((k) => k.tagName === node!.tagName && k.className === node!.className).length : 0
           if (alike >= 2) return node

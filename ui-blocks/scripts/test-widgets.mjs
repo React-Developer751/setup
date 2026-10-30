@@ -17,7 +17,7 @@ for (const [text, want] of [
   ['add a booking form', ['booking']], ['mujhe appointment booking chahiye', ['booking']], ['add a map of my shop', ['map']], ['whatsapp chat button 9876543210', ['whatsapp']],
   ['upi id ravi@okhdfcbank', ['pay']], ['add an online payment button', ['pay']], ['sale ends in 3 days', ['countdown']], ['add a countdown timer for the sale', ['countdown']],
   ['add a newsletter signup', ['newsletter']], ['video link https://youtu.be/dQw4w9WgXcQ', ['video']], ['add a cart', ['order']], ['analytics id G-ABC123XYZ9', ['analytics']],
-  ['add a booking form and a map', ['booking', 'map']], ['announcement "Free delivery above 999"', ['announce']],
+  ['add a booking form and a map', ['booking', 'map']], ['add a call now button', ['call']], ['announcement "Free delivery above 999"', ['announce']],
 ]) ok(JSON.stringify(kinds(text)) === JSON.stringify(want), `"${text}" -> ${JSON.stringify(kinds(text))}`)
 ok(ops('remove the booking form').some((o) => o.op === 'removeWidget' && o.kind === 'booking'), 'removing a widget')
 ok(ops('booking form hatao aur FAQ bhi').some((o) => o.op === 'remove' && o.section === 'faq'), 'the verb of the first part belongs to the bare name after it')

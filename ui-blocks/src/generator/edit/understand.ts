@@ -5,6 +5,7 @@
 import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
 import { widgetOps } from './widgetParse'
+import { pagesOps } from './pagesParse'
 import { decideTheme, isBusinessWord } from '../themeClassifier'
 import type { ThemeKey } from '../themes'
 import { styleOps } from './styleParse'
@@ -216,7 +217,7 @@ export function parseHoursText(text: string): string | undefined {
     text.match(/^(?:please\s+)?(?:(?:my|our|meri|hamari|mera|hamara)\s+)?(?:(?:opening|business|working|shop|store|clinic|office)\s+)?(?:hours|timings?)\s*(?:are|is|hai|hain|[:=-])?\s*(.+)$/i) ??
     text.match(/^(?:we\s+are\s+|we'?re\s+|shop\s+is\s+)?open(?:s)?\s+(?:from\s+|daily\s+|every\s*day\s+)?(.+)$/i) ??
     text.match(/khulne\s+ka\s+(?:time|samay)\s*(?:hai|:|-)?\s*(.+)$/i)
-  const value = m?.[1]?.replace(/[.\s]+$/, '').trim()
+  const value = m?.[1]?.replace(/^(?:(?:change|badlo|badal do|badal|update|set|add|likho|rakho|karo|kar do|to)\b[\s:=-]*)+/i, '').replace(/[.\s]+$/, '').trim()
   return value && /\d|closed|24\s*hours|all day/i.test(value) && value.length <= 120 ? value : undefined
 }
 
@@ -347,7 +348,7 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
   const addr = clause.match(/(?:address|pata|पता|location)\s*(?:is|to|=|:|ko|-|should be|ho)?\s*(.+)/i)
   const addrFirst = clause.match(/^(.+?)\s+(?:ko\s+)?(?:address|pata)\s+(?:rakho|rakh do|karo|kar do|set karo|banao)$/i)
   if (addr && stripEnds(addr[1]) && !/(?<![\p{L}])email(?![\p{L}])/iu.test(addr[1])) {
-    const value = shown(addr[1]).replace(/^(?:change|badlo|badal do|update|set)\s*(?:karo|kar do|to)?\s+(?:to\s+)?/i, '').replace(/^(?:to|karo)\s+/i, '')
+    const value = shown(addr[1]).replace(/^(?:(?:change|badlo|badal do|badal|update|set|add|likho|rakho|karo|kar do|to)\b[\s:=-]*)+/i, '')
     if (value && !re.remove.test(clause)) {
       push({ op: 'contact', field: 'address', value })
       return { ops, notes }
@@ -827,7 +828,7 @@ function fixTypos(input: string): string {
 const PRONOUN = /(?<![\p{L}])(?:it|this|that|isko|isse|ise|iska|iski|usko|isme|yeh|yah|ye|woh|wo)(?![\p{L}])/iu
 
 /** Reads one message. `context` says whether the site has pages ("multi") or is one long page ("single"). */
-export function parseEdit(input: string, context: EditContext = 'single', last?: { target?: string }): Understood {
+export function parseEdit(input: string, context: EditContext = 'single', last?: { target?: string; /** the site on the screen has several pages (also a site made from the stored components, whose parts are on pages without being "multi" for the editor) */ pages?: boolean; /** the site is made from the stored components: its pages are made of its parts */ library?: boolean }): Understood {
   const raw = input.replace(/\s+/g, ' ').trim()
   if (!raw) return { kind: 'none', reason: 'Nothing was typed.' }
   const hidden = hideQuotes(raw)
@@ -837,6 +838,13 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
   const control = controlOf(plain)
   if (control) return { kind: 'control', control }
   if (isNewSite(plain)) return { kind: 'newSite' }
+
+  // one page or several ("multiple page me convert karo", "add about page and contact page"): the whole message is about the pages
+  const pages = pagesOps(plain, last?.pages ? 'multi' : context, !!last?.library)
+  if (pages) {
+    const more = pages.rest ? parseEdit(pages.rest, context, last) : undefined
+    return { kind: 'ops', ops: [...pages.ops, ...(more?.kind === 'ops' ? more.ops : [])], notes: [...pages.notes, ...(more?.kind === 'ops' ? more.notes : [])] }
+  }
 
   // the working parts (booking form, map, WhatsApp button, UPI button, countdown ...): what is about them is read here, the rest of the message goes on as usual
   const widgets = widgetOps(plain)

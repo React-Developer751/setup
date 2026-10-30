@@ -12,6 +12,8 @@ const L = (re: string) => new RegExp(`(?<![\\p{L}\\p{M}])(?:${re})(?![\\p{L}\\p{
 const SIZE_WORDS = 'bada|badi|bade|chhota|chhoti|chhote|bigger|larger|smaller|big|small|badha|badhao|ghatao|increase|decrease|zyada|kam'
 
 const UNSUPPORTED: { when: RegExp; note: string }[] = [
+  { when: /(?<![\p{L}\p{M}])(?:mobile|phone|tablet|responsive)\b.*(?:sahi|theek|thik|proper|fit|dikh|look|work|chale|hona)|(?:sahi|theek|proper)\s+dikh.*(?:mobile|phone)/iu, note: 'The page is made for phones first and checked at phone width (390 px), tablet and desktop: you can see it in the preview with the phone, tablet and computer buttons above it. If one part looks wrong on a phone, tell me which one.' },
+  { when: /(?<![\p{L}\p{M}])(?:footer|neeche\s+ka\s+(?:hissa|part))\s+(?:hatao|hata\s+do|remove|delete|nikalo)/iu, note: 'The footer stays (it holds the name, the links and the contact line of the business). You can change its colour or text, for example "footer green" or "copyright text ...".' },
   { when: /(?<![\p{L}\p{M}])(?:फॉन्ट|फ़ॉन्ट|अक्षर|टेक्स्ट)\s+(?:का\s+)?(?:साइज़|साइज|आकार)?\s*(?:बड़ा|बड़ी|बड़े|छोटा|छोटी|छोटे|कम|ज्यादा|ज़्यादा)/iu, note: 'I cannot change the size of the text yet. I can change its words, its colours and the height and width of a section.' },
   { when: new RegExp(`(?<![\\p{L}])(?:text|writing|likhai|akshar|letters|font)\\s*(?:size|ka size)?\\s*(?:ko\\s+)?(?:${SIZE_WORDS})`, 'iu'), note: 'I cannot change the size of the text yet. I can change its words, its colours and the height and width of a section.' },
   { when: L('logo|लोगो'), note: 'I cannot upload a logo yet. The name of the business is shown as the logo: say "rename it to ...".' },
@@ -83,6 +85,10 @@ export function extraOps(clause: string): ExtraResult {
   // "subtitle badlo: Fresh sweets daily"
   const sub = text.match(/^(?:hero\s+)?(?:sub\s*title|sub\s*heading|tagline)\s+(?:ko\s+|ka\s+)?(?:badlo|badal\s+do|change|set|likho|update)\s*[:=-]\s*(.+)$/i)
   if (sub && sub[1].trim().length >= 2) return { ops: [{ op: 'text', field: 'heroSubtitle', text: sub[1].trim() }], notes: [] }
+
+  // "hero ka title badlo: Smile Better", "heading change karo: ..."
+  const ttl = text.match(/^(?:hero\s+)?(?:ka\s+|ki\s+)?(?:main\s+)?(?:title|heading|headline)\s+(?:ko\s+|ka\s+)?(?:badlo|badal\s+do|change(?:\s+karo)?|set(?:\s+karo)?|likho|update(?:\s+karo)?)\s*[:=-]\s*(.+)$/i)
+  if (ttl && ttl[1].trim().length >= 2) return { ops: [{ op: 'text', field: 'heroTitle', text: ttl[1].trim() }], notes: [] }
 
   // "hero image bigger"
   if (new RegExp(`(?<![\\p{L}])(?:hero|first\\s+screen)\\s+(?:image|photo|picture)\\b.*(?:${SIZE_WORDS})`, 'iu').test(text)) {

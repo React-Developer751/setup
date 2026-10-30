@@ -107,6 +107,8 @@ export type EditOp =
   /** a working part: booking form, map, WhatsApp button, UPI pay button, countdown, newsletter, video, order list, announcement, analytics (library/widgets.ts) */
   | { op: 'widget'; widget: Widget }
   | { op: 'removeWidget'; kind: WidgetKind }
+  /** one long page or a site of several pages (the person's word wins over the generator's choice) */
+  | { op: 'pages'; mode: 'single' | 'multi' }
 
 /**
  * The generator's own idea of how a business should look (concept.ts): a whole palette of its own for both modes, a typeface, and the words that say why.
@@ -176,6 +178,8 @@ export type SiteEdits = {
   theme?: ThemeKey
   /** the working parts that were added, one per kind */
   widgets: Widget[]
+  /** one page or several, when the person said so */
+  pagesMode?: 'single' | 'multi'
 }
 
 export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {}, widgets: [] })
@@ -369,6 +373,8 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       const widget = cleanWidget(o.widget)
       return widget ? { op: 'widget', widget } : undefined
     }
+    case 'pages':
+      return o.mode === 'single' || o.mode === 'multi' ? { op: 'pages', mode: o.mode } : undefined
     case 'removeWidget':
       return (WIDGET_KINDS as readonly unknown[]).includes(o.kind) ? { op: 'removeWidget', kind: o.kind as WidgetKind } : undefined
     default:
@@ -524,6 +530,9 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'removeWidget':
         e.widgets = e.widgets.filter((w) => w.kind !== op.kind)
         break
+      case 'pages':
+        e.pagesMode = op.mode
+        break
     }
   }
   return e
@@ -610,6 +619,8 @@ export function describeOp(op: EditOp): string {
       return `Added the ${WIDGET_LABEL[op.widget.kind]}${op.widget.value && op.widget.kind !== 'analytics' ? ` (${op.widget.value.slice(0, 40)})` : ''}`
     case 'removeWidget':
       return `Removed the ${WIDGET_LABEL[op.kind]}`
+    case 'pages':
+      return op.mode === 'multi' ? 'Made it a site of several pages' : 'Made it one long page'
     case 'theme':
       return `Treated the business as ${op.theme.replace(/_/g, ' ')}`
   }

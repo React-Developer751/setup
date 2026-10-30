@@ -158,9 +158,11 @@ function GeneratorPage() {
   const site = useMemo(() => generateWebsite(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits), [submitted, variation, level, creative, motionSetting, edits, creativityLevel])
   const scores = useMemo(() => scoreThemes(submitted), [submitted])
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- the pool and the creativity level are read inside the generators
-  const library = useMemo(() => generateLibraryPage(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits, pages === 'multi'), [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel, pages])
+  const library = useMemo(() => generateLibraryPage(submitted, variation, level === 'auto' ? undefined : level, creative, motionSetting, edits, (edits.pagesMode ?? pages) === 'multi'), [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel, pages])
   // one page or a site with pages: both can be made from the stored components (engine 'library') or from the built-in templates
-  const isMulti = pages === 'multi'
+  // the person's word in the chat ("multiple pages", "one page again") wins over the choice made when the site was generated
+  const isMulti = (edits.pagesMode ?? pages) === 'multi'
+  useEffect(() => setRoute('/'), [isMulti])
   const shownEngine = engine
   // a multi-page site of the built-in templates has its own pages and posts; the components' site keeps its pages in `library.pages`
   const tplMulti = isMulti && shownEngine === 'templates'
@@ -338,6 +340,8 @@ function GeneratorPage() {
   }
 
   const choosePagesMode = (mode: 'auto' | 'single' | 'multi') => {
+    // the setting in Tools is the newest word: what was said in the chat about pages is dropped
+    setHistory((list) => list.map((h) => ({ ...h, ops: h.ops.filter((o) => o.op !== 'pages') })).filter((h) => h.ops.length || h.text === DESIGN_COLOUR))
     setPagesMode(mode)
     const next = mode === 'auto' ? autoPages(submitted, themeKey).mode : mode
     setPages(next)
@@ -396,13 +400,13 @@ function GeneratorPage() {
   }
 
   // ───────────── projects ─────────────
-  const snapshot = (): Snapshot => ({ v: 1, prompt: submitted, variation, level, creative, motion: motionSetting, engine, pages, history, details })
+  const snapshot = (): Snapshot => ({ v: 1, prompt: submitted, variation, level, creative, motion: motionSetting, engine, pages: isMulti ? 'multi' : 'single', history, details })
 
   useEffect(() => {
     if (resume) return
-    const timer = window.setTimeout(() => rememberSession({ v: 1, prompt: submitted, variation, level, creative, motion: motionSetting, engine, pages, history, details }), 800)
+    const timer = window.setTimeout(() => rememberSession({ v: 1, prompt: submitted, variation, level, creative, motion: motionSetting, engine, pages: isMulti ? 'multi' : 'single', history, details }), 800)
     return () => window.clearTimeout(timer)
-  }, [resume, submitted, variation, level, creative, motionSetting, engine, pages, history, details])
+  }, [resume, submitted, variation, level, creative, motionSetting, engine, isMulti, history, details])
 
   // once the person has started something new, the offer to continue the old work goes away and the new work is remembered
   useEffect(() => {
@@ -686,7 +690,7 @@ function GeneratorPage() {
       // what the last change was about, so "make it bigger" / "isko hata do" know what "it" is
       const lastOp = [...history].reverse().flatMap((h) => [...h.ops].reverse()).find((o) => ('section' in o && !!o.section) || ('target' in o && !!o.target && o.target !== 'page'))
       const lastTarget = lastOp && 'section' in lastOp ? lastOp.section : lastOp && 'target' in lastOp ? lastOp.target : undefined
-      const parsed = parseEdit(text, tplMulti ? 'multi' : 'single', { target: typeof lastTarget === 'string' ? lastTarget : undefined })
+      const parsed = parseEdit(text, tplMulti ? 'multi' : 'single', { target: typeof lastTarget === 'string' ? lastTarget : undefined, pages: isMulti, library: shownEngine === 'library' })
       // an opinion ("heading boring hai", "this is not good") is answered and learned from; the edit parser would turn it into a command
       const feedback = pending.current ? undefined : analyseFeedback(text)
       if (feedback && parsed.kind !== 'newSite' && treatAsOpinion(feedback, text, parsed.kind === 'ops' ? parsed.ops : undefined)) {

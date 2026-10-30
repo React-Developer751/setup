@@ -11,7 +11,7 @@ import { planDesign } from './generator/memory/designPlanner'
 import { seededRandom } from './generator/random'
 
 type Measure = { overflowX: boolean; brokenImages: number; clippedText: number; tinyText: number; emptyParts: number; smallTargets: number; h1: number; height: number; noAlt: number; unlabelled: number; /** what the findings are about (first three) */ examples: string[] }
-export type QaRow = { prompt: string; kind: string; errors: string[]; phone: Measure; desktop: Measure; meta: { title: boolean; description: boolean; lang: boolean; reducedMotion: boolean }; problems: string[] }
+export type QaRow = { prompt: string; /** the pages of the same site made as a site with pages: what was found on them */ pages?: string[]; kind: string; errors: string[]; phone: Measure; desktop: Measure; meta: { title: boolean; description: boolean; lang: boolean; reducedMotion: boolean }; problems: string[] }
 
 function measure(doc: Document, win: Window, phone: boolean): Measure {
   const visible = (el: Element) => {
@@ -75,7 +75,26 @@ export default function QaPage() {
             phone.overflowX && 'phone: sideways scroll', desktop.overflowX && 'desktop: sideways scroll', (phone.brokenImages || desktop.brokenImages) && 'broken picture', (phone.clippedText > 2 || desktop.clippedText > 2) && 'clipped text',
             phone.tinyText > 0 && 'tiny text', phone.emptyParts > 0 && 'empty part', phone.smallTargets > 3 && 'small tap targets', phone.h1 !== 1 && `h1 x${phone.h1}`, desktop.height < 3200 && `short page (${desktop.height}px)`, errors.length > 0 && 'script error', !meta.description && 'no meta description', phone.noAlt > 0 && 'picture without alt', phone.unlabelled > 0 && 'form field without a name',
           ].filter(Boolean) as string[]
-          setRows((list) => [...list, { prompt: item.prompt, kind: item.kind, errors, phone, desktop, meta, problems }])
+          // every third site is also made as a site with pages: each page must have something on it, and none may scroll sideways
+          const pageProblems: string[] = []
+          if (i % 3 === 0) {
+            const multi = generateLibraryPage(item.prompt, plan.variation, undefined, true, 'auto', editsFrom(plan.ops), true)
+            await new Promise<void>((resolve) => { f.onload = () => resolve(); f.srcdoc = buildLibraryStandalone(multi) })
+            f.style.width = '390px'
+            await wait(900)
+            const mw = f.contentWindow!
+            for (const page of multi.pages ?? []) {
+              mw.location.hash = page.path
+              await wait(350)
+              const shown = [...mw.document.querySelectorAll<HTMLElement>('[data-role]')].filter((el) => !el.hidden && el.dataset.role !== 'nav' && el.dataset.role !== 'footer' && el.dataset.role !== 'banner')
+              const body = shown.filter((el) => el.dataset.role !== 'pagehead' && el.getBoundingClientRect().height > 60)
+              if (!body.length) pageProblems.push(`empty page ${page.label}`)
+              if (mw.document.documentElement.scrollWidth > mw.innerWidth + 1) pageProblems.push(`sideways scroll on ${page.label}`)
+            }
+            if ((multi.pages ?? []).length < 4) pageProblems.push(`only ${(multi.pages ?? []).length} pages`)
+          }
+          problems.push(...pageProblems)
+          setRows((list) => [...list, { prompt: item.prompt, kind: item.kind, errors, phone, desktop, meta, problems, pages: pageProblems }])
         } catch (error) {
           setRows((list) => [...list, { prompt: item.prompt, kind: item.kind, errors: [String(error)], phone: {} as Measure, desktop: {} as Measure, meta: { title: false, description: false, lang: false, reducedMotion: false }, problems: ['crashed'] }])
         }

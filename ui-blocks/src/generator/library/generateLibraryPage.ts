@@ -163,7 +163,13 @@ export function generateLibraryPage(
   let bodyIndex = 0
 
   // the pages of a multi-page site: the parts are grouped by page, an inner page starts with its title block; the menu and the footer are on every page
-  const PAGE_OF: Partial<Record<Role, string>> = { hero: '/', stats: '/', features: '/', links: '/', testimonial: '/', cta: '/', about: '/about', profile: '/about', team: '/about', steps: '/', pricing: '/pricing', faq: visible.has('pricing') ? '/pricing' : '/faq', gallery: '/', blog: '/blog', contact: '/contact' }
+  // a part has a page of its own when the person asked for that page ("add a gallery page"), or when the site has enough pages already; else it lives on the page it belongs with
+  const asked = new Set(edits?.added ?? [])
+  const ownGallery = asked.has('gallery') || (visible.has('pricing') && visible.has('blog'))
+  // the services have a page of their own when the home page stays rich without them (or when the person asked for that page)
+  const homeKeeps = (['hero', 'stats', 'steps', 'links'] as Role[]).filter((r) => visible.has(r)).length + (ownGallery ? 0 : visible.has('gallery') ? 1 : 0)
+  const ownServices = asked.has('features') || homeKeeps >= 3
+  const PAGE_OF: Partial<Record<Role, string>> = { hero: '/', stats: '/', features: ownServices ? '/services' : '/', links: '/', testimonial: '/', cta: '/', about: '/about', profile: '/about', team: asked.has('team') ? '/team' : '/about', steps: '/', pricing: '/pricing', faq: visible.has('pricing') && !asked.has('faq') ? '/pricing' : '/faq', gallery: ownGallery ? '/gallery' : '/', blog: '/blog', contact: '/contact' }
   // the label of a page in the menu: the one the person gave it, else the heading they gave its section ("rename pricing to Rates" renames both)
   const edited = base.content.titles ?? {}
   const nl = { ...Object.fromEntries((['about', 'pricing', 'gallery', 'blog', 'contact'] as const).filter((key) => edited[key] && edited[key]!.length <= 24).map((key) => [key, edited[key]])), ...(base.content.navLabels ?? {}) } as Partial<Record<string, string>>
@@ -171,7 +177,9 @@ export function generateLibraryPage(
   const PAGES: { path: string; label: string; text: string }[] = [
     { path: '/', label: nl.home ?? 'Home', text: base.content.hero.subtitle },
     { path: '/about', label: nl.about ?? 'About', text: base.content.about.paragraphs[0] ?? base.content.hero.subtitle },
+    { path: '/services', label: nl.services ?? 'Services', text: base.content.features.title },
     { path: '/pricing', label: nl.pricing ?? (menuOn ? 'Menu' : 'Pricing'), text: menuOn ? (base.content.menu?.title ?? base.content.pricing.title) : base.content.pricing.title },
+    { path: '/team', label: nl.team ?? 'Team', text: base.content.team.title },
     { path: '/faq', label: nl.faq ?? 'FAQ', text: `Short answers to what guests ask ${base.content.brandName} most.` },
     { path: '/gallery', label: nl.gallery ?? 'Gallery', text: base.content.gallery.title },
     { path: '/blog', label: nl.blog ?? 'Blog', text: base.content.blog.title },

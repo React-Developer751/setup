@@ -18,8 +18,9 @@ const KINDS: Kind[] = [
   { kind: 'countdown', words: W('count\\s*down|timer|(?:sale|offer|deal)\\s+(?:ends?|timer)|sale\\s+countdown'), direct: /count\s*down\s+\d|(?:sale|offer|deal)\s+ends?\s+(?:in|on)?\s*\d/i },
   { kind: 'newsletter', words: W('newsletters?|subscribe|subscription\\s+form|e-?mail\\s+sign\\s*up|mailing\\s+list|mailchimp') },
   { kind: 'video', words: W('videos?|youtube|vimeo|reels?|promo\\s+video'), direct: /\bvideo\s+(?:link|url)\b|https?:\/\/\S*(?:youtu|vimeo)\S*/i },
-  { kind: 'order', words: W('cart|add\\s+to\\s+cart|order\\s+(?:form|list|online|page|on\\s+whats\\s?app)|online\\s+order(?:ing)?|order\\s+now|product\\s+catalog(?:ue)?\\s+with\\s+cart|shopping\\s+cart') },
+  { kind: 'order', words: W('cart|add\\s+to\\s+cart|order\\s+(?:form|list|online|page|on\\s+whats\\s?app)|online\\s+order(?:ing)?|product\\s+catalog(?:ue)?\\s+with\\s+cart|shopping\\s+cart') },
   { kind: 'announce', words: W('announcements?|announcement\\s+bar|top\\s+bar|notice\\s+bar|offer\\s+bar|banner\\s+bar'), direct: /announcement(?:\s+bar)?\s*(?::|saying|that\s+says)\s*\S|announcement\s+(?!bar\b)\S+\s+\S+/i },
+  { kind: 'call', words: W('call\\s+(?:now\\s+)?button|click\\s+to\\s+call|tap\\s+to\\s+call|phone\\s+button'), direct: /call\s+(?:now\s+)?button/i },
   { kind: 'analytics', words: W('analytics|ga4|google\\s+tag|gtm|tracking\\s+code|visitor\\s+tracking'), direct: /\b(?:G|GTM)-[A-Z0-9]{5,12}\b/ },
 ]
 
@@ -106,6 +107,11 @@ function widgetFor(kind: WidgetKind, clause: string, whole: string): { widget: W
       const widget = cleanWidget({ kind, value: number })
       return widget && { widget, ...(number ? {} : { note: 'The chat button uses your WhatsApp number (or your phone number): say "whatsapp 9876543210" if you have not set one yet.' }) }
     }
+    case 'call': {
+      const number = clause.match(/(?:\+?\d[\d\s-]{7,16}\d)/)?.[0]
+      const widget = cleanWidget({ kind, value: number })
+      return widget && { widget, ...(number ? {} : { note: 'The call button dials your phone number: say "phone number 9876543210" if you have not set one yet.' }) }
+    }
     case 'announce': {
       // (the quotes of the message are already taken off: what follows the name of the bar is its text)
       const text = clause.replace(/^.*?(?:announcements?(?:\s+bar)?|top\s+bar|notice\s+bar|offer\s+bar|banner\s+bar)\s*(?:saying|with|that\s+says|:)?\s*/i, '').replace(/^["'“”]|["'“”]$/g, '').trim()
@@ -129,6 +135,11 @@ export function widgetOps(text: string): WidgetResult | undefined {
   let used = false
   let verb = ''
   for (const clause of clauses(text)) {
+    // a clause about the words of a button or a heading ("make the hero button say Book a Table", "button ka text Call Now kar do") is a text change, not a widget
+    if (/\b(?:button|heading|headline|title|subtitle|tagline)\b[^.]*(?:\bsay\b|\bsays\b|\bto\b|\bka\s+text\b|\bko\b|\btext\b|[:"])/i.test(clause) && !/\b(?:add|jodo|lagao|banao)\b/i.test(clause)) {
+      rest.push(clause)
+      continue
+    }
     const wanted = KINDS.filter((k) => k.words.test(clause) || k.direct?.test(clause))
     const cannot = CANNOT.find((c) => c.when.test(clause))
     // a word like "video" or "map" inside a longer request about something else ("change the video section heading") is not an order for a widget

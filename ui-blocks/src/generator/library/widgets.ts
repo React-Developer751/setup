@@ -3,13 +3,13 @@
 // code tab and every export; this file draws them as HTML. They need no server: forms use the same e-mail / WhatsApp path as the other forms of the page.
 import type { WebsiteContent } from '../finalPrompt'
 
-export const WIDGET_KINDS = ['booking', 'map', 'whatsapp', 'pay', 'countdown', 'newsletter', 'video', 'order', 'announce', 'analytics'] as const
+export const WIDGET_KINDS = ['booking', 'map', 'whatsapp', 'pay', 'countdown', 'newsletter', 'video', 'order', 'announce', 'analytics', 'call'] as const
 export type WidgetKind = (typeof WIDGET_KINDS)[number]
 /** `value` is the one thing the widget needs (an address, a UPI id, a link, a date, a number, an id); `text` is its words */
 export type Widget = { kind: WidgetKind; value?: string; text?: string }
 
 export const WIDGET_LABEL: Record<WidgetKind, string> = {
-  booking: 'booking form', map: 'map', whatsapp: 'WhatsApp chat button', pay: 'UPI pay button', countdown: 'sale countdown', newsletter: 'newsletter signup', video: 'video', order: 'order list', announce: 'announcement bar', analytics: 'Google Analytics',
+  booking: 'booking form', map: 'map', whatsapp: 'WhatsApp chat button', pay: 'UPI pay button', countdown: 'sale countdown', newsletter: 'newsletter signup', video: 'video', order: 'order list', announce: 'announcement bar', analytics: 'Google Analytics', call: 'call button',
 }
 
 const plain = (v: unknown, n: number) => String(v ?? '').replace(/\p{Cc}+/gu, ' ').replace(/[<>"`]/g, '').replace(/\s+/g, ' ').trim().slice(0, n)
@@ -50,6 +50,10 @@ export function cleanWidget(raw: unknown): Widget | undefined {
       const digits = value.replace(/\D/g, '')
       return { kind, ...(digits.length >= 10 && digits.length <= 15 ? { value: digits } : {}) }
     }
+    case 'call': {
+      const digits = value.replace(/[^\d+]/g, '')
+      return { kind, ...(digits.replace(/\D/g, '').length >= 8 ? { value: digits } : {}) }
+    }
     case 'pay':
       return { kind, ...(UPI.test(value) ? { value: value.toLowerCase() } : {}), ...(text ? { text } : {}) }
     case 'countdown':
@@ -85,6 +89,15 @@ const realAddress = (content: WebsiteContent) => (content.contact.showMap || !/s
 const mapAddress = (widget: Widget, content: WebsiteContent) => widget.value ?? realAddress(content)
 const emailOf = (content: WebsiteContent) => (/^[^\s@"<>]+@[^\s@"<>]+\.[^\s@"<>]+$/.test(content.contact.email) && !/example\.|your-?domain|yourbusiness/i.test(content.contact.email) ? content.contact.email : '')
 
+/** the number a call button dials: the widget's own or the phone number of the contact */
+export function callNumber(widget: Widget | undefined, content: WebsiteContent): string {
+  for (const raw of [widget?.value, content.contact.phone]) {
+    const d = String(raw ?? '').replace(/[^\d+]/g, '')
+    if (d.replace(/\D/g, '').length >= 8) return d
+  }
+  return ''
+}
+
 /** what is still missing before this widget can show (the chat says it): empty when it is complete */
 export function widgetNeeds(widget: Widget, content: WebsiteContent): string {
   switch (widget.kind) {
@@ -100,6 +113,8 @@ export function widgetNeeds(widget: Widget, content: WebsiteContent): string {
       return mapAddress(widget, content) ? '' : 'the address, for example "map address 12 MG Road, Pune"'
     case 'whatsapp':
       return chatNumber(widget, content) ? '' : 'your WhatsApp number, for example "whatsapp 9876543210"'
+    case 'call':
+      return callNumber(widget, content) ? '' : 'your phone number, for example "phone number 9876543210"'
     default:
       return ''
   }
@@ -182,6 +197,11 @@ ${items.map((i) => `<div data-item data-name="${esc(i.name)}" data-price="${i.am
   const number = chat ? chatNumber(chat, content) : ''
   if (chat && number) {
     floating.push(`<a data-widget="whatsapp" data-page="*" href="https://wa.me/${number}?text=${encodeURIComponent(`Hello ${brand}`)}" target="_blank" rel="noopener" aria-label="Chat with ${esc(brand)} on WhatsApp" style="position:fixed;left:1rem;bottom:1rem;z-index:60;display:flex;align-items:center;gap:.5rem;background:#25d366;color:#fff;padding:.7rem 1rem;border-radius:9999px;font-weight:600;font-size:.95rem;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 14c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.4-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.5 1.9 1 .9 1.9 1.2 2.2 1.3.3.1.4.1.6-.1l.8-.9c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.8-.2 1.5Z"/></svg>Chat</a>`)
+  }
+  const call = get('call')
+  const dial = call ? callNumber(call, content) : ''
+  if (call && dial) {
+    floating.push(`<a data-widget="call" data-page="*" href="tel:${esc(dial)}" aria-label="Call ${esc(brand)}" style="position:fixed;right:4.5rem;bottom:1rem;z-index:60;display:flex;align-items:center;gap:.5rem;background:var(--g-accent);color:var(--g-on-accent);padding:.7rem 1rem;border-radius:9999px;font-weight:600;font-size:.95rem;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.25)"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.6 3.6a1 1 0 0 1-.25 1l-2.25 2.2Z"/></svg>Call now</a>`)
   }
   return { top: top.join(''), sections: sections.join(''), floating: floating.join('') }
 }
