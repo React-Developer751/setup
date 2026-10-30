@@ -3,6 +3,8 @@
 // The choices below are the "axes". Rules (`valid`) keep the combinations that do not work out of the way (a giant headline in a narrow column, a circle picture on a full-bleed layout).
 // The spec is small and exact: it is encoded in the id of the component ("gen/Hero_3k9x..."), so the same id is always the same hero, and a project that holds the id can draw it again.
 
+import { tasteWeight } from './heroTaste'
+
 export const LAYOUTS = ['split-right', 'split-left', 'center-stack', 'type-led', 'bleed-overlay', 'offset-card', 'bento', 'stack-wide'] as const
 export const MEDIA = ['rect', 'arch', 'circle', 'tilt', 'blob'] as const
 export const SCALES = ['m', 'l', 'xl', 'xxl'] as const
@@ -84,7 +86,15 @@ export function randomSpec(rand: () => number, mood: HeroMood = 'any', avoid: He
       const lean = LEAN[mood][key]
       // a leaned axis takes its leaned options 80% of the time: the generator may still surprise
       const pool = lean && rand() < 0.8 ? lean : options
-      s[key] = pool[Math.floor(rand() * pool.length)]
+      // what the person's thumbs say (heroTaste.ts) makes liked choices more likely and disliked ones less likely
+      const weights = pool.map((o) => tasteWeight(key, o))
+      let r = rand() * weights.reduce((a, b) => a + b, 0)
+      let pick = pool.length - 1
+      for (let i = 0; i < pool.length; i += 1) {
+        r -= weights[i]
+        if (r <= 0) { pick = i; break }
+      }
+      s[key] = pool[pick]
     }
     const spec = fit(s as unknown as HeroSpec)
     if (!valid(spec)) continue

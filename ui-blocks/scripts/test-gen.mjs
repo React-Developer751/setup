@@ -8,6 +8,7 @@ globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }
 const spec = await loadGeneratorModule('gen/heroSpec.ts')
 const emit = await loadGeneratorModule('gen/heroEmit.ts')
 const pick = await loadGeneratorModule('gen/heroPick.ts')
+const taste = await loadGeneratorModule('gen/heroTaste.ts')
 const { compileSource } = await loadGeneratorModule('library/componentCompile.ts')
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
 let pass = 0
@@ -73,6 +74,21 @@ ok(pick.pickGenHero({ ...base, variation: 5 }) === pick.pickGenHero({ ...base, v
 let page
 for (let v = 1; v <= 40 && !page; v += 1) { const l = generateLibraryPage('cafe website in Jaipur', v, 'better', true, 'auto', undefined, false); if (l.sections.some((s) => s.componentId.startsWith('gen/'))) page = l }
 ok(page && /import Hero\w+ from '\.\/components\/gen\/Hero_/.test(page.code), 'a page with a generated hero names it in its code')
+// the taste: what was liked is drawn more, what was not is drawn less, and a few thumbs change nothing
+const r2 = seeded(31)
+const pool = Array.from({ length: 80 }, () => spec.randomSpec(r2, 'any'))
+const ratings = pool.map((s) => ({ id: spec.specId(s), up: s.font === 'serif' }))
+taste.setHeroTaste(ratings.slice(0, 10), spec.specOfId)
+ok(taste.tasteWeight('font', 'serif') === 1 && !taste.tasteActive(), 'ten thumbs are not a taste yet')
+taste.setHeroTaste(ratings, spec.specOfId)
+ok(taste.tasteActive() && taste.tasteWeight('font', 'serif') > 1.5 && taste.tasteWeight('font', 'sans') < 0.7, `liked serif is drawn more, disliked sans less (${taste.tasteWeight('font', 'serif').toFixed(2)} / ${taste.tasteWeight('font', 'sans').toFixed(2)})`)
+ok(taste.tasteWeight('font', 'serif') <= 3 && taste.tasteWeight('font', 'sans') >= 0.25, 'nothing is shut out and nothing takes over')
+const r3 = seeded(77)
+const serif = (n) => Array.from({ length: n }, () => spec.randomSpec(r3, 'any')).filter((s) => s.font === 'serif').length
+const after = serif(300)
+taste.setHeroTaste([], spec.specOfId)
+const before = serif(300)
+ok(after > before * 1.4, `after the thumbs the generator draws serif more often (${before} -> ${after} of 300)`)
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

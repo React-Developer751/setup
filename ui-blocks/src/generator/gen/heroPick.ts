@@ -4,7 +4,8 @@
 // so a prompt gives the same page every time, and the id says everything about the hero.
 import { archetypeOf } from '../motionBrain'
 import { seededRandom } from '../random'
-import { randomSpec, specId, type HeroMood } from './heroSpec'
+import { randomSpec, specId, specOfId, type HeroMood } from './heroSpec'
+import { setHeroTaste, type HeroRating } from './heroTaste'
 
 const hash = (text: string) => [...text].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 11)
 
@@ -30,4 +31,24 @@ export function pickGenHero(i: PickInput): string | undefined {
   if (rand() >= Math.min(0.95, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return specId(randomSpec(rand, mood))
+}
+
+/** the ratings of this person (the server's, else this browser's) become the taste of the generator; returns how many ratings there are */
+export async function loadHeroTaste(): Promise<number> {
+  let rows: HeroRating[] = []
+  try {
+    const res = await fetch('/api/gen-ratings', { signal: AbortSignal.timeout(4000) })
+    if (res.ok) rows = ((await res.json()) as { rows: HeroRating[] }).rows
+  } catch {
+    // no server
+  }
+  if (!rows.length) {
+    try {
+      rows = Object.values(JSON.parse(localStorage.getItem('ui-blocks:gen-ratings') ?? '{}') as Record<string, HeroRating>)
+    } catch {
+      rows = []
+    }
+  }
+  setHeroTaste(rows, specOfId)
+  return rows.length
 }

@@ -5,6 +5,7 @@ import { buildLibraryStandalone } from './generator/exportLibrary'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
 import { describeSpec, randomSpec, specId, specOfId, type HeroMood, type HeroSpec } from './generator/gen/heroSpec'
 import { seededRandom } from './generator/random'
+import { MIN_RATINGS, setHeroTaste, tasteActive, tasteTable } from './generator/gen/heroTaste'
 
 const PROMPTS = ['cafe website in Jaipur', 'dental clinic website in Pune', 'law firm website', 'gym website with personal training', 'boutique clothing store website', 'SaaS startup landing page', 'yoga studio website in Rishikesh', 'kirana dukaan ki website']
 const MOODS: HeroMood[] = ['any', 'calm', 'bold', 'soft', 'dark', 'playful']
@@ -70,7 +71,19 @@ export default function GenReview() {
   const [batch, setBatch] = useState(1)
   const [width, setWidth] = useState(1100)
   const [ratings, setRatings] = useState<Record<string, Rating>>(readRatings)
+  // the ratings the server holds for this person are merged in (a thumb given in another browser or window counts too)
+  useEffect(() => {
+    void fetch('/api/gen-ratings').then((r) => (r.ok ? r.json() : undefined)).then((body: { rows?: { id: string; up: boolean; mood: string; prompt: string }[] } | undefined) => {
+      if (!body?.rows?.length) return
+      setRatings((current) => ({ ...Object.fromEntries(body.rows!.map((r) => [r.id, r])), ...current }))
+    }).catch(() => undefined)
+  }, [])
+  // the taste of the generator follows the ratings (it starts to matter at MIN_RATINGS)
+  setHeroTaste(Object.values(ratings), specOfId)
   const ids = useMemo(() => {
+    // /?gen=1&ids=gen/Hero_abc,gen/Hero_def shows exactly these
+    const fixed = (new URLSearchParams(location.search).get('ids') ?? '').split(',').filter((id) => !!specOfId(id))
+    if (fixed.length) return fixed
     const rand = seededRandom(batch * 7919 + MOODS.indexOf(mood) * 101)
     const made: HeroSpec[] = []
     while (made.length < 8) made.push(randomSpec(rand, mood, made))
@@ -86,11 +99,19 @@ export default function GenReview() {
     }
     void fetch('/api/gen-ratings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, up, mood, prompt }) }).catch(() => undefined)
   }
+  const table = tasteTable().filter((t) => t.up + t.down >= 2)
+  const liked = table.filter((t) => t.up > t.down).sort((a, b) => b.up - b.down - (a.up - a.down)).slice(0, 8)
+  const disliked = table.filter((t) => t.down > t.up).sort((a, b) => b.down - b.up - (a.down - a.up)).slice(0, 8)
   const good = Object.values(ratings).filter((r) => r.up).length
   const bad = Object.values(ratings).filter((r) => !r.up).length
   return (
     <div style={{ font: '14px/1.45 system-ui', padding: 16, background: '#fafaf9', minHeight: '100vh' }}>
       <h1 style={{ fontSize: 18, margin: '0 0 8px' }}>Design generator: first screens ({good} liked, {bad} not liked)</h1>
+      <p style={{ margin: '0 0 10px', color: '#57534e' }}>
+        {tasteActive() ? 'The generator now draws what you liked more often.' : `The generator starts to learn from your thumbs at ${MIN_RATINGS} ratings (${good + bad} so far): rate more, in other moods and for other businesses.`}
+        {liked.length > 0 && <> <b>Liked so far:</b> {liked.map((t) => `${t.key}=${t.option} (${t.up}/${t.up + t.down})`).join(', ')}.</>}
+        {disliked.length > 0 && <> <b>Not liked:</b> {disliked.map((t) => `${t.key}=${t.option} (${t.down}/${t.up + t.down})`).join(', ')}.</>}
+      </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 14 }}>
         <label>Business <select value={prompt} onChange={(e) => setPrompt(e.target.value)}>{PROMPTS.map((p) => <option key={p}>{p}</option>)}</select></label>
         <label>Mood <select value={mood} onChange={(e) => setMood(e.target.value as HeroMood)}>{MOODS.map((m) => <option key={m}>{m}</option>)}</select></label>

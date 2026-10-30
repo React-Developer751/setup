@@ -55,6 +55,7 @@ import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, tempe
 import { parseEdit } from './generator/edit/understand'
 import { widgetOps } from './generator/edit/widgetParse'
 import { recogniseBusiness } from './generator/edit/packClient'
+import { loadHeroTaste } from './generator/gen/heroPick'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
@@ -163,6 +164,10 @@ function GeneratorPage() {
   // the person's word in the chat ("multiple pages", "one page again") wins over the choice made when the site was generated
   const isMulti = (edits.pagesMode ?? pages) === 'multi'
   useEffect(() => setRoute('/'), [isMulti])
+  // what the person liked among the generated first screens (/?gen=1) shapes the next ones
+  useEffect(() => {
+    void loadHeroTaste()
+  }, [])
   const shownEngine = engine
   // a multi-page site of the built-in templates has its own pages and posts; the components' site keeps its pages in `library.pages`
   const tplMulti = isMulti && shownEngine === 'templates'
