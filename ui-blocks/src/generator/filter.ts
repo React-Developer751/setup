@@ -163,7 +163,8 @@ export function extractContentDetails(userPrompt: string, themeKey?: string, nic
   const stop = words.findIndex((w) => STOP_WORDS.has(w.toLowerCase()))
   const fromLoose = titleCase((stop >= 0 ? words.slice(0, stop) : words).join(' '))
 
-  let subject = extractSubject(userPrompt)
+  // "cloth" / "kapde" is the business "clothing store" (the classifier already reads it so; the subject must too)
+  let subject = extractSubject(userPrompt.replace(/\b(?:cloths?|clothes|kapde|kapda)\b/gi, 'clothing store'))
   // a Hinglish prompt ("mujhe ek premium Italian restaurant ki website chahiye") must not leave its filler words in the subject
   subject = subject.replace(/^(?:(?:ek|mujhe|meri|mera|mere|apni|apna|apne|hamari|hamara|humari|ek\s+aur|koi)\s+)+/i, '').replace(/\s+(?:ki|ka|ke|ko)$/i, '').trim()
   // "called Iron Pulse Delhi": the city at the end is the place: the city at the end is the place

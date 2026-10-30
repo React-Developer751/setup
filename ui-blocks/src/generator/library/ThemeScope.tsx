@@ -53,6 +53,43 @@ function useHeightFactor(ref: React.RefObject<HTMLDivElement | null>, factor: nu
   }, [ref, factor])
 }
 
+
+/** the same element with another tag (a heading level): attributes and content are kept */
+function retag(el: Element, tag: string) {
+  const next = document.createElement(tag)
+  for (const a of el.attributes) next.setAttribute(a.name, a.value)
+  while (el.firstChild) next.appendChild(el.firstChild)
+  el.replaceWith(next)
+  return next
+}
+
+/** two headings with the same words in one part (the title of the gallery and its first caption, both "Wood-fired Pizza"): the first one is the title of the part and becomes its plain name */
+const PLAIN_TITLE: Record<string, string> = { gallery: 'Gallery', features: 'What we offer', team: 'The team', blog: 'From the blog', pricing: 'Prices', about: 'About us', steps: 'How it works', faq: 'Questions' }
+function dedupeHeadings(root: HTMLElement) {
+  root.querySelectorAll<HTMLElement>('[data-role]').forEach((section) => {
+    const seen = new Map<string, Element>()
+    for (const h of section.querySelectorAll('h1,h2,h3')) {
+      const key = (h.textContent ?? '').trim().toLowerCase()
+      if (key.length < 3) continue
+      const first = seen.get(key)
+      if (first) {
+        const plain = PLAIN_TITLE[section.dataset.role ?? '']
+        if (plain && first.children.length === 0) first.textContent = plain
+      } else seen.set(key, h)
+    }
+  })
+}
+
+/** one h1 per page, and it is the headline of the first screen (a page whose first screen has no h1 used to get "About us" as its h1) */
+function oneH1(root: HTMLElement) {
+  const hero = root.querySelector('[data-role="hero"]')
+  const title = hero ? [...hero.querySelectorAll('h1,h2')].find((h) => (h.textContent ?? '').trim().length > 3) : undefined
+  const keep = title?.tagName === 'H1' ? title : title ? retag(title, 'h1') : root.querySelector('h1')
+  root.querySelectorAll('h1').forEach((h) => {
+    if (h !== keep) retag(h, 'h2')
+  })
+}
+
 export function Section({ role, paint, fit, band, page, head, children }: { role: Role; /** a soft band of the main colour behind this part (every other part), so the page has colour */ band?: boolean; /** background colour of this part only */ paint?: string; /** size and alignment of this part */ fit?: { buttons?: 'left' | 'center' | 'right'; minHeight?: number; heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }; /** the page of a multi-page site this part belongs to ('*' = every page) */ page?: string; /** the title block of an inner page: its name, its line, the label of the way home */ head?: { title: string; text: string; home: string }; children: ReactNode }) {
   const palette = useContext(PaletteContext)
   const box = useRef<HTMLDivElement>(null)
@@ -136,6 +173,8 @@ export function ThemeScope({
       console.warn('dropRepeats skipped:', error)
     }
     if (pages) rewritePageLinks(root)
+    dedupeHeadings(root)
+    oneH1(root)
     // a picture with no description is decorative for a screen reader: an empty alt says so (no alt makes it read the file name)
     root.querySelectorAll('img:not([alt])').forEach((img) => img.setAttribute('alt', ''))
     // Preline wires up collapse / dropdown behaviour of the navigation blocks

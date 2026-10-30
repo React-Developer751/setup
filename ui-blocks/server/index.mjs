@@ -356,6 +356,27 @@ export const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': upstream.headers.get('content-type'), 'content-length': bytes.length, 'cache-control': 'public, max-age=86400' })
       return res.end(bytes)
     }
+    // one picture of the image AI's spec (the business named in the prompt decides the scene, the slot the size and the framing): JSON with the picture as base64
+    if (req.method === 'GET' && url.pathname === '/api/ai-spec') {
+      if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
+      const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'#:()&-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
+      const slot = url.searchParams.get('slot') ?? ''
+      const seed = Number(url.searchParams.get('seed') ?? 0)
+      const colour = (name) => (/^#[0-9a-f]{6}$/i.test(url.searchParams.get(name) ?? '') ? url.searchParams.get(name) : undefined)
+      if (prompt.length < 4 || !/^(?:hero-[1-3]|about|gallery-[1-6]|card-[1-6]|team-[1-3]|background)$/.test(slot) || !Number.isInteger(seed) || seed < 0 || seed > 999999) return send(res, 400, { error: 'prompt, slot (hero-1, about, gallery-3 ...) and seed (0-999999) are needed' })
+      let upstream
+      try {
+        upstream = await fetch(`${PIXELMATH_URL}/spec`, { method: 'POST', headers: { 'content-type': 'application/json', ...(PIXELMATH_KEY ? { 'x-api-key': PIXELMATH_KEY } : {}) }, body: JSON.stringify({ prompt, slot, seed, format: 'jpeg', response: 'base64', ...(colour('accent') ? { accent: colour('accent') } : {}), ...(colour('bg') ? { bg: colour('bg') } : {}) }), signal: AbortSignal.timeout(90_000) })
+      } catch {
+        return send(res, 503, { error: 'the image engine is not running (npm run images)' })
+      }
+      if (upstream.status === 503) return send(res, 503, { error: 'the image engine is busy, try again' })
+      if (!upstream.ok) return send(res, 502, { error: `the image engine answered ${upstream.status}` })
+      const body = await upstream.json()
+      if (!/^image\/(jpeg|png)$/.test(body?.mime) || typeof body.image_base64 !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(body.image_base64) || body.image_base64.length > 600_000) return send(res, 502, { error: 'the image engine did not return a usable picture' })
+      const r = body.report ?? {}
+      return send(res, 200, { image_base64: body.image_base64, mime: body.mime, width: Number(body.width) || 0, height: Number(body.height) || 0, report: { niche: r.niche ?? null, fallback: r.fallback === true, style_note: String(r.style_note ?? '').slice(0, 160), slot: String(r.slot ?? slot).slice(0, 20) } })
+    }
     // the studio of the image engine: 3-8 pictures of one site in one style (hero, about, tiles), already judged by the engine
     if (req.method === 'GET' && url.pathname === '/api/ai-set') {
       if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
@@ -393,6 +414,26 @@ export const server = http.createServer(async (req, res) => {
           seed: Number(c.seed) || 0, niche: text(c.niche, 20), brand: text(c.brand, 60), hero_heading: text(c.hero_heading, 120), tagline: text(c.tagline, 240), cta_primary: text(c.cta_primary, 60), cta_secondary: text(c.cta_secondary, 60), cta_text: text(c.cta_text, 240),
         }))
         return send(res, 200, { niche: text(body.niche, 20), candidates })
+      } catch {
+        return send(res, 503, { error: 'Core-Craft is not running (npm run corecraft)' })
+      }
+    }
+    // which niche pack Core-Craft AI reads the request as (the id of one of the niches, how sure it is, what it noticed): the page decides whether to trust it
+    if (req.method === 'GET' && url.pathname === '/api/corecraft/pack') {
+      const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'"&\-;:]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
+      if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
+      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      try {
+        const upstream = await fetch(`${CORECRAFT_URL}/pack`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt }), signal: AbortSignal.timeout(15_000) })
+        if (upstream.status === 422) return send(res, 422, { error: 'Core-Craft could not read this request' })
+        if (!upstream.ok) return send(res, 502, { error: `Core-Craft answered ${upstream.status}` })
+        const b = await upstream.json()
+        const t = (v, k) => String(v ?? '').replace(/\p{Cc}+/gu, ' ').replace(/[<>]/g, '').slice(0, k)
+        return send(res, 200, {
+          id: /^[a-z0-9_]{2,60}$/.test(String(b.id ?? '')) ? b.id : '', label: t(b.label, 80), theme: t(b.theme, 40), niche: /^[a-z0-9_]{2,60}$/.test(String(b.niche ?? '')) ? b.niche : null,
+          keywords: (Array.isArray(b.keywords) ? b.keywords : []).slice(0, 20).map((k) => t(k, 40)), confidence: Number.isFinite(Number(b.confidence)) ? Number(b.confidence) : 0, source: t(b.source, 30),
+          notes: (Array.isArray(b.notes) ? b.notes : []).slice(0, 4).map((n) => t(n, 240)), problems: (Array.isArray(b.problems) ? b.problems : []).length,
+        })
       } catch {
         return send(res, 503, { error: 'Core-Craft is not running (npm run corecraft)' })
       }

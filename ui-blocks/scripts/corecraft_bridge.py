@@ -5,6 +5,7 @@
 GET  /health                          -> {"ok": true, "model": true|false}
 POST /generate {"prompt", "seed"?, "n"?}  -> {"niche", "candidates": [one Core-Craft page of copy per seed]}
 POST /page {"prompt", "seed"?, "lang"?}   -> {"page": the whole page of copy (services of the prompt, place, Hindi when asked), with what to check}
+POST /pack {"prompt"}                     -> {"id", "label", "theme", "keywords", "confidence", "source", "notes", "problems", "brand", "city"}: which niche pack the request is (the pack itself is not sent)
 
 Only text slots are returned (no stats: Core-Craft invents numbers, this project never shows invented numbers). Pure standard library.
 """
@@ -57,7 +58,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         route = self.path.split("?")[0]
-        if route not in ("/generate", "/page"):
+        if route not in ("/generate", "/page", "/pack"):
             return self._send(404, {"error": "not found"})
         try:
             body = json.loads(self.rfile.read(min(int(self.headers.get("content-length") or 0), 20_000)) or b"{}")
@@ -67,6 +68,15 @@ class Handler(BaseHTTPRequestHandler):
         if len(prompt) < 2:
             return self._send(400, {"error": "prompt is needed"})
         seed = body.get("seed")
+        if route == "/pack":
+            try:
+                from corecraft.pack_api import generate_pack
+                out = generate_pack(prompt)
+            except (ValueError, KeyError, RuntimeError) as e:
+                return self._send(422, {"error": str(e)})
+            pack, u = out["pack"], out["understood"]
+            return self._send(200, {"id": pack.get("id"), "label": pack.get("label"), "theme": pack.get("theme"), "keywords": pack.get("keywords", [])[:20], "confidence": u.get("confidence"),
+                                    "niche": u.get("niche"), "source": out.get("source"), "notes": out.get("notes", [])[:4], "problems": out.get("problems", [])[:4], "brand": u.get("brand"), "city": u.get("city")})
         if route == "/page":
             try:
                 lang = body.get("lang") if body.get("lang") in ("en", "hi") else None

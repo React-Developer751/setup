@@ -18,7 +18,7 @@ import finalPromptSource from './finalPrompt.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
 import { componentOverride } from './library/componentOverrides'
 import { libraryComponents } from './library/libraryComponents'
-import { repairContrast } from './library/pageAudit'
+import { repairContrast, veilPictures } from './library/pageAudit'
 import { libraryWithDetails, safeSiteUrl, xmlEscape } from './library/exportDetails'
 import { contentTypesFrom, libraryProjectEntries } from './library/projectBuilder'
 
@@ -198,6 +198,12 @@ function renderLibrary(lib: Library) {
       const inner = [...page.querySelectorAll<HTMLElement>('[data-page]')]
       const hiddenBefore = inner.map((el) => el.hidden)
       inner.forEach((el) => (el.hidden = false))
+      // text on a picture is made readable first (a veil between them), then every other text is measured
+      try {
+        veilPictures(page)
+      } catch {
+        // the veil is a help
+      }
       repairContrast(page, (mode) => {
         page.setAttribute('style', styles[mode])
         page.classList.toggle('dark', mode === 'dark')

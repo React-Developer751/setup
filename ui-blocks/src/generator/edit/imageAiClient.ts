@@ -13,6 +13,8 @@ import { sampleTopK, temperature } from '../creativity'
 import { directPlan, mashups } from './imageDirector'
 import { applyRatings, blockedByRatings, businessKey, loadRatings, syncRatings } from './imageRatings'
 import { readPicture } from './imageFile'
+import { detectNiche } from '../niche/applyNiche'
+import { NICHES } from '../niche/niches'
 
 export type PictureReport = { pictures: number; redrawn: number; otherScene: number; /** scenes replaced because they showed nothing of the business */ directed: number; notes: string[] }
 /** a scene as it was finally drawn (the prompt can differ from the plan: another words, another scene), with the kind of picture it is */
@@ -203,9 +205,67 @@ async function studioSet(prompt: string, accent: string | undefined, seed: numbe
   }
 }
 
+
+/**
+ * The image AI's own spec: the business named in "<subject>, for a <business> website" decides the scene, and every place of the page has its slot (first screen 16:9 with calm space on the
+ * left, About 4:3, gallery squares). The pictures use the colours of the site and never draw text. undefined when the business is not one of the spec's (the studio set is tried then).
+ */
+async function specSet(prompt: string, plan: ScenePlan, accent: string | undefined, bg: string | undefined, seed: number): Promise<{ ops: EditOp[]; report: PictureReport } | undefined> {
+  const niche = detectNiche(prompt, NICHES)
+  if (!niche) return undefined
+  const palette = accent && /^#[0-9a-f]{6}$/i.test(accent) ? ` Palette: accent ${accent}${bg && /^#[0-9a-f]{6}$/i.test(bg) ? ` on ${bg}` : ''}.` : ''
+  const subjects = [
+    { slot: 'hero-1', subject: plan.hero.prompt },
+    { slot: 'about', subject: plan.about.prompt },
+    ...plan.gallery.slice(0, 4).map((g, i) => ({ slot: `gallery-${i + 1}`, subject: g.prompt })),
+  ]
+  const results: (string | undefined)[] = new Array(subjects.length)
+  let fell = false
+  let next = 0
+  const worker = async () => {
+    while (next < subjects.length && !fell) {
+      const i = next++
+      const { slot, subject } = subjects[i]
+      const query = new URLSearchParams({ prompt: `${subject}, for a ${niche.label.toLowerCase()} website.${palette}`, slot, seed: String(Math.abs(Math.round(seed)) % 999_999) })
+      if (accent && /^#[0-9a-f]{6}$/i.test(accent)) query.set('accent', accent)
+      if (bg && /^#[0-9a-f]{6}$/i.test(bg)) query.set('bg', bg)
+      let res = await fetch(`/api/ai-spec?${query}`, { signal: AbortSignal.timeout(100_000) })
+      // busy (the engine draws a few pictures at a time): wait and ask again, up to four times
+      for (let again = 0; again < 4 && res.status === 503; again += 1) {
+        await new Promise((r) => setTimeout(r, 2000 * (again + 1)))
+        res = await fetch(`/api/ai-spec?${query}`, { signal: AbortSignal.timeout(100_000) })
+      }
+      if (!res.ok) {
+        fell = true
+        return
+      }
+      const body = (await res.json()) as { image_base64?: string; mime?: string; report?: { fallback?: boolean; niche?: string | null } }
+      // a neutral picture for a business the image AI does not know is not a picture of this business
+      if (!body.image_base64 || body.report?.fallback || !body.report?.niche) {
+        fell = true
+        return
+      }
+      results[i] = `data:${body.mime};base64,${body.image_base64}`
+    }
+  }
+  try {
+    await Promise.all([worker(), worker()])
+  } catch {
+    return undefined
+  }
+  if (fell || results.some((r) => !r)) return undefined
+  const pictures = results as string[]
+  return { ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: pictures.length, redrawn: 0, otherScene: 0, directed: 0, notes: [`pictures for a ${niche.label.toLowerCase()} website from the image AI's spec: the scene of the business, the size of each place, the colours of your site, no text`] } }
+}
+
 /** the picture of every scene, two at a time; `onProgress(done, total)` tells how far it is */
-export async function makePictures(basePlan: ScenePlan, onProgress: (done: number, total: number) => void, options: { accent?: string; /** the words of the person: the pictures must show this business */ prompt?: string } = {}): Promise<ImageAiResult> {
+export async function makePictures(basePlan: ScenePlan, onProgress: (done: number, total: number) => void, options: { accent?: string; /** the background colour of the site (the pictures of the spec use it) */ bg?: string; /** the words of the person: the pictures must show this business */ prompt?: string } = {}): Promise<ImageAiResult> {
   if (options.prompt) {
+    const bySpec = await specSet(options.prompt, basePlan, options.accent, options.bg, basePlan.hero.seed).catch(() => undefined)
+    if (bySpec) {
+      onProgress(bySpec.report.pictures, bySpec.report.pictures)
+      return { ops: bySpec.ops, report: bySpec.report }
+    }
     const set = await studioSet(options.prompt, options.accent, basePlan.hero.seed)
     if (set) {
       onProgress(set.report.pictures, set.report.pictures)

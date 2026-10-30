@@ -3,6 +3,7 @@
 // so the page starts from what the earlier pages ended as. The same rows are the training data: GET /api/prompt-memory/export and /keywords on the server.
 // Plain counting and word overlap, no model. Three places hold it, as in designStore.ts: the server's file, the browser, plain memory.
 import { FILLER } from '../hinglish'
+import { KNOWN_CITIES } from '../siteBanks'
 import type { Correction } from './correctionMemory'
 
 export type PromptEdit = {
@@ -41,11 +42,11 @@ export interface PromptStore {
 
 const STOP = new Set([
   'a', 'an', 'the', 'for', 'of', 'in', 'on', 'at', 'to', 'and', 'or', 'with', 'my', 'our', 'me', 'i', 'is', 'it', 'that', 'this', 'create', 'make', 'build', 'generate', 'design', 'need', 'want',
-  'please', 'website', 'site', 'web', 'page', 'landing', 'banao', 'banakar', 'do', 'de', 'dena', 'ho', 'hai', 'se', 'ya', 'wala', 'wali', 'new', 'good', 'best', 'nice', 'unique', 'alag', 'hatke',
+  'please', 'website', 'site', 'web', 'page', 'landing', 'banao', 'banakar', 'do', 'de', 'dena', 'ho', 'hai', 'se', 'ya', 'wala', 'wali', 'new', 'good', 'best', 'nice', 'unique', 'alag', 'hatke', 'modern', 'premium', 'luxury', 'simple', 'attractive', 'stunning', 'animation', 'gallery', 'pricing',
 ])
-/** the words of a prompt that say something: lower case, no request words, plurals folded ("cafes" = "cafe") */
+/** the words of a prompt that say something: lower case, no request words, no place names ("in Jaipur" is not what a business is), plurals folded ("cafes" = "cafe") */
 export const promptWords = (text: string): string[] =>
-  [...new Set(text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1 && !STOP.has(w) && !FILLER.has(w)).map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w)))]
+  [...new Set(text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1 && !STOP.has(w) && !FILLER.has(w) && !(w in KNOWN_CITIES)).map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w)))]
 
 /** how much two prompts say the same thing, 0 to 1 (word overlap; a short prompt inside a longer one counts nearly as much) */
 export function similarity(a: string, b: string): number {
@@ -55,7 +56,8 @@ export function similarity(a: string, b: string): number {
   const shared = x.filter((w) => y.has(w)).length
   const union = x.length + y.size - shared
   const contained = shared / Math.min(x.length, y.size)
-  return Math.max(shared / union, Math.min(x.length, y.size) >= 2 ? contained * 0.85 : 0)
+  // one shared word in two prompts of several words each is a coincidence, not the same business
+  return Math.max(shared / union, Math.min(x.length, y.size) >= 2 && shared >= 2 ? contained * 0.85 : 0)
 }
 
 export type Neighbour = { row: PromptRow; score: number }

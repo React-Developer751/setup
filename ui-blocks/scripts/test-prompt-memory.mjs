@@ -53,6 +53,9 @@ ok(lessonsFrom(similarPrompts('coffee shop website Pune', [redone]), 'cafe').som
 const up = { ...row('d', 'coffee shop website in Pune', []), verdict: 'up' }
 ok(conceptMemoryFor(lessonsFrom(similarPrompts('coffee shop website Pune', [up]), 'cafe'), [], 'cafe', 'food_dining').liked.includes('coffee:roastery'), 'a thumb up becomes a kept idea')
 
+// a shared place name is not the same business (a laundry in Jaipur is not like a CCTV installer in Jaipur)
+ok(similarity('mujhe laundry ki website banao Jaipur me', 'cctv camera installation website in Jaipur') === 0, 'a shared city does not make two prompts alike')
+ok(similarity('dental clinic in Delhi', 'dental clinic in Pune') >= 0.9, 'the same business in another city is alike')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of fail.slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

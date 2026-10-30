@@ -1,4 +1,5 @@
 // Finding the niche of a prompt ("pest control", "tattoo studio", "chartered accountant") and putting its hand-written text on the page.
+import { nicheHint } from './hints'
 import type { WebsiteContent } from '../finalPrompt'
 import type { Post } from '../siteTypes'
 import { localizePrice, writePeople, type Locale } from '../siteData'
@@ -34,6 +35,10 @@ const regexesOf = (niche: Niche) => {
  * words after "called/named/naam" are ignored first; longer keywords weigh more ("termite treatment" beats "pest").
  */
 export function detectNiche(prompt: string, niches: Niche[]): Niche | undefined {
+  return ownDetection(prompt, niches) ?? niches.find((n) => n.id === nicheHint(prompt))
+}
+
+function ownDetection(prompt: string, niches: Niche[]): Niche | undefined {
   const described = prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])[\s\S]*$/iu, ' ')
   let best: { niche: Niche; score: number } | undefined
   for (const text of described.trim() ? [described, prompt] : [prompt]) {

@@ -39,3 +39,6 @@ export const withoutVibe = (text: string) =>
     .join('')
     .replace(/\s+/g, ' ')
     .trim()
+
+/** true when a line holds a request or a look word ("alag type", "animation ho", "unique", "banao"): no line of a business page says that */
+export const hasLookWord = (text: string) => text.toLowerCase().split(/[^a-z]+/).some((w) => w.length > 1 && (FILLER.has(w) || LOOKS.has(w) || ['banakar', 'jisme', 'alag', 'hatke'].includes(w)))

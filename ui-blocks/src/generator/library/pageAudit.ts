@@ -146,3 +146,56 @@ export function repairContrast(root: Element, setMode: (mode: 'light' | 'dark') 
   }
   return fixed
 }
+
+/**
+ * Text that sits on a picture was never measured (the colour behind it is "a picture"). A first screen whose headline lies on a light photo could not be read.
+ * Where a picture fills a part and text lies over it, a soft veil goes between them: dark under light text, light under dark text, so the text can be read on any picture.
+ * Returns how many veils were made. The page is drawn in a browser, attached to the document.
+ */
+export function veilPictures(root: Element): number {
+  let made = 0
+  for (const section of root.querySelectorAll('[data-role="hero"],[data-role="cta"],[data-role="banner"],[data-role="pagehead"]')) {
+    for (const img of section.querySelectorAll('img')) {
+      const parent = img.parentElement
+      if (!parent || cs(img).position !== 'absolute' || parent.querySelector(':scope > [data-veil]')) continue
+      const box = parent.getBoundingClientRect()
+      const img0 = img.getBoundingClientRect()
+      // the picture fills its part (it is a background, not a picture next to the text)
+      if (box.width < 50 || img0.width < box.width * 0.9 || img0.height < box.height * 0.8) continue
+      const heading = parent.querySelector('h1,h2,h3')
+      const fg = heading ? parse(cs(heading).color) : undefined
+      if (!heading || !fg || !(heading.textContent ?? '').trim()) continue
+      const light = lum(fg) > 0.35
+      const veil = img.ownerDocument.createElement('div')
+      veil.setAttribute('data-veil', '')
+      veil.setAttribute('aria-hidden', 'true')
+      veil.style.cssText = `position:absolute;inset:0;pointer-events:none;z-index:0;background:${light ? 'linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.62))' : 'linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.78))'}`
+      img.insertAdjacentElement('afterend', veil)
+      // what lies over the veil must be above it
+      for (const child of parent.children) {
+        if (child === img || child === veil) continue
+        const style = (child as HTMLElement).style
+        if (cs(child).position === 'static') style.position = 'relative'
+        style.zIndex = style.zIndex || '1'
+      }
+      made += 1
+    }
+  }
+  // a picture that is the background of a part ("bg-cover"): the veil is one more background layer over it
+  for (const section of root.querySelectorAll('[data-role="hero"],[data-role="cta"],[data-role="banner"],[data-role="pagehead"]')) {
+    for (const el of section.querySelectorAll<HTMLElement>('*')) {
+      const image = el.style.backgroundImage
+      if (!image || !image.includes('url(') || image.includes('gradient') || el.hasAttribute('data-veiled')) continue
+      const rect = el.getBoundingClientRect()
+      const heading = el.querySelector('h1,h2,h3')
+      const fg = heading ? parse(cs(heading).color) : undefined
+      if (rect.width < 50 || rect.height < 80 || !heading || !fg || !(heading.textContent ?? '').trim()) continue
+      const light = lum(fg) > 0.35
+      const layer = light ? 'linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.62))' : 'linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.78))'
+      el.style.backgroundImage = `${layer}, ${image}`
+      el.setAttribute('data-veiled', '')
+      made += 1
+    }
+  }
+  return made
+}

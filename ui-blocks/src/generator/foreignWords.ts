@@ -49,5 +49,14 @@ export function scrubForeign(content: WebsiteContent, prompt: string): WebsiteCo
   if (next.marquee.some(bad)) next = { ...next, marquee: next.marquee.filter((m) => !bad(m)) }
   if (next.about.points.some(bad)) next = { ...next, about: { ...next.about, points: [...next.about.points.filter((p) => !bad(p)), ...NEUTRAL_CARDS.map((n) => n.title)].slice(0, next.about.points.length) } }
   if (next.steps.items.some((s) => bad(`${s.title} ${s.text}`))) next = { ...next, steps: { ...next.steps, items: NEUTRAL_STEPS } }
+  // the first screen is read first: a headline about another trade ("Shop Tailored Jewellery" on a clothing store) is worse than a plain one
+  const subject = (content.subject ?? '').trim()
+  // a kind of goods the prompt did not name ("footwear", "jewellery" on a plain clothing store) is another trade as far as the first screen is concerned
+  const asked = prompt.toLowerCase()
+  const otherGoods = (t: string) => (t.match(/\b(?:footwear|shoes?|sneakers?|jewel+e?ry|sarees?|kurtas?|lehengas?|watch(?:es)?|handbags?|perfumes?|gifts?)\b/gi) ?? []).some((w) => !asked.includes(w.toLowerCase().slice(0, 4)))
+  const title = subject.replace(/\b[a-z]/g, (c) => c.toUpperCase())
+  if (subject.length >= 4 && (bad(next.hero.title) || otherGoods(next.hero.title))) next = { ...next, hero: { ...next.hero, title: `${title} With A Human Touch` } }
+  if (subject.length >= 4 && (bad(next.hero.subtitle) || otherGoods(next.hero.subtitle))) next = { ...next, hero: { ...next.hero, subtitle: `${content.brandName} keeps ${subject} simple: a clear answer first, then the work, done properly.` } }
+  if (bad(next.cta.title) || otherGoods(next.cta.title)) next = { ...next, cta: { ...next.cta, title: 'Ready When You Are?' } }
   return next
 }

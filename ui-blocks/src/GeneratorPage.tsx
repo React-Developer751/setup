@@ -53,6 +53,7 @@ import { artPictures } from './generator/edit/artPictures'
 import { CREATIVITY_LEVELS, loadCreativity, saveCreativity, setCreativity, temperature, type CreativityLevel } from './generator/creativity'
 import { parseEdit } from './generator/edit/understand'
 import { widgetOps } from './generator/edit/widgetParse'
+import { recogniseBusiness } from './generator/edit/packClient'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
@@ -355,6 +356,8 @@ function GeneratorPage() {
     window.setTimeout(() => setBuild((b) => (b.on && b.since === buildStart.current ? { ...b, on: false } : b)), 60_000)
     // with "smart understanding" on, the model reads the prompt first (the generators are synchronous)
     await understand(text)
+    // the Content AI reads typos, Hinglish and short words that the keywords of the niche packs miss; its answer is used only when it is sure (packClient.ts)
+    const recognised = await recogniseBusiness(text.trim())
     bumpBuild(1)
     // "a single page" / "landing page" in the prompt is an order: it wins over what was set before
     const theme = generateWebsite(text, 0, undefined, creative, 'off').themeKey
@@ -373,8 +376,8 @@ function GeneratorPage() {
     const plan: Awaited<ReturnType<typeof newDesign>> = await newDesign(text).catch(() => ({ reasons: ['Made without the design memory (it could not be read).'], ops: [], variation: 1 + Math.floor(Math.random() * 9000) }) as unknown as Awaited<ReturnType<typeof newDesign>>)
     bumpBuild(2)
     messageId.current += 1
-    setMessages([{ id: messageId.current, role: 'ai', text: pagesNote.current }, { id: messageId.current + 1, role: 'ai', text: plan.reasons.slice(-2).join(' '), site: true }])
-    messageId.current += 1
+    setMessages([{ id: messageId.current, role: 'ai', text: pagesNote.current }, ...(recognised ? [{ id: messageId.current + 1, role: 'ai' as const, text: `Core-Craft AI recognised the business: ${recognised.label} (${recognised.why}). The texts and pictures are made for it.` }] : []), { id: messageId.current + (recognised ? 2 : 1), role: 'ai', text: plan.reasons.slice(-2).join(' '), site: true }])
+    messageId.current += recognised ? 2 : 1
     // "a gym with a booking form and a map": the working parts the prompt asks for are there from the start (only those that need no more from the person)
     const asked = (widgetOps(text)?.ops ?? []).filter((o) => o.op === 'widget' && (!!o.widget.value || ['booking', 'order', 'newsletter'].includes(o.widget.kind)))
     setHistory([...(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : []), ...(asked.length ? [{ text: 'From your prompt', ops: asked }] : [])])
@@ -409,6 +412,7 @@ function GeneratorPage() {
     setCodeEdits({})
     setCodeNote('')
     await understand(project.prompt)
+    await recogniseBusiness(project.prompt)
     setSubmitted(project.prompt)
     setVariation(project.variation)
     setLevel(project.level)
@@ -543,7 +547,7 @@ function GeneratorPage() {
     }
     bumpBuild(3)
     say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
-    const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, prompt: submitted })
+    const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, bg: palette.light.bg, prompt: submitted })
     if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return true
     autoMade.current = true
     if (answer.used) {
@@ -554,9 +558,12 @@ function GeneratorPage() {
       return true
   }
   useEffect(() => {
+    // the landing screen has no site yet: nothing is drawn (the image engine must not spend its time on the example behind it)
+    // (and while a new site is being made, nothing is drawn before its design is chosen: pictures for the old text, or for a design that is replaced a moment later, would only keep the engine busy)
+    if (!started || (build.on && (build.prompt.trim() !== submitted.trim() || build.stage < 2))) return
     void autoDraw.current().then((ran) => ran && closeBuild())
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- closeBuild only touches refs and state setters
-  }, [submitted, variation, runs])
+  }, [submitted, variation, runs, started, build.on, build.prompt, build.stage])
 
   // a thumb on a picture: remembered for this kind of business; a thumb down draws another scene in its place right away
   const ratePicture = async (index: number, verdict: 'up' | 'down') => {
