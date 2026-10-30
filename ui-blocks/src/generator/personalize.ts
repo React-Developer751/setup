@@ -117,7 +117,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   if (!lists.length) {
     const META = /(?<![\p{L}])(?:website|web\s*site|site|page|landing|single|multiple|multi|chahiye|chahie|banao|bana|banani|mujhe|please|create|build|make|premium|naam|name|called|named|ke\s+liye|ki|ka|ke|mein|me|want|need|for|pages?)(?![\p{L}])/iu
     const parts = withoutPlace.split(/\s*(?:,|;|:)\s*|\s+(?:aur|and|&)\s+/i).map((x) => x.trim()).filter(Boolean)
-    const items = parts.filter((x) => !META.test(x) && x.split(/\s+/).length <= 5 && !/^\d+$/.test(x))
+    const items = parts.filter((x) => (!META.test(x) || (/\d{3,6}/.test(x) && !/(?<![\p{L}])(?:website|web\s*site|site|page|pages|landing)(?![\p{L}])/iu.test(x))) && x.split(/\s+/).length <= 5 && !/^\d+$/.test(x))
     if (parts.length >= 3 && items.length >= 2) {
       lists.push(items.join(', '))
       explicit.add(items.join(', '))
@@ -130,7 +130,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
     // a piece of the request itself ("mera restaurant hai Jaipur me", "uski website banao") is not a service
     if (hasFiller(raw0)) continue
     // "monthly membership 1999": the thing and its price
-    const priced = /(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|trial|shipping|delivery|orders?)(?![\p{L}])/iu.test(raw0) ? null : raw0.match(/^(.*?[a-z])\s*(?:@|at|for|rs\.?|inr|₹|£|€|\$)?\s*(\d{3,6}|\d{1,2}(?=\s*(?:rupees?|rs\.?|pounds?|euros?|dollars?|usd|inr)$))(?:\s*(?:rupees?|rs\.?|inr|₹|pounds?|euros?|dollars?|usd|only|\/-))?$/i)
+    const priced = /(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|trial|shipping|delivery|orders?)(?![\p{L}])/iu.test(raw0) ? null : raw0.match(/^(.*?[a-z])(?:\s*@|\s+(?:at|for)(?![\p{L}])|\s*(?:rs\.?|inr|₹|£|€|\$))?\s*(\d{3,6}|\d{1,2}(?=\s*(?:rupees?|rs\.?|pounds?|euros?|dollars?|usd|inr)$))(?:\s*(?:rupees?|rs\.?|inr|₹|pounds?|euros?|dollars?|usd|only|\/-))?$/iu)
     if (priced) facts.prices.push({ name: cleanItem(priced[1]), amount: Number(priced[2]) })
     // "kurti and saree online store": the last item ends with the kind of business, which is not a product
     const whole = priced ? cleanItem(priced[1]) : raw0
@@ -156,10 +156,29 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
     facts.services.push(raw)
   }
   if (audience.length) facts.audience = [...new Set(audience)].slice(0, 3).join(audience.length > 1 ? ' and ' : '')
-  facts.services = facts.services.slice(0, 6)
+  // a list of prices written on purpose ("drop-in 500 rupees, monthly 3000 rupees, retreat 12000 rupees"): read segment by segment, before the word lists above cut a name ("premium") or a price off
+  const listed = pricesWritten(prompt)
+  if (listed.length >= 2) facts.prices = listed
+  facts.services = facts.services.filter((x) => !/^[\d][\d,\s]*(?:rupees?|rs\.?|inr|only)?$/i.test(x.trim()) && !/^(?:call|phone|whatsapp)\s+\d/i.test(x.trim()) && !/^(?:plans?|gallery|galleries|faqs?|pages?|pricing|blog|contact|about|testimonials?)$/i.test(x.trim())).slice(0, 6)
   facts.offers = [...new Set(facts.offers)].slice(0, 4)
-  facts.prices = facts.prices.slice(0, 3)
+  facts.prices = facts.prices.slice(0, 4)
   return facts
+}
+
+/** "drop-in 500 rupees, monthly 3000 rupees": each comma-separated piece that ends in a sum of money is a thing and its price (two or more pieces make a list) */
+function pricesWritten(text: string): { name: string; amount: number }[] {
+  const money = /₹|\brupees?\b|\brs\.?(?=\s*\d|\s*$|\s*,)|\binr\b|\$|£|€|\bdollars?\b|\bpounds?\b|\beuros?\b|\/-/i
+  const out: { name: string; amount: number }[] = []
+  for (const seg of text.split(/\s*(?:,|;|\n|\band\b|\baur\b)\s*/i)) {
+    if (!money.test(seg) && !(out.length && /^[^\d]{2,40}\s+\d{3,6}$/.test(seg.trim()))) continue
+    if (/(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|years?|since|shipping|delivery|trial|call|phone|whatsapp|open)(?![\p{L}])/iu.test(seg)) continue
+    const m = seg.match(/^(?:.*?(?:pricing|prices?|plans?|rates?|packages?|price list)\s*[:\-]\s*)?([^\d₹$£€:]{2,40}?)\s*(?:@|:|=|-|\b(?:at|for|is)\b)?\s*(?:rs\.?\s*|₹\s*|inr\s*|\$\s*|£\s*|€\s*)?(\d[\d,]{2,7})\s*(?:rupees?|rs\.?|inr|only|dollars?|pounds?|euros?|\/-)?\s*(?:\/\s*\w+|per\s+\w+)?\s*$/iu)
+    if (!m) continue
+    const name = m[1].toLowerCase().replace(/[^\p{L}\p{N}&' /+-]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^(?:pricing|prices?|plans?|rates?|packages?)\s+/, '')
+    const amount = Number(m[2].replace(/,/g, ''))
+    if (name && name.split(' ').length <= 4 && amount >= 10 && !out.some((x) => x.name === name)) out.push({ name, amount })
+  }
+  return out
 }
 
 const CARD_TEXT = [

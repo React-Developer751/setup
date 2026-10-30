@@ -160,7 +160,7 @@ export type CorePage = {
   needs_review: string[]
 }
 
-export type CoreOurs = { niche?: string; heroTitle: string; subject: string; theme: ThemeKey; prompt: string; brand: string }
+export type CoreOurs = { /** the person wrote prices of their own (the built-in content holds them): the price list stays */ prices?: boolean; niche?: string; heroTitle: string; subject: string; theme: ThemeKey; prompt: string; brand: string }
 export type CoreDecision = { use: boolean; reason: string; blocks?: CoreBlocks; /** the business name, when the prompt gave it in Devanagari */ rename?: string; /** sections that would stay in English (team, prices, reviews ...): a Hindi page does not show them */ hide?: EditOp[]; review: string[] }
 
 const HI_NAV = { home: 'होम', services: 'सेवाएं', gallery: 'गैलरी', blog: 'ब्लॉग' }
@@ -187,16 +187,18 @@ const garbled = (line: string) => {
 const POSSESSIVE_FRAME = /^[\p{L}. ]{2,30}'s\s/u
 /** words about the page, not the business: no headline of a business says "website" */
 const aboutTheSite = (line: string) => /\b(?:web\s?sites?|webpages?|landing\s+page|homepage)\b/i.test(line) || hasLookWord(line)
+/** parts of the website itself, named in the prompt ("multiple pages, gallery aur FAQ ke saath"): Core-Craft sometimes lists them as services of the business */
+const SITE_PARTS = /^(?:(?:multiple|several|many|more|\d+)\s+)?(?:web\s?)?(?:pages?|gallery|galleries|faqs?|pricing|prices?|contact(?:\s+(?:page|form|us))?|about(?:\s+us)?|testimonials?|reviews?|blogs?|sections?|animations?|dark\s+mode|saath|ke\s+saath|with)(?:\s+(?:page|pages|section|ke\s+saath|saath))?$|\bke\s+saath\b|\bsaath\b|^(?:and|aur)\b/i
 /** an offer or a condition ("free shipping above 999", "7 day returns") is not a service: Core-Craft sometimes lists it as one */
 const OFFER = /free (?:shipping|delivery|trial)|cash on delivery|\bcod\b|\d+[- ]?day|returns?\b|% off|above \d|over \d|discount/i
 // the highlights ("Easy to reach", "Local and personal") are values of the business, not things it sells: they fill the cards only when there are fewer than three services
-const cards = (page: CorePage) => [...page.features.filter((f) => !NAME_MARKERS.has(f.title.trim().toLowerCase()) && !OFFER.test(f.title) && !(page.type_label && page.type_label.trim().toLowerCase() === f.title.trim().toLowerCase())), ...(page.features.length >= 3 ? [] : page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase())))].slice(0, 6)
+const cards = (page: CorePage) => [...page.features.filter((f) => !NAME_MARKERS.has(f.title.trim().toLowerCase()) && !SITE_PARTS.test(f.title.trim()) && !OFFER.test(f.title) && !(page.type_label && page.type_label.trim().toLowerCase() === f.title.trim().toLowerCase())), ...(page.features.length >= 3 ? [] : page.highlights.filter((h) => !page.features.some((f) => f.title.toLowerCase() === h.title.toLowerCase())))].slice(0, 6)
 
 export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   const review = page.needs_review ?? []
   const hindi = page.lang === 'hi'
   const strict = /^strict/i.test(page.generated_by?.mode ?? '')
-  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i) && !hasFiller(i) && !hasLookWord(i))
+  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i) && !SITE_PARTS.test(i.trim()) && !hasFiller(i) && !hasLookWord(i))
   if (!page.features?.length || !page.about?.length) return { use: false, reason: 'Core-Craft returned an incomplete page', review }
   if (hindi) {
     const t = (en: string, hi: string) => (hi ? hi : en)
@@ -236,6 +238,6 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   }
   // its blog notes are general ("How long things really take"), and sample reviews and a team would carry invented names: they stay out
   // the prices of the kit would be made up too: a price list stays only when the person gave prices
-  const hide: EditOp[] = ([...['blog', 'testimonials', 'team'], ...(page.prices?.length ? [] : ['pricing'])] as const).map((section) => ({ op: 'remove', section }) as EditOp)
+  const hide: EditOp[] = ([...['blog', 'testimonials', 'team'], ...(page.prices?.length || ours.prices ? [] : ['pricing'])] as const).map((section) => ({ op: 'remove', section }) as EditOp)
   return { use: true, reason: `Core-Craft writes about your own services (${items.slice(0, 4).join(', ')}) in the voice of ${page.type_label || page.business_type}, and invents nothing${page.missing?.length ? ` (not given: ${page.missing.join(', ')})` : ''}`, blocks, hide, review }
 }

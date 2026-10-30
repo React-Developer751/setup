@@ -18,6 +18,7 @@ const NOT_A_NAME = new Set([
   'saas', 'ai', 'crm', 'erp', 'it', 'ui', 'ux', 'seo', 'api', 'b2b', 'b2c', 'i', 'create', 'build', 'make', 'design', 'generate',
   'need', 'want', 'please', 'india', 'usa', 'uk', 'uae', 'new', 'york', 'online', 'indian', 'american', 'british', 'italian',
   'french', 'chinese', 'japanese', 'family', 'premium', 'luxury', 'modern', 'simple', 'website', 'landing', 'page', 'site',
+  'faq', 'faqs', 'gallery', 'pricing', 'blog', 'testimonials', 'seo', 'cta', 'pages', 'dark', 'animations',
   'ngo', 'pg', 'hr', 'ac', 'cctv', 'gst', 'himachal', 'goa', 'kerala', 'gujarat', 'punjab', 'rajasthan', 'maharashtra', 'karnataka', 'tamil', 'nadu', 'bengal',
   ...Object.keys(KNOWN_CITIES),
 ])

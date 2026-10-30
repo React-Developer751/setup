@@ -11,7 +11,8 @@ const root = createRoot(document.getElementById('root')!)
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('qa')) {
   void import('./QaPage').then(({ default: QaPage }) => root.render(<QaPage />))
 } else if (import.meta.env.DEV && new URLSearchParams(location.search).has('genqa')) {
-  void import('./GenQa').then(({ default: GenQa }) => root.render(<GenQa />))
+  const prices = new URLSearchParams(location.search).get('section') === 'prices'
+  void (prices ? import('./GenPriceQa') : import('./GenQa')).then(({ default: Qa }) => root.render(<Qa />))
 } else if (new URLSearchParams(location.search).has('gen')) {
   // the review page of the design generator
   void import('./GenReview').then(({ default: GenReview }) => root.render(<GenReview />))

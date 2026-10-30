@@ -332,7 +332,7 @@ function GeneratorPage() {
     if (run !== coreRun.current) return
     if (!page) return setCoreNote('Core-Craft AI did not write a page for this prompt; the built-in AI wrote it.')
     const preview = generateWebsite(text, variationNo, level === 'auto' ? undefined : level, creative, motionSetting)
-    const decision = decideCore(page, { niche: preview.niche, heroTitle: preview.content.hero.title, subject: preview.content.subject, theme: preview.themeKey, prompt: text, brand: preview.content.brandName })
+    const decision = decideCore(page, { niche: preview.niche, heroTitle: preview.content.hero.title, subject: preview.content.subject, theme: preview.themeKey, prompt: text, brand: preview.content.brandName, prices: !!preview.content.pricing.fromPrompt })
     setCoreNote(`${decision.use ? 'Core-Craft AI' : 'Built-in AI'} wrote this page: ${decision.reason}.`)
     if (decision.review.length) say({ role: 'ai', text: `Core-Craft AI says to check: ${decision.review.slice(0, 3).join(' ')}` })
     if (!decision.use || !decision.blocks) {

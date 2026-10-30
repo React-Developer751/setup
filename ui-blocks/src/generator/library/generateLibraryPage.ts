@@ -146,6 +146,15 @@ export function generateLibraryPage(
   // (a menu board is shown for a food business whose prices nobody wrote: its items are the pack's own, and it has no prices)
   const menuOn = !!base.content.menu?.categories.some((cat) => cat.items.length) && !base.content.pricing.fromPrompt
   if (!base.content.pricing.fromPrompt && !menuOn) visible.delete('pricing')
+  // what the person named in the first prompt is there: the prices they wrote, "gallery aur FAQ ke saath" (not when it says without / no / nahi)
+  if (base.content.pricing.fromPrompt) visible.add('pricing')
+  const mentioned = (word: RegExp) => word.test(userPrompt)
+  const negated = (word: RegExp) => new RegExp(`(?:\\b(?:no|without|bina|remove|hatao|hata do|delete)\\s+(?:the\\s+)?${word.source}|${word.source}\\s+(?:nahi|mat|hatao|hata do|nhi)\\b)`, 'i').test(userPrompt)
+  for (const [word, role] of [[/\bgallery\b/i, 'gallery'], [/\bfaqs?\b/i, 'faq']] as const) {
+    if (!mentioned(word)) continue
+    if (negated(word)) visible.delete(role)
+    else if (tier !== 'normal') visible.add(role)
+  }
   if (menuOn && tier !== 'normal') visible.add('pricing')
   if (menuOn) chosen.pricing = 'refkit/RefMenu1'
   for (const role of ['pricing', 'faq', 'testimonial', 'gallery'] as const) {

@@ -185,6 +185,20 @@ for (const kit of reg.KIT_PARTS) {
 const kitSeen = new Set()
 for (let v = 1; v <= 80; v += 1) { const l = generateLibraryPage('yoga studio website in Rishikesh Pricing: Drop-in 500 rupees, Monthly 3000 rupees, Retreat 12000 rupees', v, 'better', true, 'auto', undefined, true); for (const sct of l.sections) if (sct.componentId.startsWith('gen/') && reg.kitOfId(sct.componentId)) kitSeen.add(reg.kitOfId(sct.componentId).role) }
 ok(['pricing', 'faq', 'gallery'].every((r) => kitSeen.has(r)), `multi-page sites use the new generated parts (testimonials are shown only when real ones exist) (${[...kitSeen].join(', ')})`)
+// what the person named in the prompt is on the page (found with a real prompt: the prices they wrote were dropped for some variations, and "FAQ" became the business name)
+const named = 'Mere yoga studio ke liye unique bold website banao Rishikesh me, pricing: drop-in 500 rupees, monthly 3000 rupees, retreat 12000 rupees, multiple pages, gallery aur FAQ ke saath'
+let namedOk = 0
+for (const v of [1, 2, 3, 7, 99, 5251, 5252]) { const l = generateLibraryPage(named, v, undefined, true, 'auto', undefined, true); const roles = l.sections.map((x) => x.role); if (roles.includes('pricing') && roles.includes('gallery') && roles.includes('faq') && l.content.brandName !== 'FAQ') namedOk += 1 }
+ok(namedOk === 7, `the prices, the gallery and the FAQ the person named are on the page for every variation, and FAQ is not the name (${namedOk} of 7)`)
+const noGal = generateLibraryPage('cafe website without gallery and no FAQ', 5251, undefined, true, 'auto', undefined, true).sections.map((x) => x.role)
+ok(!noGal.includes('gallery') && !noGal.includes('faq'), '"without gallery and no FAQ" leaves them out')
+// prices the person wrote are read whole (a plan name was cut to "retre", "premium" was dropped as a style word, "gallery" and "plans" were taken for services)
+const PF = await loadGeneratorModule('personalize.ts')
+const pf = (t) => PF.extractFacts(t, 'studio')
+ok(JSON.stringify(pf('yoga studio, pricing: drop-in 500 rupees, monthly 3000 rupees, retreat 12000 rupees, gallery and FAQ').prices.map((p) => p.name)) === '["drop-in","monthly","retreat"]', 'the price names are read whole (retreat)')
+ok(pf('gym in Pune, plans: basic 999 rupees, premium 1999 rupees, personal training 4999 rupees').prices.length === 3, 'three prices are three plans (premium is not a style word here)')
+ok(!pf('yoga studio, drop-in 500 rupees, monthly 3000 rupees, gallery and FAQ').services.some((x) => /gallery|faq|plans/.test(x)), 'gallery and FAQ named in the prompt are not services')
+ok(pf('dental clinic in Pune, 10 years of experience, open 24 hours').prices.length === 0, 'years and hours are not prices')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

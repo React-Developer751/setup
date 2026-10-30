@@ -162,6 +162,9 @@ if (fs.existsSync(path.join(cont, 'corecraft', 'business_types.py'))) {
   }
 }
 
+// ── the parts of the website named in the prompt are not services; the person's own prices keep the price list
+ok(!C.decideCore(page({ features: [{ title: 'Multiple Pages', text: 'x' }, { title: 'Gallery', text: 'x' }, { title: 'FAQ Ke Saath', text: 'x' }], generated_by: { business_type: 'yoga', mode: 'strict (your phrases only)', items_from_prompt: ['multiple pages', 'gallery', 'FAQ ke saath'] } }), ours).use, 'multiple pages, gallery and FAQ named in the prompt are not services: the built-in texts stay')
+ok(C.decideCore(page(), { ...ours, prices: true }).hide.every((o) => o.section !== 'pricing') && C.decideCore(page(), ours).hide.some((o) => o.section === 'pricing'), 'the price list stays when the person wrote prices')
 console.log(`corecontent: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) {
   console.log(fail.map((f) => ` - ${f}`).join('\n'))
