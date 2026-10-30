@@ -8,6 +8,7 @@ globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }
 const spec = await loadGeneratorModule('gen/heroSpec.ts')
 const emit = await loadGeneratorModule('gen/heroEmit.ts')
 const pick = await loadGeneratorModule('gen/heroPick.ts')
+const fs = await loadGeneratorModule('gen/featuresSpec.ts')
 const taste = await loadGeneratorModule('gen/heroTaste.ts')
 const { compileSource } = await loadGeneratorModule('library/componentCompile.ts')
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
@@ -98,6 +99,38 @@ ok(!taste.isBlocked(bad), 'one that is mostly liked is not')
 taste.setHeroTaste([], spec.specOfId)
 const r5 = seeded(5)
 ok(Array.from({ length: 400 }, () => spec.randomSpec(r5, 'any')).every((s) => !(s.font === 'serif' && s.scale === 'm')), 'no small serif headline')
+// the services part
+ok(fs.countFeatures() > 100_000, `a large space of services parts (${fs.countFeatures().toLocaleString()})`)
+const rf = seeded(21)
+const fspecs = []
+const fids = new Set()
+for (let i = 0; i < 300; i += 1) {
+  const s = fs.randomFeatures(rf, ['any', 'calm', 'bold', 'soft', 'dark', 'playful'][i % 6], fspecs.slice(-3))
+  fspecs.push(s)
+  const id = fs.featuresId(s)
+  fids.add(id)
+  const back = fs.featuresOfId(id)
+  ok(back && Object.keys(s).every((k) => back[k] === s[k]), `the id of a services spec gives it back (${id})`)
+}
+ok(fids.size >= 290 && new Set(fspecs.map((s) => s.layout)).size === 8, `300 services parts are almost all different (${fids.size}) and every layout is used`)
+let fdrawn = 0
+for (const id of [...fids].slice(0, 80)) {
+  const C = emit.generatedHero(id)
+  const html = C ? renderToStaticMarkup(createElement(C)) : ''
+  const six = (html.match(/data-slot="tile"/g) ?? []).length === 6 && ['title', 'lead', 'tile-title', 'tile-text'].every((n) => html.includes(`data-slot="${n}"`))
+  const src = emit.generatedHeroSource(id)
+  const compiled = src ? compileSource(src) : { error: 'no source' }
+  if (six && 'code' in compiled && html.includes('data-ref="show-tiles"') && !/undefined|\[object/.test(html) && !/className="[^"]*\b(?:text|bg|px|py|grid|flex)-/.test(html)) fdrawn += 1
+  else fail.push(`the services part ${id} is not drawn with its parts or does not compile`)
+}
+ok(fdrawn === 80, `80 services parts drawn (6 tiles each) and their source compiled (${fdrawn})`)
+ok(!fs.featuresOfId('gen/Hero_67ky7') && !spec.specOfId('gen/Features_1jms7'), 'a hero id is not a services id and the other way round')
+const fpage = []
+for (let v = 1; v <= 60 && fpage.length < 1; v += 1) { const l = generateLibraryPage('dental clinic website in Pune', v, 'better', true, 'auto', undefined, false); if (l.sections.some((s) => s.componentId.startsWith('gen/Features_'))) fpage.push(l) }
+ok(fpage.length === 1 && /import Features\w+ from '\.\/components\/gen\/Features_/.test(fpage[0].code), 'a page with a generated services part names it in its code')
+// the taste of the services part is its own
+taste.setHeroTaste(fspecs.map((s, i) => ({ id: fs.featuresId(s), up: s.layout !== 'bento' || i % 9 === 0 })), fs.decodeFeatures, 'features')
+ok(taste.tasteActive('features') && !taste.tasteActive('hero') === true && taste.tasteWeight('layout', 'bento', 'features') < 1, 'the services part has a taste of its own (bento is disliked there, the first screens are untouched)')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

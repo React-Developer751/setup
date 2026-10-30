@@ -2,6 +2,8 @@
 import { createElement, type ComponentType, type ReactNode } from 'react'
 import { heroTree, type Node } from './heroTree'
 import { specOfId, type HeroSpec } from './heroSpec'
+import { featuresOfId } from './featuresSpec'
+import { featuresTree } from './featuresTree'
 
 const hashOf = (id: string) => [...id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36)
 /** the scoped class of a hero (one hero per page, but two on one screen - the gallery of the review page - must not share rules) */
@@ -19,13 +21,20 @@ function toReact(node: Node | string, key?: number): ReactNode {
 
 const cache = new Map<string, ComponentType>()
 
+/** the tree of a generated part by its id: a first screen (gen/Hero_...) or the services part (gen/Features_...) */
+function treeOfId(id: string): Node | undefined {
+  const hero = specOfId(id)
+  if (hero) return heroTree(hero, classOf(id))
+  const features = featuresOfId(id)
+  return features ? featuresTree(features, classOf(id)) : undefined
+}
+
 /** the component of a generated hero id (the same function each time, so React keeps it between draws); undefined for an id that is not one */
 export function generatedHero(id: string): ComponentType | undefined {
   const hit = cache.get(id)
   if (hit) return hit
-  const spec = specOfId(id)
-  if (!spec) return undefined
-  const tree = heroTree(spec, classOf(id))
+  const tree = treeOfId(id)
+  if (!tree) return undefined
   const Component: ComponentType = () => toReact(tree) as never
   Component.displayName = `Generated${id.replace(/\W/g, '')}`
   cache.set(id, Component)
@@ -49,11 +58,15 @@ function toTsx(node: Node | string, depth: number): string {
 
 /** the text of the component file of a generated hero (what the Code tab shows and the project export holds) */
 export function generatedHeroSource(id: string): string | undefined {
-  const spec = specOfId(id)
-  if (!spec) return undefined
-  const name = `Hero${hashOf(id)}`
-  return `// A first screen made by the design generator from this description: ${JSON.stringify(spec)}\n// The look is the <style> below (the page's colour variables, no other class): change it freely.\nexport default function ${name}() {\n  return (\n${toTsx(heroTree(spec, classOf(id)), 2)}\n  )\n}\n`
+  const tree = treeOfId(id)
+  if (!tree) return undefined
+  const spec = specOfId(id) ?? featuresOfId(id)
+  const kind = id.startsWith('gen/Features_') ? 'Features' : 'Hero'
+  return `// A ${kind === 'Hero' ? 'first screen' : 'services part'} made by the design generator from this description: ${JSON.stringify(spec)}\n// The look is the <style> below (the page's colour variables, no other class): change it freely.\nexport default function ${kind}${hashOf(id)}() {\n  return (\n${toTsx(tree, 2)}\n  )\n}\n`
 }
+
+export const generatedComponent = generatedHero
+export const generatedSource = generatedHeroSource
 
 export const specOfHeroId = (id: string): HeroSpec | undefined => specOfId(id)
 export const isGeneratedId = (id: string) => id.startsWith('gen/')

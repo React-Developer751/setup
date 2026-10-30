@@ -6,7 +6,7 @@
 import type { HeroSpec } from './heroSpec'
 
 export type Node = { tag: string; props: Record<string, string | number | Record<string, string | number>>; children: (Node | string)[] }
-const h = (tag: string, props: Node['props'] = {}, ...children: (Node | string)[]): Node => ({ tag, props, children })
+export const h = (tag: string, props: Node['props'] = {}, ...children: (Node | string)[]): Node => ({ tag, props, children })
 
 const FONT: Record<HeroSpec['font'], string> = { sans: "var(--font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif)", serif: "var(--font-serif, Georgia, 'Times New Roman', serif)", display: "var(--font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif)" }
 const SIZE: Record<HeroSpec['scale'], string> = { m: 'clamp(2rem,4.2vw,3.25rem)', l: 'clamp(2.35rem,5.4vw,4.5rem)', xl: 'clamp(2.6rem,7vw,6rem)', xxl: 'clamp(2.9rem,8vw,6.5rem)' }

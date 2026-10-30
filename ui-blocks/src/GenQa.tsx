@@ -6,6 +6,7 @@ import { buildLibraryStandalone } from './generator/exportLibrary'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
 import { auditPage } from './generator/library/pageAudit'
 import { randomSpec, specId, describeSpec, specOfId, type HeroMood, type HeroSpec } from './generator/gen/heroSpec'
+import { describeFeatures, featuresId, featuresOfId, randomFeatures, type FeaturesSpec } from './generator/gen/featuresSpec'
 import { seededRandom } from './generator/random'
 
 const PROMPTS = ['cafe website in Jaipur', 'dental clinic website in Pune', 'law firm website', 'gym website with personal training', 'boutique clothing store website', 'SaaS startup landing page', 'yoga studio website in Rishikesh', 'kirana dukaan ki website', 'bakery website', 'real estate agency website in Mumbai']
@@ -16,6 +17,7 @@ export type GenRow = { id: string; spec: string; prompt: string; problems: strin
 
 export default function GenQa() {
   const n = Number(new URLSearchParams(location.search).get('n') ?? 100)
+  const features = new URLSearchParams(location.search).get('section') === 'features'
   const [rows, setRows] = useState<GenRow[]>([])
   const [done, setDone] = useState(false)
   const frame = useRef<HTMLIFrameElement>(null)
@@ -25,33 +27,45 @@ export default function GenQa() {
       // (not inside the effect itself: the pages are drawn with a React root of their own)
       await wait(50)
       const rand = seededRandom(424242)
-      const made: HeroSpec[] = []
+      const made: (HeroSpec | FeaturesSpec)[] = []
       for (let i = 0; i < n && alive; i += 1) {
         const mood = MOODS[i % MOODS.length]
-        const spec = randomSpec(rand, mood, made.slice(-3))
+        const spec = features ? randomFeatures(rand, mood, made.slice(-3) as FeaturesSpec[]) : randomSpec(rand, mood, made.slice(-3) as HeroSpec[])
         made.push(spec)
-        const id = specId(spec)
+        const id = features ? featuresId(spec as FeaturesSpec) : specId(spec as HeroSpec)
         const prompt = PROMPTS[i % PROMPTS.length]
         const problems: string[] = []
         const height = { phone: 0, desktop: 0 }
         try {
           const lib = generateLibraryPage(prompt, 3 + (i % 5), 'better', true, 'auto', undefined, false)
-          const keep = lib.sections.filter((s) => s.role === 'nav' || s.role === 'hero').map((s) => (s.role === 'hero' ? { ...s, componentId: id } : s))
+          const role = features ? 'features' : 'hero'
+          const keep = lib.sections.filter((s) => s.role === 'nav' || s.role === role).map((s) => (s.role === role ? { ...s, componentId: id } : s))
           const f = frame.current!
           f.style.width = '390px'
           await new Promise<void>((resolve) => { f.onload = () => resolve(); f.srcdoc = buildLibraryStandalone({ ...lib, sections: keep }) })
           // (the first one waits for the fonts and the compiler)
-          for (let tries = 0; tries < 8 && !f.contentDocument?.querySelector('[data-gen="hero"]'); tries += 1) await wait(500)
+          for (let tries = 0; tries < 8 && !f.contentDocument?.querySelector('[data-gen]'); tries += 1) await wait(500)
           await wait(700)
           for (const [label, width] of [['phone', 390], ['desktop', 1280]] as const) {
             f.style.width = `${width}px`
             await wait(350)
             const d = f.contentDocument!
             const w = f.contentWindow!
-            const hero = d.querySelector<HTMLElement>('[data-gen="hero"]')
+            const hero = d.querySelector<HTMLElement>(features ? '[data-gen="features"]' : '[data-gen="hero"]')
             if (!hero) { problems.push('not drawn'); break }
             height[label] = Math.round(hero.getBoundingClientRect().height)
             if (d.documentElement.scrollWidth > w.innerWidth + 1) problems.push(`${label}: sideways scroll`)
+            if (features) {
+              const tiles = [...hero.querySelectorAll<HTMLElement>('[data-slot="tile"]')]
+              if (!tiles.length) problems.push(`${label}: no service shown`)
+              if (tiles.some((t) => t.scrollWidth > t.clientWidth + 2 && w.getComputedStyle(t).overflowX !== 'auto')) problems.push(`${label}: a service sticks out of its card`)
+              if (tiles.some((t) => (t.querySelector('h3')?.textContent ?? '').trim().length < 2)) problems.push(`${label}: a service without a name`)
+              if (tiles.some((t) => parseFloat(w.getComputedStyle(t.querySelector('p') ?? t).fontSize) < 12)) problems.push(`${label}: tiny text`)
+              if (label === 'phone' && height.phone > 3200) problems.push(`phone: very tall (${height.phone}px)`)
+              const audit0 = auditPage(hero)
+              if (audit0.failures.length) problems.push(`${label}: ${audit0.failures.length} text(s) hard to read (${audit0.failures[0].text.slice(0, 18)} ${audit0.failures[0].ratio})`)
+              continue
+            }
             const title = hero.querySelector<HTMLElement>('[data-slot="title"]')
             if (!title) problems.push(`${label}: no headline`)
             else {
@@ -71,12 +85,12 @@ export default function GenQa() {
         } catch (error) {
           problems.push(`crashed: ${String(error).slice(0, 80)}`)
         }
-        setRows((list) => [...list, { id, spec: describeSpec(specOfId(id) as HeroSpec), prompt, problems: [...new Set(problems)], height }])
+        setRows((list) => [...list, { id, spec: features ? describeFeatures(featuresOfId(id) as FeaturesSpec) : describeSpec(specOfId(id) as HeroSpec), prompt, problems: [...new Set(problems)], height }])
       }
       if (alive) setDone(true)
     })()
     return () => { alive = false }
-  }, [n])
+  }, [n, features])
   useEffect(() => { (window as unknown as { __genqa: unknown }).__genqa = { done, rows } }, [done, rows])
   return (
     <div style={{ font: '13px/1.4 system-ui', padding: 16 }}>

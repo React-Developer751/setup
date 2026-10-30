@@ -200,3 +200,9 @@ a named design, a resized first screen and short pages keep the stored one). It 
 * Measure many: **`npm run qa:gen`** (200 heroes at phone and desktop width: sideways scroll, clipped headline, unreadable text, small buttons, missing picture, too tall). Last run: 240 heroes, 5 findings (all "a bit taller than a screen").
 * Tests: `scripts/test-gen.mjs` (ids round-trip, 400 random heroes almost all different, every hero draws all its parts and its source compiles).
 * Honest size of the space: 11.9 million valid specs by the count of `countSpecs()`; many of them look alike, so treat it as thousands of clearly different looks, not millions.
+
+### The services part (second generator)
+
+`gen/featuresSpec.ts` / `featuresTree.ts`: the cards or rows under "What we offer", written from 12 choices (layout x8: three or two columns, rows, bento, zigzag, columns, strip, split; card style x5; marker x5 (number, letter, dot, bar); picture x3; hover x4; how it arrives x3 (on load, or as it is scrolled to, CSS only); corner radius; heading size, font, alignment; background; spacing).
+Same ids (`gen/Features_...`), same one-tree-two-outputs rule, same filler (the showcase kit's tiles). Look at them and rate them: **`/?gen=1&section=features`**; measure: `npm run qa:gen -- 100 --features`.
+The taste of the services part is its own (the thumbs of the first screens say nothing about it), and starts to count at 20 ratings.
