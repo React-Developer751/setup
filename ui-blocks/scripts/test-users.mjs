@@ -82,6 +82,17 @@ try {
   srv = start({ EDIT_SHARED_LEARNING: '0' })
   await up()
   ok((await call(B, '/api/designs?key=cafe')).designs.length === 0, 'with shared learning off, B sees nothing of A')
+  // backups: the data is packed, the oldest packs go
+  const { backupData } = await import('../server/backup.mjs')
+  const out = path.join(dir, '_backups')
+  const first = backupData(dir, out, 2)
+  ok(first.ok && first.bytes > 100, 'the data is backed up')
+  await new Promise((r) => setTimeout(r, 1100))
+  backupData(dir, out, 2)
+  await new Promise((r) => setTimeout(r, 1100))
+  backupData(dir, out, 2)
+  ok(fs.readdirSync(out).length === 2, 'only the newest backups are kept')
+  ok(!backupData(path.join(dir, 'nothing-here'), out, 2).ok, 'no data folder: no backup, no crash')
 } finally {
   srv.kill()
   fs.rmSync(dir, { recursive: true, force: true })

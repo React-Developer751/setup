@@ -9,6 +9,12 @@ import { createRoot } from 'react-dom/client'
 import indexCss from '../index.css?raw'
 import packageJson from '../../package.json?raw'
 import prelineScript from '../../node_modules/preline/dist/preline.js?raw'
+import prelineCollapse from '../../node_modules/preline/dist/collapse.js?raw'
+import prelineAccordion from '../../node_modules/preline/dist/accordion.js?raw'
+import prelineDropdown from '../../node_modules/preline/dist/dropdown.js?raw'
+import prelineOverlay from '../../node_modules/preline/dist/overlay.js?raw'
+import prelineCarousel from '../../node_modules/preline/dist/carousel.js?raw'
+import prelineTabs from '../../node_modules/preline/dist/tabs.js?raw'
 import extraContentSource from './extraContent.ts?raw'
 import { faviconSvg } from './artBrain'
 import { escapeHtml, jsString, slugify, usedCss, type ExportDetails } from './exportSite'
@@ -156,6 +162,26 @@ document.addEventListener('submit', (event) => {
 `
 }
 
+/**
+ * Preline's script is 430 KB, and a page uses two or three of its parts (the menu that opens, the answers that fold). The parts the page uses are included alone (each starts itself when the
+ * page has loaded); a page that uses one this table does not know gets the whole script.
+ */
+const PRELINE_PARTS: [RegExp, string][] = [
+  [/data-hs-collapse/, prelineCollapse],
+  [/data-hs-accordion/, prelineAccordion],
+  [/data-hs-dropdown/, prelineDropdown],
+  [/data-hs-overlay/, prelineOverlay],
+  [/data-hs-carousel/, prelineCarousel],
+  [/data-hs-tab\b|role="tablist"/, prelineTabs],
+]
+function prelineFor(html: string): string {
+  // every attribute name of Preline in the page must belong to a part this table knows ("data-hs-collapse-toggle" belongs to "data-hs-collapse"); another one asks for the whole script
+  const names = [...new Set(html.match(/data-hs-[a-z-]+/g) ?? [])]
+  const knownName = (a: string) => /^data-hs-(?:collapse|accordion|dropdown|overlay|carousel|tab)(?:-|$)/.test(a)
+  if (!names.length || names.some((a) => !knownName(a))) return prelineScript
+  return PRELINE_PARTS.filter(([re]) => re.test(html)).map(([, code]) => code).join('\n')
+}
+
 function renderLibrary(lib: Library) {
   // draw the page once in memory: the components, then ThemeScope fills their text and sets the colours
   const host = document.createElement('div')
@@ -222,13 +248,14 @@ function renderLibrary(lib: Library) {
   root.unmount()
 
   const needsPreline = /data-hs-|\bhs-/.test(html)
+  const preline = needsPreline ? prelineFor(html) : ''
   const css = usedCss([html], false)
-  return { html, styles, needsPreline, css }
+  return { html, styles, needsPreline, preline, css }
 }
 
 export function buildLibraryStandalone(lib: Library): string {
   const rendered0 = renderLibrary(lib)
-  const { styles, needsPreline, css } = rendered0
+  const { styles, needsPreline, preline, css } = rendered0
   const html = oneHeading(rendered0.html)
   return `<!doctype html>
 <html lang="en">
@@ -243,7 +270,7 @@ html{scroll-behavior:smooth;scroll-padding-top:5rem}body{margin:0}</style>
 </head>
 <body>
 ${html}
-${needsPreline ? `<script>${prelineScript.replace(/<\/script/gi, '<\\/script')}</script>\n` : ''}<script>
+${needsPreline ? `<script>${preline.replace(/<\/script/gi, '<\\/script')}</script>\n` : ''}<script>
 const STYLES = ${jsString(styles)};
 const MOTION = ${jsString(lib.motion)};
 const SUN = ${jsString(SUN)};
@@ -291,7 +318,7 @@ const PLACEHOLDER_URL = 'https://www.example.com'
 
 export function buildLibraryStaticFiles(lib: Library, details: ExportDetails = {}): ZipEntry[] {
   const rendered = renderLibrary(lib)
-  const { styles, needsPreline, css } = rendered
+  const { styles, needsPreline, preline, css } = rendered
   // the pictures become files of the site (assets/img), the page keeps only their addresses
   const hoisted = hoistImages(oneHeading(rendered.html))
   const html = hoisted.html
@@ -374,7 +401,7 @@ ${needsPreline ? '<script src="assets/preline.js"></script>\n' : ''}<script src=
     { path: 'privacy.html', content: privacyPage(lib.content, palette) },
     { path: 'terms.html', content: termsPage(lib.content, palette) },
     { path: '404.html', content: notFoundPage(lib.content, palette) },
-    ...(needsPreline ? [{ path: 'assets/preline.js', content: prelineScript }] : []),
+    ...(needsPreline ? [{ path: 'assets/preline.js', content: preline }] : []),
     ...hoisted.files,
     { path: 'sitemap.xml', content: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${xmlEscape(siteUrl)}/</loc><lastmod>${today}</lastmod></url>\n  <url><loc>${xmlEscape(siteUrl)}/privacy.html</loc><lastmod>${today}</lastmod></url>\n  <url><loc>${xmlEscape(siteUrl)}/terms.html</loc><lastmod>${today}</lastmod></url>\n</urlset>\n` },
     { path: 'robots.txt', content: `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl.replace(/\s/g, '')}/sitemap.xml\n` },

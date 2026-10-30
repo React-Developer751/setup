@@ -1,0 +1,30 @@
+# docker compose -f ui-blocks/deploy/docker-compose.yml up -d --build      (run it in the folder that holds ui-blocks, cont and normal)
+services:
+  site-studio:
+    build:
+      context: ../..
+      dockerfile: ui-blocks/deploy/Dockerfile
+    restart: unless-stopped
+    environment:
+      EDIT_ADMIN_TOKEN: "${EDIT_ADMIN_TOKEN:?set a long random token: it opens the training export}"
+      EDIT_ALLOWED_ORIGINS: "${PUBLIC_URL:-https://studio.example.com}"
+      EDIT_RATE_PER_MINUTE: "120"
+      EDIT_IMAGES_PER_MINUTE: "90"
+      EDIT_SHARED_LEARNING: "1"
+    volumes:
+      - studio-data:/data
+    expose:
+      - "8787"
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [site-studio]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+volumes:
+  studio-data:
+  caddy-data:

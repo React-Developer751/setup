@@ -15,6 +15,7 @@ import PhotosPanel from './PhotosPanel'
 import { scenePlan } from './generator/imageAi'
 import ProjectsPanel from './ProjectsPanel'
 import { saveRemote, deleteRemote } from './generator/projectSync'
+import { userId } from './generator/userId'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
 import EditChat, { ServerSetting, type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
@@ -1017,7 +1018,7 @@ function GeneratorPage() {
               // the copy on the server (a version of it: the last 30 stay)
               const kept = listProjects().find((p) => p.name.toLowerCase() === (name || brandName).trim().slice(0, 60).toLowerCase())
               if (result.ok && kept) void saveRemote(kept.name, kept)
-              setProjectNote(result.ok ? (result.trimmed ? 'Saved. The pictures were too big to keep in the browser: use "Download file" to keep them.' : 'Saved in this browser.') : (result.error ?? 'Could not save.'))
+              setProjectNote(result.ok ? (result.trimmed ? 'Saved. The pictures were too big to keep in the browser: use "Download file" to keep them.' : `Saved in this browser and on the server (every save is a version). ${firstSave() ? `Keep this recovery code: ${userId()}. If this browser is ever cleared, it brings your projects back (Tools, Project, "Use my projects on another computer").` : ''}`) : (result.error ?? 'Could not save.'))
             }}
             onLoad={(project) => void restore(project)}
             onDelete={(id) => {
@@ -1270,6 +1271,17 @@ function DeviceIcon({ device }: { device: Device }) {
       <path d="M8 21h8M12 17v4" />
     </svg>
   )
+}
+
+/** true the first time something is saved in this browser: the recovery code is shown then (once) */
+function firstSave(): boolean {
+  try {
+    if (localStorage.getItem('ui-blocks:code-shown')) return false
+    localStorage.setItem('ui-blocks:code-shown', '1')
+    return true
+  } catch {
+    return false
+  }
 }
 
 export default GeneratorPage

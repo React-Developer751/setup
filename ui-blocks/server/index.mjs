@@ -13,6 +13,7 @@
 // The page checks every operation again (cleanOp), so this server is never trusted with more than the offline rules may do.
 import crypto from 'node:crypto'
 import zlib from 'node:zlib'
+import { backupData } from './backup.mjs'
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
@@ -83,23 +84,71 @@ function originAllowed(origin, host) {
 }
 const hits = new Map()
 /** at most RATE_PER_MINUTE requests a minute for one address: a stolen link cannot burn the whole API budget */
-const limited = (ip) => {
+const bump = (map, key, window = 60_000) => {
   const now = Date.now()
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000)
+  const recent = (map.get(key) ?? []).filter((t) => now - t < window)
   recent.push(now)
-  hits.set(ip, recent)
-  if (hits.size > 5000) for (const [key, list] of hits) if (!list.some((t) => now - t < 60_000)) hits.delete(key)
-  return recent.length > RATE_PER_MINUTE
+  map.set(key, recent)
+  if (map.size > 5000) for (const [k, list] of map) if (!list.some((t) => now - t < window)) map.delete(k)
+  return recent.length
 }
+// people behind one address (an office, a proxy) have a limit each (their anonymous id); the address as a whole gets six times the limit of one person
+const limited = (ip, user = '') => (user ? bump(hits, `u:${user}`) > RATE_PER_MINUTE || bump(hits, `a:${ip}`) > RATE_PER_MINUTE * 6 : bump(hits, `a:${ip}`) > RATE_PER_MINUTE)
 
 
 const imageHits = new Map()
-const imagesLimited = (ip) => {
-  const now = Date.now()
-  const recent = (imageHits.get(ip) ?? []).filter((t) => now - t < 60_000)
-  recent.push(now)
-  imageHits.set(ip, recent)
-  return recent.length > IMAGES_PER_MINUTE
+const imagesLimited = (ip, user = '') => (user ? bump(imageHits, `u:${user}`) > IMAGES_PER_MINUTE || bump(imageHits, `a:${ip}`) > IMAGES_PER_MINUTE * 6 : bump(imageHits, `a:${ip}`) > IMAGES_PER_MINUTE)
+
+
+/**
+ * The image engine draws a few pictures at a time and answers "busy" (503) beyond that. The pictures of one site are six requests, so a few people at once used to get errors.
+ * Here they wait in a line (at most IMAGE_QUEUE waiting, each for at most 120 s) for one of IMAGE_SLOTS places, and a picture that was drawn before (same words, place, seed and colours)
+ * comes from a small memory instead of the engine.
+ */
+// more than one image engine (PIXELMATH_URLS=http://a:8000,http://b:8000) share the work in turns; each takes three pictures at a time
+const ENGINES = String(process.env.PIXELMATH_URLS ?? '').split(',').map((u) => u.trim().replace(/\/$/, '')).filter(Boolean)
+let engineTurn = 0
+const nextEngine = () => (ENGINES.length ? ENGINES[engineTurn++ % ENGINES.length] : PIXELMATH_URL)
+const IMAGE_SLOTS = Number(process.env.EDIT_IMAGE_SLOTS ?? 3 * Math.max(1, ENGINES.length))
+const IMAGE_QUEUE = Number(process.env.EDIT_IMAGE_QUEUE ?? 60)
+let imagesRunning = 0
+const imageWaiting = []
+const imageStats = { served: 0, cached: 0, waited: 0, rejected: 0 }
+function acquireImageSlot() {
+  if (imagesRunning < IMAGE_SLOTS) {
+    imagesRunning += 1
+    return Promise.resolve(true)
+  }
+  if (imageWaiting.length >= IMAGE_QUEUE) {
+    imageStats.rejected += 1
+    return Promise.resolve(false)
+  }
+  imageStats.waited += 1
+  return new Promise((resolve) => {
+    const entry = { resolve, timer: setTimeout(() => { imageWaiting.splice(imageWaiting.indexOf(entry), 1); resolve(false) }, 120_000) }
+    imageWaiting.push(entry)
+  })
+}
+function releaseImageSlot() {
+  const next = imageWaiting.shift()
+  if (next) {
+    clearTimeout(next.timer)
+    next.resolve(true)
+  } else imagesRunning = Math.max(0, imagesRunning - 1)
+}
+const specCache = new Map()
+const SPEC_CACHE_MAX = Number(process.env.EDIT_IMAGE_CACHE ?? 300)
+const cacheGet = (key) => {
+  const hit = specCache.get(key)
+  if (hit) {
+    specCache.delete(key)
+    specCache.set(key, hit)
+  }
+  return hit
+}
+const cachePut = (key, value) => {
+  specCache.set(key, value)
+  while (specCache.size > SPEC_CACHE_MAX) specCache.delete(specCache.keys().next().value)
 }
 
 let engineProbe = { at: 0, up: false }
@@ -142,6 +191,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://huggingface.co https://cdn.jsdelivr.net data: blob:; worker-src 'self' blob:; frame-src 'self' about: data: blob: https://www.google.com https://maps.google.com https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 const SECURITY = { 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY', 'cross-origin-opener-policy': 'same-origin', 'permissions-policy': 'camera=(), microphone=(), geolocation=(), payment=()', 'content-security-policy': CSP }
 /** a file of the built page; an address that is not a file is the page itself (the app has no other pages); nothing outside the folder can be read */
+const gzipCache = new Map()
 function serveStatic(req, res, pathname) {
   if (!SERVE_DIST || (req.method !== 'GET' && req.method !== 'HEAD')) return false
   let decoded
@@ -163,10 +213,25 @@ function serveStatic(req, res, pathname) {
   if (!stat?.isFile()) {
     if (asked) return false
     file = path.join(DIST, 'index.html')
+    stat = fs.statSync(file)
   }
   const ext = path.extname(file).toLowerCase()
   const hashed = file.includes(`${path.sep}assets${path.sep}`)
-  res.writeHead(200, { 'content-type': TYPES[ext] ?? 'application/octet-stream', 'cache-control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache', ...SECURITY })
+  const type = TYPES[ext] ?? 'application/octet-stream'
+  const headers = { 'content-type': type, 'cache-control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache', ...SECURITY }
+  // text files (the page's script and styles are most of the weight) travel compressed; the compressed copy is kept until the file changes
+  if (/gzip/.test(String(req.headers['accept-encoding'] ?? '')) && /^(?:text\/|application\/(?:javascript|json|xml|wasm)|image\/svg)/.test(type) && stat.size > 1024) {
+    const key = `${file}|${stat.mtimeMs}`
+    let zipped = gzipCache.get(key)
+    if (!zipped) {
+      zipped = zlib.gzipSync(fs.readFileSync(file), { level: 9 })
+      gzipCache.set(key, zipped)
+      if (gzipCache.size > 200) gzipCache.delete(gzipCache.keys().next().value)
+    }
+    res.writeHead(200, { ...headers, 'content-encoding': 'gzip', vary: 'accept-encoding', 'content-length': zipped.length })
+    return req.method === 'HEAD' ? (res.end(), true) : (res.end(zipped), true)
+  }
+  res.writeHead(200, headers)
   if (req.method === 'HEAD') res.end()
   else fs.createReadStream(file).pipe(res)
   return true
@@ -175,11 +240,11 @@ function serveStatic(req, res, pathname) {
 export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
-    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, images: await imageEngineUp(), corecraft: await coreCraftUp() })
+    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, images: await imageEngineUp(), corecraft: await coreCraftUp(), imageQueue: { running: imagesRunning, waiting: imageWaiting.length, cached: specCache.size, ...imageStats } })
     // every request that writes (or reads what people wrote) passes these checks first, before any handler runs
     const ip = clientIp(req)
     if (req.method === 'POST' && url.pathname.startsWith('/api/')) {
-      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip, userOf(req))) return send(res, 429, { error: 'too many requests, try again in a minute' })
       // a web page of another site cannot post here: its Origin is not one of ours, and a cross-site form cannot send JSON
       const origin = req.headers.origin
       if (origin && !originAllowed(origin, req.headers.host)) return send(res, 403, { error: 'this origin is not allowed' })
@@ -335,7 +400,7 @@ export const server = http.createServer(async (req, res) => {
       return fs.createReadStream(file).pipe(res)
     }
     if (req.method === 'GET' && url.pathname === '/api/ai-image') {
-      if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
+      if (imagesLimited(ip, userOf(req))) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
       const num = (name, min, max, fallback) => {
         const v = Number(url.searchParams.get(name) ?? fallback)
@@ -358,28 +423,52 @@ export const server = http.createServer(async (req, res) => {
     }
     // one picture of the image AI's spec (the business named in the prompt decides the scene, the slot the size and the framing): JSON with the picture as base64
     if (req.method === 'GET' && url.pathname === '/api/ai-spec') {
-      if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
+      if (imagesLimited(ip, userOf(req))) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'#:()&-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
       const slot = url.searchParams.get('slot') ?? ''
       const seed = Number(url.searchParams.get('seed') ?? 0)
       const colour = (name) => (/^#[0-9a-f]{6}$/i.test(url.searchParams.get(name) ?? '') ? url.searchParams.get(name) : undefined)
       if (prompt.length < 4 || !/^(?:hero-[1-3]|about|gallery-[1-6]|card-[1-6]|team-[1-3]|background)$/.test(slot) || !Number.isInteger(seed) || seed < 0 || seed > 999999) return send(res, 400, { error: 'prompt, slot (hero-1, about, gallery-3 ...) and seed (0-999999) are needed' })
-      let upstream
-      try {
-        upstream = await fetch(`${PIXELMATH_URL}/spec`, { method: 'POST', headers: { 'content-type': 'application/json', ...(PIXELMATH_KEY ? { 'x-api-key': PIXELMATH_KEY } : {}) }, body: JSON.stringify({ prompt, slot, seed, format: 'jpeg', response: 'base64', ...(colour('accent') ? { accent: colour('accent') } : {}), ...(colour('bg') ? { bg: colour('bg') } : {}) }), signal: AbortSignal.timeout(90_000) })
-      } catch {
-        return send(res, 503, { error: 'the image engine is not running (npm run images)' })
+      const cacheKey = `${prompt}|${slot}|${seed}|${colour('accent') ?? ''}|${colour('bg') ?? ''}`
+      const cached = cacheGet(cacheKey)
+      if (cached) {
+        imageStats.cached += 1
+        return send(res, 200, cached)
       }
-      if (upstream.status === 503) return send(res, 503, { error: 'the image engine is busy, try again' })
-      if (!upstream.ok) return send(res, 502, { error: `the image engine answered ${upstream.status}` })
-      const body = await upstream.json()
+      if (!(await acquireImageSlot())) return send(res, 503, { error: 'many pictures are being drawn right now, please try again in a moment' })
+      let body
+      try {
+        // the engine itself may say "busy" when someone else uses it: a short wait and again, three times
+        for (let attempt = 0; attempt < 4; attempt += 1) {
+          let upstream
+          try {
+            upstream = await fetch(`${nextEngine()}/spec`, { method: 'POST', headers: { 'content-type': 'application/json', ...(PIXELMATH_KEY ? { 'x-api-key': PIXELMATH_KEY } : {}) }, body: JSON.stringify({ prompt, slot, seed, format: 'jpeg', response: 'base64', ...(colour('accent') ? { accent: colour('accent') } : {}), ...(colour('bg') ? { bg: colour('bg') } : {}) }), signal: AbortSignal.timeout(90_000) })
+          } catch {
+            return send(res, 503, { error: 'the picture maker is not available right now' })
+          }
+          if (upstream.status === 503 && attempt < 3) {
+            await new Promise((r) => setTimeout(r, 800 * (attempt + 1)))
+            continue
+          }
+          if (upstream.status === 503) return send(res, 503, { error: 'the picture maker is busy, try again' })
+          if (!upstream.ok) return send(res, 502, { error: `the image engine answered ${upstream.status}` })
+          body = await upstream.json()
+          break
+        }
+      } finally {
+        releaseImageSlot()
+      }
       if (!/^image\/(jpeg|png)$/.test(body?.mime) || typeof body.image_base64 !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(body.image_base64) || body.image_base64.length > 600_000) return send(res, 502, { error: 'the image engine did not return a usable picture' })
       const r = body.report ?? {}
-      return send(res, 200, { image_base64: body.image_base64, mime: body.mime, width: Number(body.width) || 0, height: Number(body.height) || 0, report: { niche: r.niche ?? null, fallback: r.fallback === true, style_note: String(r.style_note ?? '').slice(0, 160), slot: String(r.slot ?? slot).slice(0, 20) } })
+      const out = { image_base64: body.image_base64, mime: body.mime, width: Number(body.width) || 0, height: Number(body.height) || 0, report: { niche: r.niche ?? null, fallback: r.fallback === true, style_note: String(r.style_note ?? '').slice(0, 160), slot: String(r.slot ?? slot).slice(0, 20) } }
+      // a picture of the right business is kept for the next person who asks for the same; a neutral fallback is not worth keeping
+      if (!out.report.fallback && out.report.niche) cachePut(cacheKey, out)
+      imageStats.served += 1
+      return send(res, 200, out)
     }
     // the studio of the image engine: 3-8 pictures of one site in one style (hero, about, tiles), already judged by the engine
     if (req.method === 'GET' && url.pathname === '/api/ai-set') {
-      if (imagesLimited(ip)) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
+      if (imagesLimited(ip, userOf(req))) return send(res, 429, { error: 'too many pictures requested, try again in a minute' })
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
       const count = Number(url.searchParams.get('count') ?? 6)
       const seed = Number(url.searchParams.get('seed') ?? 1)
@@ -404,7 +493,7 @@ export const server = http.createServer(async (req, res) => {
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'-]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
       const n = Math.max(1, Math.min(8, Number(url.searchParams.get('n')) || 4))
       if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
-      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip, userOf(req))) return send(res, 429, { error: 'too many requests, try again in a minute' })
       try {
         const upstream = await fetch(`${CORECRAFT_URL}/generate`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, n, seed: Number(url.searchParams.get('seed')) || undefined }), signal: AbortSignal.timeout(20_000) })
         if (!upstream.ok) return send(res, 502, { error: `Core-Craft answered ${upstream.status}` })
@@ -422,7 +511,7 @@ export const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/corecraft/pack') {
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'"&\-;:]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
       if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
-      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip, userOf(req))) return send(res, 429, { error: 'too many requests, try again in a minute' })
       try {
         const upstream = await fetch(`${CORECRAFT_URL}/pack`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt }), signal: AbortSignal.timeout(15_000) })
         if (upstream.status === 422) return send(res, 422, { error: 'Core-Craft could not read this request' })
@@ -442,7 +531,7 @@ export const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/corecraft/page') {
       const prompt = (url.searchParams.get('prompt') ?? '').replace(/[^\p{L}\p{M}\p{N} ,.'"&\-;:\u0964\u0965]+/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
       if (prompt.length < 2) return send(res, 400, { error: 'prompt is needed' })
-      if (limited(ip)) return send(res, 429, { error: 'too many requests, try again in a minute' })
+      if (limited(ip, userOf(req))) return send(res, 429, { error: 'too many requests, try again in a minute' })
       try {
         const upstream = await fetch(`${CORECRAFT_URL}/page`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, seed: Number(url.searchParams.get('seed')) || 1 }), signal: AbortSignal.timeout(20_000) })
         if (upstream.status === 422) return send(res, 422, { error: 'Core-Craft could not write a page for this prompt' })
@@ -740,5 +829,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     server.close(() => process.exit(0))
     setTimeout(() => process.exit(0), 3000).unref()
   })
+  // a backup of the data every EDIT_BACKUP_HOURS hours (and once at the start), the newest EDIT_BACKUP_KEEP are kept
+  const backupHours = Number(process.env.EDIT_BACKUP_HOURS ?? 0)
+  if (backupHours > 0) {
+    const out = process.env.EDIT_BACKUP_DIR ?? path.join(here, '..', 'backups')
+    const run = () => { const r = backupData(DATA, out, Number(process.env.EDIT_BACKUP_KEEP ?? 14)); console.log(r.ok ? `backup: ${r.file}` : `backup failed: ${r.error}`) }
+    setTimeout(run, 5000).unref()
+    setInterval(run, backupHours * 3600_000).unref()
+  }
   server.listen(PORT, HOST, () => console.log(`edit server on http://${HOST}:${PORT}  (no external AI or API: only your own engines)`))
 }
