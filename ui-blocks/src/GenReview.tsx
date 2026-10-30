@@ -12,9 +12,13 @@ const MOODS: HeroMood[] = ['any', 'calm', 'bold', 'soft', 'dark', 'playful']
 const KEY = 'ui-blocks:gen-ratings'
 
 type Rating = { id: string; up: boolean; mood: string; prompt: string }
+/** a thumb belongs to a hero AND the business it was seen for: the same hero is rated again for every business */
+const keyOf = (id: string, prompt: string) => `${id}|${prompt}`
 const readRatings = (): Record<string, Rating> => {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<string, Rating>
+    const raw = JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<string, Rating>
+    // thumbs kept before the key held the business: they are moved to the business they were given for
+    return Object.fromEntries(Object.values(raw).map((r) => [keyOf(r.id, r.prompt), r]))
   } catch {
     return {}
   }
@@ -75,7 +79,7 @@ export default function GenReview() {
   useEffect(() => {
     void fetch('/api/gen-ratings').then((r) => (r.ok ? r.json() : undefined)).then((body: { rows?: { id: string; up: boolean; mood: string; prompt: string }[] } | undefined) => {
       if (!body?.rows?.length) return
-      setRatings((current) => ({ ...Object.fromEntries(body.rows!.map((r) => [r.id, r])), ...current }))
+      setRatings((current) => ({ ...Object.fromEntries(body.rows!.map((r) => [keyOf(r.id, r.prompt), r])), ...current }))
     }).catch(() => undefined)
   }, [])
   // the taste of the generator follows the ratings (it starts to matter at MIN_RATINGS)
@@ -90,7 +94,7 @@ export default function GenReview() {
     return made.map(specId)
   }, [mood, batch])
   const rate = (id: string, up: boolean) => {
-    const next = { ...ratings, [id]: { id, up, mood, prompt } }
+    const next = { ...ratings, [keyOf(id, prompt)]: { id, up, mood, prompt } }
     setRatings(next)
     try {
       localStorage.setItem(KEY, JSON.stringify(next))
@@ -119,7 +123,7 @@ export default function GenReview() {
         <button type="button" onClick={() => setBatch((b) => b + 1)} style={{ padding: '4px 12px' }}>Another 8</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill,minmax(${Math.min(width, 520) + 8}px,1fr))`, gap: 14 }}>
-        {ids.map((id) => <Card key={`${id}|${prompt}|${width}`} id={id} prompt={prompt} width={width} rating={ratings[id]?.up} onRate={(up) => rate(id, up)} />)}
+        {ids.map((id) => <Card key={`${id}|${prompt}|${width}`} id={id} prompt={prompt} width={width} rating={ratings[keyOf(id, prompt)]?.up} onRate={(up) => rate(id, up)} />)}
       </div>
     </div>
   )

@@ -264,8 +264,10 @@ export const server = http.createServer(async (req, res) => {
         const r = JSON.parse(await readBody(req))
         const id = String(r.id ?? '')
         if (!/^gen\/[A-Za-z]+_[a-z0-9]{1,40}$/.test(id)) return send(res, 400, { error: 'unknown design id' })
-        const rows = readAll().filter((x) => !(x.user === me && x.id === id))
-        rows.push({ user: me, id, up: r.up === true, mood: String(r.mood ?? '').slice(0, 12), prompt: String(r.prompt ?? '').slice(0, 120), at: new Date().toISOString() })
+        const prompt = String(r.prompt ?? '').slice(0, 120)
+        // one row per person, hero and business: the same hero is rated again for every business
+        const rows = readAll().filter((x) => !(x.user === me && x.id === id && x.prompt === prompt))
+        rows.push({ user: me, id, up: r.up === true, mood: String(r.mood ?? '').slice(0, 12), prompt, at: new Date().toISOString() })
         fs.mkdirSync(DATA, { recursive: true })
         fs.writeFileSync(`${file}.tmp`, rows.slice(-20000).map((x) => JSON.stringify(x)).join('\n') + '\n')
         fs.renameSync(`${file}.tmp`, file)
