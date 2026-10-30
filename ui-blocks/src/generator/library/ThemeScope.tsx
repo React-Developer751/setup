@@ -80,6 +80,21 @@ function dedupeHeadings(root: HTMLElement) {
   })
 }
 
+/** a form field that has no label, no placeholder and no title gets a name a screen reader can say (from its name, its type or the text before it) */
+function nameFields(root: HTMLElement) {
+  root.querySelectorAll<HTMLInputElement>('input:not([type=hidden]):not([type=submit]):not([type=checkbox]):not([type=radio]),textarea,select').forEach((f) => {
+    // an empty box with no words in it (the e-mail box of a first screen) shows what it is for
+    if (!f.getAttribute('placeholder') && !f.closest('label') && /^(?:email|tel|text|search|)$/.test(f.getAttribute('type') ?? '') && f.tagName === 'INPUT') {
+      const type = f.getAttribute('type')
+      f.setAttribute('placeholder', type === 'tel' ? 'Your phone number' : type === 'email' || /mail/i.test(f.getAttribute('name') ?? '') ? 'Your e-mail' : 'Your name')
+    }
+    if (f.getAttribute('aria-label') || f.getAttribute('title') || f.getAttribute('placeholder') || f.closest('label') || (f.id && root.querySelector(`label[for="${CSS.escape(f.id)}"]`))) return
+    const raw = f.getAttribute('name') || f.getAttribute('type') || f.tagName.toLowerCase()
+    const label = raw.replace(/[-_]+/g, ' ').replace(/^(\w)/, (c) => c.toUpperCase())
+    f.setAttribute('aria-label', f.getAttribute('type') === 'email' ? 'Your e-mail' : f.getAttribute('type') === 'tel' ? 'Your phone number' : f.tagName === 'TEXTAREA' ? 'Your message' : label)
+  })
+}
+
 /** one h1 per page, and it is the headline of the first screen (a page whose first screen has no h1 used to get "About us" as its h1) */
 function oneH1(root: HTMLElement) {
   const hero = root.querySelector('[data-role="hero"]')
@@ -174,6 +189,7 @@ export function ThemeScope({
     }
     if (pages) rewritePageLinks(root)
     dedupeHeadings(root)
+    nameFields(root)
     oneH1(root)
     // a picture with no description is decorative for a screen reader: an empty alt says so (no alt makes it read the file name)
     root.querySelectorAll('img:not([alt])').forEach((img) => img.setAttribute('alt', ''))

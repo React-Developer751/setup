@@ -183,6 +183,8 @@ const garbled = (line: string) => {
   const words = line.toLowerCase().split(/[^\p{L}\p{M}]+/u).filter((w) => w.length > 1)
   return words.some((w) => NAME_MARKERS.has(w)) || /(.{6,}?)\s*—\s*.*\1/u.test(line)
 }
+/** "Delhi's braces and implants": a place and a list is a frame, not a headline; where the page has a hand-written niche headline, that one stays */
+const POSSESSIVE_FRAME = /^[\p{L}. ]{2,30}'s\s/u
 /** words about the page, not the business: no headline of a business says "website" */
 const aboutTheSite = (line: string) => /\b(?:web\s?sites?|webpages?|landing\s+page|homepage)\b/i.test(line) || hasLookWord(line)
 /** an offer or a condition ("free shipping above 999", "7 day returns") is not a service: Core-Craft sometimes lists it as one */
@@ -223,7 +225,7 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   const blocks: CoreBlocks = {
     lang: 'en',
     // a headline that talks about the website itself ("Mumbai's restaurant website and pizza") is a broken frame: the built-in headline stays
-    hero: { ...(aboutTheSite(page.hero_heading) ? {} : { title: page.hero_heading }), ...(aboutTheSite(page.tagline) ? {} : { subtitle: page.tagline }), button: page.cta_primary },
+    hero: { ...(aboutTheSite(page.hero_heading) || (!!ours.niche && POSSESSIVE_FRAME.test(page.hero_heading)) ? {} : { title: page.hero_heading }), ...(aboutTheSite(page.tagline) ? {} : { subtitle: page.tagline }), button: page.cta_primary },
     features: { title: page.features_title, items: cards(page) },
     // a paragraph that treats an offer as a thing sold ("sells free shipping above 999") is a broken frame: the built-in paragraph stays
     ...(page.about.some((p) => OFFER.test(p)) ? {} : { about: { title: page.about_title, paragraphs: page.about, points: page.highlights.map((h) => h.title).slice(0, 3) } }),

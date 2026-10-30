@@ -10,7 +10,7 @@ import { MemoryStore } from './generator/memory/designStore'
 import { planDesign } from './generator/memory/designPlanner'
 import { seededRandom } from './generator/random'
 
-type Measure = { overflowX: boolean; brokenImages: number; clippedText: number; tinyText: number; emptyParts: number; smallTargets: number; h1: number; height: number; noAlt: number; /** what the findings are about (first three) */ examples: string[] }
+type Measure = { overflowX: boolean; brokenImages: number; clippedText: number; tinyText: number; emptyParts: number; smallTargets: number; h1: number; height: number; noAlt: number; unlabelled: number; /** what the findings are about (first three) */ examples: string[] }
 export type QaRow = { prompt: string; kind: string; errors: string[]; phone: Measure; desktop: Measure; meta: { title: boolean; description: boolean; lang: boolean; reducedMotion: boolean }; problems: string[] }
 
 function measure(doc: Document, win: Window, phone: boolean): Measure {
@@ -34,6 +34,8 @@ function measure(doc: Document, win: Window, phone: boolean): Measure {
     h1: doc.querySelectorAll('h1').length,
     height: Math.round(doc.documentElement.scrollHeight),
     noAlt: [...doc.images].filter((i) => !i.hasAttribute('alt')).length,
+    // fields a screen reader cannot name: no label, no aria-label, no title, no placeholder
+    unlabelled: [...doc.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=checkbox]):not([type=radio]),textarea,select')].filter((f) => !f.getAttribute('aria-label') && !f.getAttribute('title') && !f.getAttribute('placeholder') && !(f.id && doc.querySelector(`label[for="${f.id}"]`)) && !f.closest('label')).length,
   }
 }
 
@@ -71,7 +73,7 @@ export default function QaPage() {
           const meta = { title: !!doc.title, description: !!doc.querySelector('meta[name="description"]'), lang: !!doc.documentElement.lang, reducedMotion: html.includes('prefers-reduced-motion') }
           const problems = [
             phone.overflowX && 'phone: sideways scroll', desktop.overflowX && 'desktop: sideways scroll', (phone.brokenImages || desktop.brokenImages) && 'broken picture', (phone.clippedText > 2 || desktop.clippedText > 2) && 'clipped text',
-            phone.tinyText > 0 && 'tiny text', phone.emptyParts > 0 && 'empty part', phone.smallTargets > 3 && 'small tap targets', phone.h1 !== 1 && `h1 x${phone.h1}`, desktop.height < 3200 && `short page (${desktop.height}px)`, errors.length > 0 && 'script error', !meta.description && 'no meta description', phone.noAlt > 0 && 'picture without alt',
+            phone.tinyText > 0 && 'tiny text', phone.emptyParts > 0 && 'empty part', phone.smallTargets > 3 && 'small tap targets', phone.h1 !== 1 && `h1 x${phone.h1}`, desktop.height < 3200 && `short page (${desktop.height}px)`, errors.length > 0 && 'script error', !meta.description && 'no meta description', phone.noAlt > 0 && 'picture without alt', phone.unlabelled > 0 && 'form field without a name',
           ].filter(Boolean) as string[]
           setRows((list) => [...list, { prompt: item.prompt, kind: item.kind, errors, phone, desktop, meta, problems }])
         } catch (error) {

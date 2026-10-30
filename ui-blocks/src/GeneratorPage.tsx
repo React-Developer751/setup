@@ -542,7 +542,7 @@ function GeneratorPage() {
       // no image engine: the maths makes the pictures, so that the site is never left with empty boxes
       const made = artPictures({ prompt: submitted, accent: palette.light.accent, alt: palette.light.alt, temperature: temperature(), round: runs })
       autoMade.current = true
-      applyOps('Abstract art made with maths', made.ops, 'rules', 'The image engine is not running, so I made the pictures with maths (noise, fractals and your colours). Start it with npm run images for scene pictures.')
+      applyOps('Abstract art made with maths', made.ops, 'rules', 'The picture maker is not available right now, so I made the pictures with maths (noise, fractals and your colours). Press "Real photos" in Tools to try the scene pictures again later.')
       return true
     }
     bumpBuild(3)
@@ -580,7 +580,7 @@ function GeneratorPage() {
     const fresh = await redrawScene(scene, { accent: palette.light.accent, prompt: submitted })
     setRateBusy(-1)
     if (!fresh) {
-      say({ role: 'ai', text: 'The image engine did not answer. Start it with npm run images.' })
+      say({ role: 'ai', text: 'The picture maker did not answer. Please try again in a moment.' })
       return
     }
     const gallery = [...(edits.photos?.gallery ?? [])]

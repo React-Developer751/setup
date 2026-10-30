@@ -343,7 +343,7 @@ export async function makePictures(basePlan: ScenePlan, onProgress: (done: numbe
     await Promise.all([worker(), worker()])
   } catch (error) {
     const down = error instanceof TypeError || (error instanceof Error && error.message === 'down')
-    return { problem: down ? 'The image engine is not running. Start it with: npm run images (and the server: npm run server).' : error instanceof Error ? error.message : 'Could not make the pictures.' }
+    return { problem: down ? 'The picture maker is not available right now. Please try again in a moment.' : error instanceof Error ? error.message : 'Could not make the pictures.' }
   }
   return { used, ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: scenes.length, redrawn: tries.redrawn, otherScene: tries.otherScene, directed, notes: [...directNotes, ...tries.notes].slice(0, 6) } }
 }

@@ -27,7 +27,7 @@ function CoreCraftPanel({ gate, prompt, onUse, auto, onAuto, note }: Props) {
     setError('')
     const pages = await askCoreCraft(prompt, 8)
     setBusy(false)
-    if (!pages) return setError('Core-Craft did not answer. Start it with npm run corecraft.')
+    if (!pages) return setError('The text writer did not answer. Please try again in a moment.')
     const gated = gateCandidates(pages, gate())
     setResult({ ...gated, total: gated.accepted.length + gated.rejected.length })
   }

@@ -7,6 +7,12 @@ import type { Role } from './libraryRoles'
 
 type Link = { href: string; label: string }
 
+/** the number for wa.me: digits only, and a 10 digit number is an Indian mobile (+91): without the country code the link opens nothing */
+const waDigits = (number: string) => {
+  const digits = number.replace(/\D/g, '').replace(/^0+/, '')
+  return digits.length === 10 ? `91${digits}` : digits
+}
+
 const BRAND_WORDS = /^(brand|tailblocks|preline|meraki|flowbite|windster)$/i
 const NUMERIC = /^[\d.,]+\s?[KkMm+%]?$/
 const PLACEHOLDER_NAMES = /^(Holden Caulfield|Alper Kamu|Henry Letham|Atticus Finch|Phoebe Caulfield|Josh Grazioso)$/i
@@ -604,7 +610,7 @@ function ensureContactFacts(root: Element, c: WebsiteContent) {
   add('Email', c.contact.email, `mailto:${c.contact.email}`)
   add('Address', c.contact.address)
   add('Hours', c.contact.hoursText)
-  if (c.contact.whatsapp) add('WhatsApp', c.contact.whatsapp, `https://wa.me/${c.contact.whatsapp.replace(/[^\d]/g, '')}`)
+  if (c.contact.whatsapp) add('WhatsApp', c.contact.whatsapp, `https://wa.me/${waDigits(c.contact.whatsapp)}`)
   if (strip.childElementCount) root.appendChild(strip)
 }
 
