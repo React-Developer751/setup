@@ -206,3 +206,7 @@ a named design, a resized first screen and short pages keep the stored one). It 
 `gen/featuresSpec.ts` / `featuresTree.ts`: the cards or rows under "What we offer", written from 12 choices (layout x8: three or two columns, rows, bento, zigzag, columns, strip, split; card style x5; marker x5 (number, letter, dot, bar); picture x3; hover x4; how it arrives x3 (on load, or as it is scrolled to, CSS only); corner radius; heading size, font, alignment; background; spacing).
 Same ids (`gen/Features_...`), same one-tree-two-outputs rule, same filler (the showcase kit's tiles). Look at them and rate them: **`/?gen=1&section=features`**; measure: `npm run qa:gen -- 100 --features`.
 The taste of the services part is its own (the thumbs of the first screens say nothing about it), and starts to count at 20 ratings.
+
+### The closing banner (third generator)
+
+`gen/Cta_…` (`ctaSpec.ts`, `ctaTree.ts`): 6 layouts (center, split, bar, card, giant, left), 5 backgrounds, 4 sizes, 3 fonts, 4 button looks, 7 decors, radius, arrival motion, padding. Slots of the showcase kit's closing part (`show-cta`: title, lead, button, button2). Review at `/?gen=1&section=cta`, check with `npm run qa:gen -- 60 --cta`. Its taste is its own and starts at 20 ratings.

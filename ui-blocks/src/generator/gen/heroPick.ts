@@ -6,6 +6,7 @@ import { archetypeOf } from '../motionBrain'
 import { seededRandom } from '../random'
 import { decodeId, randomSpec, specId, type HeroMood } from './heroSpec'
 import { decodeFeatures, randomFeatures, featuresId } from './featuresSpec'
+import { ctaId, decodeCta, randomCta } from './ctaSpec'
 import { setHeroTaste, type HeroRating } from './heroTaste'
 
 const hash = (text: string) => [...text].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 11)
@@ -52,6 +53,7 @@ export async function loadHeroTaste(): Promise<number> {
   }
   setHeroTaste(rows, decodeId, 'hero')
   setHeroTaste(rows, decodeFeatures, 'features')
+  setHeroTaste(rows, decodeCta, 'cta')
   return rows.length
 }
 
@@ -63,4 +65,14 @@ export function pickGenFeatures(i: PickInput): string | undefined {
   if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return featuresId(randomFeatures(rand, mood))
+}
+
+/** the closing call to action */
+export function pickGenCta(i: PickInput): string | undefined {
+  if (i.keep || i.level === 'safe' || i.tier === 'normal') return undefined
+  const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|gencta|${i.variation}`))
+  const chance = i.level === 'wild' ? 0.6 : 0.3
+  if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
+  const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
+  return ctaId(randomCta(rand, mood))
 }

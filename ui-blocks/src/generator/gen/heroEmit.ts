@@ -4,6 +4,8 @@ import { heroTree, type Node } from './heroTree'
 import { specOfId, type HeroSpec } from './heroSpec'
 import { featuresOfId } from './featuresSpec'
 import { featuresTree } from './featuresTree'
+import { ctaOfId } from './ctaSpec'
+import { ctaTree } from './ctaTree'
 
 const hashOf = (id: string) => [...id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36)
 /** the scoped class of a hero (one hero per page, but two on one screen - the gallery of the review page - must not share rules) */
@@ -26,7 +28,9 @@ function treeOfId(id: string): Node | undefined {
   const hero = specOfId(id)
   if (hero) return heroTree(hero, classOf(id))
   const features = featuresOfId(id)
-  return features ? featuresTree(features, classOf(id)) : undefined
+  if (features) return featuresTree(features, classOf(id))
+  const cta = ctaOfId(id)
+  return cta ? ctaTree(cta, classOf(id)) : undefined
 }
 
 /** the component of a generated hero id (the same function each time, so React keeps it between draws); undefined for an id that is not one */
@@ -60,9 +64,9 @@ function toTsx(node: Node | string, depth: number): string {
 export function generatedHeroSource(id: string): string | undefined {
   const tree = treeOfId(id)
   if (!tree) return undefined
-  const spec = specOfId(id) ?? featuresOfId(id)
-  const kind = id.startsWith('gen/Features_') ? 'Features' : 'Hero'
-  return `// A ${kind === 'Hero' ? 'first screen' : 'services part'} made by the design generator from this description: ${JSON.stringify(spec)}\n// The look is the <style> below (the page's colour variables, no other class): change it freely.\nexport default function ${kind}${hashOf(id)}() {\n  return (\n${toTsx(tree, 2)}\n  )\n}\n`
+  const spec = specOfId(id) ?? featuresOfId(id) ?? ctaOfId(id)
+  const kind = id.startsWith('gen/Features_') ? 'Features' : id.startsWith('gen/Cta_') ? 'Cta' : 'Hero'
+  return `// A ${kind === 'Hero' ? 'first screen' : kind === 'Cta' ? 'closing call to action' : 'services part'} made by the design generator from this description: ${JSON.stringify(spec)}\n// The look is the <style> below (the page's colour variables, no other class): change it freely.\nexport default function ${kind}${hashOf(id)}() {\n  return (\n${toTsx(tree, 2)}\n  )\n}\n`
 }
 
 export const generatedComponent = generatedHero

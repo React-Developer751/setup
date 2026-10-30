@@ -5,6 +5,7 @@ import { buildLibraryStandalone } from './generator/exportLibrary'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
 import { decodeId, describeSpec, randomSpec, specId, specOfId, type HeroMood } from './generator/gen/heroSpec'
 import { decodeFeatures, describeFeatures, featuresId, featuresOfId, randomFeatures } from './generator/gen/featuresSpec'
+import { ctaId, ctaOfId, decodeCta, describeCta, randomCta } from './generator/gen/ctaSpec'
 import { seededRandom } from './generator/random'
 import { MIN_RATINGS, setHeroTaste, tasteActive, tasteTable } from './generator/gen/heroTaste'
 
@@ -14,8 +15,10 @@ const KEY = 'ui-blocks:gen-ratings'
 
 /** the two kinds of parts the generator writes: the ids tell which one a card is */
 const isFeatures = (id: string) => id.startsWith('gen/Features_')
-const describeAny = (id: string) => (isFeatures(id) ? describeFeatures(featuresOfId(id)!) : describeSpec(specOfId(id)!))
-const SECTION = new URLSearchParams(location.search).get('section') === 'features' ? 'features' : 'hero'
+const isCta = (id: string) => id.startsWith('gen/Cta_')
+const roleOf = (id: string) => (isCta(id) ? 'cta' : isFeatures(id) ? 'features' : 'hero')
+const describeAny = (id: string) => (isCta(id) ? describeCta(ctaOfId(id)!) : isFeatures(id) ? describeFeatures(featuresOfId(id)!) : describeSpec(specOfId(id)!))
+const SECTION = ((q) => (q === 'features' || q === 'cta' ? q : 'hero'))(new URLSearchParams(location.search).get('section'))
 
 type Rating = { id: string; up: boolean; mood: string; prompt: string }
 /** a thumb belongs to a hero AND the business it was seen for: the same hero is rated again for every business */
@@ -38,7 +41,7 @@ function Card({ id, prompt, width, rating, onRate }: { id: string; prompt: strin
   useEffect(() => {
     const t = window.setTimeout(() => {
       const lib = generateLibraryPage(prompt, 3, 'better', true, 'auto', undefined, false)
-      const role = isFeatures(id) ? 'features' : 'hero'
+      const role = roleOf(id)
       const keep = lib.sections.filter((s) => s.role === 'nav' || s.role === role).map((s) => (s.role === role ? { ...s, componentId: id } : s))
       setHtml(buildLibraryStandalone({ ...lib, sections: keep }))
     }, 0)
@@ -51,7 +54,7 @@ function Card({ id, prompt, width, rating, onRate }: { id: string; prompt: strin
       const d = f.contentDocument
       const w = f.contentWindow
       if (!d || !w) return
-      const hero = d.querySelector<HTMLElement>('[data-gen="hero"],[data-gen="features"]')
+      const hero = d.querySelector<HTMLElement>('[data-gen]')
       const sideways = d.documentElement.scrollWidth > w.innerWidth + 1
       const title = d.querySelector<HTMLElement>('[data-slot="title"]')
       const size = title ? parseFloat(w.getComputedStyle(title).fontSize) : 0
@@ -91,11 +94,17 @@ export default function GenReview() {
   // the taste of the generator follows the ratings (it starts to matter at MIN_RATINGS)
   setHeroTaste(Object.values(ratings), decodeId, 'hero')
   setHeroTaste(Object.values(ratings), decodeFeatures, 'features')
+  setHeroTaste(Object.values(ratings), decodeCta, 'cta')
   const ids = useMemo(() => {
     // /?gen=1&ids=gen/Hero_abc,gen/Hero_def shows exactly these
-    const fixed = (new URLSearchParams(location.search).get('ids') ?? '').split(',').filter((id) => !!specOfId(id) || !!featuresOfId(id))
+    const fixed = (new URLSearchParams(location.search).get('ids') ?? '').split(',').filter((id) => !!specOfId(id) || !!featuresOfId(id) || !!ctaOfId(id))
     if (fixed.length) return fixed
     const rand = seededRandom(batch * 7919 + MOODS.indexOf(mood) * 101)
+    if (SECTION === 'cta') {
+      const madeC: ReturnType<typeof randomCta>[] = []
+      while (madeC.length < 8) madeC.push(randomCta(rand, mood, madeC))
+      return madeC.map(ctaId)
+    }
     if (SECTION === 'features') {
       const madeF: ReturnType<typeof randomFeatures>[] = []
       while (madeF.length < 8) madeF.push(randomFeatures(rand, mood, madeF))
@@ -120,12 +129,12 @@ export default function GenReview() {
   const share = (t: { up: number; down: number }) => t.down / (t.up + t.down)
   const disliked = table.filter((t) => t.up + t.down >= 8 && t.down > 0).sort((a, b) => share(b) - share(a)).slice(0, 6)
   const liked = table.filter((t) => t.up + t.down >= 25 && t.down === 0).slice(0, 6)
-  const mine = Object.values(ratings).filter((r) => isFeatures(r.id) === (SECTION === 'features'))
+  const mine = Object.values(ratings).filter((r) => roleOf(r.id) === SECTION)
   const good = mine.filter((r) => r.up).length
   const bad = mine.filter((r) => !r.up).length
   return (
     <div style={{ font: '14px/1.45 system-ui', padding: 16, background: '#fafaf9', minHeight: '100vh' }}>
-      <h1 style={{ fontSize: 18, margin: '0 0 8px' }}>Design generator: {SECTION === 'features' ? 'services parts (?section=hero for first screens)' : 'first screens (?section=features for the services part)'} ({good} liked, {bad} not liked)</h1>
+      <h1 style={{ fontSize: 18, margin: '0 0 8px' }}>Design generator: {SECTION === 'cta' ? 'closing banners (?section=hero, ?section=features)' : SECTION === 'features' ? 'services parts (?section=hero, ?section=cta)' : 'first screens (?section=features, ?section=cta)'} ({good} liked, {bad} not liked)</h1>
       <p style={{ margin: '0 0 10px', color: '#57534e' }}>
         {tasteActive(SECTION) ? 'The generator now draws what you liked more often.' : `The generator starts to learn from your thumbs at ${MIN_RATINGS} ratings (${good + bad} so far): rate more, in other moods and for other businesses.`}
         {liked.length > 0 && <> <b>Never disliked:</b> {liked.map((t) => `${t.key}=${t.option} (${t.up} liked)`).join(', ')}.</>}

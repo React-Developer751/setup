@@ -6,7 +6,7 @@ import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { atLeast, priority as priorityOf, sectionWeights } from '../experience'
 import { asksForBold, creativityLevel } from '../creativity'
-import { pickGenFeatures, pickGenHero } from '../gen/heroPick'
+import { pickGenCta, pickGenFeatures, pickGenHero } from '../gen/heroPick'
 import { composePage } from './taste'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
@@ -95,6 +95,8 @@ export function generateLibraryPage(
   if (genHero) chosen.hero = genHero
   const genFeatures = pickGenFeatures({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.features) || !!edits?.sizes?.features })
   if (genFeatures) chosen.features = genFeatures
+  const genCta = pickGenCta({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.cta) || !!edits?.sizes?.cta })
+  if (genCta) chosen.cta = genCta
   // the parts a page may have besides the always-there ones; a page that is too long is not read
   // (the chances depend on the kind of business: a clinic gets proof and answers, a restaurant gets pictures; see experience.ts)
   const weights = sectionWeights(base.themeKey)

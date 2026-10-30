@@ -9,6 +9,7 @@ const spec = await loadGeneratorModule('gen/heroSpec.ts')
 const emit = await loadGeneratorModule('gen/heroEmit.ts')
 const pick = await loadGeneratorModule('gen/heroPick.ts')
 const fs = await loadGeneratorModule('gen/featuresSpec.ts')
+const cs = await loadGeneratorModule('gen/ctaSpec.ts')
 const taste = await loadGeneratorModule('gen/heroTaste.ts')
 const { compileSource } = await loadGeneratorModule('library/componentCompile.ts')
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
@@ -131,6 +132,28 @@ ok(fpage.length === 1 && /import Features\w+ from '\.\/components\/gen\/Features
 // the taste of the services part is its own
 taste.setHeroTaste(fspecs.map((s, i) => ({ id: fs.featuresId(s), up: s.layout !== 'bento' || i % 9 === 0 })), fs.decodeFeatures, 'features')
 ok(taste.tasteActive('features') && !taste.tasteActive('hero') === true && taste.tasteWeight('layout', 'bento', 'features') < 1, 'the services part has a taste of its own (bento is disliked there, the first screens are untouched)')
+// the closing call to action
+const rc = seeded(77)
+const cspecs = []
+let cdrawn = 0
+for (let i = 0; i < 80; i += 1) {
+  const sp = cs.randomCta(rc, ['any', 'calm', 'bold', 'soft', 'dark', 'playful'][i % 6], cspecs.slice(-3))
+  cspecs.push(sp)
+  ok(cs.cValid(sp), 'a closing banner of the generator is valid')
+  const id = cs.ctaId(sp)
+  const back = cs.ctaOfId(id)
+  ok(back && Object.keys(sp).every((k) => back[k] === sp[k]), 'a closing banner id reads back to its spec')
+  const Comp = emit.generatedHero(id)
+  const html = Comp ? renderToStaticMarkup(createElement(Comp)) : ''
+  if (/data-ref="show-cta"/.test(html) && /data-slot="title"/.test(html) && /data-slot="button"/.test(html) && /data-slot="button2"/.test(html) && /data-slot="lead"/.test(html)) cdrawn += 1
+  const src = emit.generatedHeroSource(id)
+  const cc = src ? compileSource(src) : { error: 'no source' }
+  ok('code' in cc, 'the source of a closing banner compiles')
+}
+ok(cdrawn === 80, `80 closing banners drawn with all four slots (${cdrawn})`)
+ok(!cs.ctaOfId('gen/Hero_67ky7') && !spec.specOfId(cs.ctaId(cspecs[0])), 'a closing banner id is not a hero id and the other way round')
+taste.setHeroTaste(cspecs.map((s, i) => ({ id: cs.ctaId(s), up: s.layout !== 'bar' || i % 9 === 0 })), cs.decodeCta, 'cta')
+ok(taste.tasteActive('cta') && taste.tasteWeight('layout', 'bar', 'cta') < 1, 'the closing banner has a taste of its own')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

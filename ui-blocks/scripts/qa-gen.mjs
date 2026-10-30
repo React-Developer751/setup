@@ -14,7 +14,7 @@ const port = 9340 + Math.floor(Math.random() * 50)
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-chrome-'))
 const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--no-first-run', '--disable-gpu', 'about:blank'], { stdio: 'ignore' })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const finish = (code) => { chrome.kill(); fs.rmSync(profile, { recursive: true, force: true }); process.exit(code) }
+const finish = (code) => { chrome.kill(); try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 3 }) } catch { /* chrome still writes */ }; process.exit(code) }
 
 let target
 for (let i = 0; i < 40 && !target; i += 1) {
@@ -28,7 +28,7 @@ let id = 0
 const pending = new Map()
 ws.onmessage = (m) => { const d = JSON.parse(m.data); pending.get(d.id)?.(d); pending.delete(d.id) }
 const send = (method, params = {}) => new Promise((r) => { id += 1; pending.set(id, r); ws.send(JSON.stringify({ id, method, params })) })
-await send('Page.navigate', { url: `${base}/?genqa=1&n=${howMany}${process.argv.includes('--features') ? '&section=features' : ''}` })
+await send('Page.navigate', { url: `${base}/?genqa=1&n=${howMany}${process.argv.includes('--features') ? '&section=features' : process.argv.includes('--cta') ? '&section=cta' : ''}` })
 let result
 for (let i = 0; i < 1800; i += 1) {
   await sleep(1000)

@@ -6,6 +6,7 @@ import { buildLibraryStandalone } from './generator/exportLibrary'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
 import { auditPage } from './generator/library/pageAudit'
 import { randomSpec, specId, describeSpec, specOfId, type HeroMood, type HeroSpec } from './generator/gen/heroSpec'
+import { ctaId, ctaOfId, describeCta, randomCta, type CtaSpec } from './generator/gen/ctaSpec'
 import { describeFeatures, featuresId, featuresOfId, randomFeatures, type FeaturesSpec } from './generator/gen/featuresSpec'
 import { seededRandom } from './generator/random'
 
@@ -17,7 +18,9 @@ export type GenRow = { id: string; spec: string; prompt: string; problems: strin
 
 export default function GenQa() {
   const n = Number(new URLSearchParams(location.search).get('n') ?? 100)
-  const features = new URLSearchParams(location.search).get('section') === 'features'
+  const section = new URLSearchParams(location.search).get('section')
+  const features = section === 'features'
+  const cta = section === 'cta'
   const [rows, setRows] = useState<GenRow[]>([])
   const [done, setDone] = useState(false)
   const frame = useRef<HTMLIFrameElement>(null)
@@ -27,18 +30,18 @@ export default function GenQa() {
       // (not inside the effect itself: the pages are drawn with a React root of their own)
       await wait(50)
       const rand = seededRandom(424242)
-      const made: (HeroSpec | FeaturesSpec)[] = []
+      const made: (HeroSpec | FeaturesSpec | CtaSpec)[] = []
       for (let i = 0; i < n && alive; i += 1) {
         const mood = MOODS[i % MOODS.length]
-        const spec = features ? randomFeatures(rand, mood, made.slice(-3) as FeaturesSpec[]) : randomSpec(rand, mood, made.slice(-3) as HeroSpec[])
+        const spec = cta ? randomCta(rand, mood, made.slice(-3) as CtaSpec[]) : features ? randomFeatures(rand, mood, made.slice(-3) as FeaturesSpec[]) : randomSpec(rand, mood, made.slice(-3) as HeroSpec[])
         made.push(spec)
-        const id = features ? featuresId(spec as FeaturesSpec) : specId(spec as HeroSpec)
+        const id = cta ? ctaId(spec as CtaSpec) : features ? featuresId(spec as FeaturesSpec) : specId(spec as HeroSpec)
         const prompt = PROMPTS[i % PROMPTS.length]
         const problems: string[] = []
         const height = { phone: 0, desktop: 0 }
         try {
           const lib = generateLibraryPage(prompt, 3 + (i % 5), 'better', true, 'auto', undefined, false)
-          const role = features ? 'features' : 'hero'
+          const role = cta ? 'cta' : features ? 'features' : 'hero'
           const keep = lib.sections.filter((s) => s.role === 'nav' || s.role === role).map((s) => (s.role === role ? { ...s, componentId: id } : s))
           const f = frame.current!
           f.style.width = '390px'
@@ -51,10 +54,21 @@ export default function GenQa() {
             await wait(350)
             const d = f.contentDocument!
             const w = f.contentWindow!
-            const hero = d.querySelector<HTMLElement>(features ? '[data-gen="features"]' : '[data-gen="hero"]')
+            const hero = d.querySelector<HTMLElement>(`[data-gen="${role}"]`)
             if (!hero) { problems.push('not drawn'); break }
             height[label] = Math.round(hero.getBoundingClientRect().height)
             if (d.documentElement.scrollWidth > w.innerWidth + 1) problems.push(`${label}: sideways scroll`)
+            if (cta) {
+              const t = hero.querySelector<HTMLElement>('[data-slot="title"]')
+              if (!t || t.textContent!.trim().length < 3) problems.push(`${label}: no statement`)
+              else if (t.scrollWidth > t.clientWidth + 2) problems.push(`${label}: statement clipped`)
+              for (const b of hero.querySelectorAll<HTMLElement>('[data-slot="button"],[data-slot="button2"]')) if (b.getBoundingClientRect().height < 40) problems.push(`${label}: small button`)
+              if (!hero.querySelector('[data-slot="button"]')) problems.push(`${label}: no button`)
+              const auditC = auditPage(hero)
+              if (auditC.failures.length) problems.push(`${label}: ${auditC.failures.length} text(s) hard to read (${auditC.failures[0].text.slice(0, 18)} ${auditC.failures[0].ratio})`)
+              if (label === 'phone' && height.phone > 1100) problems.push(`phone: very tall (${height.phone}px)`)
+              continue
+            }
             if (features) {
               const tiles = [...hero.querySelectorAll<HTMLElement>('[data-slot="tile"]')]
               if (!tiles.length) problems.push(`${label}: no service shown`)
@@ -85,12 +99,12 @@ export default function GenQa() {
         } catch (error) {
           problems.push(`crashed: ${String(error).slice(0, 80)}`)
         }
-        setRows((list) => [...list, { id, spec: features ? describeFeatures(featuresOfId(id) as FeaturesSpec) : describeSpec(specOfId(id) as HeroSpec), prompt, problems: [...new Set(problems)], height }])
+        setRows((list) => [...list, { id, spec: cta ? describeCta(ctaOfId(id) as CtaSpec) : features ? describeFeatures(featuresOfId(id) as FeaturesSpec) : describeSpec(specOfId(id) as HeroSpec), prompt, problems: [...new Set(problems)], height }])
       }
       if (alive) setDone(true)
     })()
     return () => { alive = false }
-  }, [n, features])
+  }, [n, features, cta])
   useEffect(() => { (window as unknown as { __genqa: unknown }).__genqa = { done, rows } }, [done, rows])
   return (
     <div style={{ font: '13px/1.4 system-ui', padding: 16 }}>
