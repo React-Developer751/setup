@@ -210,3 +210,9 @@ The taste of the services part is its own (the thumbs of the first screens say n
 ### The closing banner (third generator)
 
 `gen/Cta_…` (`ctaSpec.ts`, `ctaTree.ts`): 6 layouts (center, split, bar, card, giant, left), 5 backgrounds, 4 sizes, 3 fonts, 4 button looks, 7 decors, radius, arrival motion, padding. Slots of the showcase kit's closing part (`show-cta`: title, lead, button, button2). Review at `/?gen=1&section=cta`, check with `npm run qa:gen -- 60 --cta`. Its taste is its own and starts at 20 ratings.
+
+### Pricing, FAQ, testimonials, gallery (fourth to seventh generator)
+
+Made with one helper (`gen/partKit.ts`: axes, rules, id, taste) and listed in `gen/registry.ts`: `gen/Pricing_…` (5 layouts incl. a dotted-leader menu list, 4 card looks, highlight styles), `gen/Faq_…` (accordion with native `<details>`, two-column, grid, list, numbered), `gen/Quotes_…` (single, grid, stack, wall, slider, split; initials instead of fake faces), `gen/Gallery_…` (grid, masonry, mosaic, strip, featured, wide, polaroid; captions below / overlay / on hover). Their slots (`show-plans`, `show-faq`, `show-quotes`, `show-gallery`) are filled in `library/fillRef.ts`. Review: `/?gen=1&section=pricing|faq|quotes|gallery`; check: `npm run qa:gen -- 40 --section=gallery`. Testimonials stay hidden while a page only has the sample ones (no invented reviews).
+
+`node scripts/gen-selfrate.mjs 40 pricing faq quotes gallery` writes likes (`auto:true`) for designs that passed the browser check, on the person's instruction that what is built this way counts as liked.

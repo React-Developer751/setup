@@ -6,7 +6,7 @@ import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { atLeast, priority as priorityOf, sectionWeights } from '../experience'
 import { asksForBold, creativityLevel } from '../creativity'
-import { pickGenCta, pickGenFeatures, pickGenHero } from '../gen/heroPick'
+import { pickGenCta, pickGenFeatures, pickGenHero, pickGenKit } from '../gen/heroPick'
 import { composePage } from './taste'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
@@ -148,6 +148,10 @@ export function generateLibraryPage(
   if (!base.content.pricing.fromPrompt && !menuOn) visible.delete('pricing')
   if (menuOn && tier !== 'normal') visible.add('pricing')
   if (menuOn) chosen.pricing = 'refkit/RefMenu1'
+  for (const role of ['pricing', 'faq', 'testimonial', 'gallery'] as const) {
+    const mine = pickGenKit(role, { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: chosen[role] === 'refkit/RefMenu1' || !!edits?.sizes?.[role === 'testimonial' ? 'testimonials' : role] })
+    if (mine) chosen[role] = mine
+  }
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)

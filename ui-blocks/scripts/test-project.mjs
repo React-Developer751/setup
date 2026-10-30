@@ -14,13 +14,14 @@ globalThis.document = { styleSheets: [] }
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
 const { libraryProjectEntries, contentTypesFrom } = await loadGeneratorModule('library/projectBuilder.ts')
 
+const { generatedHeroSource } = await loadGeneratorModule('gen/heroEmit.ts')
 const src = path.resolve('src')
 const read = async (file) => (fs.existsSync(path.join(src, file)) && fs.statSync(path.join(src, file)).isFile() ? fs.readFileSync(path.join(src, file), 'utf8') : undefined)
 const env = {
   packageJson: fs.readFileSync('package.json', 'utf8'),
   indexCss: fs.readFileSync('src/index.css', 'utf8'),
   readSource: read,
-  readComponent: async (id) => fs.readFileSync(path.join(src, 'components', `${id}.tsx`), 'utf8'),
+  readComponent: async (id) => generatedHeroSource(id) ?? fs.readFileSync(path.join(src, 'components', `${id}.tsx`), 'utf8'),
   contentTypes: () => contentTypesFrom(fs.readFileSync('src/generator/finalPrompt.ts', 'utf8'), fs.readFileSync('src/generator/extraContent.ts', 'utf8'), fs.readFileSync('src/generator/siteTypes.ts', 'utf8')),
   motionTypes: () => {
     const text = fs.readFileSync('src/generator/motionBrain.ts', 'utf8')

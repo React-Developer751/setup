@@ -3,9 +3,10 @@
 // The result is JSON (window.__genqa); `npm run qa:gen` reads it with headless Chrome.
 import { useEffect, useRef, useState } from 'react'
 import { buildLibraryStandalone } from './generator/exportLibrary'
-import { generateLibraryPage } from './generator/library/generateLibraryPage'
+import { partPage } from './genPage'
 import { auditPage } from './generator/library/pageAudit'
 import { randomSpec, specId, describeSpec, specOfId, type HeroMood, type HeroSpec } from './generator/gen/heroSpec'
+import { kitOfNs } from './generator/gen/registry'
 import { ctaId, ctaOfId, describeCta, randomCta, type CtaSpec } from './generator/gen/ctaSpec'
 import { describeFeatures, featuresId, featuresOfId, randomFeatures, type FeaturesSpec } from './generator/gen/featuresSpec'
 import { seededRandom } from './generator/random'
@@ -21,6 +22,7 @@ export default function GenQa() {
   const section = new URLSearchParams(location.search).get('section')
   const features = section === 'features'
   const cta = section === 'cta'
+  const kit = kitOfNs(section ?? '')
   const [rows, setRows] = useState<GenRow[]>([])
   const [done, setDone] = useState(false)
   const frame = useRef<HTMLIFrameElement>(null)
@@ -33,19 +35,17 @@ export default function GenQa() {
       const made: (HeroSpec | FeaturesSpec | CtaSpec)[] = []
       for (let i = 0; i < n && alive; i += 1) {
         const mood = MOODS[i % MOODS.length]
-        const spec = cta ? randomCta(rand, mood, made.slice(-3) as CtaSpec[]) : features ? randomFeatures(rand, mood, made.slice(-3) as FeaturesSpec[]) : randomSpec(rand, mood, made.slice(-3) as HeroSpec[])
+        const spec = kit ? (kit.part.random(rand, mood, made.slice(-3) as never[]) as never) : cta ? randomCta(rand, mood, made.slice(-3) as CtaSpec[]) : features ? randomFeatures(rand, mood, made.slice(-3) as FeaturesSpec[]) : randomSpec(rand, mood, made.slice(-3) as HeroSpec[])
         made.push(spec)
-        const id = cta ? ctaId(spec as CtaSpec) : features ? featuresId(spec as FeaturesSpec) : specId(spec as HeroSpec)
+        const id = kit ? kit.part.id(spec as never) : cta ? ctaId(spec as CtaSpec) : features ? featuresId(spec as FeaturesSpec) : specId(spec as HeroSpec)
         const prompt = PROMPTS[i % PROMPTS.length]
         const problems: string[] = []
         const height = { phone: 0, desktop: 0 }
         try {
-          const lib = generateLibraryPage(prompt, 3 + (i % 5), 'better', true, 'auto', undefined, false)
-          const role = cta ? 'cta' : features ? 'features' : 'hero'
-          const keep = lib.sections.filter((s) => s.role === 'nav' || s.role === role).map((s) => (s.role === role ? { ...s, componentId: id } : s))
+          const role = kit ? kit.role : cta ? 'cta' : features ? 'features' : 'hero'
           const f = frame.current!
           f.style.width = '390px'
-          await new Promise<void>((resolve) => { f.onload = () => resolve(); f.srcdoc = buildLibraryStandalone({ ...lib, sections: keep }) })
+          await new Promise<void>((resolve) => { f.onload = () => resolve(); f.srcdoc = buildLibraryStandalone(partPage(prompt, 3 + (i % 5), role, id)) })
           // (the first one waits for the fonts and the compiler)
           for (let tries = 0; tries < 8 && !f.contentDocument?.querySelector('[data-gen]'); tries += 1) await wait(500)
           await wait(700)
@@ -54,10 +54,30 @@ export default function GenQa() {
             await wait(350)
             const d = f.contentDocument!
             const w = f.contentWindow!
-            const hero = d.querySelector<HTMLElement>(`[data-gen="${role}"]`)
+            const hero = d.querySelector<HTMLElement>(kit ? '[data-gen]' : `[data-gen="${role}"]`)
             if (!hero) { problems.push('not drawn'); break }
             height[label] = Math.round(hero.getBoundingClientRect().height)
             if (d.documentElement.scrollWidth > w.innerWidth + 1) problems.push(`${label}: sideways scroll`)
+            if (kit) {
+              const t = hero.querySelector<HTMLElement>('[data-slot="title"]')
+              if (!t || t.textContent!.trim().length < 3) problems.push(`${label}: no heading`)
+              else if (t.scrollWidth > t.clientWidth + 2) problems.push(`${label}: heading clipped`)
+              const unit = hero.querySelectorAll<HTMLElement>(`[data-slot="${{ pricing: 'plan', faq: 'qa', testimonial: 'quote', gallery: 'shot' }[kit.role]}"]`)
+              if (!unit.length) problems.push(`${label}: nothing shown`)
+              if (kit.role === 'gallery') {
+                for (const im of hero.querySelectorAll<HTMLImageElement>('img[data-slot="shot-image"]')) if (!im.getAttribute('src')) problems.push(`${label}: a picture without source`)
+                if ([...unit].some((u) => w.getComputedStyle(u).display !== 'none' && u.getBoundingClientRect().height < 40)) problems.push(`${label}: a picture collapsed`)
+              }
+              if (kit.role === 'pricing') {
+                if ([...hero.querySelectorAll('[data-slot="plan-price"]')].some((n) => !(n.textContent ?? '').trim())) problems.push(`${label}: a plan without price`)
+                for (const b of hero.querySelectorAll<HTMLElement>('[data-slot="plan-button"]')) if (b.getBoundingClientRect().width && b.getBoundingClientRect().height < 36) problems.push(`${label}: small button`)
+              }
+              if ([...unit].some((u) => u.scrollWidth > u.clientWidth + 2 && w.getComputedStyle(u).overflowX !== 'auto')) problems.push(`${label}: an item sticks out`)
+              const auditK = auditPage(hero)
+              if (auditK.failures.length) problems.push(`${label}: ${auditK.failures.length} text(s) hard to read (${auditK.failures[0].text.slice(0, 18)} ${auditK.failures[0].ratio})`)
+              if (label === 'phone' && height.phone > 3600) problems.push(`phone: very tall (${height.phone}px)`)
+              continue
+            }
             if (cta) {
               const t = hero.querySelector<HTMLElement>('[data-slot="title"]')
               if (!t || t.textContent!.trim().length < 3) problems.push(`${label}: no statement`)
@@ -99,12 +119,12 @@ export default function GenQa() {
         } catch (error) {
           problems.push(`crashed: ${String(error).slice(0, 80)}`)
         }
-        setRows((list) => [...list, { id, spec: cta ? describeCta(ctaOfId(id) as CtaSpec) : features ? describeFeatures(featuresOfId(id) as FeaturesSpec) : describeSpec(specOfId(id) as HeroSpec), prompt, problems: [...new Set(problems)], height }])
+        setRows((list) => [...list, { id, spec: kit ? kit.part.describe(kit.part.of(id) as never) : cta ? describeCta(ctaOfId(id) as CtaSpec) : features ? describeFeatures(featuresOfId(id) as FeaturesSpec) : describeSpec(specOfId(id) as HeroSpec), prompt, problems: [...new Set(problems)], height }])
       }
       if (alive) setDone(true)
     })()
     return () => { alive = false }
-  }, [n, features, cta])
+  }, [n, features, cta, kit])
   useEffect(() => { (window as unknown as { __genqa: unknown }).__genqa = { done, rows } }, [done, rows])
   return (
     <div style={{ font: '13px/1.4 system-ui', padding: 16 }}>

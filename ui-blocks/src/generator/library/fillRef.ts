@@ -119,6 +119,65 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       put(root, 'button2', c.contact.title)
       break
     }
+    case 'show-plans': {
+      const plans = c.pricing.plans.slice(0, 4)
+      put(root, 'title', c.pricing.title)
+      repeat(root, 'plan', plans, (el, plan, i) => {
+        const set = (slot: string, text: string | undefined) => {
+          const n = el.querySelector(`[data-slot="${slot}"]`)
+          if (!n) return
+          if (text) n.textContent = text
+          else n.remove()
+        }
+        set('plan-name', plan.name)
+        set('plan-price', plan.price)
+        set('plan-period', plan.period)
+        set('plan-button', c.cta.button)
+        el.querySelectorAll<HTMLElement>('[data-slot="perk"]').forEach((li, k) => (plan.perks[k] ? (li.textContent = short(plan.perks[k], 60)) : li.remove()))
+        if (plans.length > 1 && i === (plans.length >= 3 ? 1 : 0)) el.setAttribute('data-hot', '')
+      })
+      break
+    }
+    case 'show-faq': {
+      put(root, 'title', c.titles?.faq ?? 'Frequently asked questions')
+      repeat(root, 'qa', c.faq.slice(0, 6), (el, item) => {
+        const q = el.querySelector('[data-slot="q"]')
+        const a = el.querySelector('[data-slot="a"]')
+        if (q) q.textContent = item.q
+        if (a) a.textContent = item.a
+      })
+      break
+    }
+    case 'show-quotes': {
+      put(root, 'title', c.titles?.testimonials ?? 'What people say')
+      repeat(root, 'quote', c.testimonials.slice(0, 6), (el, item) => {
+        const set = (slot: string, text: string) => {
+          const n = el.querySelector(`[data-slot="${slot}"]`)
+          if (!n) return
+          if (text) n.textContent = text
+          else n.remove()
+        }
+        set('quote-text', item.quote)
+        set('quote-author', item.author)
+        set('quote-role', item.role)
+        set('quote-initial', (item.author.trim().charAt(0) || c.brandName.charAt(0)).toUpperCase())
+      })
+      break
+    }
+    case 'show-gallery': {
+      const captions = c.gallery.captions.length ? c.gallery.captions : features.map((f) => f.title)
+      put(root, 'title', c.gallery.title)
+      repeat(root, 'shot', captions.slice(0, 8), (el, caption, i) => {
+        const img = el.querySelector('[data-slot="shot-image"]')
+        if (img) {
+          img.setAttribute('src', picture(i, 1000, 800))
+          img.setAttribute('alt', caption)
+        }
+        const cap = el.querySelector('[data-slot="shot-caption"]')
+        if (cap) cap.textContent = caption
+      })
+      break
+    }
     default:
       break
   }

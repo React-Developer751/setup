@@ -7,6 +7,7 @@ import { seededRandom } from '../random'
 import { decodeId, randomSpec, specId, type HeroMood } from './heroSpec'
 import { decodeFeatures, randomFeatures, featuresId } from './featuresSpec'
 import { ctaId, decodeCta, randomCta } from './ctaSpec'
+import { KIT_PARTS, kitOfRole } from './registry'
 import { setHeroTaste, type HeroRating } from './heroTaste'
 
 const hash = (text: string) => [...text].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 11)
@@ -54,6 +55,7 @@ export async function loadHeroTaste(): Promise<number> {
   setHeroTaste(rows, decodeId, 'hero')
   setHeroTaste(rows, decodeFeatures, 'features')
   setHeroTaste(rows, decodeCta, 'cta')
+  for (const k of KIT_PARTS) setHeroTaste(rows, k.part.decode, k.part.ns)
   return rows.length
 }
 
@@ -75,4 +77,15 @@ export function pickGenCta(i: PickInput): string | undefined {
   if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return ctaId(randomCta(rand, mood))
+}
+
+/** pricing, FAQ, testimonials, gallery: a little less often than the first screen (these parts are the same on many pages and a stored one is fine) */
+export function pickGenKit(role: string, i: PickInput): string | undefined {
+  const kit = kitOfRole(role)
+  if (!kit || i.keep || i.level === 'safe' || i.tier === 'normal') return undefined
+  const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|gen${role}|${i.variation}`))
+  const chance = i.level === 'wild' ? 0.55 : 0.28
+  if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
+  const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
+  return kit.part.id(kit.part.random(rand, mood) as never)
 }

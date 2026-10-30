@@ -10,6 +10,7 @@ const emit = await loadGeneratorModule('gen/heroEmit.ts')
 const pick = await loadGeneratorModule('gen/heroPick.ts')
 const fs = await loadGeneratorModule('gen/featuresSpec.ts')
 const cs = await loadGeneratorModule('gen/ctaSpec.ts')
+const reg = await loadGeneratorModule('gen/registry.ts')
 const taste = await loadGeneratorModule('gen/heroTaste.ts')
 const { compileSource } = await loadGeneratorModule('library/componentCompile.ts')
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
@@ -74,7 +75,7 @@ ok(some > 40 && some < 120 && wild > some, `balanced uses it now and then (${som
 ok(pick.pickGenHero({ ...base, variation: 5 }) === pick.pickGenHero({ ...base, variation: 5 }), 'a prompt and a variation give the same choice')
 // a page that uses one
 let page
-for (let v = 1; v <= 40 && !page; v += 1) { const l = generateLibraryPage('cafe website in Jaipur', v, 'better', true, 'auto', undefined, false); if (l.sections.some((s) => s.componentId.startsWith('gen/'))) page = l }
+for (let v = 1; v <= 40 && !page; v += 1) { const l = generateLibraryPage('cafe website in Jaipur', v, 'better', true, 'auto', undefined, false); if (l.sections.some((s) => s.componentId.startsWith('gen/Hero_'))) page = l }
 ok(page && /import Hero\w+ from '\.\/components\/gen\/Hero_/.test(page.code), 'a page with a generated hero names it in its code')
 // the taste: what was liked is drawn more, what was not is drawn less, and a few thumbs change nothing
 const r2 = seeded(31)
@@ -154,6 +155,36 @@ ok(cdrawn === 80, `80 closing banners drawn with all four slots (${cdrawn})`)
 ok(!cs.ctaOfId('gen/Hero_67ky7') && !spec.specOfId(cs.ctaId(cspecs[0])), 'a closing banner id is not a hero id and the other way round')
 taste.setHeroTaste(cspecs.map((s, i) => ({ id: cs.ctaId(s), up: s.layout !== 'bar' || i % 9 === 0 })), cs.decodeCta, 'cta')
 ok(taste.tasteActive('cta') && taste.tasteWeight('layout', 'bar', 'cta') < 1, 'the closing banner has a taste of its own')
+// the generators made with partKit (pricing, FAQ, testimonials, gallery)
+const SLOTS = { pricing: ['title', 'plan', 'plan-name', 'plan-price', 'perk', 'plan-button'], faq: ['title', 'qa', 'q', 'a'], testimonial: ['title', 'quote', 'quote-text', 'quote-author', 'quote-role', 'quote-initial'], gallery: ['title', 'shot', 'shot-image', 'shot-caption'] }
+for (const kit of reg.KIT_PARTS) {
+  const rk = seeded(kit.role.length * 91)
+  const list = []
+  let drawn = 0
+  ok(kit.part.count() > 20_000, `${kit.role}: a large space (${kit.part.count().toLocaleString()})`)
+  for (let i = 0; i < 60; i += 1) {
+    const sp = kit.part.random(rk, ['any', 'calm', 'bold', 'soft', 'dark', 'playful'][i % 6], list.slice(-3))
+    list.push(sp)
+    ok(kit.part.valid(sp), `${kit.role}: a drawn spec is valid`)
+    const id = kit.part.id(sp)
+    const back = kit.part.of(id)
+    ok(back && Object.keys(sp).every((k) => back[k] === sp[k]), `${kit.role}: the id reads back to its spec`)
+    const Comp = emit.generatedHero(id)
+    const html = Comp ? renderToStaticMarkup(createElement(Comp)) : ''
+    const src = emit.generatedHeroSource(id)
+    const cc = src ? compileSource(src) : { error: 'no source' }
+    if (SLOTS[kit.role].every((n) => html.includes(`data-slot="${n}"`)) && html.includes(`data-ref="show-`) && 'code' in cc && !/undefined|\[object/.test(html) && !/className="[^"]*\b(?:text|bg|px|py|grid|flex)-/.test(html)) drawn += 1
+    else fail.push(`${kit.role} ${id} is not drawn with its slots or does not compile`)
+  }
+  ok(drawn === 60, `${kit.role}: 60 drawn with all slots and compiled (${drawn})`)
+  ok(!kit.part.of('gen/Hero_67ky7') && reg.kitOfId(kit.part.id(list[0])) === kit, `${kit.role}: its id is its own`)
+  taste.setHeroTaste(list.map((sp, i) => ({ id: kit.part.id(sp), up: sp.layout !== list[0].layout || i % 9 === 0 })), kit.part.decode, kit.part.ns)
+  ok(taste.tasteActive(kit.part.ns) && taste.tasteWeight('layout', list[0].layout, kit.part.ns) < 1, `${kit.role}: a taste of its own`)
+}
+// pages that use them
+const kitSeen = new Set()
+for (let v = 1; v <= 80; v += 1) { const l = generateLibraryPage('yoga studio website in Rishikesh Pricing: Drop-in 500 rupees, Monthly 3000 rupees, Retreat 12000 rupees', v, 'better', true, 'auto', undefined, true); for (const sct of l.sections) if (sct.componentId.startsWith('gen/') && reg.kitOfId(sct.componentId)) kitSeen.add(reg.kitOfId(sct.componentId).role) }
+ok(['pricing', 'faq', 'gallery'].every((r) => kitSeen.has(r)), `multi-page sites use the new generated parts (testimonials are shown only when real ones exist) (${[...kitSeen].join(', ')})`)
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

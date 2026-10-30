@@ -28,7 +28,7 @@ let id = 0
 const pending = new Map()
 ws.onmessage = (m) => { const d = JSON.parse(m.data); pending.get(d.id)?.(d); pending.delete(d.id) }
 const send = (method, params = {}) => new Promise((r) => { id += 1; pending.set(id, r); ws.send(JSON.stringify({ id, method, params })) })
-await send('Page.navigate', { url: `${base}/?genqa=1&n=${howMany}${process.argv.includes('--features') ? '&section=features' : process.argv.includes('--cta') ? '&section=cta' : ''}` })
+await send('Page.navigate', { url: `${base}/?genqa=1&n=${howMany}${process.argv.includes('--features') ? '&section=features' : process.argv.includes('--cta') ? '&section=cta' : (process.argv.find((a) => a.startsWith('--section='))?.replace('--section=', '&section=') ?? '')}` })
 let result
 for (let i = 0; i < 1800; i += 1) {
   await sleep(1000)
