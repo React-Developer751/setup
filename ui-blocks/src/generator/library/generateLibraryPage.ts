@@ -6,6 +6,7 @@ import type { Tier } from '../designBrain'
 import type { MotionSetting } from '../motionBrain'
 import { atLeast, priority as priorityOf, sectionWeights } from '../experience'
 import { asksForBold, creativityLevel } from '../creativity'
+import { pickGenHero } from '../gen/heroPick'
 import { composePage } from './taste'
 import { TARGETS, type SectionKey, type SiteEdits, type Target } from '../edit/edits'
 import { fitsFrom, reorder } from '../edit/fit'
@@ -89,6 +90,9 @@ export function generateLibraryPage(
       kitBonus: referenceMood(userPrompt) ? (level === 'wild' ? 0.6 : 1.6) : level === 'wild' ? 0.3 : 1.0 })
     for (const role of roles) if (picks[role]) chosen[role] = picks[role]
   }
+  // a first screen written by the design generator (gen/): for some pages, never for a named design, a resized first screen or a short simple page
+  const genHero = pickGenHero({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.hero) || !!edits?.sizes?.hero || !!edits?.aligns?.hero })
+  if (genHero) chosen.hero = genHero
   // the parts a page may have besides the always-there ones; a page that is too long is not read
   // (the chances depend on the kind of business: a clinic gets proof and answers, a restaurant gets pictures; see experience.ts)
   const weights = sectionWeights(base.themeKey)

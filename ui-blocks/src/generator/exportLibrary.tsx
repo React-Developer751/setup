@@ -23,6 +23,7 @@ import { seededRandom } from './random'
 import finalPromptSource from './finalPrompt.ts?raw'
 import type { generateLibraryPage } from './library/generateLibraryPage'
 import { componentOverride } from './library/componentOverrides'
+import { generatedHero, generatedHeroSource } from './gen/heroEmit'
 import { libraryComponents } from './library/libraryComponents'
 import { repairContrast, veilPictures } from './library/pageAudit'
 import { libraryWithDetails, safeSiteUrl, xmlEscape } from './library/exportDetails'
@@ -75,7 +76,7 @@ export async function buildLibraryProject(lib: Library): Promise<ZipEntry[]> {
       const load = path.startsWith('data/') ? dataSources[`../${path}`] : generatorSources[`./${path.replace(/^generator\//, '')}`]
       return load ? load() : undefined
     },
-    readComponent: (id) => componentSources[`../components/${id}.tsx`](),
+    readComponent: async (id) => generatedHeroSource(id) ?? componentSources[`../components/${id}.tsx`](),
     contentTypes: () => contentTypesFrom(finalPromptSource, extraContentSource, siteTypesSource),
     motionTypes: () => motionBrainSource.slice(motionBrainSource.indexOf('export type MotionSetting'), motionBrainSource.indexOf('const STYLE_BY_THEME')).trim() + '\n',
     assets: (sources) => assetFiles(sources),
@@ -191,7 +192,7 @@ function renderLibrary(lib: Library) {
       root.render(
         <ThemeScope theme={lib.themeKey} palette={lib.palette} content={lib.content} pages={lib.pages} mode={lib.initialMode} css={lib.css} fontTokens={lib.fontTokens}>
           {lib.sections.map(({ role, componentId, paint, fit, band, page, head }, index) => {
-            const Component = componentOverride(componentId) ?? libraryComponents[componentId]
+            const Component = componentOverride(componentId) ?? generatedHero(componentId) ?? libraryComponents[componentId]
             // a part whose component is not known is left out, not a reason to lose the whole page
             if (!Component) return null
             return (

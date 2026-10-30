@@ -70,7 +70,7 @@ function readBody(req, max = MAX_BODY) {
 
 /** the address of the caller; behind a reverse proxy (TRUST_PROXY=1) the first address of X-Forwarded-For */
 const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || 'unknown'
-const STORED_READS = new Set(['/api/projects', '/api/projects/versions', '/api/projects/version', '/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events', '/api/prompt-memory', '/api/prompt-memory/export', '/api/prompt-memory/keywords'])
+const STORED_READS = new Set(['/api/gen-ratings', '/api/projects', '/api/projects/versions', '/api/projects/version', '/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events', '/api/prompt-memory', '/api/prompt-memory/export', '/api/prompt-memory/keywords'])
 const EXTRA_ORIGINS = new Set(String(process.env.EDIT_ALLOWED_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean))
 /** this machine's own pages (any port: Vite, preview), the page the server itself was reached from, and what the operator listed */
 function originAllowed(origin, host) {
@@ -253,6 +253,25 @@ export const server = http.createServer(async (req, res) => {
     }
     // the stored prompts, designs and opinions are read with the token as well (the pictures are not: an <img> cannot send a header)
     if (req.method === 'GET' && TOKEN && STORED_READS.has(url.pathname) && req.headers['x-edit-token'] !== TOKEN) return send(res, 401, { error: 'missing or wrong token' })
+    // what a person thinks of the generated designs (the review page ?gen=1): one row per design and person, the newest word wins; read back only by the same person
+    if (url.pathname === '/api/gen-ratings') {
+      const me = userOf(req)
+      if (!me) return send(res, 400, { error: 'send the x-user header (the page does this)' })
+      const file = path.join(DATA, 'gen-ratings.jsonl')
+      const readAll = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter(Boolean) : [])
+      if (req.method === 'GET') return send(res, 200, { rows: readAll().filter((r) => r.user === me).slice(-2000) })
+      if (req.method === 'POST') {
+        const r = JSON.parse(await readBody(req))
+        const id = String(r.id ?? '')
+        if (!/^gen\/[A-Za-z]+_[a-z0-9]{1,40}$/.test(id)) return send(res, 400, { error: 'unknown design id' })
+        const rows = readAll().filter((x) => !(x.user === me && x.id === id))
+        rows.push({ user: me, id, up: r.up === true, mood: String(r.mood ?? '').slice(0, 12), prompt: String(r.prompt ?? '').slice(0, 120), at: new Date().toISOString() })
+        fs.mkdirSync(DATA, { recursive: true })
+        fs.writeFileSync(`${file}.tmp`, rows.slice(-20000).map((x) => JSON.stringify(x)).join('\n') + '\n')
+        fs.renameSync(`${file}.tmp`, file)
+        return send(res, 200, { ok: true })
+      }
+    }
     // projects kept on the server for one person (header x-user): every save is a version, the last 30 stay, any of them can be opened again
     if (url.pathname.startsWith('/api/projects')) {
       const me = userOf(req)

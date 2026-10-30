@@ -43,7 +43,7 @@ for (const level of ['safe', 'balanced', 'wild']) {
       n += 1
       ok(!ids.some((id) => EXCLUDED.includes(id)), `${level}: no part the list leaves out is chosen`)
       ok(new Set(ids).size === ids.length, `${level}: no part is used twice (${prompt.slice(0, 16)} #${v})`)
-      ok(ids.every((id) => !!axesOf(id)), `${level}: every chosen part has a taste`)
+      ok(ids.every((id) => id.startsWith('gen/') || !!axesOf(id)), `${level}: every chosen part has a taste`)
     }
     ok(seen.size >= 11, `${level}: 12 variations of "${prompt.slice(0, 18)}" are different designs (${seen.size})`)
   }
