@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { buildLibraryStandalone } from './generator/exportLibrary'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
-import { describeSpec, randomSpec, specId, specOfId, type HeroMood, type HeroSpec } from './generator/gen/heroSpec'
+import { decodeId, describeSpec, randomSpec, specId, specOfId, type HeroMood, type HeroSpec } from './generator/gen/heroSpec'
 import { seededRandom } from './generator/random'
 import { MIN_RATINGS, setHeroTaste, tasteActive, tasteTable } from './generator/gen/heroTaste'
 
@@ -83,7 +83,7 @@ export default function GenReview() {
     }).catch(() => undefined)
   }, [])
   // the taste of the generator follows the ratings (it starts to matter at MIN_RATINGS)
-  setHeroTaste(Object.values(ratings), specOfId)
+  setHeroTaste(Object.values(ratings), decodeId)
   const ids = useMemo(() => {
     // /?gen=1&ids=gen/Hero_abc,gen/Hero_def shows exactly these
     const fixed = (new URLSearchParams(location.search).get('ids') ?? '').split(',').filter((id) => !!specOfId(id))
@@ -104,8 +104,10 @@ export default function GenReview() {
     void fetch('/api/gen-ratings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, up, mood, prompt }) }).catch(() => undefined)
   }
   const table = tasteTable().filter((t) => t.up + t.down >= 2)
-  const liked = table.filter((t) => t.up > t.down).sort((a, b) => b.up - b.down - (a.up - a.down)).slice(0, 8)
-  const disliked = table.filter((t) => t.down > t.up).sort((a, b) => b.down - b.up - (a.down - a.up)).slice(0, 8)
+  // most of what people see is liked, so the useful list is the dislike rate: the choices that were not liked most often, and the ones with many thumbs and none down
+  const share = (t: { up: number; down: number }) => t.down / (t.up + t.down)
+  const disliked = table.filter((t) => t.up + t.down >= 8 && t.down > 0).sort((a, b) => share(b) - share(a)).slice(0, 6)
+  const liked = table.filter((t) => t.up + t.down >= 25 && t.down === 0).slice(0, 6)
   const good = Object.values(ratings).filter((r) => r.up).length
   const bad = Object.values(ratings).filter((r) => !r.up).length
   return (
@@ -113,8 +115,8 @@ export default function GenReview() {
       <h1 style={{ fontSize: 18, margin: '0 0 8px' }}>Design generator: first screens ({good} liked, {bad} not liked)</h1>
       <p style={{ margin: '0 0 10px', color: '#57534e' }}>
         {tasteActive() ? 'The generator now draws what you liked more often.' : `The generator starts to learn from your thumbs at ${MIN_RATINGS} ratings (${good + bad} so far): rate more, in other moods and for other businesses.`}
-        {liked.length > 0 && <> <b>Liked so far:</b> {liked.map((t) => `${t.key}=${t.option} (${t.up}/${t.up + t.down})`).join(', ')}.</>}
-        {disliked.length > 0 && <> <b>Not liked:</b> {disliked.map((t) => `${t.key}=${t.option} (${t.down}/${t.up + t.down})`).join(', ')}.</>}
+        {liked.length > 0 && <> <b>Never disliked:</b> {liked.map((t) => `${t.key}=${t.option} (${t.up} liked)`).join(', ')}.</>}
+        {disliked.length > 0 && <> <b>Not liked most often:</b> {disliked.map((t) => `${t.key}=${t.option} (${t.down} of ${t.up + t.down})`).join(', ')}.</>}
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 14 }}>
         <label>Business <select value={prompt} onChange={(e) => setPrompt(e.target.value)}>{PROMPTS.map((p) => <option key={p}>{p}</option>)}</select></label>

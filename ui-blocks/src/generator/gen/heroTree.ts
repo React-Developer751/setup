@@ -22,9 +22,9 @@ export function heroCss(s: HeroSpec, p: string): string {
   const light = bleed ? '#fff' : dark ? '#f4f4f5' : onAccent ? 'var(--g-on-accent)' : 'inherit'
   const bg: Record<HeroSpec['bg'], string> = { plain: 'transparent', band: 'var(--g-band)', glow: 'radial-gradient(ellipse 70% 60% at 75% 0%, var(--g-glow), transparent 70%)', accent: 'var(--g-accent)', ink: '#111216' }
   const stacked = s.layout === 'center-stack' || s.layout === 'stack-wide' || s.layout === 'type-led'
-  // (the thumbs: every hero that was not liked was tall or full, and all 14 compact ones were liked: the tall and full ones are lower now)
-  const pad = s.height === 'compact' ? '3rem' : s.height === 'tall' ? (stacked ? '3.5rem' : '4.5rem') : stacked ? '4.25rem' : '5.5rem'
-  const minH = s.height === 'full' ? 'min-height:72vh;' : ''
+  // (416 thumbs: the full ones are the least disliked, 1 of 115; compact 7 of 138, tall 13 of 163: the heights are the first ones again)
+  const pad = s.height === 'compact' ? '3rem' : s.height === 'tall' ? (stacked ? '4rem' : '5.5rem') : stacked ? '4.75rem' : '7rem'
+  const minH = s.height === 'full' && !stacked ? 'min-height:88vh;' : ''
   const wide = s.layout === 'type-led' ? '110rem' : '76rem'
   const css: string[] = []
   const c = (rule: string) => css.push(rule.replaceAll('&', `.${p}`))
@@ -86,8 +86,8 @@ export function heroCss(s: HeroSpec, p: string): string {
       c(`& .gh-media{position:absolute;inset:0;z-index:0;border-radius:0;aspect-ratio:auto;transform:none;border:0;box-shadow:none}`)
       c(`& .gh-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.58),rgba(0,0,0,.22) 62%,rgba(0,0,0,.04)),linear-gradient(0deg,rgba(0,0,0,.42),transparent 55%)}`)
       c(`& .gh-text{max-width:42rem}`)
-      c(`& .gh-in{padding-top:${s.height === 'full' ? '7rem' : '5.5rem'}}`)
-      c(`&{min-height:${s.height === 'full' ? '78vh' : '62vh'}}`)
+      c(`& .gh-in{padding-top:${s.height === 'full' ? '8rem' : '6.5rem'}}`)
+      c(`&{min-height:${s.height === 'full' ? '86vh' : '70vh'}}`)
       break
     case 'offset-card':
       c(`& .gh-stage{position:relative}`)

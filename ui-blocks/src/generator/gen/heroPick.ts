@@ -4,7 +4,7 @@
 // so a prompt gives the same page every time, and the id says everything about the hero.
 import { archetypeOf } from '../motionBrain'
 import { seededRandom } from '../random'
-import { randomSpec, specId, specOfId, type HeroMood } from './heroSpec'
+import { decodeId, randomSpec, specId, type HeroMood } from './heroSpec'
 import { setHeroTaste, type HeroRating } from './heroTaste'
 
 const hash = (text: string) => [...text].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 11)
@@ -49,6 +49,6 @@ export async function loadHeroTaste(): Promise<number> {
       rows = []
     }
   }
-  setHeroTaste(rows, specOfId)
+  setHeroTaste(rows, decodeId)
   return rows.length
 }

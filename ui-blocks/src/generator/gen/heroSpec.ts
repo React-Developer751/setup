@@ -3,7 +3,7 @@
 // The choices below are the "axes". Rules (`valid`) keep the combinations that do not work out of the way (a giant headline in a narrow column, a circle picture on a full-bleed layout).
 // The spec is small and exact: it is encoded in the id of the component ("gen/Hero_3k9x..."), so the same id is always the same hero, and a project that holds the id can draw it again.
 
-import { tasteWeight } from './heroTaste'
+import { isBlocked, tasteWeight } from './heroTaste'
 
 export const LAYOUTS = ['split-right', 'split-left', 'center-stack', 'type-led', 'bleed-overlay', 'offset-card', 'bento', 'stack-wide'] as const
 export const MEDIA = ['rect', 'arch', 'circle', 'tilt', 'blob'] as const
@@ -46,6 +46,8 @@ export function valid(s: HeroSpec): boolean {
   if (s.scale === 'xxl' && !(s.layout === 'type-led' || s.layout === 'center-stack' || s.layout === 'stack-wide' || s.layout === 'bleed-overlay')) return false
   if (s.scale === 'm' && (s.layout === 'type-led' || s.layout === 'bleed-overlay')) return false
   if (s.font === 'serif' && s.weight > 600) return false
+  // 7 of the 21 heroes that were not liked in 416 thumbs were a small serif headline (a big serif one: 0 of 83)
+  if (s.font === 'serif' && s.scale === 'm') return false
   if (s.font === 'display' && s.weight < 700) return false
   if (s.bg === 'accent' && s.decor === 'blob') return false
   if (s.bg === 'ink' && (s.decor === 'grain' || s.decor === 'stripes')) return false
@@ -64,6 +66,7 @@ function fit(s: HeroSpec): HeroSpec {
   if ((f.layout === 'type-led' || f.layout === 'stack-wide' || f.layout === 'bento') && f.media !== 'rect' && f.media !== 'arch') f.media = 'rect'
   if (f.scale === 'xxl' && !(f.layout === 'type-led' || f.layout === 'center-stack' || f.layout === 'stack-wide' || f.layout === 'bleed-overlay')) f.scale = 'xl'
   if (f.font === 'serif' && f.weight > 600) f.weight = 600
+  if (f.font === 'serif' && f.scale === 'm') f.scale = 'l'
   if (f.font === 'display' && f.weight < 700) f.weight = 700
   return f
 }
@@ -97,7 +100,7 @@ export function randomSpec(rand: () => number, mood: HeroMood = 'any', avoid: He
       s[key] = pool[pick]
     }
     const spec = fit(s as unknown as HeroSpec)
-    if (!valid(spec)) continue
+    if (!valid(spec) || isBlocked(specId(spec))) continue
     // the same layout, picture shape and look as one of the heroes just made is not a new hero
     if (avoid.some((a) => a.layout === spec.layout && a.media === spec.media && a.bg === spec.bg && a.decor === spec.decor)) continue
     return spec
@@ -127,7 +130,8 @@ export function specId(spec: HeroSpec): string {
   return HEAD + n.toString(36)
 }
 
-export function specOfId(id: string): HeroSpec | undefined {
+/** the spec of an id as it was written, also when the rules of today would not make it any more (the thumbs given to such a hero still say something about its choices) */
+export function decodeId(id: string): HeroSpec | undefined {
   if (!id.startsWith(HEAD)) return undefined
   let n: bigint
   try {
@@ -142,8 +146,13 @@ export function specOfId(id: string): HeroSpec | undefined {
     n /= size
   }
   if (n !== 0n) return undefined
-  const result = spec as unknown as HeroSpec
-  return valid(result) ? result : undefined
+  return spec as unknown as HeroSpec
+}
+
+/** the spec of an id, only when it is a hero the generator would make today */
+export function specOfId(id: string): HeroSpec | undefined {
+  const spec = decodeId(id)
+  return spec && valid(spec) ? spec : undefined
 }
 
 /** one line for people ("split, arch picture, big serif headline, pill buttons, glow, rise") */
