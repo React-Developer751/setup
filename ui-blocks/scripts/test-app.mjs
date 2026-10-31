@@ -21,6 +21,16 @@ const CASES = [
   ['Website for an influencer: fashion and lifestyle creator with 250k followers on Instagram, brand collaborations, reels', 'creator', ['Collaborations', 'Content calendar', 'Messages']],
   ['Student note-taking app for college students, flashcards, study timer', 'software', ['Projects', 'Team', 'Billing']],
   ['Cricket coaching academy in Hyderabad for kids, batting, bowling', 'learning', ['Students', 'Batches', 'Fees']],
+  ['NGO for stray dogs in Bangalore, adopt, donate, volunteer', 'ngo', ['Donations', 'Donors', 'Volunteers', 'Campaigns']],
+  ['Law firm in Delhi, property disputes, family law, consumer cases', 'legal', ['Cases', 'Clients', 'Hearings', 'Invoices']],
+  ['Construction company in Jaipur, villas, renovation, civil work', 'construction', ['Projects', 'Quotes', 'Site visits', 'Crew']],
+  ['Car garage in Pune, servicing, denting painting, car wash', 'auto', ['Job cards', 'Customers', 'Bookings', 'Invoices']],
+  ['Home cleaning and pest control services in Noida', 'homeservices', ['Jobs', 'Technicians', 'Customers']],
+  ['Packers and movers in Hyderabad, house shifting, office shifting', 'logistics', ['Shipments', 'Drivers', 'Customers']],
+  ['Pet clinic and grooming in Mumbai, vaccination, dog grooming', 'pets', ['Appointments', 'Owners', 'Animals']],
+  ['Insurance advisor in Indore, health insurance, term plans, mutual funds', 'finance', ['Clients', 'Policies and plans', 'Reminders', 'Payments']],
+  ['Astrologer in Varanasi, kundli, vastu, tarot readings', 'consult', ['Consultations', 'Clients', 'Payments']],
+  ['Organic farm selling vegetables and honey, home delivery', 'farm', ['Orders', 'Produce', 'Customers']],
 ]
 for (const [prompt, kind, labels] of CASES) {
   const lib = page(prompt)
@@ -52,6 +62,20 @@ for (const text of ['dashboard hatao', 'remove the login page']) {
 ok(!parseEdit('login button ka color blue karo', 'single').ops?.some((o) => o.op === 'app'), 'a colour of a login button is not the app')
 const withApp = page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }]))
 ok(withApp.content.app === true && !page('Dr. Mehta dental clinic in Surat, braces, implants').content.app, 'the app is on only when it was asked for')
+
+// the kind of a new column: said, or read from its name
+{
+  const typeOf = (text, label = 'Members') => { const r = parseEdit(text, 'single'); const lib = page('Gym in Pune with personal training, plans: basic 999 rupees, premium 1999 rupees', editsFrom([{ op: 'app', on: true }, ...(r.kind === 'ops' ? r.ops : [])])); const t = appConfigFor(lib.content, { themeKey: lib.themeKey }).tables.find((x) => x.label === label); return t }
+  const st = typeOf('Classes me Status column jodo', 'Classes')?.columns.find((c) => c.label === 'Status' && c.options?.includes('Done'))
+  ok(!!st, 'a column named Status is a status column')
+  ok(typeOf('Members me Due date column jodo')?.columns.find((c) => c.label === 'Due Date')?.type === 'date', 'a column named Due date is a date column')
+  ok(typeOf('Members me Amount column jodo')?.columns.find((c) => c.label === 'Amount')?.type === 'money', 'a column named Amount is a money column')
+  ok(typeOf('Members me Age column jodo')?.columns.find((c) => c.label === 'Age')?.type === 'number', 'a column named Age is a number column')
+  ok(typeOf('Members me Joined column jodo, type date')?.columns.find((c) => c.label === 'Joined')?.type === 'date', 'the type said on purpose is used')
+  ok(typeOf('Members me Rent column jodo')?.columns.find((c) => c.label === 'Rent')?.type === 'money', 'a column named Rent is a money column')
+  const withRows = typeOf('Members me Amount column jodo')
+  ok(withRows?.rows.every((r) => /\d/.test(r.amount ?? '')), 'the rows of a new money column have amounts')
+}
 
 // the pages of the dashboard, changed from the chat
 const dash = (text) => {

@@ -36,7 +36,7 @@
    "brand": "Harbor Cafe",
    "sections": 12,
    "failed": [],
-   "ms": 1338,
+   "ms": 1369,
    "words": 1
   },
   {
@@ -51,7 +51,7 @@
    "brand": "Nova Restaurant",
    "sections": 12,
    "failed": [],
-   "ms": 188,
+   "ms": 194,
    "words": 3
   },
   {
@@ -68,7 +68,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 234,
+   "ms": 243,
    "words": 3
   },
   {
@@ -83,7 +83,7 @@
    "brand": "Blue Door Gym",
    "sections": 12,
    "failed": [],
-   "ms": 139,
+   "ms": 148,
    "words": 5
   },
   {
@@ -98,7 +98,7 @@
    "brand": "Evergreen Yoga Studio",
    "sections": 11,
    "failed": [],
-   "ms": 129,
+   "ms": 133,
    "words": 2
   },
   {
@@ -113,7 +113,7 @@
    "brand": "Bright Dental Clinic",
    "sections": 10,
    "failed": [],
-   "ms": 238,
+   "ms": 251,
    "words": 2
   },
   {
@@ -130,7 +130,7 @@
    "failed": [
     "features"
    ],
-   "ms": 175,
+   "ms": 188,
    "words": 3
   },
   {
@@ -147,7 +147,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 181,
+   "ms": 212,
    "words": 2
   },
   {
@@ -162,7 +162,7 @@
    "brand": "True Chartered Accountant",
    "sections": 11,
    "failed": [],
-   "ms": 122,
+   "ms": 130,
    "words": 2
   },
   {
@@ -179,7 +179,7 @@
    "failed": [
     "about"
    ],
-   "ms": 140,
+   "ms": 149,
    "words": 4
   },
   {
@@ -196,7 +196,7 @@
    "failed": [
     "about"
    ],
-   "ms": 159,
+   "ms": 168,
    "words": 2
   },
   {
@@ -213,7 +213,7 @@
    "failed": [
     "about"
    ],
-   "ms": 100,
+   "ms": 105,
    "words": 3
   },
   {
@@ -228,7 +228,7 @@
    "brand": "Prime Designer Portfolio",
    "sections": 11,
    "failed": [],
-   "ms": 133,
+   "ms": 142,
    "words": 3
   },
   {
@@ -258,7 +258,7 @@
    "brand": "Summit Goa Tours",
    "sections": 12,
    "failed": [],
-   "ms": 147,
+   "ms": 158,
    "words": 3
   },
   {
@@ -273,7 +273,7 @@
    "brand": "True Hotel",
    "sections": 11,
    "failed": [],
-   "ms": 134,
+   "ms": 145,
    "words": 3
   },
   {
@@ -290,7 +290,7 @@
    "failed": [
     "about"
    ],
-   "ms": 111,
+   "ms": 131,
    "words": 3
   },
   {
@@ -305,7 +305,7 @@
    "brand": "Oak Used Car Dealer",
    "sections": 10,
    "failed": [],
-   "ms": 118,
+   "ms": 126,
    "words": 3
   },
   {
@@ -320,7 +320,7 @@
    "brand": "Blue Door Hair Salon",
    "sections": 12,
    "failed": [],
-   "ms": 173,
+   "ms": 185,
    "words": 2
   },
   {
@@ -337,7 +337,7 @@
    "failed": [
     "about"
    ],
-   "ms": 132,
+   "ms": 134,
    "words": 3
   },
   {
@@ -352,7 +352,7 @@
    "brand": "Bright SaaS Startup",
    "sections": 12,
    "failed": [],
-   "ms": 101,
+   "ms": 112,
    "words": 4
   },
   {
@@ -369,7 +369,7 @@
    "failed": [
     "about"
    ],
-   "ms": 159,
+   "ms": 167,
    "words": 4
   },
   {
@@ -384,7 +384,7 @@
    "brand": "Harbor Girl Education",
    "sections": 10,
    "failed": [],
-   "ms": 415,
+   "ms": 428,
    "words": 3
   },
   {
@@ -401,7 +401,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 220,
+   "ms": 228,
    "words": 3
   },
   {
@@ -416,7 +416,7 @@
    "brand": "Blue Door Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 243,
+   "ms": 247,
    "words": 1
   },
   {
@@ -431,7 +431,7 @@
    "brand": "Bright Pest Control",
    "sections": 11,
    "failed": [],
-   "ms": 126,
+   "ms": 125,
    "words": 2
   },
   {
@@ -446,7 +446,7 @@
    "brand": "Bright Florist",
    "sections": 11,
    "failed": [],
-   "ms": 371,
+   "ms": 368,
    "words": 2
   },
   {
@@ -463,7 +463,7 @@
    "failed": [
     "about"
    ],
-   "ms": 156,
+   "ms": 155,
    "words": 4
   },
   {
@@ -478,7 +478,7 @@
    "brand": "Blue Door Event Decor",
    "sections": 11,
    "failed": [],
-   "ms": 126,
+   "ms": 118,
    "words": 4
   },
   {
@@ -495,7 +495,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 94,
+   "ms": 90,
    "words": 3
   },
   {
@@ -510,7 +510,7 @@
    "brand": "Bright Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 129,
+   "ms": 122,
    "words": 1
   },
   {
@@ -527,7 +527,7 @@
    "failed": [
     "about"
    ],
-   "ms": 194,
+   "ms": 205,
    "words": 2
   },
   {
@@ -544,7 +544,7 @@
    "failed": [
     "about"
    ],
-   "ms": 100,
+   "ms": 112,
    "words": 2
   },
   {
@@ -561,7 +561,7 @@
    "failed": [
     "about"
    ],
-   "ms": 108,
+   "ms": 122,
    "words": 2
   },
   {
@@ -576,7 +576,7 @@
    "brand": "Maple Ice Cream Parlour",
    "sections": 11,
    "failed": [],
-   "ms": 231,
+   "ms": 263,
    "words": 3
   },
   {
@@ -591,7 +591,7 @@
    "brand": "True Cafe",
    "sections": 12,
    "failed": [],
-   "ms": 159,
+   "ms": 175,
    "words": 1
   },
   {
@@ -608,7 +608,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 157,
+   "ms": 167,
    "words": 3
   },
   {
@@ -623,7 +623,7 @@
    "brand": "True Gym",
    "sections": 12,
    "failed": [],
-   "ms": 72,
+   "ms": 78,
    "words": 1
   },
   {
@@ -638,7 +638,7 @@
    "brand": "Noble Dental Clinic",
    "sections": 11,
    "failed": [],
-   "ms": 91,
+   "ms": 98,
    "words": 2
   },
   {
@@ -653,7 +653,7 @@
    "brand": "Nova Kirana",
    "sections": 10,
    "failed": [],
-   "ms": 177,
+   "ms": 190,
    "words": 2
   },
   {
@@ -668,7 +668,7 @@
    "brand": "True Clothing",
    "sections": 11,
    "failed": [],
-   "ms": 149,
+   "ms": 160,
    "words": 1
   },
   {
@@ -683,7 +683,7 @@
    "brand": "Harbor Coaching",
    "sections": 11,
    "failed": [],
-   "ms": 133,
+   "ms": 141,
    "words": 2
   },
   {
@@ -700,7 +700,7 @@
    "failed": [
     "relevant"
    ],
-   "ms": 72,
+   "ms": 74,
    "words": 1
   },
   {
@@ -715,7 +715,7 @@
    "brand": "Nova Hair Salon",
    "sections": 12,
    "failed": [],
-   "ms": 135,
+   "ms": 142,
    "words": 1
   },
   {
@@ -730,7 +730,7 @@
    "brand": "Royal Travel Agency",
    "sections": 11,
    "failed": [],
-   "ms": 163,
+   "ms": 172,
    "words": 2
   },
   {
@@ -745,7 +745,7 @@
    "brand": "Nova Restaurant",
    "sections": 13,
    "failed": [],
-   "ms": 93,
+   "ms": 97,
    "words": 1
   },
   {
@@ -760,7 +760,7 @@
    "brand": "Urban School",
    "sections": 11,
    "failed": [],
-   "ms": 132,
+   "ms": 139,
    "words": 1
   },
   {
@@ -775,7 +775,7 @@
    "brand": "Oak Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 144,
+   "ms": 151,
    "words": 1
   },
   {
@@ -790,7 +790,7 @@
    "brand": "Urban Tea House",
    "sections": 11,
    "failed": [],
-   "ms": 92,
+   "ms": 95,
    "words": 2
   },
   {
@@ -805,7 +805,7 @@
    "brand": "Urban Real Estate Agent",
    "sections": 11,
    "failed": [],
-   "ms": 126,
+   "ms": 116,
    "words": 2
   },
   {
@@ -820,7 +820,7 @@
    "brand": "Maple NGO",
    "sections": 10,
    "failed": [],
-   "ms": 97,
+   "ms": 89,
    "words": 1
   },
   {
@@ -835,7 +835,7 @@
    "brand": "Prime Mobile Phone Repair",
    "sections": 12,
    "failed": [],
-   "ms": 183,
+   "ms": 171,
    "words": 3
   },
   {
@@ -850,7 +850,7 @@
    "brand": "True Event Decor",
    "sections": 11,
    "failed": [],
-   "ms": 137,
+   "ms": 128,
    "words": 2
   },
   {
@@ -865,7 +865,7 @@
    "brand": "True Jewellery Shop",
    "sections": 11,
    "failed": [],
-   "ms": 190,
+   "ms": 234,
    "words": 2
   },
   {
@@ -882,7 +882,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 98,
+   "ms": 101,
    "words": 2
   },
   {
@@ -897,7 +897,7 @@
    "brand": "Golden Collective",
    "sections": 10,
    "failed": [],
-   "ms": 151,
+   "ms": 152,
    "words": 0
   },
   {
@@ -912,7 +912,7 @@
    "brand": "Urban Collective",
    "sections": 11,
    "failed": [],
-   "ms": 165,
+   "ms": 172,
    "words": 1
   },
   {
@@ -927,7 +927,7 @@
    "brand": "Harbor Collective",
    "sections": 11,
    "failed": [],
-   "ms": 104,
+   "ms": 123,
    "words": 0
   },
   {
@@ -942,7 +942,7 @@
    "brand": "Summit Collective",
    "sections": 11,
    "failed": [],
-   "ms": 126,
+   "ms": 148,
    "words": 0
   },
   {
@@ -957,7 +957,7 @@
    "brand": "Nova Studio",
    "sections": 12,
    "failed": [],
-   "ms": 106,
+   "ms": 127,
    "words": 0
   },
   {
@@ -972,7 +972,7 @@
    "brand": "Golden Studio",
    "sections": 11,
    "failed": [],
-   "ms": 107,
+   "ms": 125,
    "words": 1
   },
   {
@@ -987,7 +987,7 @@
    "brand": "Noble Collective",
    "sections": 11,
    "failed": [],
-   "ms": 112,
+   "ms": 126,
    "words": 4
   },
   {
@@ -1004,7 +1004,7 @@
    "failed": [
     "length"
    ],
-   "ms": 152,
+   "ms": 148,
    "words": 2
   },
   {
@@ -1021,7 +1021,7 @@
    "failed": [
     "length"
    ],
-   "ms": 138,
+   "ms": 136,
    "words": 1
   },
   {
@@ -1036,7 +1036,7 @@
    "brand": "Bright Atelier",
    "sections": 11,
    "failed": [],
-   "ms": 173,
+   "ms": 172,
    "words": 2
   },
   {
@@ -1051,7 +1051,7 @@
    "brand": "Harbor Collective",
    "sections": 10,
    "failed": [],
-   "ms": 110,
+   "ms": 114,
    "words": 0
   },
   {
@@ -1066,7 +1066,7 @@
    "brand": "Evergreen Collective",
    "sections": 11,
    "failed": [],
-   "ms": 98,
+   "ms": 101,
    "words": 1
   },
   {
@@ -1081,7 +1081,7 @@
    "brand": "Evergreen Labs",
    "sections": 13,
    "failed": [],
-   "ms": 136,
+   "ms": 141,
    "words": 0
   },
   {
@@ -1096,7 +1096,7 @@
    "brand": "Happy Collective",
    "sections": 10,
    "failed": [],
-   "ms": 93,
+   "ms": 95,
    "words": 1
   },
   {
@@ -1113,7 +1113,7 @@
    "failed": [
     "original"
    ],
-   "ms": 237,
+   "ms": 234,
    "words": 0
   },
   {
@@ -1128,7 +1128,7 @@
    "brand": "Clay Room",
    "sections": 13,
    "failed": [],
-   "ms": 203,
+   "ms": 201,
    "words": 14
   },
   {
@@ -1143,7 +1143,7 @@
    "brand": "Forno Rosso",
    "sections": 12,
    "failed": [],
-   "ms": 142,
+   "ms": 140,
    "words": 15
   },
   {
@@ -1158,7 +1158,7 @@
    "brand": "Smile Care",
    "sections": 12,
    "failed": [],
-   "ms": 109,
+   "ms": 118,
    "words": 15
   },
   {
@@ -1173,7 +1173,7 @@
    "brand": "Bright Online Clothing",
    "sections": 12,
    "failed": [],
-   "ms": 170,
+   "ms": 160,
    "words": 15
   },
   {
@@ -1188,7 +1188,7 @@
    "brand": "Golden Yoga Retreat",
    "sections": 13,
    "failed": [],
-   "ms": 195,
+   "ms": 190,
    "words": 9
   },
   {
@@ -1205,7 +1205,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 123,
+   "ms": 130,
    "words": 13
   },
   {
@@ -1220,7 +1220,7 @@
    "brand": "Iron Pulse",
    "sections": 12,
    "failed": [],
-   "ms": 104,
+   "ms": 105,
    "words": 12
   },
   {
@@ -1235,7 +1235,7 @@
    "brand": "Noble Coaching Institute",
    "sections": 12,
    "failed": [],
-   "ms": 182,
+   "ms": 205,
    "words": 12
   },
   {
@@ -1250,7 +1250,7 @@
    "brand": "Studio North",
    "sections": 12,
    "failed": [],
-   "ms": 134,
+   "ms": 147,
    "words": 10
   },
   {
@@ -1265,7 +1265,7 @@
    "brand": "Oak Hotel",
    "sections": 11,
    "failed": [],
-   "ms": 159,
+   "ms": 188,
    "words": 9
   },
   {
@@ -1280,7 +1280,7 @@
    "brand": "Golden Cafe",
    "sections": 12,
    "failed": [],
-   "ms": 115,
+   "ms": 125,
    "words": 1
   },
   {
@@ -1295,7 +1295,7 @@
    "brand": "Maple Gym",
    "sections": 13,
    "failed": [],
-   "ms": 117,
+   "ms": 118,
    "words": 1
   },
   {
@@ -1313,7 +1313,7 @@
     "headline",
     "relevant"
    ],
-   "ms": 98,
+   "ms": 101,
    "words": 1
   },
   {
@@ -1328,7 +1328,7 @@
    "brand": "Oak Bakery",
    "sections": 13,
    "failed": [],
-   "ms": 122,
+   "ms": 123,
    "words": 1
   },
   {
@@ -1345,7 +1345,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 115,
+   "ms": 113,
    "words": 1
   },
   {
@@ -1360,7 +1360,7 @@
    "brand": "Golden Clinic",
    "sections": 11,
    "failed": [],
-   "ms": 168,
+   "ms": 180,
    "words": 1
   },
   {
@@ -1375,7 +1375,7 @@
    "brand": "Evergreen School",
    "sections": 11,
    "failed": [],
-   "ms": 114,
+   "ms": 118,
    "words": 1
   },
   {
@@ -1392,7 +1392,7 @@
    "failed": [
     "relevant"
    ],
-   "ms": 112,
+   "ms": 115,
    "words": 1
   },
   {
@@ -1407,7 +1407,7 @@
    "brand": "Summit SaaS Startup",
    "sections": 11,
    "failed": [],
-   "ms": 155,
+   "ms": 157,
    "words": 1
   },
   {
@@ -1422,7 +1422,7 @@
    "brand": "Golden NGO",
    "sections": 10,
    "failed": [],
-   "ms": 111,
+   "ms": 109,
    "words": 1
   },
   {
@@ -1439,7 +1439,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 165,
+   "ms": 167,
    "words": 1
   },
   {
@@ -1454,7 +1454,7 @@
    "brand": "Royal Care",
    "sections": 10,
    "failed": [],
-   "ms": 146,
+   "ms": 145,
    "words": 1
   },
   {
@@ -1469,7 +1469,7 @@
    "brand": "Summit Kitchen",
    "sections": 11,
    "failed": [],
-   "ms": 203,
+   "ms": 188,
    "words": 1
   },
   {
@@ -1484,7 +1484,7 @@
    "brand": "Royal Collective",
    "sections": 11,
    "failed": [],
-   "ms": 200,
+   "ms": 191,
    "words": 1
   },
   {
@@ -1499,7 +1499,7 @@
    "brand": "Evergreen Collective",
    "sections": 11,
    "failed": [],
-   "ms": 106,
+   "ms": 90,
    "words": 2
   },
   {
@@ -1514,7 +1514,7 @@
    "brand": "Oak Chai Stall",
    "sections": 13,
    "failed": [],
-   "ms": 209,
+   "ms": 204,
    "words": 2
   },
   {
@@ -1544,7 +1544,7 @@
    "brand": "Harbor Tailoring",
    "sections": 12,
    "failed": [],
-   "ms": 214,
+   "ms": 218,
    "words": 2
   },
   {
@@ -1559,7 +1559,7 @@
    "brand": "Golden Astrologer",
    "sections": 10,
    "failed": [],
-   "ms": 135,
+   "ms": 140,
    "words": 1
   },
   {
@@ -1574,7 +1574,7 @@
    "brand": "Bright Mehndi Artist",
    "sections": 11,
    "failed": [],
-   "ms": 106,
+   "ms": 110,
    "words": 2
   }
  ]

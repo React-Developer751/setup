@@ -3,7 +3,7 @@
 import type { WebsiteContent } from '../finalPrompt'
 import type { AppConfig, AppTable } from './appRuntime'
 
-export type AppKind = 'clinic' | 'gym' | 'shop' | 'food' | 'salon' | 'learning' | 'software' | 'office' | 'creator' | 'property' | 'events' | 'travel' | 'general'
+export type AppKind = 'ngo' | 'legal' | 'construction' | 'auto' | 'homeservices' | 'logistics' | 'pets' | 'finance' | 'consult' | 'farm' | 'clinic' | 'gym' | 'shop' | 'food' | 'salon' | 'learning' | 'software' | 'office' | 'creator' | 'property' | 'events' | 'travel' | 'general'
 
 const NAMES = ['Aarav Mehta', 'Diya Sharma', 'Vihaan Rao', 'Ananya Iyer', 'Kabir Singh', 'Isha Verma', 'Rohan Gupta', 'Meera Nair', 'Arjun Patel', 'Sara Khan', 'Ishaan Joshi', 'Tara Menon', 'Neil Fernandes', 'Priya Das', 'Yash Kulkarni', 'Riya Bose', 'Dev Malhotra', 'Kiara Shah']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
@@ -13,6 +13,13 @@ export function appKindOf(o: { themeKey: string; niche?: string; subject?: strin
   const s = `${o.niche ?? ''} ${o.subject ?? ''} ${o.prompt ?? ''}`.toLowerCase()
   const RULES: [AppKind, RegExp][] = [
     ['creator', /\b(?:influencer|youtuber|podcast|streamer|blogger|vlogger|followers|subscribers)\b/],
+    ['ngo', /\b(?:ngo|charity|foundation|donat\w*|volunteers?|nonprofit|non-profit|trust|shelter|rescue)\b/],
+    ['legal', /\b(?:law|lawyer|advocate|attorney|legal|solicitor|notary|litigation)\b/],
+    ['construction', /\b(?:construction|contractor|civil|architect\w*|interior|renovation|plumb\w*|electrician|carpent\w*|roofing)\b/],
+    ['auto', /\b(?:car|cars|bike|garage|automobile|mechanic|vehicle|tyre|tire|car wash)\b/],
+    ['logistics', /\b(?:movers|packers|courier|logistics|transport|delivery service|freight|shipping company|cargo)\b/],
+    ['pets', /\b(?:pet|pets|dog|dogs|cat|cats|vet|veterinary|grooming)\b/],
+    ['finance', /\b(?:insurance|loan|finance|accounting|chartered|ca firm|tax|investment|mutual fund|wealth|gst)\b/],
     ['office', /\b(?:office|coworking|desk booking|visitor management|facility)\b/],
     ['gym', /\b(?:gym|fitness|yoga|crossfit|martial|zumba|pilates)\b/],
     ['learning', /\b(?:school|academy|coaching|classes|tuition|institute|course|training|tutor|learn)\b/],
@@ -23,12 +30,15 @@ export function appKindOf(o: { themeKey: string; niche?: string; subject?: strin
     ['property', /\b(?:real estate|property|builder|broker|apartments?|rental|pg|hostel)\b/],
     ['events', /\b(?:wedding|event|decor|dj|planner|photograph|videograph)\b/],
     ['travel', /\b(?:travel|tour|trip|hotel|resort|stay|homestay)\b/],
+    ['consult', /\b(?:astrolog\w*|tarot|vastu|consultant|consultancy|counsell?ing|coach|therapist|numerolog\w*)\b/],
+    ['farm', /\b(?:farm|farmer|dairy|agri\w*|nursery|plants?|seeds?|honey|beekeeping)\b/],
+    ['homeservices', /\b(?:cleaning|pest|repair|ac service|appliance|laundry|maid|housekeeping|handyman|home services?|pest control|locksmith)\b/],
     ['shop', /\b(?:shop|store|boutique|kirana|grocery|retail|fashion|jewel|furniture|electronics|mart|thrift)\b/],
   ]
   if (o.voice === 'me') return 'creator'
   const byWords = RULES.find(([, re]) => re.test(s))
   if (byWords) return byWords[0]
-  const BY_THEME: Record<string, AppKind> = { modern_tech: 'software', healthcare: 'clinic', bold_fitness: 'gym', beauty_wellness: 'salon', food_dining: 'food', education: 'learning', real_estate: 'property', events_wedding: 'events', travel_tourism: 'travel', fashion_retail: 'shop' }
+  const BY_THEME: Record<string, AppKind> = { nonprofit: 'ngo', professional_services: 'consult', automotive: 'auto', home_services: 'homeservices', pets_animals: 'pets', organic_nature: 'farm', modern_tech: 'software', healthcare: 'clinic', bold_fitness: 'gym', beauty_wellness: 'salon', food_dining: 'food', education: 'learning', real_estate: 'property', events_wedding: 'events', travel_tourism: 'travel', fashion_retail: 'shop' }
   return BY_THEME[o.themeKey] ?? 'general'
 }
 
@@ -224,6 +234,114 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       kpis = [kp('Bookings', String(trips.length), 'upcoming'), kp('Confirmed', String(trips.filter((t) => t.status !== 'Enquiry').length), 'locked in'), kp('Packages', String(g.serviceList.length), 'offered'), kp('Enquiries', String(trips.filter((t) => t.status === 'Enquiry').length), 'to answer')]
       break
     }
+    case 'ngo': {
+      const donations = toRows(12, () => ({ donor: g.name(), campaign: g.pick(g.serviceList), amount: g.money(200, 25000, 100), date: g.date(40), status: g.pick(['Received', 'Received', 'Pledged']) }), g)
+      tables = [
+        table('donations', 'Donations', 'donation', 'money', [col('donor', 'Donor'), col('campaign', 'Campaign'), col('amount', 'Amount', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Received', 'Pledged'])], donations),
+        table('donors', 'Donors', 'donor', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'First gift', 'date')], customers()),
+        table('volunteers', 'Volunteers', 'volunteer', 'users', [col('name', 'Name'), col('area', 'Area'), col('hours', 'Hours this month', 'number'), col('status', 'Status', 'status', ['Active', 'Invited', 'On break'])], toRows(10, () => ({ name: g.name(), area: g.pick(['Field work', 'Events', 'Fundraising', 'Admin', 'Care']), hours: String(g.int(2, 30)), status: g.pick(['Active', 'Active', 'Invited', 'On break']) }), g)),
+        table('campaigns', 'Campaigns', 'campaign', 'calendar', [col('campaign', 'Campaign'), col('goal', 'Goal', 'money'), col('raised', 'Raised', 'money'), col('status', 'Status', 'status', ['Planned', 'Running', 'Done'])], g.serviceList.slice(0, 5).map((c) => ({ campaign: c, goal: g.money(50000, 500000, 5000), raised: g.money(5000, 200000, 500), status: g.pick(['Planned', 'Running', 'Running', 'Done']) }))),
+      ]
+      kpis = [kp('Raised', fmt(sum(donations.filter((d) => d.status === 'Received'), 'amount')), 'this quarter'), kp('Donors', '12', 'on record'), kp('Volunteers', '10', 'registered'), kp('Campaigns', '5', 'on the books')]
+      chart = { title: 'Donations by month', labels: MONTHS, values: MONTHS.map(() => g.int(10, 90)) }
+      break
+    }
+    case 'legal': {
+      const cases = toRows(10, (i) => ({ case: `${g.pick(['Property', 'Family', 'Civil', 'Consumer', 'Corporate', 'Criminal'])} matter ${i + 1}`, client: g.name(), court: g.pick(['District court', 'High court', 'Consumer forum', 'Tribunal']), status: g.pick(['Open', 'Open', 'Hearing set', 'Closed']) }), g)
+      tables = [
+        table('cases', 'Cases', 'case', 'list', [col('case', 'Case'), col('client', 'Client'), col('court', 'Court'), col('status', 'Status', 'status', ['Open', 'Hearing set', 'Closed'])], cases),
+        table('clients', 'Clients', 'client', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers(10)),
+        table('hearings', 'Hearings', 'hearing', 'calendar', [col('case', 'Case'), col('date', 'Date', 'date'), col('court', 'Court'), col('status', 'Status', 'status', ['Scheduled', 'Done', 'Adjourned'])], toRows(8, () => ({ case: g.pick(cases).case, date: g.date(5, 30), court: g.pick(['District court', 'High court', 'Tribunal']), status: g.pick(['Scheduled', 'Scheduled', 'Done', 'Adjourned']) }), g)),
+        table('invoices', 'Invoices', 'invoice', 'money', [col('client', 'Client'), col('for', 'For'), col('amount', 'Amount', 'money'), col('status', 'Status', 'status', ['Paid', 'Pending', 'Overdue'])], toRows(8, () => ({ client: g.name(), for: g.pick(g.serviceList), amount: g.money(2000, 90000, 500), status: g.pick(['Paid', 'Pending', 'Overdue']) }), g)),
+      ]
+      kpis = [kp('Open cases', String(cases.filter((c) => c.status !== 'Closed').length), 'right now'), kp('Hearings', '8', 'coming up'), kp('Clients', '10', 'on record'), kp('Pending fees', '3', 'to collect')]
+      break
+    }
+    case 'construction': {
+      const projects = toRows(8, () => ({ project: `${g.pick(['Villa', 'Office fit-out', 'Kitchen', 'Apartment', 'Showroom', 'Terrace'])} · ${g.pick(['Sector 4', 'Park Road', 'Lake View', 'Old Town'])}`, client: g.name(), budget: g.money(80000, 4000000, 10000), status: g.pick(['Quote sent', 'In progress', 'In progress', 'Handed over']) }), g)
+      tables = [
+        table('projects', 'Projects', 'project', 'box', [col('project', 'Project'), col('client', 'Client'), col('budget', 'Budget', 'money'), col('status', 'Status', 'status', ['Quote sent', 'In progress', 'Handed over'])], projects),
+        table('quotes', 'Quotes', 'quote', 'money', [col('client', 'Client'), col('work', 'Work'), col('amount', 'Amount', 'money'), col('status', 'Status', 'status', ['Draft', 'Sent', 'Accepted'])], toRows(8, () => ({ client: g.name(), work: g.pick(g.serviceList), amount: g.money(20000, 900000, 1000), status: g.pick(['Draft', 'Sent', 'Accepted']) }), g)),
+        table('visits', 'Site visits', 'visit', 'calendar', [col('client', 'Client'), col('place', 'Place'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Booked', 'Done', 'Cancelled'])], toRows(8, () => ({ client: g.name(), place: g.pick(['Sector 4', 'Park Road', 'Lake View', 'Old Town']), date: g.date(4, 14), status: g.pick(['Booked', 'Done', 'Cancelled']) }), g)),
+        table('crew', 'Crew', 'worker', 'users', [col('name', 'Name'), col('trade', 'Trade'), col('site', 'Site'), col('status', 'Status', 'status', ['On site', 'Free', 'Leave'])], toRows(8, () => ({ name: g.name(), trade: g.pick(g.serviceList), site: g.pick(projects).project, status: g.pick(['On site', 'On site', 'Free', 'Leave']) }), g)),
+      ]
+      kpis = [kp('Projects running', String(projects.filter((p) => p.status === 'In progress').length), 'on site'), kp('Quotes open', '5', 'waiting'), kp('Visits booked', '4', 'this week'), kp('Order book', fmt(sum(projects, 'budget')), 'all projects')]
+      break
+    }
+    case 'auto': {
+      const jobs = toRows(12, (i) => ({ job: `JC-${500 + i}`, vehicle: g.pick(['Swift', 'City', 'Creta', 'Activa', 'Splendor', 'Baleno', 'i20', 'Bullet']), service: g.pick(g.serviceList), amount: g.money(400, 18000, 50), status: g.pick(['Booked', 'In workshop', 'Ready', 'Delivered']) }), g)
+      tables = [
+        table('jobs', 'Job cards', 'job card', 'list', [col('job', 'Job'), col('vehicle', 'Vehicle'), col('service', 'Service'), col('amount', 'Estimate', 'money'), col('status', 'Status', 'status', ['Booked', 'In workshop', 'Ready', 'Delivered'])], jobs),
+        table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
+        table('bookings', 'Bookings', 'booking', 'calendar', [col('customer', 'Customer'), col('service', 'Service'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Booked', 'Done', 'Cancelled'])], toRows(8, () => ({ customer: g.name(), service: g.pick(g.serviceList), date: g.date(3, 12), status: g.pick(['Booked', 'Done', 'Cancelled']) }), g)),
+        table('invoices', 'Invoices', 'invoice', 'money', [col('customer', 'Customer'), col('amount', 'Amount', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Paid', 'Pending'])], toRows(8, () => ({ customer: g.name(), amount: g.money(400, 18000, 50), date: g.date(30), status: g.pick(['Paid', 'Paid', 'Pending']) }), g)),
+      ]
+      kpis = [kp('In workshop', String(jobs.filter((j) => j.status === 'In workshop').length), 'now'), kp('Ready to deliver', String(jobs.filter((j) => j.status === 'Ready').length), 'waiting'), kp('Billed', fmt(sum(jobs, 'amount')), 'this month'), kp('Bookings', '8', 'upcoming')]
+      break
+    }
+    case 'homeservices': {
+      const jobs = toRows(12, (i) => ({ job: `#${700 + i}`, customer: g.name(), service: g.pick(g.serviceList), date: g.date(5, 8), status: g.pick(['New', 'Assigned', 'Done', 'Done']) }), g)
+      tables = [
+        table('jobs', 'Jobs', 'job', 'list', [col('job', 'Job'), col('customer', 'Customer'), col('service', 'Service'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Assigned', 'Done'])], jobs),
+        table('technicians', 'Technicians', 'technician', 'users', [col('name', 'Name'), col('skill', 'Skill'), col('phone', 'Phone'), col('status', 'Status', 'status', ['Free', 'On a job', 'Leave'])], toRows(8, () => ({ name: g.name(), skill: g.pick(g.serviceList), phone: `+91 9${g.int(100000000, 999999999)}`, status: g.pick(['Free', 'On a job', 'On a job', 'Leave']) }), g)),
+        table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
+      ]
+      kpis = [kp('New jobs', String(jobs.filter((j) => j.status === 'New').length), 'to assign'), kp('Done', String(jobs.filter((j) => j.status === 'Done').length), 'this week'), kp('Technicians', '8', 'on the team'), kp('Customers', '12', 'on record')]
+      break
+    }
+    case 'logistics': {
+      const ships = toRows(12, (i) => ({ id: `SH-${3000 + i}`, customer: g.name(), route: `${g.pick(['Pune', 'Delhi', 'Jaipur', 'Surat', 'Lucknow'])} → ${g.pick(['Mumbai', 'Bengaluru', 'Hyderabad', 'Kolkata', 'Indore'])}`, amount: g.money(800, 45000, 100), status: g.pick(['Booked', 'In transit', 'In transit', 'Delivered']) }), g)
+      tables = [
+        table('shipments', 'Shipments', 'shipment', 'box', [col('id', 'ID'), col('customer', 'Customer'), col('route', 'Route'), col('amount', 'Amount', 'money'), col('status', 'Status', 'status', ['Booked', 'In transit', 'Delivered'])], ships),
+        table('drivers', 'Drivers', 'driver', 'users', [col('name', 'Name'), col('vehicle', 'Vehicle'), col('phone', 'Phone'), col('status', 'Status', 'status', ['Available', 'On trip', 'Off duty'])], toRows(8, () => ({ name: g.name(), vehicle: g.pick(['Tata Ace', 'Eicher 14ft', 'Bolero Pickup', 'Container 20ft']), phone: `+91 9${g.int(100000000, 999999999)}`, status: g.pick(['Available', 'On trip', 'On trip', 'Off duty']) }), g)),
+        table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
+      ]
+      kpis = [kp('In transit', String(ships.filter((s) => s.status === 'In transit').length), 'now'), kp('Delivered', String(ships.filter((s) => s.status === 'Delivered').length), 'this week'), kp('Drivers free', '3', 'today'), kp('Billed', fmt(sum(ships, 'amount')), 'this week')]
+      break
+    }
+    case 'pets': {
+      const appts = toRows(10, () => ({ owner: g.name(), pet: `${g.pick(['Bruno', 'Milo', 'Luna', 'Coco', 'Simba', 'Max'])} (${g.pick(['Dog', 'Cat', 'Rabbit'])})`, service: g.pick(g.serviceList), date: g.date(4, 10), status: g.pick(['Booked', 'Done', 'Booked', 'Cancelled']) }), g)
+      tables = [
+        table('appointments', 'Appointments', 'appointment', 'calendar', [col('owner', 'Owner'), col('pet', 'Pet'), col('service', 'Service'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Booked', 'Done', 'Cancelled'])], appts),
+        table('owners', 'Owners', 'owner', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
+        table('animals', 'Animals', 'animal', 'list', [col('name', 'Name'), col('kind', 'Kind'), col('age', 'Age (years)', 'number'), col('status', 'Status', 'status', ['In care', 'Adoptable', 'Adopted'])], toRows(8, () => ({ name: g.pick(['Bruno', 'Milo', 'Luna', 'Coco', 'Simba', 'Max', 'Tiger']), kind: g.pick(['Dog', 'Cat', 'Puppy', 'Kitten']), age: String(g.int(1, 9)), status: g.pick(['In care', 'Adoptable', 'Adoptable', 'Adopted']) }), g)),
+      ]
+      kpis = [kp('Appointments', String(appts.length), 'upcoming'), kp('Owners', '12', 'on record'), kp('Adoptable', '5', 'waiting for a home'), kp('Done', String(appts.filter((a) => a.status === 'Done').length), 'this week')]
+      break
+    }
+    case 'finance': {
+      const clients = customers(12)
+      const policies = toRows(10, (i) => ({ ref: `POL-${900 + i}`, client: g.name(), product: g.pick(g.serviceList), amount: g.money(2000, 90000, 500), renewal: g.date(0, 300), status: g.pick(['Active', 'Active', 'Due soon', 'Lapsed']) }), g)
+      tables = [
+        table('clients', 'Clients', 'client', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], clients),
+        table('products', 'Policies and plans', 'policy', 'list', [col('ref', 'Ref'), col('client', 'Client'), col('product', 'Product'), col('amount', 'Amount', 'money'), col('renewal', 'Renewal', 'date'), col('status', 'Status', 'status', ['Active', 'Due soon', 'Lapsed'])], policies),
+        table('reminders', 'Reminders', 'reminder', 'calendar', [col('client', 'Client'), col('about', 'About'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['To do', 'Done'])], toRows(8, () => ({ client: g.name(), about: g.pick(['Renewal call', 'Document pending', 'KYC update', 'Annual review']), date: g.date(2, 20), status: g.pick(['To do', 'Done']) }), g)),
+        table('payments', 'Payments', 'payment', 'money', [col('client', 'Client'), col('amount', 'Amount', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Received', 'Pending'])], toRows(8, () => ({ client: g.name(), amount: g.money(1000, 60000, 500), date: g.date(30), status: g.pick(['Received', 'Received', 'Pending']) }), g)),
+      ]
+      kpis = [kp('Clients', '12', 'on record'), kp('Active policies', String(policies.filter((p) => p.status === 'Active').length), 'in force'), kp('Due soon', String(policies.filter((p) => p.status === 'Due soon').length), 'to renew'), kp('Premium', fmt(sum(policies, 'amount')), 'this year')]
+      break
+    }
+    case 'consult': {
+      const sessions = toRows(12, () => ({ client: g.name(), topic: g.pick(g.serviceList), date: g.date(5, 14), mode: g.pick(['In person', 'Video call', 'Phone']), status: g.pick(['Booked', 'Done', 'Booked', 'Cancelled']) }), g)
+      tables = [
+        table('sessions', 'Consultations', 'consultation', 'calendar', [col('client', 'Client'), col('topic', 'Topic'), col('date', 'Date', 'date'), col('mode', 'Mode'), col('status', 'Status', 'status', ['Booked', 'Done', 'Cancelled'])], sessions),
+        table('clients', 'Clients', 'client', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
+        table('payments', 'Payments', 'payment', 'money', [col('client', 'Client'), col('amount', 'Amount', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['Paid', 'Pending'])], toRows(9, () => ({ client: g.name(), amount: g.money(500, 12000, 100), date: g.date(30), status: g.pick(['Paid', 'Paid', 'Pending']) }), g)),
+      ]
+      kpis = [kp('Consultations', String(sessions.length), 'this month'), kp('Booked', String(sessions.filter((x) => x.status === 'Booked').length), 'coming up'), kp('Clients', '12', 'on record'), kp('Pending fees', '3', 'to collect')]
+      break
+    }
+    case 'farm': {
+      const produce = g.serviceList.map((s) => ({ product: s, price: g.money(30, 900, 10), stock: String(g.int(0, 120)), status: g.pick(['In season', 'In season', 'Low', 'Out of season']) }))
+      const orders = toRows(10, (i) => ({ order: `#${400 + i}`, customer: g.name(), product: g.pick(g.serviceList), total: g.money(150, 6000, 10), status: g.pick(['New', 'Packed', 'Delivered', 'Delivered']) }), g)
+      tables = [
+        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('product', 'Product'), col('total', 'Total', 'money'), col('status', 'Status', 'status', ['New', 'Packed', 'Delivered'])], orders),
+        table('produce', 'Produce', 'product', 'list', [col('product', 'Product'), col('price', 'Price', 'money'), col('stock', 'In stock', 'number'), col('status', 'Season', 'status', ['In season', 'Low', 'Out of season'])], produce),
+        table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
+      ]
+      kpis = [kp('Orders', String(orders.length), 'this week'), kp('Sales', fmt(sum(orders, 'total')), 'this week'), kp('Products', String(produce.length), 'listed'), kp('To pack', String(orders.filter((o2) => o2.status === 'New').length), 'waiting')]
+      break
+    }
     default: {
       const reqs = toRows(10, () => ({ customer: g.name(), request: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done', 'In progress']) }), g)
       tables = [
@@ -244,8 +362,15 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
     } else if (edit.action === 'rename' && edit.to) {
       tables = tables.map((t) => (same(t, edit.page) ? { ...t, label: title(edit.to as string), title: title(edit.to as string) } : t))
     } else if (edit.action === 'column' && edit.to) {
-      const key = slug(edit.to).replace(/-/g, '_')
-      tables = tables.map((t) => (same(t, edit.page) && !t.columns.some((c) => c.key === key) ? { ...t, columns: [...t.columns, col(key, title(edit.to as string))], rows: t.rows.map((r) => ({ ...r, [key]: '' })) } : t))
+      // "Age::number": the kind of column said on purpose; else the name says it (Status, Due date, Amount, Age ...)
+      const [rawName, said] = edit.to.split('::')
+      const name = title(rawName.trim())
+      const key = slug(name).replace(/-/g, '_')
+      const guess = (): 'text' | 'number' | 'money' | 'date' | 'status' => /\b(?:status|stage|state|priority|progress)\b/i.test(name) ? 'status' : /\b(?:date|due|joined|since|deadline|day|time|renewal|birthday)\b/i.test(name) ? 'date' : /\b(?:amount|price|fee|fees|total|salary|cost|budget|paid|balance|rate|charges?|rent|payment|earnings?|revenue|income|tax|discount)\b/i.test(name) ? 'money' : /\b(?:age|count|qty|quantity|seats|number|no|score|marks|rooms|days|hours|years|stock)\b/i.test(name) ? 'number' : 'text'
+      const type = (['text', 'number', 'money', 'date', 'status'] as const).find((x) => x === (said ?? '').trim()) ?? guess()
+      const options = /priority/i.test(name) ? ['Low', 'Medium', 'High'] : ['New', 'In progress', 'Done']
+      const sample = () => (type === 'status' ? g.pick(options) : type === 'date' ? g.date(30, 10) : type === 'money' ? g.money(500, 20000, 100) : type === 'number' ? String(g.int(1, 60)) : '')
+      tables = tables.map((t) => (same(t, edit.page) && !t.columns.some((c) => c.key === key) ? { ...t, columns: [...t.columns, col(key, name, type, type === 'status' ? options : undefined)], rows: t.rows.map((r) => ({ ...r, [key]: sample() })) } : t))
     } else if (edit.action === 'add' && !tables.some((t) => same(t, edit.page))) {
       const label = title(edit.page)
       tables = [...tables, table(slug(edit.page), label, label.replace(/s$/i, '').toLowerCase(), 'list', [col('name', 'Name'), col('details', 'Details'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'In progress', 'Done'])], toRows(5, () => ({ name: g.name(), details: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done']) }), g))]

@@ -14,6 +14,7 @@ import BusinessForm from './BusinessForm'
 import LeadsPanel from './LeadsPanel'
 import PhotosPanel from './PhotosPanel'
 import { creatorSceneKey, scenePlan } from './generator/imageAi'
+import { appKindOf, type AppKind } from './generator/app/appProfiles'
 import ProjectsPanel from './ProjectsPanel'
 import { saveRemote, deleteRemote } from './generator/projectSync'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
@@ -80,6 +81,9 @@ const EXAMPLES = [
   'Wedding photography studio called Lumen',
   'Car wash and repair garage called Shine Auto',
 ]
+
+/** the kinds of business that usually want a login and a dashboard: the offer is made once, after the site is built */
+const APP_OFFER = new Set<AppKind>(['software', 'office', 'learning', 'gym', 'clinic', 'legal', 'finance'])
 
 function GeneratorPage() {
   const [submitted, setSubmitted] = useState(EXAMPLES[0])
@@ -481,6 +485,10 @@ function GeneratorPage() {
     }
     const claims = claimsToCheck(prompt, content)
     if (claims) say({ role: 'ai', text: claims.text, choices: claimChoices(claims, content) })
+    // software, learning, a gym, a clinic ...: a member or customer area is likely wanted: it is offered once (never added by itself)
+    if (!content.app && APP_OFFER.has(appKindOf({ themeKey, niche: typeof niche === 'string' ? niche : (niche as { id?: string } | undefined)?.id, subject: content.subject, voice: content.voice, prompt }))) {
+      say({ role: 'ai', text: 'A site like this often needs a login and a dashboard. I can add a demo one: log in, register and a dashboard with example data for your kind of business (no backend: it all stays in the browser). Add it?', choices: [{ label: 'Add login and dashboard', ops: [{ op: 'app', on: true }] }, { label: 'Not now', action: 'dismiss' }] })
+    }
     // (only a fresh site: opening an old project does not ask again)
   }, [build.on, started, active])
 
