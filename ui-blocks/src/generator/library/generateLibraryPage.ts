@@ -157,6 +157,8 @@ export function generateLibraryPage(
   if (base.content.pricing.fromPrompt) visible.add('pricing')
   const mentioned = (word: RegExp) => word.test(userPrompt)
   const negated = (word: RegExp) => new RegExp(`(?:\\b(?:no|without|bina|remove|hatao|hata do|delete)\\s+(?:the\\s+)?${word.source}|${word.source}\\s+(?:nahi|mat|hatao|hata do|nhi)\\b)`, 'i').test(userPrompt)
+  // a blog has no articles behind it (the titles are examples and the cards link nowhere): it is on the page only when the person asked for one
+  if (!mentioned(/\b(?:blogs?|articles?|news)\b/i) || negated(/\b(?:blogs?|articles?|news)\b/i)) visible.delete('blog')
   for (const [word, role] of [[/\bgallery\b/i, 'gallery'], [/\bfaqs?\b/i, 'faq']] as const) {
     if (!mentioned(word)) continue
     if (negated(word)) visible.delete(role)

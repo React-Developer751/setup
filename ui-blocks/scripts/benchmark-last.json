@@ -34,9 +34,9 @@
    "palette": "Roastery",
    "hero": "A Warm Cup And A Place To Sit",
    "brand": "Harbor Cafe",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 1445,
+   "ms": 1419,
    "words": 1
   },
   {
@@ -49,9 +49,9 @@
    "palette": "Trattoria",
    "hero": "Taste That Brings Everyone To The Table",
    "brand": "Nova Restaurant",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 186,
+   "ms": 179,
    "words": 3
   },
   {
@@ -64,11 +64,11 @@
    "palette": "Butter and berry",
    "hero": "Baked This Morning, Boxed For You",
    "brand": "Nova Bakery",
-   "sections": 13,
+   "sections": 12,
    "failed": [
     "headline"
    ],
-   "ms": 242,
+   "ms": 244,
    "words": 3
   },
   {
@@ -81,9 +81,9 @@
    "palette": "Iron",
    "hero": "Train With Coaches Who Know Your Name",
    "brand": "Blue Door Gym",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 142,
+   "ms": 141,
    "words": 5
   },
   {
@@ -96,9 +96,9 @@
    "palette": "Sage studio",
    "hero": "Yoga Classes For Every Body And Age",
    "brand": "Evergreen Yoga Studio",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 126,
+   "ms": 128,
    "words": 2
   },
   {
@@ -111,9 +111,9 @@
    "palette": "A bolder Clean teal",
    "hero": "A Dentist Who Explains Before Treating",
    "brand": "Bright Dental Clinic",
-   "sections": 11,
+   "sections": 10,
    "failed": [],
-   "ms": 238,
+   "ms": 253,
    "words": 2
   },
   {
@@ -130,7 +130,7 @@
    "failed": [
     "features"
    ],
-   "ms": 165,
+   "ms": 188,
    "words": 3
   },
   {
@@ -147,7 +147,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 169,
+   "ms": 186,
    "words": 2
   },
   {
@@ -162,7 +162,7 @@
    "brand": "True Chartered Accountant",
    "sections": 11,
    "failed": [],
-   "ms": 108,
+   "ms": 118,
    "words": 2
   },
   {
@@ -192,11 +192,11 @@
    "palette": "Campus",
    "hero": "Your Neighbourhood School",
    "brand": "Evergreen School",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "about"
    ],
-   "ms": 158,
+   "ms": 171,
    "words": 2
   },
   {
@@ -209,11 +209,11 @@
    "palette": "Ink and indigo",
    "hero": "Visit Your Well-Located Properties At A Fair Price",
    "brand": "Prime Estate Agency",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "about"
    ],
-   "ms": 102,
+   "ms": 103,
    "words": 3
   },
   {
@@ -226,9 +226,9 @@
    "palette": "A bolder Silk and ruby",
    "hero": "Rooms Designed Around How You Live",
    "brand": "Prime Interior Designer",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 130,
+   "ms": 133,
    "words": 3
   },
   {
@@ -241,9 +241,9 @@
    "palette": "Petal",
    "hero": "Your Story, Framed With Care",
    "brand": "Golden Photography Studio",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 316,
+   "ms": 297,
    "words": 2
   },
   {
@@ -256,9 +256,9 @@
    "palette": "Lagoon",
    "hero": "Pack Your Bags, We Handle The Plan",
    "brand": "Summit Travel Agency",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 161,
+   "ms": 155,
    "words": 3
   },
   {
@@ -271,9 +271,9 @@
    "palette": "A bolder Sunset road",
    "hero": "Clean Rooms And A Warm Welcome",
    "brand": "True Hotel",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 148,
+   "ms": 145,
    "words": 3
   },
   {
@@ -290,7 +290,7 @@
    "failed": [
     "about"
    ],
-   "ms": 131,
+   "ms": 129,
    "words": 3
   },
   {
@@ -305,7 +305,7 @@
    "brand": "Oak Used Car Dealer",
    "sections": 10,
    "failed": [],
-   "ms": 119,
+   "ms": 125,
    "words": 3
   },
   {
@@ -320,7 +320,7 @@
    "brand": "Blue Door Hair Salon",
    "sections": 12,
    "failed": [],
-   "ms": 174,
+   "ms": 188,
    "words": 2
   },
   {
@@ -333,11 +333,11 @@
    "palette": "Atelier",
    "hero": "Boutique Clothing Store Without The Guesswork",
    "brand": "Royal Boutique Clothing",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "about"
    ],
-   "ms": 134,
+   "ms": 137,
    "words": 3
   },
   {
@@ -365,11 +365,11 @@
    "palette": "Ink and indigo",
    "hero": "Mobile App With A Human Touch",
    "brand": "Nova Mobile App",
-   "sections": 13,
+   "sections": 12,
    "failed": [
     "about"
    ],
-   "ms": 168,
+   "ms": 171,
    "words": 4
   },
   {
@@ -386,7 +386,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 409,
+   "ms": 433,
    "words": 3
   },
   {
@@ -403,7 +403,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 207,
+   "ms": 228,
    "words": 3
   },
   {
@@ -418,7 +418,7 @@
    "brand": "Blue Door Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 231,
+   "ms": 256,
    "words": 1
   },
   {
@@ -448,7 +448,7 @@
    "brand": "Bright Florist",
    "sections": 11,
    "failed": [],
-   "ms": 379,
+   "ms": 358,
    "words": 2
   },
   {
@@ -465,7 +465,7 @@
    "failed": [
     "about"
    ],
-   "ms": 156,
+   "ms": 140,
    "words": 4
   },
   {
@@ -478,9 +478,9 @@
    "palette": "Petal",
    "hero": "From Bare Hall To Beautiful Stage",
    "brand": "Blue Door Event Decor",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 122,
+   "ms": 108,
    "words": 4
   },
   {
@@ -493,11 +493,11 @@
    "palette": "Crayon box",
    "hero": "Toys For Every Age And Every Birthday",
    "brand": "Happy Toy Store",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "headline"
    ],
-   "ms": 91,
+   "ms": 81,
    "words": 3
   },
   {
@@ -510,9 +510,9 @@
    "palette": "Trades",
    "hero": "Plumbing And Wiring By Neat Workers",
    "brand": "Bright Plumber",
-   "sections": 11,
+   "sections": 10,
    "failed": [],
-   "ms": 126,
+   "ms": 119,
    "words": 1
   },
   {
@@ -529,7 +529,7 @@
    "failed": [
     "about"
    ],
-   "ms": 217,
+   "ms": 221,
    "words": 2
   },
   {
@@ -542,11 +542,11 @@
    "palette": "A bolder Ink and indigo",
    "hero": "Honest Fitness App, Start To Finish",
    "brand": "Bright Fitness App",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "about"
    ],
-   "ms": 117,
+   "ms": 126,
    "words": 2
   },
   {
@@ -563,7 +563,7 @@
    "failed": [
     "about"
    ],
-   "ms": 126,
+   "ms": 127,
    "words": 2
   },
   {
@@ -576,9 +576,9 @@
    "palette": "Fresh press",
    "hero": "Big Scoops, Small Prices, Pure Fun",
    "brand": "Maple Ice Cream Parlour",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 251,
+   "ms": 270,
    "words": 3
   },
   {
@@ -591,9 +591,9 @@
    "palette": "Roastery",
    "hero": "Fresh Brew And Quiet Corners",
    "brand": "True Cafe",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 167,
+   "ms": 175,
    "words": 1
   },
   {
@@ -606,11 +606,11 @@
    "palette": "A bolder Butter and berry",
    "hero": "Baked This Morning, Boxed For You",
    "brand": "Harbor Bakery",
-   "sections": 13,
+   "sections": 12,
    "failed": [
     "headline"
    ],
-   "ms": 164,
+   "ms": 189,
    "words": 3
   },
   {
@@ -625,7 +625,7 @@
    "brand": "True Gym",
    "sections": 12,
    "failed": [],
-   "ms": 67,
+   "ms": 71,
    "words": 1
   },
   {
@@ -638,9 +638,9 @@
    "palette": "Clean teal",
    "hero": "Healthy Teeth Begin With A Check Up",
    "brand": "Noble Dental Clinic",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 91,
+   "ms": 89,
    "words": 2
   },
   {
@@ -653,9 +653,9 @@
    "palette": "A bolder Ink and tangerine",
    "hero": "Rasoi Essentials Without The Market Trip",
    "brand": "Nova Kirana",
-   "sections": 11,
+   "sections": 10,
    "failed": [],
-   "ms": 180,
+   "ms": 186,
    "words": 2
   },
   {
@@ -668,9 +668,9 @@
    "palette": "Atelier",
    "hero": "A Clothing Store That Listens",
    "brand": "True Clothing",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 149,
+   "ms": 181,
    "words": 1
   },
   {
@@ -685,7 +685,7 @@
    "brand": "Harbor Coaching",
    "sections": 11,
    "failed": [],
-   "ms": 128,
+   "ms": 143,
    "words": 2
   },
   {
@@ -698,11 +698,11 @@
    "palette": "Contact sheet",
    "hero": "Portraits And Weddings Told Honestly",
    "brand": "Blue Door Photography Studio",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "relevant"
    ],
-   "ms": 62,
+   "ms": 65,
    "words": 1
   },
   {
@@ -717,7 +717,7 @@
    "brand": "Nova Hair Salon",
    "sections": 12,
    "failed": [],
-   "ms": 124,
+   "ms": 136,
    "words": 1
   },
   {
@@ -730,9 +730,9 @@
    "palette": "A bolder Ink and indigo",
    "hero": "Pack Your Bags, We Handle The Plan",
    "brand": "Royal Travel Agency",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 151,
+   "ms": 158,
    "words": 2
   },
   {
@@ -745,9 +745,9 @@
    "palette": "A bolder Spice route",
    "hero": "A Table Is Waiting For Your Family",
    "brand": "Nova Restaurant",
-   "sections": 14,
+   "sections": 13,
    "failed": [],
-   "ms": 83,
+   "ms": 84,
    "words": 1
   },
   {
@@ -762,7 +762,7 @@
    "brand": "Urban School",
    "sections": 11,
    "failed": [],
-   "ms": 138,
+   "ms": 127,
    "words": 1
   },
   {
@@ -777,7 +777,7 @@
    "brand": "Oak Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 141,
+   "ms": 129,
    "words": 1
   },
   {
@@ -792,7 +792,7 @@
    "brand": "Urban Tea House",
    "sections": 11,
    "failed": [],
-   "ms": 89,
+   "ms": 85,
    "words": 2
   },
   {
@@ -805,9 +805,9 @@
    "palette": "Blueprint",
    "hero": "Your Next Address Starts With A Visit",
    "brand": "Urban Real Estate Agent",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 118,
+   "ms": 110,
    "words": 2
   },
   {
@@ -822,7 +822,7 @@
    "brand": "Maple NGO",
    "sections": 10,
    "failed": [],
-   "ms": 90,
+   "ms": 86,
    "words": 1
   },
   {
@@ -837,7 +837,7 @@
    "brand": "Prime Mobile Phone Repair",
    "sections": 12,
    "failed": [],
-   "ms": 178,
+   "ms": 175,
    "words": 3
   },
   {
@@ -850,9 +850,9 @@
    "palette": "Petal",
    "hero": "From Bare Hall To Beautiful Stage",
    "brand": "True Event Decor",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 133,
+   "ms": 140,
    "words": 2
   },
   {
@@ -865,9 +865,9 @@
    "palette": "Atelier",
    "hero": "Jewellery For The Moments You Keep",
    "brand": "True Jewellery Shop",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 178,
+   "ms": 179,
    "words": 2
   },
   {
@@ -884,7 +884,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 93,
+   "ms": 91,
    "words": 2
   },
   {
@@ -899,7 +899,7 @@
    "brand": "Golden Collective",
    "sections": 10,
    "failed": [],
-   "ms": 148,
+   "ms": 154,
    "words": 0
   },
   {
@@ -912,9 +912,9 @@
    "palette": "A bolder Midnight and coral",
    "hero": "Build Your Trusted Projects Every Time",
    "brand": "Urban Collective",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 163,
+   "ms": 176,
    "words": 1
   },
   {
@@ -929,7 +929,7 @@
    "brand": "Harbor Collective",
    "sections": 11,
    "failed": [],
-   "ms": 118,
+   "ms": 123,
    "words": 0
   },
   {
@@ -942,9 +942,9 @@
    "palette": "Midnight and coral",
    "hero": "Made To Be Noticed",
    "brand": "Summit Collective",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 146,
+   "ms": 145,
    "words": 0
   },
   {
@@ -957,9 +957,9 @@
    "palette": "Midnight and coral",
    "hero": "Amplify Honest Style. On Your Terms.",
    "brand": "Nova Studio",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 126,
+   "ms": 123,
    "words": 0
   },
   {
@@ -972,9 +972,9 @@
    "palette": "Midnight and coral",
    "hero": "Design Bold Visuals. Without Cliché",
    "brand": "Golden Studio",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 124,
+   "ms": 125,
    "words": 1
   },
   {
@@ -989,7 +989,7 @@
    "brand": "Noble Collective",
    "sections": 11,
    "failed": [],
-   "ms": 118,
+   "ms": 132,
    "words": 4
   },
   {
@@ -1006,7 +1006,7 @@
    "failed": [
     "length"
    ],
-   "ms": 138,
+   "ms": 154,
    "words": 2
   },
   {
@@ -1023,7 +1023,7 @@
    "failed": [
     "length"
    ],
-   "ms": 125,
+   "ms": 138,
    "words": 1
   },
   {
@@ -1036,9 +1036,9 @@
    "palette": "Contact sheet",
    "hero": "Timeless Materials For Those Who Notice Details",
    "brand": "Bright Atelier",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 156,
+   "ms": 167,
    "words": 2
   },
   {
@@ -1068,7 +1068,7 @@
    "brand": "Evergreen Collective",
    "sections": 11,
    "failed": [],
-   "ms": 97,
+   "ms": 96,
    "words": 1
   },
   {
@@ -1083,7 +1083,7 @@
    "brand": "Evergreen Labs",
    "sections": 13,
    "failed": [],
-   "ms": 131,
+   "ms": 132,
    "words": 0
   },
   {
@@ -1098,7 +1098,7 @@
    "brand": "Happy Collective",
    "sections": 10,
    "failed": [],
-   "ms": 93,
+   "ms": 88,
    "words": 1
   },
   {
@@ -1128,9 +1128,9 @@
    "palette": "Garage",
    "hero": "Pottery Studio With A Human Touch",
    "brand": "Clay Room",
-   "sections": 14,
+   "sections": 13,
    "failed": [],
-   "ms": 209,
+   "ms": 226,
    "words": 14
   },
   {
@@ -1143,9 +1143,9 @@
    "palette": "Trattoria",
    "hero": "Taste That Brings Everyone To The Table",
    "brand": "Forno Rosso",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 133,
+   "ms": 136,
    "words": 15
   },
   {
@@ -1160,7 +1160,7 @@
    "brand": "Smile Care",
    "sections": 12,
    "failed": [],
-   "ms": 99,
+   "ms": 103,
    "words": 15
   },
   {
@@ -1173,9 +1173,9 @@
    "palette": "A bolder Silk and ruby",
    "hero": "Online Clothing Store With A Human Touch",
    "brand": "Bright Online Clothing",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 163,
+   "ms": 171,
    "words": 15
   },
   {
@@ -1188,7 +1188,7 @@
    "palette": "Sage studio",
    "hero": "Slow Down Where The Air Is Clean",
    "brand": "Golden Yoga Retreat",
-   "sections": 14,
+   "sections": 13,
    "failed": [],
    "ms": 195,
    "words": 9
@@ -1207,7 +1207,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 121,
+   "ms": 141,
    "words": 13
   },
   {
@@ -1222,7 +1222,7 @@
    "brand": "Iron Pulse",
    "sections": 12,
    "failed": [],
-   "ms": 102,
+   "ms": 103,
    "words": 12
   },
   {
@@ -1235,9 +1235,9 @@
    "palette": "Campus",
    "hero": "Coaching Institute Without The Guesswork",
    "brand": "Noble Coaching Institute",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 203,
+   "ms": 204,
    "words": 12
   },
   {
@@ -1250,7 +1250,7 @@
    "palette": "A bolder Darkroom",
    "hero": "Your Neighbourhood Architecture Firm",
    "brand": "Studio North",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
    "ms": 153,
    "words": 10
@@ -1265,11 +1265,11 @@
    "palette": "Atelier",
    "hero": "Celebrate With Family In A Comfortable Space",
    "brand": "Oak Banquet Hall",
-   "sections": 12,
+   "sections": 11,
    "failed": [
     "theme"
    ],
-   "ms": 179,
+   "ms": 201,
    "words": 9
   },
   {
@@ -1282,9 +1282,9 @@
    "palette": "Roastery",
    "hero": "Good Coffee, Better Conversations",
    "brand": "Golden Cafe",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 122,
+   "ms": 227,
    "words": 1
   },
   {
@@ -1299,7 +1299,7 @@
    "brand": "Maple Gym",
    "sections": 13,
    "failed": [],
-   "ms": 113,
+   "ms": 106,
    "words": 1
   },
   {
@@ -1317,7 +1317,7 @@
     "headline",
     "relevant"
    ],
-   "ms": 91,
+   "ms": 89,
    "words": 1
   },
   {
@@ -1330,9 +1330,9 @@
    "palette": "A bolder Pistachio morning",
    "hero": "Cakes Made To Match Your Celebration",
    "brand": "Oak Bakery",
-   "sections": 14,
+   "sections": 13,
    "failed": [],
-   "ms": 111,
+   "ms": 104,
    "words": 1
   },
   {
@@ -1345,11 +1345,11 @@
    "palette": "Mauve and champagne",
    "hero": "Hair, Skin And A Little Time For You",
    "brand": "Evergreen Hair Salon",
-   "sections": 13,
+   "sections": 12,
    "failed": [
     "headline"
    ],
-   "ms": 102,
+   "ms": 97,
    "words": 1
   },
   {
@@ -1364,7 +1364,7 @@
    "brand": "Golden Clinic",
    "sections": 11,
    "failed": [],
-   "ms": 162,
+   "ms": 155,
    "words": 1
   },
   {
@@ -1379,7 +1379,7 @@
    "brand": "Evergreen School",
    "sections": 11,
    "failed": [],
-   "ms": 120,
+   "ms": 113,
    "words": 1
   },
   {
@@ -1392,11 +1392,11 @@
    "palette": "Contact sheet",
    "hero": "Moments Kept The Way You Felt Them",
    "brand": "Evergreen Photography Studio",
-   "sections": 13,
+   "sections": 12,
    "failed": [
     "relevant"
    ],
-   "ms": 109,
+   "ms": 108,
    "words": 1
   },
   {
@@ -1409,9 +1409,9 @@
    "palette": "Ink and indigo",
    "hero": "Software That Helps Your Team Do More",
    "brand": "Summit SaaS Startup",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 153,
+   "ms": 160,
    "words": 1
   },
   {
@@ -1424,9 +1424,9 @@
    "palette": "Hope",
    "hero": "Stand With Families Who Need Support",
    "brand": "Golden NGO",
-   "sections": 11,
+   "sections": 10,
    "failed": [],
-   "ms": 112,
+   "ms": 107,
    "words": 1
   },
   {
@@ -1439,9 +1439,9 @@
    "palette": "Trattoria",
    "hero": "Honest Caffe, Start To Finish",
    "brand": "Summit Kitchen",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 165,
+   "ms": 168,
    "words": 1
   },
   {
@@ -1456,7 +1456,7 @@
    "brand": "Royal Care",
    "sections": 10,
    "failed": [],
-   "ms": 148,
+   "ms": 151,
    "words": 1
   },
   {
@@ -1469,9 +1469,9 @@
    "palette": "Trattoria",
    "hero": "Where Handmade Dinners And Seasonal Recipes Come Together",
    "brand": "Summit Kitchen",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 199,
+   "ms": 201,
    "words": 1
   },
   {
@@ -1501,7 +1501,7 @@
    "brand": "Evergreen Collective",
    "sections": 11,
    "failed": [],
-   "ms": 96,
+   "ms": 95,
    "words": 2
   },
   {
@@ -1514,9 +1514,9 @@
    "palette": "Masala chai",
    "hero": "Kadak Chai Made Fresh All Day",
    "brand": "Oak Chai Stall",
-   "sections": 14,
+   "sections": 13,
    "failed": [],
-   "ms": 226,
+   "ms": 214,
    "words": 2
   },
   {
@@ -1531,7 +1531,7 @@
    "brand": "Blue Door Collective",
    "sections": 10,
    "failed": [],
-   "ms": 96,
+   "ms": 94,
    "words": 2
   },
   {
@@ -1544,9 +1544,9 @@
    "palette": "Atelier",
    "hero": "Stitched To Your Measurements, Finished Clean",
    "brand": "Harbor Tailoring",
-   "sections": 13,
+   "sections": 12,
    "failed": [],
-   "ms": 221,
+   "ms": 222,
    "words": 2
   },
   {
@@ -1559,9 +1559,9 @@
    "palette": "Ink and teal",
    "hero": "Vastu Advice For Your Home And Shop",
    "brand": "Golden Astrologer",
-   "sections": 11,
+   "sections": 10,
    "failed": [],
-   "ms": 134,
+   "ms": 136,
    "words": 1
   },
   {
@@ -1574,9 +1574,9 @@
    "palette": "Petal",
    "hero": "Honest Mehndi Artist, Start To Finish",
    "brand": "Bright Mehndi Artist",
-   "sections": 12,
+   "sections": 11,
    "failed": [],
-   "ms": 111,
+   "ms": 112,
    "words": 2
   }
  ]

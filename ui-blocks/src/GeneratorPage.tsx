@@ -151,6 +151,8 @@ function GeneratorPage() {
   const buildStart = useRef(0)
   // the prompt of a site that was just made: once it is shown, the chat asks for the name and the contact details and lists what the generator wrote that the person did not say
   const fresh = useRef('')
+  // the name the person kept although the generator made it up (they pressed "Keep")
+  const [keptName, setKeptName] = useState('')
   const messageId = useRef(0)
   // a question of the chat that waits for a typed value (a name, a business type ...)
   const pending = useRef<Expect | undefined>(undefined)
@@ -182,6 +184,8 @@ function GeneratorPage() {
     [submitted, variation, level, creative, motionSetting, edits, poolVersion, creativityLevel],
   )
   const active = tplMulti ? multi : shownEngine === 'library' ? library : site
+  // the name was made up (the prompt gave none), the person has not written theirs and has not said to keep it
+  const madeUpName = started && submitted && !extractContentDetails(submitted).given && !history.some((h) => h.ops.some((o) => o.op === 'rename')) && keptName !== active.content.brandName ? active.content.brandName : undefined
   // the site as a JSON document (the page version of the site)
   const blueprint = useMemo(() => blueprintOf(site, edits), [site, edits])
   const { themeKey, tier, motion, brain, brainsForced, palette, colorReasons, niche } = active
@@ -367,6 +371,7 @@ function GeneratorPage() {
     setTools((t) => ({ ...t, open: false }))
     buildStart.current = Date.now()
     fresh.current = text.trim()
+    setKeptName('')
     setBuild({ on: true, stage: 0, prompt: text.trim(), since: buildStart.current })
     // on a phone the preview is under the prompt: the build screen is brought into view
     if (window.innerWidth < 1024) requestAnimationFrame(() => document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -1085,7 +1090,7 @@ function GeneratorPage() {
           />
           <section className="space-y-2 lv-card p-3">
             <h2 className="text-sm font-semibold text-gray-900">Export</h2>
-            <ExportPanel fileEdits={codeEdits} engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
+            <ExportPanel madeUpName={madeUpName} onRename={(name) => { say({ role: 'user', text: `Name: ${name}` }); applyOps(`Name: ${name}`, [{ op: 'rename', name }], 'rules', `The site is now called ${name}.`) }} onKeepName={() => setKeptName(active.content.brandName)} fileEdits={codeEdits} engine={shownEngine} isMulti={isMulti} multi={multi} site={site} library={library} details={details} onDetails={setDetails} onExport={() => { exported.current = true; learn(ALL_SLOTS, 1, 'export') }} />
           </section>
         </> },
             { id: 'insights', label: 'Insights', content: <>

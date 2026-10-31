@@ -120,7 +120,8 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       break
     }
     case 'show-plans': {
-      const plans = c.pricing.plans.slice(0, 4)
+      // prices nobody wrote: one card that says to ask (the plans of the text pack are guesses about what the business sells)
+      const plans = c.pricing.fromPrompt ? c.pricing.plans.slice(0, 4) : [{ name: c.labels?.quote ?? 'Get a quote', price: '', period: '', perks: [] as string[] }]
       put(root, 'title', c.pricing.title)
       repeat(root, 'plan', plans, (el, plan, i) => {
         const set = (slot: string, text: string | undefined) => {

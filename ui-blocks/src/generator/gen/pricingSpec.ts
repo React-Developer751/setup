@@ -94,6 +94,8 @@ export function pricingCss(s: PricingSpec, p: string): string {
   if (s.layout === 'menu') {
     c(`& .gp-plan{gap:.7rem}& .gp-head{display:flex;align-items:baseline;gap:.8rem}& .gp-head::after{content:'';order:2;flex:1;border-bottom:2px dotted color-mix(in srgb,currentColor 35%,transparent);transform:translateY(-.3rem)}& .gp-name{order:1;font-size:1.2rem}& .gp-priceline{order:3}& .gp-price{font-size:1.5rem}& .gp-plan .gp-button{display:none!important}`)
   }
+  // (one card: not stretched over the whole width)
+  c(`& .gp-plan:only-child{max-width:28rem;margin-inline:auto;width:100%}`)
   css.push(...decorCss(p, s.decor, s.bg), ...arriveCss(p, s.arrives, '.gp-plan'))
   css.push(`@media (max-width:820px){.${p} .gp-in{display:block}.${p} .gp-title{position:static;margin-bottom:2rem}.${p} .gp-plan{display:flex!important;align-items:stretch!important}.${p} .gp-plan[data-hot]{transform:none!important}}`)
   return css.join('\n')

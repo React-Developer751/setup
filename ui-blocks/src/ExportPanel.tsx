@@ -26,6 +26,10 @@ type Props = {
   onExport?: () => void
   /** the files the person changed in the Code tab: they are in the project .zip as they wrote them */
   fileEdits?: Record<string, FileEdit>
+  /** the name on the site was made up by the generator (the person gave none): nothing is downloaded or published until they write theirs or keep this one */
+  madeUpName?: string
+  onRename?: (name: string) => void
+  onKeepName?: () => void
 }
 
 /** Reads a picture and shrinks it, so that it can be embedded in the pages without making them heavy. */
@@ -37,7 +41,8 @@ const FIELDS: { key: 'email' | 'phone' | 'address' | 'siteUrl' | 'formEndpoint';
   { key: 'formEndpoint', label: 'Form service', placeholder: 'https://formspree.io/f/xxxxxxx', templatesOnly: true },
 ]
 
-function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails, onExport, fileEdits = {} }: Props) {
+function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails: setDetails, onExport, fileEdits = {}, madeUpName, onRename, onKeepName }: Props) {
+  const [typedName, setTypedName] = useState('')
   const [open, setOpen] = useState(false)
   const [error, setError] = useState('')
   const [published, setPublished] = useState<Published | undefined>(() => publishedFor(libraryProjectName(library)))
@@ -61,18 +66,21 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
   }
 
   const zip = async () => {
+    if (madeUpName) return
     onExport?.()
     if (isLibrary) return downloadFile(`${libraryProjectName(library)}.zip`, createZip(withEdits(await buildLibraryProject(lib()), fileEdits)), 'application/zip')
     const s = source()
     downloadFile(`${projectName(s)}.zip`, createZip(withEdits(buildProject(s), fileEdits)), 'application/zip')
   }
   const staticZip = () => {
+    if (madeUpName) return
     onExport?.()
     if (isLibrary) return downloadFile(`${libraryProjectName(library)}-static.zip`, buildLibraryStaticZip(lib(), details), 'application/zip')
     const s = source()
     downloadFile(`${projectName(s)}-static.zip`, buildStaticZip(s), 'application/zip')
   }
   const html = () => {
+    if (madeUpName) return
     onExport?.()
     if (isLibrary) return downloadFile(`${libraryProjectName(library)}.html`, buildLibraryStandalone(lib()), 'text/html')
     const s = source()
@@ -80,6 +88,7 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
   }
 
   const publish = async () => {
+    if (madeUpName) return
     setError('')
     setPublishing(true)
     try {
@@ -105,9 +114,25 @@ function ExportPanel({ engine, isMulti, multi, site, library, details, onDetails
 
   return (
     <div className="basis-full space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
+      {madeUpName && (
+        <div className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="alert">
+          <p>
+            The name on this site, <b>{madeUpName}</b>, was made up by the generator: you did not give one. Write your real business name before you download or publish.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input value={typedName} onChange={(e) => setTypedName(e.target.value)} placeholder="Your business name" aria-label="Your business name" className="min-w-0 flex-1 rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-sm" />
+            <button type="button" disabled={typedName.trim().length < 2} onClick={() => onRename?.(typedName.trim())} className="rounded-md bg-amber-600 px-3 py-1.5 font-medium text-white hover:bg-amber-700 disabled:opacity-50">
+              Use this name
+            </button>
+            <button type="button" onClick={onKeepName} className="rounded-md border border-amber-400 px-3 py-1.5 font-medium text-amber-900 hover:bg-amber-100">
+              Keep “{madeUpName}”
+            </button>
+          </div>
+        </div>
+      )}
+      <div className={`flex flex-wrap items-center gap-2 ${madeUpName ? 'pointer-events-none opacity-50' : ''}`} aria-disabled={!!madeUpName}>
         <span className="text-gray-500">Export</span>
-        <button type="button" onClick={zip} className="rounded-md bg-indigo-600 px-3 py-1.5 font-medium text-white hover:bg-indigo-700">
+        <button type="button" onClick={zip} disabled={!!madeUpName} className="rounded-md bg-indigo-600 px-3 py-1.5 font-medium text-white hover:bg-indigo-700">
           Project (.zip)
         </button>
         <button

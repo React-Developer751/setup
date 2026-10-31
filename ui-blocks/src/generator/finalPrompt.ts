@@ -9,7 +9,7 @@ import type { LegalDocs, Milestone, OpeningHours, Post } from './siteTypes'
 import type { ThemeKey } from './themes'
 import { applyNiche } from './niche/applyNiche'
 import type { Niche } from './niche/types'
-import { extractFacts, personalize, plainStats } from './personalize'
+import { extractFacts, personalize, plainStats, safeFaq } from './personalize'
 import type { Locale } from './siteData'
 
 type Quote = { quote: string; author: string; role: string }
@@ -22,7 +22,8 @@ export type WebsiteContent = {
   /** `fact`: a number the person gave (kept as it is; the numbers of the kits are replaced) */
   stats: { value: string; label: string; fact?: boolean }[]
   testimonial: Quote
-  faq: { q: string; a: string }[]
+  /** `own`: the answer comes from what the person said (the place, a free trial they named): it is kept as it is */
+  faq: { q: string; a: string; own?: boolean }[]
   cta: { title: string; button: string }
   // sections of the long page
   about: { title: string; paragraphs: string[]; points: string[] }
@@ -44,7 +45,7 @@ export type WebsiteContent = {
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>
   /** fixed words of the templates in another language (Hindi pages of Core-Craft AI) */
-  labels?: { learnMore?: string; welcome?: string; askPrice?: string }
+  labels?: { learnMore?: string; welcome?: string; askPrice?: string; quote?: string }
   /** real pictures instead of the drawn ones (see edit/edits.ts) */
   photos?: { hero?: string; about?: string; gallery?: string[]; credit?: string }
   /** words for the scrolling keyword strip */
@@ -116,7 +117,9 @@ export function generateWebsiteContent(
     if (!shaping) return value
     const base = shaping.niche ? applyNiche(value, shaping.niche, size, shaping.rand, shaping.locale) : value
     const avoid = shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords, ...shaping.niche.features.map((f) => f.title)] : []
-    const personal = personalize(base, extractFacts(userPrompt, subject, avoid), size, shaping.rand, !!shaping.niche, theme === 'professional_services' || theme === 'healthcare', userPrompt, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords] : [])
+    const personal0 = personalize(base, extractFacts(userPrompt, subject, avoid), size, shaping.rand, !!shaping.niche, theme === 'professional_services' || theme === 'healthcare', userPrompt, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords] : [])
+    // the answers of the pack that promise something specific (a time, a guarantee, free) are not the person's: they send the visitor to a message
+    const personal = { ...personal0, faq: safeFaq(personal0.faq) }
     // example numbers of the kits are claims nobody made: plain statements instead
     const plain = withCuisine({ ...personal, stats: plainStats(personal.stats, shaping.rand, !/\b(?:ngo|charity|foundation|donat\w*|shelter|rescue|trust|store|shop|restaurants?|cafes?|bakery|tapri|chai|school)\b/i.test(userPrompt)) }, userPrompt)
     // no text pack: the cards of the business type next to it must not talk about another business

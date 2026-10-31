@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import type { EditOp } from './generator/edit/edits'
 import { parseHoursText, parseServices } from './generator/edit/understand'
+import { readPicture } from './generator/edit/imageFile'
+
+const PHOTO_SIZE = (i: number) => (i === 0 ? { side: 1280, chars: 170_000 } : i === 1 ? { side: 1000, chars: 130_000 } : { side: 800, chars: 100_000 })
 
 type Props = {
   onApply: (ops: EditOp[]) => void
@@ -20,6 +23,20 @@ function BusinessForm({ onApply, madeUpName, compact }: Props) {
   const [address, setAddress] = useState('')
   const [services, setServices] = useState('')
   const [note, setNote] = useState('')
+  const [pictures, setPictures] = useState<string[]>([])
+  const [reading, setReading] = useState(false)
+  const choosePictures = async (files: FileList | null) => {
+    const list = [...(files ?? [])].filter((f) => f.type.startsWith('image/')).slice(0, 8)
+    if (!list.length) return
+    setReading(true)
+    try {
+      setPictures(await Promise.all(list.map((f, i) => readPicture(f, PHOTO_SIZE(i).side, false, PHOTO_SIZE(i).chars))))
+      setNote('')
+    } catch (error) {
+      setNote(error instanceof Error ? error.message : 'Could not read the pictures.')
+    }
+    setReading(false)
+  }
 
   const apply = () => {
     const ops: EditOp[] = []
@@ -46,6 +63,7 @@ function BusinessForm({ onApply, madeUpName, compact }: Props) {
       return
     }
     if (items) ops.push({ op: 'services', items })
+    if (pictures.length) ops.push({ op: 'photos', hero: pictures[0], ...(pictures[1] ? { about: pictures[1] } : {}), ...(pictures.length > 2 ? { gallery: pictures.slice(2) } : {}) })
     if (!ops.length) {
       setNote('Fill in at least one field.')
       return
@@ -74,6 +92,11 @@ function BusinessForm({ onApply, madeUpName, compact }: Props) {
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={field} inputMode="email" />
           </label>
         </div>
+        <label className="block space-y-1">
+          <span className="font-medium text-gray-700">Your own photos (up to 8) {reading ? '...' : pictures.length ? `(${pictures.length} ready)` : ''}</span>
+          <input type="file" accept="image/*" multiple onChange={(e) => void choosePictures(e.target.files)} className="block w-full text-xs" />
+          <span className="block text-[11px] text-gray-500">The pictures drawn by the image AI are illustrations. Real photos of your place and your work replace them: the first is the main picture, the second goes in About, the rest in the gallery.</span>
+        </label>
         <label className="block space-y-1">
           <span className="font-medium text-gray-700">WhatsApp number (with country code)</span>
           <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+91 98765 43210" className={field} inputMode="tel" />

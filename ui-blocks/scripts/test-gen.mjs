@@ -264,6 +264,15 @@ for (let i = 0; i < 16; i += 1) {
   if (a && hueOf(a) > 250 && hueOf(a) < 345) odd += 1
 }
 ok(odd === 0, `a law firm is never violet or pink, also at a wild creativity (${odd} of 16)`)
+// what is left of the pack's guesses: perks nobody wrote, FAQ answers that promise something, a blog nobody asked for
+const gym = generateLibraryPage('gym in Pune, plans: basic 999 rupees, premium 1999 rupees', 5, undefined, true, 'auto', undefined, true).content
+ok(gym.pricing.fromPrompt && gym.pricing.plans.length === 2 && gym.pricing.plans.every((p) => p.perks.length === 0), 'plans made from the prices the person wrote carry no perks (nobody wrote them)')
+const sf = PF.safeFaq([{ q: 'How fast do you reply?', a: 'We answer every message within one working day.' }, { q: 'Where are you?', a: 'We work from Pune.' }, { q: 'Is the trial free?', a: 'Yes, the trial is free.', own: true }, { q: 'Do I get a certificate?', a: 'Yes, you get a certificate.' }])
+ok(!/within one working day|certificate/.test(`${sf[0].a} ${sf[3].a}`) && sf[1].a === 'We work from Pune.' && sf[2].a === 'Yes, the trial is free.' && sf[0].a !== sf[3].a, 'an answer that promises a time or a certificate is replaced by "message us"; a plain one and the answers of the person stay')
+const packFaq = generateLibraryPage('dental clinic in Pune', 5, undefined, true, 'auto', undefined, false).content.faq
+ok(!packFaq.some((f) => !f.own && /within \d|guarantee|certificate|refund|money[- ]back/i.test(f.a)), 'no FAQ answer of a page promises a time, a guarantee or a refund the person never gave')
+const blogCount = (prompt, multi) => { let n = 0; for (let v = 1; v <= 10; v += 1) if (generateLibraryPage(prompt, v * 7, undefined, true, 'auto', undefined, multi).sections.some((x) => x.role === 'blog')) n += 1; return n }
+ok(blogCount('cafe website in Jaipur', false) === 0 && blogCount('cafe website in Jaipur', true) === 0 && blogCount('cafe website with a blog', true) === 10 && blogCount('cafe website, no blog', true) === 0, 'a blog is on the page only when it was asked for')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

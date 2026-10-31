@@ -195,6 +195,17 @@ function notAService(item: string, prices: { name: string }[]): boolean {
   return false
 }
 
+const PROMISE = /\b\d+\s*(?:hours?|hrs?|days?|minutes?|mins?|weeks?|months?|years?|%)|\bwithin\b|same[- ]day|next[- ]day|24\s*\/?\s*7|guarantee[sd]?|certificat\w*|refund\w*|money[- ]back|\bfree\b|no (?:extra |hidden )?(?:charge|cost|fee)s?|cashless|insur\w*|warrant\w*|\balways\b|\bnever\b|\bevery\b|licensed|certified|accredited|award\w*|\busually\b|\btypically\b|\bwe (?:answer|reply|respond)\b|₹|\$|\brupees?\b|\bdeposit\b|\bcancel\w*/i
+const DEFER = ['Please message us with the details and we will confirm this for your case.', 'This depends on your case: send us a message and we will tell you exactly.', 'Ask us directly: we answer this person by person, so you get the right answer for you.']
+/**
+ * The answers of a text pack that promise something specific (a time, a guarantee, a certificate, "free", a refund) are claims nobody made: the question stays and the answer sends the visitor to a message.
+ * Answers that only describe how the business works, and the answers made from the person's own words, stay.
+ */
+export function safeFaq(faq: WebsiteContent['faq']): WebsiteContent['faq'] {
+  let k = 0
+  return faq.map((item) => (item.own || !PROMISE.test(item.a) ? item : { ...item, a: DEFER[k++ % DEFER.length] }))
+}
+
 /** "drop-in 500 rupees, monthly 3000 rupees": each comma-separated piece that ends in a sum of money is a thing and its price (two or more pieces make a list) */
 const GENERIC_PRICE_NAME = /^(?:fees?|prices?|pricing|plans?|rates?|cost|charges?|packages?|price list|membership|subscription)$/i
 const DEFAULT_PLAN_NAMES: Record<number, string[]> = { 2: ['Basic', 'Pro'], 3: ['Basic', 'Standard', 'Premium'], 4: ['Starter', 'Basic', 'Standard', 'Premium'] }
@@ -300,7 +311,7 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
   }
 
   // questions people would ask about exactly these things
-  const questions: { q: string; a: string }[] = []
+  const questions: { q: string; a: string; own?: boolean }[] = []
   if (services[0] && services[0].length >= 6 && !/^[A-Za-z]{2,5}$/.test(services[0].trim()) && services[0].trim().split(' ').length <= 4) questions.push({ q: `Do you offer ${lowerFirst(fixAcronyms(services[0]))}?`, a: `Yes, ${lowerFirst(fixAcronyms(services[0]))} is something we do regularly. Send us a message with the details and we will tell you how we can help.` })
   if (place) questions.push({ q: 'Where are you based?', a: `We are based in ${place}. Get in touch to check that we cover your area.` })
   for (const perk of perks) {
@@ -309,7 +320,7 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
     if (perk.kind === 'free') questions.push({ q: `Is the ${perk.text} free?`, a: `Yes, the ${perk.text} is free. Tell us what you need and we will arrange it.` })
     if (perk.kind === 'online') questions.push({ q: 'Can I do this online?', a: 'Yes, we work online as well as in person. Get in touch and we will set it up.' })
   }
-  if (questions.length) next = { ...next, faq: [...questions, ...next.faq.filter((f) => !questions.some((q) => q.q === f.q))].slice(0, 6) }
+  if (questions.length) next = { ...next, faq: [...questions.map((q) => ({ ...q, own: true })), ...next.faq.filter((f) => !questions.some((q) => q.q === f.q))].slice(0, 6) }
 
   // the two facts the person gave in numbers
   const stats = [...next.stats]
@@ -346,7 +357,7 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
     // the money the person wrote ("150 rupees", "Rs 250", "£12") is the money of the page; else the one of the text pack
     const currency = facts.currency ?? /^[^\d\s]+/.exec(next.pricing.plans[0].price)?.[0] ?? '₹'
     // the plans are the prices the person wrote (the example prices of the text pack are not mixed in)
-    const plans = prices.slice(0, 6).map((priceOf, i) => ({ ...(next.pricing.plans[i] ?? next.pricing.plans[0]), name: titleCase(priceOf.name).slice(0, 28), price: `${currency}${priceOf.amount.toLocaleString(currency === '$' ? 'en-US' : 'en-IN')}`, period: priceOf.period ?? '' }))
+    const plans = prices.slice(0, 6).map((priceOf, i) => ({ ...(next.pricing.plans[i] ?? next.pricing.plans[0]), name: titleCase(priceOf.name).slice(0, 28), price: `${currency}${priceOf.amount.toLocaleString(currency === '$' ? 'en-US' : 'en-IN')}`, period: priceOf.period ?? '', perks: [] as string[] }))
     next = { ...next, pricing: { ...next.pricing, plans, fromPrompt: true } }
   }
 

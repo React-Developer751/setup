@@ -50,7 +50,7 @@ setCreativity('safe')
 const seen = new Set()
 let faqPages = 0
 let bannerPages = 0
-for (const prompt of ['shoe store called Step Up with free shipping above 999 and cash on delivery', 'Create a website for a dental clinic called Smile Care in Pune', 'pizza shop called Slice Hub in Mumbai', 'law firm called Rao and Partners', 'bike shop called Spoke selling cycles and helmets', 'yoga studio called Zen Flow in Goa']) {
+for (const prompt of ['shoe store called Step Up with free shipping above 999 and cash on delivery', 'travel agency called Wanderly with a blog', 'Create a website for a dental clinic called Smile Care in Pune', 'pizza shop called Slice Hub in Mumbai', 'law firm called Rao and Partners', 'bike shop called Spoke selling cycles and helmets', 'yoga studio called Zen Flow in Goa']) {
   for (let v = 1; v <= 12; v += 1) {
     for (const tier of ['better', 'premium']) {
       const page = generateLibraryPage(prompt, v, tier)
@@ -119,7 +119,7 @@ ok(Object.entries(U.componentUse).every(([g, { use }]) => (use === 'page') === i
 ok(all.length >= 160, `the pools hold ${all.length} components`)
 ok(R.rolePools.banner.length >= 3 && !R.tierPools.normal.banner, 'announcement bars are a role of the long pages only')
 ok([...seen].some((id) => id.startsWith('cardgrid/')) && [...seen].some((id) => id.startsWith('stepsection/')), 'pages use the card sections and the stepper sections')
-ok(bannerPages >= 10, `announcement bars appear on the long pages that have an offer to announce (${bannerPages} of 24)`)
+ok(bannerPages >= 10, `announcement bars appear on the long pages that have an offer to announce (${bannerPages} of 48)`)
 
 console.log(`components: ${pass} checks passed, ${fail.length} failed`)
 if (fail.length) {

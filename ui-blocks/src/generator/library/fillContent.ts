@@ -1021,6 +1021,8 @@ function cleanLeftovers(root: Element, role: Role, c: WebsiteContent) {
       const index = [...seen.keys()].indexOf(card)
       if (!c.pricing.plans.length) return
       const plan = take(c.pricing.plans, index, c.pricing.plans[0])
+      // a plan without perks (the person wrote a price and nothing else): the check-list line goes
+      if (!plan.perks.length) return void (el.closest('li') ?? el).remove()
       setText(el, take(plan.perks, n, plan.perks[0] ?? 'Included'))
     })
     // the same line twice in one plan: once is enough
