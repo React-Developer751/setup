@@ -62,5 +62,17 @@ ok(app.content.brandName !== 'Flutter' && /MVPs/.test(JSON.stringify(app.content
 const decision = decideCore({ features: [{ title: 'a', text: 'b' }], about: ['x'], generated_by: { mode: 'strict', items_from_prompt: ['reels', 'sponsored posts'] } }, { personal: true, heroTitle: '', subject: '', theme: 'creative_studio', prompt: '', brand: '' })
 ok(decision.use === false, 'a personal page is not given to Core-Craft AI')
 
+// Core-Craft AI took "Office" (a word of the subject) for the name: the page keeps its own name
+const core = decideCore({ brand: 'Office', hero_heading: 'Desks and rooms', tagline: 'Office delivers visitor management.', cta_primary: 'Start', features_title: 'What it does', features: [{ title: 'Desk booking', text: 'Office books desks.' }, { title: 'Meeting rooms', text: 'x' }], about_title: 'About', about: ['Office is a tool.'], highlights: [], steps_title: 'Steps', steps: [], faq: [], cta_title: 'Go', generated_by: { mode: 'strict', items_from_prompt: ['desk booking', 'meeting rooms'] } }, { heroTitle: '', subject: 'office management software', theme: 'modern_tech', prompt: '', brand: 'Summit Labs' })
+ok(core.use && JSON.stringify(core.blocks).includes('Summit Labs delivers') && !/Office delivers/.test(JSON.stringify(core.blocks)), 'Core-Craft: a word of the subject taken for the name is swapped for the name of the page')
+
+const game = page('Gaming streamer on Twitch, Valorant and Minecraft, sponsors, discord community')
+ok(!game.content.features.items.some((i) => /^(?:valorant|minecraft)$/i.test(i.title)) && /valorant/i.test(game.content.hero.subtitle), 'streamer: the games are in the line under the headline, not cards of their own')
+
+const { scenePlan, creatorSceneKey } = await loadGeneratorModule('imageAi.ts')
+const plan = scenePlan('playful_vibrant', creatorSceneKey('Gaming streamer on Twitch', true), 0)
+ok(![plan.hero, plan.about, ...plan.gallery].some((x) => /balloon|ice cream|swing|gift box|kids/.test(x.prompt)), 'streamer: pictures are of a gamer, not of the colourful theme (balloons, ice cream)')
+ok(creatorSceneKey('Gaming streamer', false) === undefined, 'other pages get no creator scenes')
+
 console.log(`open-world: ${passed} checks passed, ${failed} failed`)
 process.exit(failed ? 1 : 0)

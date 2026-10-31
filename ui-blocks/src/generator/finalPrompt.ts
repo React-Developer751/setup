@@ -132,7 +132,11 @@ export function generateWebsiteContent(
     const gap = subject ? nicheGap(subject, shaping.niche ?? kitAsNiche) : []
     const bespoke = gap.length > 0 && !(!shaping.niche && theme === 'modern_tech' && tech)
     const base = bespoke ? bespokeContent(value, { subject, prompt: userPrompt, place: facts0.place, rand: shaping.rand }) : shaping.niche ? applyNiche(value, shaping.niche, size, shaping.rand, shaping.locale) : value
-    const personal0 = personalize(base, bespoke ? extractFacts(userPrompt, subject, []) : facts0, size, shaping.rand, !!shaping.niche || bespoke, theme === 'professional_services' || theme === 'healthcare', userPrompt, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords] : [])
+    // a person's page: the games, tools or brands they name (capitalised in the prompt) are what they play or use, not services they sell: they go in the line under the headline
+    const ownFacts = bespoke ? extractFacts(userPrompt, subject, []) : facts0
+    const proper = base.voice === 'me' ? ownFacts.services.filter((x) => !x.includes(' ') && new RegExp(`(?<![\\p{L}])${x[0].toUpperCase()}${x.slice(1).toLowerCase()}(?![\\p{L}])`, 'u').test(userPrompt) && userPrompt.includes(x[0].toUpperCase() + x.slice(1))) : []
+    const facts1 = proper.length ? { ...ownFacts, services: ownFacts.services.filter((x) => !proper.includes(x)), details: [...(ownFacts.details ?? []), (() => { const names = proper.map((x) => x[0].toUpperCase() + x.slice(1)); return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0] })()] } : ownFacts
+    const personal0 = personalize(base, facts1, size, shaping.rand, !!shaping.niche || bespoke, theme === 'professional_services' || theme === 'healthcare', userPrompt, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords] : [])
     // the answers of the pack that promise something specific (a time, a guarantee, free) are not the person's: they send the visitor to a message
     const personal = { ...personal0, faq: safeFaq(personal0.faq) }
     // example numbers of the kits are claims nobody made: plain statements instead

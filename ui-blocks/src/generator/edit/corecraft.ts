@@ -237,6 +237,13 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
     cta: { title: page.cta_title, button: page.cta_primary },
     ...((page.faq_title ?? ui.faq_title) ? { titles: { faq: page.faq_title ?? ui.faq_title } } : {}),
   }
+  // Core-Craft sometimes takes a word of the subject for the name ("Office delivers visitor management"): the name of the page is the name the page has
+  const taken = page.brand?.trim()
+  if (taken && ours.brand && taken.toLowerCase() !== ours.brand.toLowerCase() && !taken.includes(' ') && ours.subject.toLowerCase().split(/\s+/).includes(taken.toLowerCase())) {
+    const re = new RegExp(`(?<![\\p{L}])${taken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}])`, 'gu')
+    const swap = <T,>(v: T): T => (typeof v === 'string' ? (v.replace(re, ours.brand) as unknown as T) : Array.isArray(v) ? (v.map(swap) as unknown as T) : v && typeof v === 'object' ? (Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)])) as T) : v)
+    Object.assign(blocks, swap(blocks))
+  }
   // its blog notes are general ("How long things really take"), and sample reviews and a team would carry invented names: they stay out
   // the prices of the kit would be made up too: a price list stays only when the person gave prices
   const hide: EditOp[] = ([...['blog', 'testimonials', 'team'], ...(page.prices?.length || ours.prices ? [] : ['pricing'])] as const).map((section) => ({ op: 'remove', section }) as EditOp)

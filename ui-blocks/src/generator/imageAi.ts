@@ -37,10 +37,24 @@ export function scenePlan(theme: ThemeKey, niche: string | undefined, variation 
   const about = usable([set.about, ...base.hero, base.about]).find((p) => !seen.has(p)) ?? base.about
   seen.add(about)
   // nine different gallery scenes (the tiles of the gallery, the blog and the cards each take other ones): the set's own first, the business type's after them when something repeats
-  const pool = usable([...set.gallery, ...base.gallery, ...base.hero])
+  // a person's own page keeps to its own scenes (a gamer does not get balloons and ice cream from the colourful theme)
+  const pool = niche?.startsWith('creator_') && own ? usable([...set.gallery, ...set.hero, 'headphones music', 'light bulb idea', 'camera', 'globe with chat bubbles', 'growth chart']) : usable([...set.gallery, ...base.gallery, ...base.hero])
   const gallery = pool.filter((p) => !seen.has(p) && !!seen.add(p)).slice(0, 9)
   const spare = pool.filter((p) => !gallery.includes(p) && p !== hero && p !== about)
   return { hero: make(hero, 'hero', variation, [...heroes, ...spare]), about: make(about, 'about', variation, [...usable(base.hero), ...spare]), gallery: gallery.map((p, i) => make(p, 'tile', i + variation, spare)), ...(own ? { fromNiche: true } : {}) }
+}
+
+/** the scenes of a person's own page (a gamer, an influencer, a podcast ...): by what the prompt says, `undefined` for any other page */
+export function creatorSceneKey(prompt: string, personal: boolean): string | undefined {
+  if (!personal) return undefined
+  const t = prompt.toLowerCase()
+  if (/\b(?:gaming|gamer|streamer|twitch|valorant|minecraft|esports?)\b/.test(t)) return 'creator_gaming'
+  if (/\bpodcast/.test(t)) return 'creator_podcast'
+  if (/\b(?:food|recipes?|cooking|chef)\b/.test(t)) return 'creator_food'
+  if (/\b(?:fashion|lifestyle|beauty|makeup|influencer)\b/.test(t)) return 'creator_fashion'
+  if (/\b(?:youtub\w*|vlog\w*|reviews?|video)\b/.test(t)) return 'creator_video'
+  if (/\b(?:designer|illustrat\w*|logos?|brand identity)\b/.test(t)) return 'creator_design'
+  return undefined
 }
 
 /** every scene of every business type and niche (for the checks) */

@@ -1285,6 +1285,100 @@
     "person",
     "clock"
    ]
+  },
+  "creator_gaming": {
+   "hero": [
+    "game controller and neon lights",
+    "joystick and trophy"
+   ],
+   "about": "game controller",
+   "gallery": [
+    "game controller",
+    "trophy cup",
+    "headphones and microphone",
+    "ghost with a game controller",
+    "headphones music",
+    "light bulb idea"
+   ]
+  },
+  "creator_fashion": {
+   "hero": [
+    "clothes on a rack",
+    "camera and fashion accessories",
+    "sunglasses and a handbag"
+   ],
+   "about": "person taking a photo with a phone",
+   "gallery": [
+    "smartphone with ring light",
+    "camera on a tripod",
+    "clothes on a hanger",
+    "sunglasses and a handbag",
+    "shopping bags",
+    "heart and like icons"
+   ]
+  },
+  "creator_video": {
+   "hero": [
+    "video camera and lights",
+    "camera on a tripod",
+    "play button on a screen"
+   ],
+   "about": "person filming with a camera",
+   "gallery": [
+    "video camera",
+    "laptop with video editing",
+    "camera on a tripod",
+    "headphones",
+    "headphones music",
+    "light bulb idea"
+   ]
+  },
+  "creator_podcast": {
+   "hero": [
+    "microphone and headphones",
+    "podcast microphone",
+    "sound waves"
+   ],
+   "about": "person speaking into a microphone",
+   "gallery": [
+    "headphones",
+    "sound waves",
+    "chat bubbles",
+    "coffee cup and notebook",
+    "headphones music",
+    "light bulb idea"
+   ]
+  },
+  "creator_food": {
+   "hero": [
+    "plate of food on a table",
+    "chef cooking in a kitchen"
+   ],
+   "about": "chef with a spoon",
+   "gallery": [
+    "plate of food",
+    "chef hat",
+    "cooking pan",
+    "coffee cup and notebook",
+    "camera",
+    "headphones music"
+   ]
+  },
+  "creator_design": {
+   "hero": [
+    "colour palette and pencils",
+    "laptop with a design on screen",
+    "pencil and ruler"
+   ],
+   "about": "pencil and book",
+   "gallery": [
+    "pencil and ruler",
+    "geometric tiles orange and violet",
+    "light bulb idea",
+    "pencil and book",
+    "pink sunset over a city",
+    "headphones music"
+   ]
   }
  }
 }

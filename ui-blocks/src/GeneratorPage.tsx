@@ -13,7 +13,7 @@ import { getPoolVersion, poolSummary, subscribePool } from './generator/dataPool
 import BusinessForm from './BusinessForm'
 import LeadsPanel from './LeadsPanel'
 import PhotosPanel from './PhotosPanel'
-import { scenePlan } from './generator/imageAi'
+import { creatorSceneKey, scenePlan } from './generator/imageAi'
 import ProjectsPanel from './ProjectsPanel'
 import { saveRemote, deleteRemote } from './generator/projectSync'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
@@ -153,6 +153,7 @@ function GeneratorPage() {
   const fresh = useRef('')
   // the name the person kept although the generator made it up (they pressed "Keep")
   const [keptName, setKeptName] = useState('')
+  const [barName, setBarName] = useState('')
   const messageId = useRef(0)
   // a question of the chat that waits for a typed value (a name, a business type ...)
   const pending = useRef<Expect | undefined>(undefined)
@@ -592,7 +593,7 @@ function GeneratorPage() {
     }
     bumpBuild(3)
     say({ role: 'ai', text: 'Drawing pictures for your site with the image AI ...' })
-    const answer = await makePictures(scenePlan(themeKey, niche, variation), () => undefined, { accent: palette.light.accent, bg: palette.light.bg, prompt: submitted })
+    const answer = await makePictures(scenePlan(themeKey, niche ?? creatorSceneKey(submitted, active.content.voice === 'me'), variation), () => undefined, { accent: palette.light.accent, bg: palette.light.bg, prompt: submitted })
     if (drawnFor.current !== key || (hasPhotosRef.current && !autoMade.current)) return true
     autoMade.current = true
     if (answer.used) {
@@ -924,14 +925,29 @@ function GeneratorPage() {
       <section id="preview-section" className="relative flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
         <BuildingScreen key={build.since} prompt={build.prompt} stage={build.stage} open={build.on} />
         {madeUpName && !build.on && (
-          <div role="status" className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900">
+          <form
+            role="status"
+            className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900"
+            onSubmit={(e) => {
+              e.preventDefault()
+              const name = barName.trim()
+              if (name.length < 2) return
+              say({ role: 'user', text: `Name: ${name}` })
+              applyOps(`Name: ${name}`, [{ op: 'rename', name }], 'rules', `The site is now called ${name}.`)
+              setBarName('')
+            }}
+          >
             <span>
-              The name <b>{madeUpName}</b> is a placeholder I made up. Type your real one (for example “my business is called Green Leaf”) or
+              The name <b>{madeUpName}</b> is a placeholder I made up. Your real name:
             </span>
-            <button type="button" onClick={() => setKeptName(active.content.brandName)} className="rounded border border-amber-400 px-2 py-0.5 font-medium hover:bg-amber-100">
-              keep it
+            <input value={barName} onChange={(e) => setBarName(e.target.value)} placeholder="Your business name" aria-label="Your business name" className="min-w-0 flex-1 rounded border border-amber-300 bg-white px-2 py-0.5" />
+            <button type="submit" disabled={barName.trim().length < 2} className="rounded bg-amber-600 px-2 py-0.5 font-medium text-white hover:bg-amber-700 disabled:opacity-50">
+              Use it
             </button>
-          </div>
+            <button type="button" onClick={() => setKeptName(active.content.brandName)} className="rounded border border-amber-400 px-2 py-0.5 font-medium hover:bg-amber-100">
+              keep “{madeUpName}”
+            </button>
+          </form>
         )}
         <ToolsDrawer
           open={tools.open}
@@ -1012,7 +1028,7 @@ function GeneratorPage() {
           <PhotosPanel
             defaultQuery={active.content.subject || brandName}
             hasPhotos={!!edits.photos}
-            planFor={(offset) => scenePlan(themeKey, niche, variation + offset)}
+            planFor={(offset) => scenePlan(themeKey, niche ?? creatorSceneKey(submitted, active.content.voice === 'me'), variation + offset)}
             accent={palette.light.accent}
             alt={palette.light.alt}
             prompt={submitted}
