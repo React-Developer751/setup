@@ -48,6 +48,8 @@ export type WebsiteContent = {
   added?: Record<string, number>
   /** `me`: a person's own page (an influencer, a podcast): the texts say "I", not "we" */
   voice?: 'me'
+  /** a demo app on the site (log in, register, a dashboard with example data): see generator/app */
+  app?: boolean
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>

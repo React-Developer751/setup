@@ -37,6 +37,8 @@ import { fontLinksFor } from './fonts'
 import { Section, ThemeScope } from './library/ThemeScope'
 import { MOTION_RUNTIME_JS } from './motionRuntimeJs'
 import { WIDGET_RUNTIME_JS } from './library/widgetRuntimeJs'
+import { APP_RUNTIME_JS } from './app/appRuntimeJs'
+import { appConfigFor } from './app/appProfiles'
 import { analyticsHead } from './library/widgets'
 import { legalLinks, notFoundPage, privacyPage, termsPage } from './library/legalPages'
 import siteTypesSource from './siteTypes.ts?raw'
@@ -96,6 +98,14 @@ const cssText = (style: object) =>
     .join(';')
 
 /** the script of a site with pages: the parts of the page in the address (#/about) are shown, the others hidden; the first page is the home page */
+/** the demo app (log in, register, a dashboard): only when the person asked for it */
+const appScript = (lib: Library) => {
+  if (!lib.content.app) return ''
+  const niche = lib.niche as unknown
+  const cfg = appConfigFor(lib.content, { themeKey: lib.themeKey, niche: typeof niche === 'string' ? niche : (niche as { id?: string } | undefined)?.id })
+  return `${APP_RUNTIME_JS}\ninitApp(${JSON.stringify(cfg).replace(/</g, '\\u003c')});\n`
+}
+
 const pagesScript = (lib: Library) =>
   lib.pages && lib.pages.length > 1
     ? `
@@ -313,7 +323,7 @@ ${needsPreline ? 'if (window.HSStaticMethods) window.HSStaticMethods.autoInit();
 ${pagesScript(lib)}${formScript(lib)}
 ${WIDGET_RUNTIME_JS}
 initWidgets(document);
-</script>
+${appScript(lib)}</script>
 </body>
 </html>
 `
@@ -370,7 +380,7 @@ initMotion(page, MOTION);
 ${pagesScript(lib)}${formScript(lib)}
 ${WIDGET_RUNTIME_JS}
 initWidgets(document);
-`
+${appScript(lib)}`
   const index = `<!doctype html>
 <html lang="en">
 <head>

@@ -855,6 +855,13 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
   if (control) return { kind: 'control', control }
   if (isNewSite(plain)) return { kind: 'newSite' }
 
+  // "login aur dashboard add karo", "add register page", "remove the dashboard": the demo app of the site (log in, register, a dashboard with example data)
+  const appWord = /(?<![\p{L}])(?:log\s*-?\s*in|login|sign\s*-?\s*in|signin|register|sign\s*-?\s*up|signup|dashboard|member\s+area|user\s+panel|admin\s+panel|customer\s+portal|client\s+portal)(?![\p{L}])/iu.test(plain)
+  if (appWord && !/(?<![\p{L}])(?:button|link|colou?r|font|size|heading|title|text|form\s+field|newsletter|subscribe|subscription|mailing|waitlist|updates)(?![\p{L}])/iu.test(plain)) {
+    if (/(?<![\p{L}])(?:hatao|hata|remove|delete|nikalo|nikal|band\s+karo|without|mat|bina|no\s+need)(?![\p{L}])/iu.test(plain)) return { kind: 'ops', ops: [{ op: 'app', on: false }], notes: [] }
+    if (/(?<![\p{L}])(?:add|lagao|laga|jodo|jod|chahiye|chahie|chaiye|banao|bana|daalo|dalo|include|want|need|with|ke\s+saath|saath|enable|on)(?![\p{L}])/iu.test(plain)) return { kind: 'ops', ops: [{ op: 'app', on: true }], notes: ['A demo login, a register page and a dashboard with example data are added (no backend: the accounts and the rows stay in the browser). Open the site and press "Log in" in the menu.'] }
+  }
+
   // "website ko light mode me karo", "dark theme on": only this, nothing else is asked
   const modeOnly = /(?<![\p{L}])(light|dark)\s+(?:mode|theme)(?![\p{L}])/iu.exec(plain)
   if (modeOnly) {

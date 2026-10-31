@@ -121,6 +121,8 @@ export type EditOp =
   | { op: 'resetLayout'; target?: FitTarget }
   | ({ op: 'photos' } & PhotoSet)
   | { op: 'clearPhotos' }
+  /** a demo app on the site: log in, register, a dashboard with the pages of the business (see generator/app) */
+  | { op: 'app'; on: boolean }
   | { op: 'core'; data: CoreBlocks }
   | { op: 'concept'; data: ConceptData }
   | { op: 'tier'; tier: Tier }
@@ -185,6 +187,7 @@ export type SiteEdits = {
   /** the generator's own idea of the look (op 'concept') */
   concept?: ConceptData
   photos?: PhotoSet
+  app?: boolean
   /** new headings of sections */
   titles: Partial<Record<TitleSection, string>>
   /** new labels of the pages in the navigation */
@@ -365,6 +368,8 @@ export function cleanOp(raw: unknown): EditOp | undefined {
     }
     case 'clearPhotos':
       return { op: 'clearPhotos' }
+    case 'app':
+      return typeof o.on === 'boolean' ? { op: 'app', on: o.on } : undefined
     case 'core': {
       const data = cleanCore(o.data)
       return data ? { op: 'core', data } : undefined
@@ -549,6 +554,9 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'clearPhotos':
         e.photos = undefined
         break
+      case 'app':
+        e.app = op.on
+        break
       case 'core':
         e.core = op.data
         break
@@ -649,6 +657,8 @@ export function describeOp(op: EditOp): string {
       return `Added photos: ${[op.hero ? 'first screen' : '', op.about ? 'about' : '', op.gallery ? `${op.gallery.length} in the gallery` : ''].filter(Boolean).join(', ')}`
     case 'clearPhotos':
       return 'Removed the photos'
+    case 'app':
+      return op.on ? 'Added a login, a register page and a dashboard (demo, no backend)' : 'Removed the login and the dashboard'
     case 'concept':
       return `A design idea of its own: ${op.data.name}${op.data.why ? ` (${op.data.why.slice(0, 80)}${op.data.why.length > 80 ? '...' : ''})` : ''}`
     case 'core': {
