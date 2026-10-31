@@ -50,6 +50,7 @@ export function editCss(edits: SiteEdits | undefined): string {
       if (style.radius === 'pill') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,' + GEN_BUTTONS)}{border-radius:9999px!important}`)
       if (style.radius === 'rounded') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,' + GEN_BUTTONS + ',[class*="rounded"]:not(.rounded-full):not(img)')}{border-radius:.75rem!important}`)
       if (style.radius === 'rounded') rules.push(`${under(scope, GEN_CARDS)}{border-radius:.75rem!important}`)
+      if (style.radius === 'pill') rules.push(`${under(scope, GEN_CARDS)}{border-radius:1.75rem!important}`)
       if (style.headingSize) {
         rules.push(`@supports (zoom:1){${under(scope, 'h1,h2,h3,h4')}{zoom:${scale(style.headingSize)}}}`)
         rules.push(`@supports not (zoom:1){${scope}{${sizeVars(['xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'], scale(style.headingSize))}}}`)

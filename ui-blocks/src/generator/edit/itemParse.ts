@@ -175,7 +175,7 @@ function addItem(plain: string, page?: PageFacts): ItemResult | undefined {
     body = body.replace(R(`\\s*(?:${SETV}|${ADD})\\s*$`, 'iu'), '').replace(R('\\s+(?:bhi|also|too)\\s*$', 'iu'), '')
     const names = body.split(R('\\s*(?:,|;|\\s+aur\\s+|\\s+and\\s+|\\s*&\\s*)\\s*', 'iu')).map((x) => unquote(x.trim())).filter(Boolean)
     const bad = (x: string) => x.length < 2 || x.length > 40 || x.split(/\s+/).length > 5 || R(U('section|page|part|block|with|for|about|price|pricing|photo|image|button|color|colour')).test(x) || /\d{3,}/.test(x)
-    if (!names.length || names.some(bad) || names.length > 6 || R(REMOVE).test(plain)) return undefined
+    if (!names.length || names.some(bad) || names.length > 10 || R(REMOVE).test(plain)) return undefined
     return { ops: names.map((title) => itemOf('features', 'add', {}, { title: title.charAt(0).toUpperCase() + title.slice(1) })), notes: [] }
   }
   // what was said about the new item: after a colon when there is one ("FAQ me naya sawal jodo: Q? answer: A"), else after the filler words
