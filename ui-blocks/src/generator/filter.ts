@@ -33,6 +33,8 @@ const CUT_WORDS = /\s+(?:that|which|who|whose|where|offers?|offering|with|having
 const CUT_AFTER_BUSINESS = /(?<=\b(?:studio|company|firm|agency|shop|store|team|farm|factory|brand|house|lab|labs|startup))\s+(?:making|makes|creating|building)\b[\s\S]*$/i
 
 /** "gym Iron Pulse" has no "called", but "Iron Pulse" is clearly the name: capitalised words inside the prompt. */
+/** websites and apps that a business is on: they are never its name */
+const PLATFORMS = new Set(['instagram', 'youtube', 'spotify', 'facebook', 'tiktok', 'twitter', 'whatsapp', 'linkedin', 'snapchat', 'pinterest', 'telegram', 'google', 'amazon', 'flipkart', 'zomato', 'swiggy', 'shopify', 'wordpress', 'etsy', 'meesho', 'apple', 'podcasts', 'twitch', 'reels', 'shorts', 'discord', 'valorant', 'minecraft', 'fortnite', 'pubg', 'flutter', 'kotlin', 'swift', 'android', 'ios', 'node', 'django', 'laravel', 'mongodb', 'firebase', 'angular', 'vue', 'docker', 'kubernetes', 'linux', 'windows', 'microsoft', 'tableau', 'python', 'java', 'javascript', 'typescript', 'react', 'excel', 'tally', 'photoshop', 'figma', 'sql', 'aws', 'html', 'css', 'ielts', 'toefl', 'upsc', 'neet', 'jee', 'gate', 'cat', 'gst', 'sat', 'gre'])
 function nameFromCapitals(rawPrompt: string) {
   // "Dr. Sharma": the full stop after a title is not the end of a sentence
   const userPrompt = rawPrompt.replace(/\b(Dr|Mr|Mrs|Ms|Prof|Er|Adv)\.\s+(?=[A-Z])/g, '$1 ')
@@ -41,11 +43,18 @@ function nameFromCapitals(rawPrompt: string) {
     // a city or a word like "India" at either end is the place, not the name ("Sharma Sweets Jaipur")
     while (parts.length > 1 && NOT_A_NAME.has(parts[parts.length - 1].toLowerCase())) parts = parts.slice(0, -1)
     const words = parts.filter((w) => !NOT_A_NAME.has(w.toLowerCase()))
+    // "1.2M" is a number, "Spotify" and "Instagram" are where the business is, not what it is called
+    if (match.index > 0 && /[\p{L}\p{N}]/u.test(userPrompt[match.index - 1])) continue
+    // a capitalised thing after a comma or after "on / using / playing / like" is one of the things listed, not the name of the business
+    if (/(?:,\s*|\b(?:on|using|playing|like|via|with)\s+)$/i.test(userPrompt.slice(Math.max(0, match.index - 12), match.index)) && match.index > 8) continue
+    if (words.every((w) => PLATFORMS.has(w.toLowerCase()) || w.length < 2)) continue
     if (!words.length || words.length !== parts.length) continue
     // a capitalised word after "in / at / near" is the place ("beekeeping farm in Coorg"), not the name
     if (/(?:^|\s)(?:in|at|near|from|around|across|of|to|based\s+in)\s+$/i.test(userPrompt.slice(0, match.index))) continue
     // at the very start of the prompt a single capitalised word is just the first word of a sentence
     if (match.index === 0 && words.length < 2) continue
+    // "Wedding DJ and sound services": the capitalised start of a sentence that goes on with lower-case words is a kind of business, not a name
+    if (match.index === 0 && (words.some((w) => isBusinessWord(w)) || /^\s+(?:and|or|&|services?|for|in|at)\b/i.test(userPrompt.slice(match[0].length)))) continue
     // an acronym after "for" or "of" ("coaching institute for UPSC", "classes for NEET") is what the business teaches, not its name
     if (words.every((w) => /^(?:[A-Z]{2,6}|and|&)$/.test(w)) && (words.length > 1 || /(?:\bfor|\bof|\bin|\babout|\bon)\s+$/i.test(userPrompt.slice(0, match.index)))) continue
     return parts.join(' ').replace(/^(Dr|Mr|Mrs|Ms|Prof|Er|Adv) /, '$1. ')
@@ -60,12 +69,15 @@ const clean = (raw: string) =>
   raw
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]*>/g, ' ')
+    // "Office management software: desk booking, meeting rooms": what comes after the colon lists things, it is not part of the name of the business
+    .replace(/^([^:]{6,}?\s[^:]{3,}?):[\s\S]*$/, '$1')
     .replace(/[^\w&' -]/g, ' ')
     // "yoga studio in Jaipur" / "plumber near me": the place is not part of the business
     .replace(/\s+(?:in|at|near|around)\s+\S[\s\S]*$/i, '')
     .replace(CUT_WORDS, '')
     .replace(CUT_AFTER_BUSINESS, '')
     .replace(/\b(?:web\s*site|landing\s+page|page|site)\s*$/i, '')
+    .replace(/\bweb\s*site\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
@@ -137,6 +149,11 @@ function inventName(subject: string, userPrompt: string, themeKey?: string, nich
 const NICHE_NAMES: Record<string, string[]> = { 'German cafe': ['Kaffeehaus Linde', 'Cafe Edelweiss', 'Brezel und Bohne', 'Zum Goldenen Kuchen', 'Kaffeehaus Eiche'] }
 
 function inventPlainName(subject: string, userPrompt: string, themeKey?: string, nicheLabel?: string) {
+  // a person on the internet is not "Golden Podcast": the placeholder says whose page it is (the person is asked for the real name)
+  const creator = `${subject} ${userPrompt}`.toLowerCase()
+  if (/\bpodcast/.test(creator)) return 'My Podcast'
+  if (/\b(?:youtuber|youtube\s+channel|vlogger)\b/.test(creator)) return 'My Channel'
+  if (/\b(?:influencer|content\s+creator|blogger|streamer|instagrammer)\b/.test(creator)) return 'My Creator Page'
   // a niche knows what the business is called in plain words ("Pest control" -> "Harbor Pest Control")
   if (nicheLabel && NICHE_NAMES[nicheLabel]) {
     const pick = [...userPrompt.toLowerCase()].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 11)
@@ -150,6 +167,10 @@ function inventPlainName(subject: string, userPrompt: string, themeKey?: string,
     return `${FRESH_WORDS[first % FRESH_WORDS.length]} ${titleCase(said.toLowerCase())}`.replace(/\b(?:Ngo|Pg|Hr|Ac|Cctv|Gst|Seo|Ev|Dj|Diy)\b/g, (m) => m.toUpperCase())
   }
   const words = subject.split(/\s+/).filter((w) => w && !GENERIC_TAIL.has(w))
+  // "hr and payroll software": the name does not start with a joining word
+  while (words.length > 1 && /^(?:and|or|&|of|for|the|a|an)$/i.test(words[0])) words.shift()
+  const andAt = words.findIndex((w) => /^(?:and|or|&)$/i.test(w))
+  if (andAt >= 0 && words.length - andAt <= 3) words.splice(0, andAt + 1)
   const last = words.pop() ?? ''
   // "car rental company" -> "car rental"; "bakery" -> "bakery"; "dentist" -> "dental"
   const head = PERSON_TO_PLACE[last] ?? (PLACES.has(last) || isBusinessWord(last) ? ([...words.slice(-2), last].join(' ').length <= 22 && words.length >= 2 ? [...words.slice(-2), last] : [...words.slice(-1), last]).join(' ') : '')

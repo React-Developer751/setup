@@ -46,6 +46,8 @@ export type WebsiteContent = {
   bespoke?: boolean
   /** how many items of each list the person added by hand: the parts get that many more places than their template has */
   added?: Record<string, number>
+  /** `me`: a person's own page (an influencer, a podcast): the texts say "I", not "we" */
+  voice?: 'me'
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>
@@ -136,7 +138,9 @@ export function generateWebsiteContent(
     // example numbers of the kits are claims nobody made: plain statements instead
     const plain = withCuisine({ ...personal, stats: plainStats(personal.stats, shaping.rand, !/\b(?:ngo|charity|foundation|donat\w*|shelter|rescue|trust|store|shop|restaurants?|cafes?|bakery|tapri|chai|school)\b/i.test(userPrompt)) }, userPrompt)
     // no text pack: the cards of the business type next to it must not talk about another business
-    return shaping.niche || bespoke ? plain : scrubForeign(plain, userPrompt)
+    // software with no pack: the example figures of the kit are claims, and the plain statements of the bank are about a local business ("Local Friendly team"): no strip until the person gives numbers
+    const clean = !shaping.niche && !bespoke && tech ? { ...plain, stats: plain.stats.filter((x) => x.fact) } : plain
+    return shaping.niche || bespoke ? plain : scrubForeign(clean, userPrompt)
   }
   if (!creative) return shape(content)
 

@@ -27,13 +27,13 @@ export type Facts = {
   currency?: string
 }
 
-const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy)\b/gi
-const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase())
+const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy|mvps?|sms|pdf|iot|gps|ott|api|sdk)\b/gi
+const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase().replace(/^MVPS$/, 'MVPs'))
 const titleCase = (s: string) => fixAcronyms(s.replace(/(^|[\s/-])([a-z])/g, (_m, a: string, c: string) => a + c.toUpperCase()))
 const lowerFirst = (s: string) => (/^[A-Z]{2,}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const AUDIENCE = new Set(['small businesses', 'small business', 'msmes', 'freelancers', 'homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
+const AUDIENCE = new Set(['small businesses', 'small business', 'msmes', 'freelancers', 'homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'landlords', 'tenants', 'owners', 'clients', 'customers', 'employees', 'recruiters', 'sellers', 'buyers', 'drivers', 'founders', 'entrepreneurs', 'managers', 'executives', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
 const NOISE = new Set(['the', 'a', 'an', 'my', 'our', 'your', 'all', 'various', 'many', 'some', 'best', 'good', 'great', 'quality', 'affordable', 'cheap', 'professional', 'top', 'reliable', 'trusted', 'premium', 'modern', 'simple', 'beautiful', 'new', 'and', 'or', 'with', 'also', 'etc'])
 const GENERIC = new Set(['business', 'website', 'site', 'page', 'company', 'services', 'service', 'shop', 'store', 'products', 'product', 'things', 'work', 'stuff'])
 
@@ -126,9 +126,9 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   const head = withoutPlace.replace(/\s+(?:for|selling|offering|providing|with|including|that|which)\s+[\s\S]*$/i, '').replace(/(?<=[a-z])(?:\s+[A-Z][\p{L}&'-]*)+$/u, '')
   if (/,|&|\band\b|\baur\b/i.test(head) && head.split(/\s+/).length <= 9) lists.push(head)
   // a list that stands on its own after the name and the place ("naam Forno Rosso, wood fired pizza, fresh pasta, tiramisu aur weekend brunch"): the short phrases are the offer
-  if (!lists.length) {
+  if (!lists.length || lists.every((l) => !/,|\band\b|\baur\b|&/i.test(l))) {
     const META = /(?<![\p{L}])(?:website|web\s*site|site|page|landing|single|multiple|multi|chahiye|chahie|banao|bana|banani|mujhe|please|create|build|make|premium|naam|name|called|named|ke\s+liye|ki|ka|ke|mein|me|want|need|for|pages?)(?![\p{L}])/iu
-    const parts = withoutPlace.split(/\s*(?:,|;|:)\s*|\s+(?:aur|and|&)\s+/i).map((x) => x.trim()).filter(Boolean)
+    const parts = withoutPlace.split(/\s*(?:,|;|:)\s*|\s+(?:aur|and|&)\s+/i).map((x) => x.trim()).filter(Boolean).map((x, i, all) => (i === all.length - 1 ? x.replace(/\s+for\s+(?:small\s+|all\s+|growing\s+)?\p{L}+(?:\s+\p{L}+)?$/iu, '') : x))
     const items = parts.filter((x) => (!META.test(x) || (/\d{3,6}/.test(x) && !/(?<![\p{L}])(?:website|web\s*site|site|page|pages|landing)(?![\p{L}])/iu.test(x))) && x.split(/\s+/).length <= 5 && !/^\d+$/.test(x))
     if (parts.length >= 3 && items.length >= 2) {
       lists.push(items.join(', '))
@@ -148,11 +148,21 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
     const whole = priced ? cleanItem(priced[1]) : raw0
     // the business itself ("dental clinic") is not one of its services, also when it is cut down to "dental"
     if (subject && cleanItem(subject) === whole) continue
+    // "Food blogger Ananya", "Freelance graphic designer Kabir": the business and its name are not one of its services
+    if (subject && subject.split(/\s+/).length >= 2 && cleanItem(whole).startsWith(cleanItem(subject))) continue
     const raw = whole.replace(/\s+(?:online\s+)?(?:store|shop|boutique|studio|clinic|centre|center|restaurant|cafe|bakery|salon|dukaan)$/i, '').trim()
     if (!raw) continue
     const words = raw.split(/\s+/)
-    if (words.every((w) => AUDIENCE.has(w) || AUDIENCE.has(raw)) || AUDIENCE.has(raw)) {
+    // "small companies", "busy founders": an adjective and the people it is for
+    const peopleOnly = words.length >= 1 && words.length <= 3 && AUDIENCE.has(words[words.length - 1]) && words.slice(0, -1).every((w) => /^(?:small|medium|mid-?sized|growing|busy|local|young|new|early-?stage|large|big|working|first-?time|aspiring|corporate|indian|all)$/.test(w))
+    if (peopleOnly || words.every((w) => AUDIENCE.has(w) || AUDIENCE.has(raw)) || AUDIENCE.has(raw)) {
       audience.push(raw)
+      continue
+    }
+    // "landlords rent collection": the people come first, the service is what follows
+    if (words.length >= 2 && AUDIENCE.has(words[0]) && /s$/.test(words[0]) && !AUDIENCE.has(words[1])) {
+      audience.push(words[0])
+      facts.services.push(words.slice(1).join(' '))
       continue
     }
     if (words.length > 5 || raw.length > 36 || raw.length < 3) continue
@@ -171,7 +181,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   // a list of prices written on purpose ("drop-in 500 rupees, monthly 3000 rupees, retreat 12000 rupees"): read segment by segment, before the word lists above cut a name ("premium") or a price off
   const listed = pricesWritten(prompt)
   if (listed.length >= 2) facts.prices = listed
-  const dropped = facts.services.filter((x) => notAService(x, facts.prices) && !/rupees?|\brs\b|inr|fees?|plans?|prices?|web ?site|website|landing|page/i.test(x) && x.length <= 24)
+  const dropped = facts.services.filter((x) => notAService(x, facts.prices) && !/rupees?|\brs\b|inr|fees?|plans?|prices?|web ?site|website|landing|page|followers|subscribers|listeners|^listen|^watch|^follow|show$|^(?:guests?|episodes?|videos?|reviews?|posts?|content)$/i.test(x) && x.length <= 24)
   if (dropped.length) facts.details = [...new Set(dropped)].slice(0, 3)
   facts.services = facts.services.filter((x) => !notAService(x, facts.prices)).filter((x) => !/^[\d][\d,\s]*(?:rupees?|rs\.?|inr|only)?$/i.test(x.trim()) && !/^(?:call|phone|whatsapp)\s+\d/i.test(x.trim()) && !/^(?:plans?|gallery|galleries|faqs?|pages?|pricing|blog|contact|about|testimonials?)$/i.test(x.trim())).slice(0, 6)
   facts.offers = [...new Set(facts.offers)].slice(0, 4)
@@ -194,6 +204,9 @@ function notAService(item: string, prices: { name: string }[]): boolean {
   // "plans basic", "pricing premium": the word for the list and the name of one plan
   if (/^(?:plans?|pricing|prices?|fees?|rates?)\s+\p{L}+$/u.test(x)) return true
   if (/^(?:rooms?|booking|bookings|online booking|online|app|site)$/.test(x)) return true
+  if (/^(?:guests?|episodes?|videos?|reviews?|posts?|content)$/.test(x)) return true
+  // where to find a person or how to follow them, and how often a show comes out: not things they sell
+  if (/^(?:listen|watch|follow|subscribe|available|find\s+(?:me|us)|streaming)\b/.test(x) || /^(?:weekly|daily|monthly|new)\s+(?:show|podcast|videos?|episodes?)\b/.test(x) || /\b(?:followers|subscribers|listeners|fans|views)$/.test(x)) return true
   if (/\b(?:view|views|wifi|wi-fi|parking|ac rooms?)$/.test(x) && x.split(' ').length <= 3) return true
   return false
 }
@@ -244,6 +257,13 @@ const CARD_TEXT = [
   'Need {s}? Message us the details and we tell you what it involves.',
   '{S}: what it includes and how long it takes, told up front.',
   'Questions about {s}? We explain the options and the next step.',
+]
+
+const CARD_TEXT_ME = [
+  '{S}: tell me about your brand and what you have in mind, and I reply with ideas.',
+  '{S}, explained in plain words before anything starts.',
+  'Interested in {s}? Message me the details and I tell you what it involves.',
+  '{S}: what it includes and how long it takes, told up front.',
 ]
 
 /** a feature-card sentence for a service the person listed (no invented claims) */
@@ -307,17 +327,19 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
       }
       return {
         title: titleCase(s).slice(0, 32),
-        text: CARD_TEXT[(i + Math.floor(rand() * CARD_TEXT.length)) % CARD_TEXT.length].replaceAll('{S}', upperFirst(fixAcronyms(s))).replaceAll('{s}', lowerFirst(fixAcronyms(s))),
+        text: (content.voice === 'me' ? CARD_TEXT_ME : CARD_TEXT)[(i + Math.floor(rand() * CARD_TEXT.length)) % (content.voice === 'me' ? CARD_TEXT_ME : CARD_TEXT).length].replaceAll('{S}', upperFirst(fixAcronyms(s))).replaceAll('{s}', lowerFirst(fixAcronyms(s))),
       }
     })
     const rest = next.features.items.filter((item, n) => !used.has(n) && !cards.some((c) => c.title.toLowerCase() === item.title.toLowerCase()))
     const keep = size === 'full' ? 6 : 3
-    next = { ...next, features: { ...next.features, items: (onlyNamed && services.length >= 2 ? cards : [...cards, ...rest]).slice(0, keep) }, marquee: [...new Set([...services.slice(0, 4).map((s) => titleCase(s).slice(0, 16)), ...next.marquee])].slice(0, 8) }
+    // software with its own list of things it does ("desk booking, meeting rooms, visitor management"): the cards of the kit about "next-gen operations" are not added to it
+    const ownOnly = onlyNamed ? services.length >= 2 : !hasNiche && services.length >= 3
+    next = { ...next, features: { ...next.features, ...(ownOnly && !onlyNamed && /cloud|next-gen|smart|intelligen|ai\b|powered/i.test(next.features.title) ? { title: 'Everything In One Place' } : {}), items: (ownOnly ? cards : [...cards, ...rest]).slice(0, keep) }, marquee: [...new Set([...services.slice(0, 4).map((s) => titleCase(s).slice(0, 16)), ...next.marquee])].slice(0, 8) }
   }
 
   // questions people would ask about exactly these things
   const questions: { q: string; a: string; own?: boolean }[] = []
-  if (services[0] && services[0].length >= 6 && !/^[A-Za-z]{2,5}$/.test(services[0].trim()) && services[0].trim().split(' ').length <= 4) questions.push({ q: `Do you offer ${lowerFirst(fixAcronyms(services[0]))}?`, a: `Yes, ${lowerFirst(fixAcronyms(services[0]))} is something we do regularly. Send us a message with the details and we will tell you how we can help.` })
+  if (services[0] && services[0].length >= 6 && !/^[A-Za-z]{2,5}$/.test(services[0].trim()) && services[0].trim().split(' ').length <= 4) questions.push(content.voice === 'me' ? { q: `Do you do ${lowerFirst(fixAcronyms(services[0]))}?`, a: 'Message me the details and I tell you how it would work.' } : { q: `Do you offer ${lowerFirst(fixAcronyms(services[0]))}?`, a: `Yes, ${lowerFirst(fixAcronyms(services[0]))} is something we do regularly. Send us a message with the details and we will tell you how we can help.` })
   if (place) questions.push({ q: 'Where are you based?', a: `We are based in ${place}. Get in touch to check that we cover your area.` })
   for (const perk of perks) {
     if (perk.kind === 'delivery') questions.push({ q: `Do you offer ${perk.text}?`, a: 'Yes, we bring it to your door. Ask us about delivery areas and timing when you get in touch.' })

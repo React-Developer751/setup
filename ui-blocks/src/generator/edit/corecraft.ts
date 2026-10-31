@@ -160,7 +160,7 @@ export type CorePage = {
   needs_review: string[]
 }
 
-export type CoreOurs = { /** the person wrote prices of their own (the built-in content holds them): the price list stays */ prices?: boolean; niche?: string; heroTitle: string; subject: string; theme: ThemeKey; prompt: string; brand: string }
+export type CoreOurs = { /** the person wrote prices of their own (the built-in content holds them): the price list stays */ prices?: boolean; niche?: string; /** a person's own page (an influencer, a podcast): the built-in page is written in the first person about collaborations */ personal?: boolean; heroTitle: string; subject: string; theme: ThemeKey; prompt: string; brand: string }
 export type CoreDecision = { use: boolean; reason: string; blocks?: CoreBlocks; /** the business name, when the prompt gave it in Devanagari */ rename?: string; /** sections that would stay in English (team, prices, reviews ...): a Hindi page does not show them */ hide?: EditOp[]; review: string[] }
 
 const HI_NAV = { home: 'होम', services: 'सेवाएं', gallery: 'गैलरी', blog: 'ब्लॉग' }
@@ -198,8 +198,9 @@ export function decideCore(page: CorePage, ours: CoreOurs): CoreDecision {
   const review = page.needs_review ?? []
   const hindi = page.lang === 'hi'
   const strict = /^strict/i.test(page.generated_by?.mode ?? '')
-  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i) && !SITE_PARTS.test(i.trim()) && !hasFiller(i) && !hasLookWord(i))
+  const items = (page.generated_by?.items_from_prompt ?? []).filter((i) => !OFFER.test(i) && !SITE_PARTS.test(i.trim()) && !hasFiller(i) && !hasLookWord(i) && !/\b(?:followers|subscribers|listeners|fans)\b/i.test(i))
   if (!page.features?.length || !page.about?.length) return { use: false, reason: 'Core-Craft returned an incomplete page', review }
+  if (ours.personal && !hindi) return { use: false, reason: 'this is a personal page (an influencer, a channel, a podcast): the built-in page is written in the first person about working together', review }
   if (hindi) {
     const t = (en: string, hi: string) => (hi ? hi : en)
     const ui = page.ui ?? {}

@@ -156,7 +156,7 @@ const REQUEST_WORDS = new Set(['create', 'make', 'build', 'generate', 'design', 
 const businessPhrase = (prompt: string | undefined) => {
   if (!prompt) return ''
   // (a Hinglish request: "doctor ki website" is the business "doctor", "meri dukaan ke liye website banao" names no business)
-  const head = withoutVibe(stripFiller(prompt.split(/\b(?:called|named|naam)\b/i)[0].split(/\s+(?:in|at|near|from)\s+(?=[A-Z])/)[0]).replace(/\b(?:me|mein)$/i, '').trim())
+  const head = withoutVibe(stripFiller(prompt.split(/\b(?:called|named|naam)\b/i)[0].split(/\s*[:;]\s*/)[0].split(/\s+(?:in|at|near|from)\s+(?=[A-Z])/)[0]).replace(/\b(?:me|mein)$/i, '').trim())
   let words = head
     .split(/\s+/)
     .filter((w, i) => !(i > 0 && /^[A-Z][\p{L}&'-]*$/u.test(w)) && (/^for$/i.test(w) || !REQUEST_WORDS.has(w.toLowerCase().replace(/[^\p{L}]/gu, ''))))
@@ -246,7 +246,7 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
   const bizRand = biz ? seededRandom(Math.floor(rand() * 2 ** 31)) : rand
   const ACRONYMS: Record<string, string> = { saas: 'SaaS', crm: 'CRM', erp: 'ERP', api: 'API', ngo: 'NGO', hr: 'HR', it: 'IT', ai: 'AI', seo: 'SEO', cctv: 'CCTV', gst: 'GST', upsc: 'UPSC', ac: 'AC', pg: 'PG', ca: 'CA' }
   const Biz = titleCase(biz).replace(/\b[A-Za-z]{2,5}\b/g, (w) => ACRONYMS[w.toLowerCase()] ?? w)
-  const aBiz = /^[AEIOU]/i.test(Biz) && !/^(?:uni|use|user)/i.test(Biz) ? `An ${Biz}` : `A ${Biz}`
+  const aBiz = (/^[AEIOU]/i.test(Biz) && !/^(?:uni|use|user)/i.test(Biz)) || /^(?:HR|FM|LED|MBA|MRI|NGO|SMS|X-?ray)\b/.test(Biz) ? `An ${Biz}` : `A ${Biz}`
   const oneWord = !biz.includes(' ')
   // headlines about the business of the prompt: none of them is a stock ending ("Made Simple", "Starts Here"), each one says something about how the place works
   const bizTitles = oneWord

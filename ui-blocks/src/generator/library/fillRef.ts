@@ -16,6 +16,12 @@ const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 /** the first letter of a service name lower-cased, but not an acronym (NHS, UKVI) */
 const lowerFirst = (s: string) => s.split(' ').map((w) => (/^[A-Z]{2,}/.test(w) ? w : w.toLowerCase())).join(' ')
 
+/** a part with nothing to show: hidden (the page's own styles can override the attribute, so the display is set too) */
+const hide = (root: Element) => {
+  root.setAttribute('hidden', '')
+  ;(root as HTMLElement).style.display = 'none'
+}
+
 /** n slots of a repeated part: the first ones get the items, the others are removed */
 const LIST_OF: Record<string, string> = { tile: 'features', row: 'features', card: 'features', qa: 'faq', quote: 'testimonials', shot: 'gallery', stat: 'stats', step: 'steps', post: 'blog', para: 'paragraphs', point: 'points', plan: 'plans' }
 /** how many items of the list the person added by hand (set when a part is filled): a part may grow by that many places */
@@ -224,7 +230,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     case 'show-banner': {
       const offer = c.offers?.[0]
       // an announcement is an offer the person named; without one there is nothing to announce
-      if (!offer) return root.setAttribute('hidden', '')
+      if (!offer) return hide(root)
       put(root, 'text', offer)
       put(root, 'button', short(c.hero.button, 22))
       break
@@ -334,7 +340,7 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
     }
     case 'stats': {
       const stats = c.stats.filter((s) => s.value && s.label).slice(0, 4)
-      if (stats.length < 2) return root.setAttribute('hidden', '')
+      if (stats.length < 2) return hide(root)
       repeat(root, 'stat', stats, (el, stat) => {
         const value = el.querySelector('[data-slot="stat-value"]')
         const label = el.querySelector('[data-slot="stat-label"]')
@@ -379,7 +385,7 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
       // the menu board (food businesses): categories with their items
       if (root.querySelector('[data-ref="menu"]')) {
         const categories = (c.menu?.categories ?? []).filter((cat) => cat.items.length).slice(0, 4)
-        if (!categories.length) return root.setAttribute('hidden', '')
+        if (!categories.length) return hide(root)
         put(root, 'eyebrow', c.brandName)
         put(root, 'title', c.menu?.title)
         put(root, 'lead', c.menu?.lead)
@@ -400,7 +406,7 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
         break
       }
       const plans = c.pricing.plans.slice(0, 6 + (c.added?.plans ?? 0))
-      if (!plans.length) return root.setAttribute('hidden', '')
+      if (!plans.length) return hide(root)
       put(root, 'eyebrow', c.brandName)
       put(root, 'title', c.pricing.title)
       repeat(root, 'row', plans, (el, plan) => {
