@@ -14,25 +14,27 @@ export function appKindOf(o: { themeKey: string; niche?: string; subject?: strin
   const RULES: [AppKind, RegExp][] = [
     ['creator', /\b(?:influencer|youtuber|podcast|streamer|blogger|vlogger|followers|subscribers)\b/],
     ['general', /\b(?:escape rooms?|board games?|arcade|bowling alley|trampoline|amusement|laser tag|go ?kart\w*|paintball|vr zone|gaming (?:zone|lounge|cafe)|museum|aquarium|theme park|water park)\b/],
-    ['gym', /\b(?:gym|fitness|yoga|crossfit|martial|zumba|pilates)\b/],
-    ['learning', /\b(?:school|academy|coaching|classes|tuition|institute|course|training|tutor|learn)\b/],
     ['ngo', /\b(?:ngo|charity|foundation|donat\w*|volunteers?|nonprofit|non-profit|trust|shelter|rescue|welfare|orphanage|ashram|relief|cause)\b/],
+    ['gym', /\b(?:gym|fitness|yoga|crossfit|martial|zumba|pilates)\b/],
+    ['pets', /\b(?:pet|pets|dog|dogs|cat|cats|vet|veterinary|grooming)\b/],
+    ['office', /\b(?:office|coworking|desk booking|visitor management|facility)\b/],
+    ['software', /\b(?:software|saas|crm|erp|management system|automation|erp)\b/],
+    ['learning', /\b(?:school|academy|coaching|classes|tuition|institute|course|training|tutor|learn)\b/],
+    ['general', /\b(?:video editing|recording studio|dubbing|animation|post production|production house|podcast production|graphic design|design studio|publishing|newspaper|magazine|radio|news portal|media house|advertising)\b/],
+    ['shop', /\b(?:printing|printers?|print shop|press|stationery|flex|banner printing|cyber|typing|photocopy|xerox|wholesal\w*|distributor|supplier|dealer|traders?|mandi|manufactur\w*|exporter)\b/],
     ['legal', /\b(?:law|lawyer|advocate|attorney|legal|solicitor|notary|litigation)\b/],
-    ['construction', /\b(?:construction|contractor|civil|architect\w*|interior|renovation|plumb\w*|electrician|carpent\w*|roofing)\b/],
+    ['construction', /\b(?:construction|contractor|civil|architect\w*|interior|renovation|plumb\w*|electrician|carpent\w*|roofing|modular|solar|installer|installation|wiring|inverter|hvac|waterproofing|flooring|tiles?)\b/],
     ['auto', /\b(?:car|cars|bike|garage|automobile|mechanic|vehicle|tyre|tire|car wash)\b/],
     ['logistics', /\b(?:movers|packers|courier|logistics|transport|delivery service|freight|shipping company|cargo)\b/],
-    ['pets', /\b(?:pet|pets|dog|dogs|cat|cats|vet|veterinary|grooming)\b/],
     ['finance', /\b(?:insurance|loan|finance|accounting|chartered|ca firm|tax|investment|mutual fund|wealth|gst)\b/],
-    ['office', /\b(?:office|coworking|desk booking|visitor management|facility)\b/],
-    ['software', /\b(?:software|saas|app|platform|crm|erp)\b/],
+    ['software', /\b(?:app|apps|platform|tool|tools|application)\b/],
     ['clinic', /\b(?:clinic|dental|dentist|doctor|hospital|physio|therap|dietitian|nutrition|pharmacy|medical|ayurved\w*|homeopath\w*|diagnostic|lab|eye|skin|ortho\w*|dermat\w*|pathology)\b/],
     ['salon', /\b(?:salon|spa|beauty|makeup|barber|parlour|parlor|massage|tattoo|nail|mehndi|mehendi|waxing|hair)\b/],
     ['food', /\b(?:restaurant|cafe|café|bakery|kitchen|catering|bar|diner|food|sweets|pizza|tiffin|dhaba|canteen|juice|ice cream|momos|biryani|chai|tapri)\b/],
-    ['property', /\b(?:real estate|property|builder|broker|apartments?|rental|pg|hostel|plots?|flats?|villa|coliving)\b/],
-    ['shop', /\b(?:printing|printers?|print shop|press|stationery|flex|banner printing)\b/],
+    ['property', /\b(?:real estate|property|builder|broker|apartments?|rental flats?|rental homes?|rental propert\w*|for rent|pg|hostel|plots?|flats?|villa|coliving)\b/],
     ['events', /\b(?:wedding|event|decor|dj|planner|photograph|videograph)\b/],
     ['travel', /\b(?:travel|tour|trip|hotel|resort|stay|homestay|hostel stay|guest ?house|safari|trek\w*|camp\w*)\b/],
-    ['consult', /\b(?:astrolog\w*|tarot|vastu|consultant|consultancy|counsell?ing|coach|therapist|numerolog\w*)\b/],
+    ['consult', /\b(?:astrolog\w*|tarot|vastu|consultant|consultancy|counsell?ing|coach|therapist|numerolog\w*|matrimon\w*|marriage bureau|matchmak\w*|immigration|visa)\b/],
     ['farm', /\b(?:farm|farmer|dairy|agri\w*|nursery|plants?|seeds?|honey|beekeeping)\b/],
     ['homeservices', /\b(?:cleaning|pest|repair|ac service|appliance|laundry|maid|housekeeping|handyman|home services?|pest control|locksmith)\b/],
     ['shop', /\b(?:shop|store|boutique|kirana|grocery|retail|fashion|jewel|furniture|electronics|mart|thrift|mobile|gift|stationery|toys|books?|pharmacy store|optical|footwear|garments?|saree|kurti|cloth\w*)\b/],
@@ -40,9 +42,11 @@ export function appKindOf(o: { themeKey: string; niche?: string; subject?: strin
   if (o.voice === 'me') return 'creator'
   // the words of the subject and of the niche count most, the other words (the cards of the page) less: "home cleaning" with a "kitchen cleaning" card is not a restaurant
   const strong = `${o.niche ?? ''} ${o.subject ?? ''}`.toLowerCase().replace(/_/g, ' ')
-  const scored = RULES.map(([kind, re], order) => ({ kind, order, score: (re.test(strong) ? 3 : 0) + (re.test(s) ? 1 : 0) })).filter((x) => x.score > 0).sort((a, b) => b.score - a.score || a.order - b.order)
+  // (a single word of the cards of the page, "training" on a security agency's page, is not enough: it takes two such words, or a word of the subject or of the niche)
+  const hits = (re: RegExp) => (s.match(new RegExp(re.source, 'gi')) ?? []).length
+  const scored = RULES.map(([kind, re], order) => ({ kind, order, score: (re.test(strong) ? 3 : 0) + Math.min(2, hits(re)) })).filter((x) => x.score >= 2).sort((a, b) => b.score - a.score || a.order - b.order)
   if (scored.length) return scored[0].kind
-  const BY_THEME: Record<string, AppKind> = { nonprofit: 'ngo', professional_services: 'consult', automotive: 'auto', home_services: 'homeservices', pets_animals: 'pets', organic_nature: 'farm', modern_tech: 'software', healthcare: 'clinic', bold_fitness: 'gym', beauty_wellness: 'salon', food_dining: 'food', education: 'learning', real_estate: 'property', events_wedding: 'events', travel_tourism: 'travel', fashion_retail: 'shop' }
+  const BY_THEME: Record<string, AppKind> = { nonprofit: 'ngo', automotive: 'auto', home_services: 'homeservices', pets_animals: 'pets', organic_nature: 'farm', modern_tech: 'software', healthcare: 'clinic', bold_fitness: 'gym', beauty_wellness: 'salon', food_dining: 'food', education: 'learning', real_estate: 'property', events_wedding: 'events', travel_tourism: 'travel', fashion_retail: 'shop' }
   return BY_THEME[o.themeKey] ?? 'general'
 }
 
@@ -158,20 +162,20 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       break
     }
     case 'food': {
-      const orders = toRows(12, (i) => ({ order: `#${1040 + i}`, customer: g.name(), items: g.pick(g.serviceList), total: g.money(200, 3000), status: g.pick(['New', 'Preparing', 'Delivered', 'Delivered']) }), g)
+      const orders = toRows(12, (i) => ({ order: `#${1040 + i}`, customer: g.name(), items: g.pick(g.serviceList), total: g.money(200, 3000), date: g.date(60), status: g.pick(['New', 'Preparing', 'Delivered', 'Delivered']) }), g)
       const menu = g.serviceList.map((s) => ({ item: s, price: g.money(80, 900, 10), available: g.pick(['In stock', 'In stock', 'Sold out']) }))
       tables = [
-        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('items', 'Items'), col('total', 'Total', 'money'), col('status', 'Status', 'status', ['New', 'Preparing', 'Delivered'])], orders),
+        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('items', 'Items'), col('total', 'Total', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Preparing', 'Delivered'])], orders),
         table('menu', 'Menu', 'item', 'list', [col('item', 'Item'), col('price', 'Price', 'money'), col('available', 'Availability', 'status', ['In stock', 'Low', 'Sold out'])], menu),
         table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
       ]
       break
     }
     case 'shop': {
-      const orders = toRows(12, (i) => ({ order: `#${2010 + i}`, customer: g.name(), product: g.pick(g.serviceList), total: g.money(300, 8000), status: g.pick(['New', 'Packed', 'Shipped', 'Delivered']) }), g)
+      const orders = toRows(12, (i) => ({ order: `#${2010 + i}`, customer: g.name(), product: g.pick(g.serviceList), total: g.money(300, 8000), date: g.date(60), status: g.pick(['New', 'Packed', 'Shipped', 'Delivered']) }), g)
       const products = g.serviceList.map((s) => ({ product: s, price: g.money(200, 6000), stock: String(g.int(0, 60)) }))
       tables = [
-        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('product', 'Product'), col('total', 'Total', 'money'), col('status', 'Status', 'status', ['New', 'Packed', 'Shipped', 'Delivered'])], orders),
+        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('product', 'Product'), col('total', 'Total', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Packed', 'Shipped', 'Delivered'])], orders),
         table('products', 'Products', 'product', 'list', [col('product', 'Product'), col('price', 'Price', 'money'), col('stock', 'In stock', 'number')], products),
         table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
       ]
@@ -337,9 +341,9 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
     }
     case 'farm': {
       const produce = g.serviceList.map((s) => ({ product: s, price: g.money(30, 900, 10), stock: String(g.int(0, 120)), status: g.pick(['In season', 'In season', 'Low', 'Out of season']) }))
-      const orders = toRows(10, (i) => ({ order: `#${400 + i}`, customer: g.name(), product: g.pick(g.serviceList), total: g.money(150, 6000, 10), status: g.pick(['New', 'Packed', 'Delivered', 'Delivered']) }), g)
+      const orders = toRows(10, (i) => ({ order: `#${400 + i}`, customer: g.name(), product: g.pick(g.serviceList), total: g.money(150, 6000, 10), date: g.date(60), status: g.pick(['New', 'Packed', 'Delivered', 'Delivered']) }), g)
       tables = [
-        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('product', 'Product'), col('total', 'Total', 'money'), col('status', 'Status', 'status', ['New', 'Packed', 'Delivered'])], orders),
+        table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('product', 'Product'), col('total', 'Total', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Packed', 'Delivered'])], orders),
         table('produce', 'Produce', 'product', 'list', [col('product', 'Product'), col('price', 'Price', 'money'), col('stock', 'In stock', 'number'), col('status', 'Season', 'status', ['In season', 'Low', 'Out of season'])], produce),
         table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
       ]
@@ -353,8 +357,8 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       const people = (label: string, singular: string) => table(slug(label), label, singular, 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers())
       const messages = table('messages', 'Messages', 'message', 'chat', [col('from', 'From'), col('subject', 'Subject'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Replied'])], toRows(8, () => ({ from: g.name(), subject: g.pick(['Question about a service', 'Quote request', 'Feedback', 'Appointment', 'Price list please']), date: g.date(12), status: g.pick(['New', 'Replied']) }), g))
       if (mode === 'shop') {
-        const orders = toRows(12, (i) => ({ order: `#${1200 + i}`, customer: g.name(), item: g.pick(g.serviceList), total: g.money(200, 9000, 50), status: g.pick(['New', 'Packed', 'Delivered', 'Delivered']) }), g)
-        tables = [table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('item', 'Item'), col('total', 'Total', 'money'), col('status', 'Status', 'status', ['New', 'Packed', 'Delivered'])], orders), catalogue('Catalogue', 'item'), people('Customers', 'customer')]
+        const orders = toRows(12, (i) => ({ order: `#${1200 + i}`, customer: g.name(), item: g.pick(g.serviceList), total: g.money(200, 9000, 50), date: g.date(60), status: g.pick(['New', 'Packed', 'Delivered', 'Delivered']) }), g)
+        tables = [table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('item', 'Item'), col('total', 'Total', 'money'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Packed', 'Delivered'])], orders), catalogue('Catalogue', 'item'), people('Customers', 'customer')]
       } else if (mode === 'experience') {
         const bookings = toRows(12, () => ({ guest: g.name(), experience: g.pick(g.serviceList), date: g.date(4, 20), people: String(g.int(1, 8)), status: g.pick(['Booked', 'Booked', 'Done', 'Cancelled']) }), g)
         tables = [table('bookings', 'Bookings', 'booking', 'calendar', [col('guest', 'Guest'), col('experience', 'What'), col('date', 'Date', 'date'), col('people', 'People', 'number'), col('status', 'Status', 'status', ['Booked', 'Done', 'Cancelled'])], bookings), catalogue('Experiences', 'experience'), people('Guests', 'guest')]
@@ -438,14 +442,15 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
     if (kpis.length >= 4) break
     if (!kpis.some((k) => k.calc.table === extra.calc.table && k.calc.kind === extra.calc.kind && k.calc.column === extra.calc.column && k.calc.value === extra.calc.value)) kpis.push(extra)
   }
-  const head = tables[0]
-  const dateCol = head?.columns.find((c) => c.type === 'date')
-  const moneyCol = head?.columns.find((c) => c.type === 'money')
-  const charts: AppConfig['charts'] = head
-    ? [
-        ...(head.columns.some((c) => c.type === 'status') ? [{ title: `${head.label} by status`, table: head.id, kind: 'status' as const }] : []),
-        ...(dateCol ? [moneyCol ? { title: `${moneyCol.label} per month`, table: head.id, kind: 'sumMonth' as const, column: dateCol.key, sumColumn: moneyCol.key } : { title: `${head.label} per month`, table: head.id, kind: 'month' as const, column: dateCol.key }] : []),
-      ]
-    : []
+  // the first chart is the rows of the first page that has a status, by status; the second one the first page that has a date (one with an amount first), by month
+  const statusTable = tables.find((t) => t.columns.some((c) => c.type === 'status'))
+  const dated = tables.filter((t) => t.columns.some((c) => c.type === 'date'))
+  const monthTable = dated.find((t) => t.columns.some((c) => c.type === 'money')) ?? dated[0]
+  const dateCol = monthTable?.columns.find((c) => c.type === 'date')
+  const moneyCol = monthTable?.columns.find((c) => c.type === 'money')
+  const charts: AppConfig['charts'] = [
+    ...(statusTable ? [{ title: `${statusTable.label} by status`, table: statusTable.id, kind: 'status' as const }] : []),
+    ...(monthTable && dateCol ? [moneyCol ? { title: `${moneyCol.label} per month (${monthTable.label.toLowerCase()})`, table: monthTable.id, kind: 'sumMonth' as const, column: dateCol.key, sumColumn: moneyCol.key } : { title: `${monthTable.label} per month`, table: monthTable.id, kind: 'month' as const, column: dateCol.key }] : []),
+  ]
   return { brand, slug: slug(brand), currency: cur, kpis, charts, insights: !(content.appPages ?? []).some((e) => e.action === 'remove' && ['insight', 'report'].includes(norm(e.page)) && !tables.some((t) => norm(t.label) === norm(e.page))), tables }
 }
