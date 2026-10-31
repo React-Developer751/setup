@@ -1,0 +1,8 @@
+[
+  { "prompt": "Gym in Pune with personal training, plans: basic 999 rupees, premium 1999 rupees, single page, with login and dashboard", "link": true, "offer": false, "pages": "single", "chat": [["dashboard hatao", false], ["login aur dashboard add karo", true]] },
+  { "prompt": "Dental clinic in Surat, braces, implants, root canal, multiple pages", "link": false, "offer": true, "pages": "multi", "clickOffer": true, "chat": [["dashboard hatao", false]] },
+  { "prompt": "Bakery in Jaipur, eggless cakes, home delivery, single page", "link": false, "offer": false, "pages": "single", "chat": [["login aur dashboard add karo", true]] },
+  { "prompt": "Law firm in Mumbai, corporate law, litigation, single page, without login", "link": false, "offer": false, "pages": "single" },
+  { "prompt": "HR payroll software for small companies, multiple pages", "link": false, "offer": true, "pages": "multi" },
+  { "prompt": "Meri kirana dukaan ke liye website banao, Lucknow me, home delivery, atta dal chawal, login aur dashboard chahiye", "link": true, "offer": false, "pages": "single" }
+]

@@ -9,6 +9,9 @@ export type AppKind = 'ngo' | 'legal' | 'construction' | 'auto' | 'homeservices'
 const NAMES = ['Aarav Mehta', 'Diya Sharma', 'Vihaan Rao', 'Ananya Iyer', 'Kabir Singh', 'Isha Verma', 'Rohan Gupta', 'Meera Nair', 'Arjun Patel', 'Sara Khan', 'Ishaan Joshi', 'Tara Menon', 'Neil Fernandes', 'Priya Das', 'Yash Kulkarni', 'Riya Bose', 'Dev Malhotra', 'Kiara Shah']
 
 /** which kind of dashboard fits the business (by niche, by type of site and by what the business says it is) */
+/** two kinds that are one business to a dashboard (office software is software for offices): the second adds no page */
+const SAME_FAMILY = new Set(['office|software', 'software|office'])
+
 export function rankKinds(o: { themeKey: string; niche?: string; subject?: string; voice?: string; bespoke?: boolean; prompt?: string; /** the headline of the page (what the business says it does) */ title?: string }): { kind: AppKind; score: number }[] {
   const s = `${o.niche ?? ''} ${o.subject ?? ''} ${o.prompt ?? ''}`.toLowerCase().replace(/_/g, ' ')
   const RULES: [AppKind, RegExp][] = [
@@ -406,7 +409,7 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
   }
   // a business of two kinds (a shop that also repairs, a gym with a juice bar): the first page of the second kind joins the dashboard
   if (!o.noExtra) {
-    const second = rankKinds({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: said, title: content.hero.title }).find((x) => x.kind !== kind && x.score >= 3 && x.kind !== 'general' && x.kind !== 'creator')
+    const second = rankKinds({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: said, title: content.hero.title }).find((x) => x.kind !== kind && x.score >= 3 && !SAME_FAMILY.has(`${kind}|${x.kind}`) && x.kind !== 'general' && x.kind !== 'creator')
     if (second && tables.length < 5) {
       const other = appConfigFor(content, { ...o, kind: second.kind, noExtra: true })
       const fresh = other.tables.find((x) => !tables.some((y) => norm(y.label) === norm(x.label) || y.id === x.id) && !/customer|client|guest|owner|patient|member|student|donor/i.test(x.id))
