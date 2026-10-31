@@ -4,6 +4,7 @@ import { loadGeneratorModule } from './lib/load-generator.mjs'
 globalThis.document = { styleSheets: [] }
 globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
+const { parseCsv, toCsv, csvToRows } = await loadGeneratorModule('app/appRuntime.ts')
 const { appConfigFor, appKindOf } = await loadGeneratorModule('app/appProfiles.ts')
 const { parseEdit } = await loadGeneratorModule('edit/understand.ts')
 const { editsFrom } = await loadGeneratorModule('edit/edits.ts')
@@ -21,6 +22,11 @@ const CASES = [
   ['Website for an influencer: fashion and lifestyle creator with 250k followers on Instagram, brand collaborations, reels', 'creator', ['Collaborations', 'Content calendar', 'Messages']],
   ['Student note-taking app for college students, flashcards, study timer', 'software', ['Projects', 'Team', 'Billing']],
   ['Cricket coaching academy in Hyderabad for kids, batting, bowling', 'learning', ['Students', 'Batches', 'Fees']],
+  ['Art gallery in Jaipur selling paintings, sculptures, hosting exhibitions', 'general', ['Orders', 'Catalogue', 'Customers']],
+  ['Board game cafe in Bengaluru', 'general', ['Bookings', 'Experiences', 'Guests']],
+  ['Driving school in Nagpur, car and bike lessons, license help', 'learning', ['Students', 'Batches', 'Fees']],
+  ['Wedding card printing shop in Surat', 'shop', ['Orders', 'Products', 'Customers']],
+  ['Laundry and dry cleaning service centre in Pune', 'homeservices', ['Jobs', 'Technicians', 'Customers']],
   ['NGO for stray dogs in Bangalore, adopt, donate, volunteer', 'ngo', ['Donations', 'Donors', 'Volunteers', 'Campaigns']],
   ['Law firm in Delhi, property disputes, family law, consumer cases', 'legal', ['Cases', 'Clients', 'Hearings', 'Invoices']],
   ['Construction company in Jaipur, villas, renovation, civil work', 'construction', ['Projects', 'Quotes', 'Site visits', 'Crew']],
@@ -62,6 +68,24 @@ for (const text of ['dashboard hatao', 'remove the login page']) {
 ok(!parseEdit('login button ka color blue karo', 'single').ops?.some((o) => o.op === 'app'), 'a colour of a login button is not the app')
 const withApp = page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }]))
 ok(withApp.content.app === true && !page('Dr. Mehta dental clinic in Surat, braces, implants').content.app, 'the app is on only when it was asked for')
+
+// CSV in and out
+{
+  const rows = parseCsv('Name,Phone,Notes\r\n"Sharma, A",98765,"said ""hi"""\nRao,1,x\n')
+  ok(rows.length === 3 && rows[1][0] === 'Sharma, A' && rows[1][2] === 'said "hi"', 'CSV: quotes, commas inside quotes and doubled quotes')
+  ok(parseCsv('a;b;c\n1;2;3').length === 2 && parseCsv('a;b;c\n1;2;3')[1][2] === '3', 'CSV: a semicolon file (Excel) is read')
+  ok(parseCsv('﻿a,b\n\n1,2\n').length === 2, 'CSV: a BOM and empty lines are ignored')
+  const lib = page('Dr. Mehta dental clinic in Surat, braces, implants')
+  const cfg = appConfigFor(lib.content, { themeKey: lib.themeKey })
+  const t = cfg.tables.find((x) => x.label === 'Patients')
+  const named = csvToRows(t, parseCsv('phone,name,Unknown\n111,Zoya,x\n222,Yash,y'))
+  ok(named.rows.length === 2 && named.rows[0].name === 'Zoya' && named.rows[0].phone === '111' && named.mapped === 2, 'CSV: columns are matched by their names, in any order, and unknown ones are left out')
+  const plain = csvToRows(t, parseCsv('Zoya,111,z@example.com\nYash,222,y@example.com'))
+  ok(plain.rows.length === 2 && plain.rows[0].name === 'Zoya' && plain.rows[1].email === 'y@example.com', 'CSV: without a header line the columns are taken in order')
+  ok(csvToRows(t, parseCsv('')).rows.length === 0, 'CSV: an empty file adds nothing')
+  const back = csvToRows(t, parseCsv(toCsv(t.columns, t.rows)))
+  ok(back.rows.length === t.rows.length && back.rows.every((r, i) => t.columns.every((c) => r[c.key] === t.rows[i][c.key])), 'CSV: what is exported can be imported again, unchanged')
+}
 
 // the kind of a new column: said, or read from its name
 {

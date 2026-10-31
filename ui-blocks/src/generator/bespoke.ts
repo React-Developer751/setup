@@ -18,6 +18,8 @@ export const isCreatorPage = (subject: string, prompt = '') => {
 }
 export function modeOf(subject: string, prompt = ''): Mode {
   const s = `${subject} ${prompt}`.toLowerCase()
+  // an art gallery that sells (paintings, sculptures, prints) is a shop, not a studio
+  if (has(s, /\b(?:gallery|galleries)\b/) && has(s, /\b(?:paintings?|sculptures?|artworks?|prints|selling|sells|buy|collection)\b/)) return 'shop'
   // a person with an audience (an influencer, a YouTuber, a podcast, a freelancer): the page is theirs, in the first person
   if (has(s, /\b(?:influencers?|youtubers?|youtube\s+channel|vloggers?|vlogs?|bloggers?|content\s+creators?|creators?|podcasts?|podcasters?|streamers?|instagrammers?|tiktokers?|reels|followers|subscribers)\b/) && !has(s, /\b(?:agency|software|platform|tool|app|course|classes|school|academy)\b/)) return 'creator'
   // a person on their own (a freelance designer, a solo photographer): the page is theirs too
@@ -28,7 +30,7 @@ export function modeOf(subject: string, prompt = ''): Mode {
   if (has(s, /\b(?:studio|photograph(?:y|er|ers)|films?|production|podcast|animation|illustration|portfolio|music|band|writer)\b/) && !has(s, /\b(?:cafe|café|bar|club|lounge|spa|salon|gym|yoga|dance)\b/)) return 'creative'
   if (has(s, /\b(?:rides?|tours?|trips?|adventures?|escape\s+rooms?|experiences?|safari|trek(?:s|king)?|parks?|arena|rentals?|hire|events?|party|parties|camp(?:s|ing)?|retreats?|games?|gaming|lounge|cafe|café|bar|club)\b/) && !has(s, /\b(?:shop|store|selling|sells)\b/)) return 'experience'
   if (has(s, /\b(?:shop|store|boutique|mart|dukaan|dukan|selling|sells|outlet|showroom|vendor|supplier|dealer|wholesale|market|emporium|bazaar)\b/)) return 'shop'
-  if (has(s, /\b(?:studio|design(?:er|ers)?|photograph(?:y|er|ers)|films?|video|production|podcast|music|band|artists?|portfolio|illustration|animation|writer|writing|creative|crafts?|makers?)\b/)) return 'creative'
+  if (has(s, /\b(?:gallery|galleries|exhibitions?|studio|design(?:er|ers)?|photograph(?:y|er|ers)|films?|video|production|podcast|music|band|artists?|portfolio|illustration|animation|writer|writing|creative|crafts?|makers?)\b/)) return 'creative'
   if (has(s, /\b(?:community|club|society|group|network|meetups?|ngo|foundation|trust|association|volunteers?)\b/)) return 'community'
   return 'service'
 }

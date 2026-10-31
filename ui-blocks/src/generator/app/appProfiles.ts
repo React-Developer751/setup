@@ -1,6 +1,7 @@
 // What the dashboard of each kind of business shows: its pages, its columns and its example rows. Nothing is stored anywhere: the rows are example data written here from the business of the site
 // (its services, its prices, its name), the same every time, and the person changes them in the demo app. See appRuntime.ts.
 import type { WebsiteContent } from '../finalPrompt'
+import { modeOf } from '../bespoke'
 import type { AppConfig, AppTable } from './appRuntime'
 
 export type AppKind = 'ngo' | 'legal' | 'construction' | 'auto' | 'homeservices' | 'logistics' | 'pets' | 'finance' | 'consult' | 'farm' | 'clinic' | 'gym' | 'shop' | 'food' | 'salon' | 'learning' | 'software' | 'office' | 'creator' | 'property' | 'events' | 'travel' | 'general'
@@ -10,10 +11,13 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
 
 /** which kind of dashboard fits the business (by niche, by type of site and by what the business says it is) */
 export function appKindOf(o: { themeKey: string; niche?: string; subject?: string; voice?: string; bespoke?: boolean; prompt?: string }): AppKind {
-  const s = `${o.niche ?? ''} ${o.subject ?? ''} ${o.prompt ?? ''}`.toLowerCase()
+  const s = `${o.niche ?? ''} ${o.subject ?? ''} ${o.prompt ?? ''}`.toLowerCase().replace(/_/g, ' ')
   const RULES: [AppKind, RegExp][] = [
     ['creator', /\b(?:influencer|youtuber|podcast|streamer|blogger|vlogger|followers|subscribers)\b/],
-    ['ngo', /\b(?:ngo|charity|foundation|donat\w*|volunteers?|nonprofit|non-profit|trust|shelter|rescue)\b/],
+    ['general', /\b(?:escape rooms?|board games?|arcade|bowling alley|trampoline|amusement|laser tag|go ?kart\w*|paintball|vr zone|gaming (?:zone|lounge|cafe)|museum|aquarium|theme park|water park)\b/],
+    ['gym', /\b(?:gym|fitness|yoga|crossfit|martial|zumba|pilates)\b/],
+    ['learning', /\b(?:school|academy|coaching|classes|tuition|institute|course|training|tutor|learn)\b/],
+    ['ngo', /\b(?:ngo|charity|foundation|donat\w*|volunteers?|nonprofit|non-profit|trust|shelter|rescue|welfare|orphanage|ashram|relief|cause)\b/],
     ['legal', /\b(?:law|lawyer|advocate|attorney|legal|solicitor|notary|litigation)\b/],
     ['construction', /\b(?:construction|contractor|civil|architect\w*|interior|renovation|plumb\w*|electrician|carpent\w*|roofing)\b/],
     ['auto', /\b(?:car|cars|bike|garage|automobile|mechanic|vehicle|tyre|tire|car wash)\b/],
@@ -21,23 +25,24 @@ export function appKindOf(o: { themeKey: string; niche?: string; subject?: strin
     ['pets', /\b(?:pet|pets|dog|dogs|cat|cats|vet|veterinary|grooming)\b/],
     ['finance', /\b(?:insurance|loan|finance|accounting|chartered|ca firm|tax|investment|mutual fund|wealth|gst)\b/],
     ['office', /\b(?:office|coworking|desk booking|visitor management|facility)\b/],
-    ['gym', /\b(?:gym|fitness|yoga|crossfit|martial|zumba|pilates)\b/],
-    ['learning', /\b(?:school|academy|coaching|classes|tuition|institute|course|training|tutor|learn)\b/],
     ['software', /\b(?:software|saas|app|platform|crm|erp)\b/],
-    ['clinic', /\b(?:clinic|dental|dentist|doctor|hospital|physio|therap|dietitian|nutrition|pharmacy|medical)\b/],
-    ['salon', /\b(?:salon|spa|beauty|makeup|barber|parlour|parlor|massage)\b/],
-    ['food', /\b(?:restaurant|cafe|café|bakery|kitchen|catering|bar|diner|food|sweets|pizza|tiffin)\b/],
-    ['property', /\b(?:real estate|property|builder|broker|apartments?|rental|pg|hostel)\b/],
+    ['clinic', /\b(?:clinic|dental|dentist|doctor|hospital|physio|therap|dietitian|nutrition|pharmacy|medical|ayurved\w*|homeopath\w*|diagnostic|lab|eye|skin|ortho\w*|dermat\w*|pathology)\b/],
+    ['salon', /\b(?:salon|spa|beauty|makeup|barber|parlour|parlor|massage|tattoo|nail|mehndi|mehendi|waxing|hair)\b/],
+    ['food', /\b(?:restaurant|cafe|café|bakery|kitchen|catering|bar|diner|food|sweets|pizza|tiffin|dhaba|canteen|juice|ice cream|momos|biryani|chai|tapri)\b/],
+    ['property', /\b(?:real estate|property|builder|broker|apartments?|rental|pg|hostel|plots?|flats?|villa|coliving)\b/],
+    ['shop', /\b(?:printing|printers?|print shop|press|stationery|flex|banner printing)\b/],
     ['events', /\b(?:wedding|event|decor|dj|planner|photograph|videograph)\b/],
-    ['travel', /\b(?:travel|tour|trip|hotel|resort|stay|homestay)\b/],
+    ['travel', /\b(?:travel|tour|trip|hotel|resort|stay|homestay|hostel stay|guest ?house|safari|trek\w*|camp\w*)\b/],
     ['consult', /\b(?:astrolog\w*|tarot|vastu|consultant|consultancy|counsell?ing|coach|therapist|numerolog\w*)\b/],
     ['farm', /\b(?:farm|farmer|dairy|agri\w*|nursery|plants?|seeds?|honey|beekeeping)\b/],
     ['homeservices', /\b(?:cleaning|pest|repair|ac service|appliance|laundry|maid|housekeeping|handyman|home services?|pest control|locksmith)\b/],
-    ['shop', /\b(?:shop|store|boutique|kirana|grocery|retail|fashion|jewel|furniture|electronics|mart|thrift)\b/],
+    ['shop', /\b(?:shop|store|boutique|kirana|grocery|retail|fashion|jewel|furniture|electronics|mart|thrift|mobile|gift|stationery|toys|books?|pharmacy store|optical|footwear|garments?|saree|kurti|cloth\w*)\b/],
   ]
   if (o.voice === 'me') return 'creator'
-  const byWords = RULES.find(([, re]) => re.test(s))
-  if (byWords) return byWords[0]
+  // the words of the subject and of the niche count most, the other words (the cards of the page) less: "home cleaning" with a "kitchen cleaning" card is not a restaurant
+  const strong = `${o.niche ?? ''} ${o.subject ?? ''}`.toLowerCase().replace(/_/g, ' ')
+  const scored = RULES.map(([kind, re], order) => ({ kind, order, score: (re.test(strong) ? 3 : 0) + (re.test(s) ? 1 : 0) })).filter((x) => x.score > 0).sort((a, b) => b.score - a.score || a.order - b.order)
+  if (scored.length) return scored[0].kind
   const BY_THEME: Record<string, AppKind> = { nonprofit: 'ngo', professional_services: 'consult', automotive: 'auto', home_services: 'homeservices', pets_animals: 'pets', organic_nature: 'farm', modern_tech: 'software', healthcare: 'clinic', bold_fitness: 'gym', beauty_wellness: 'salon', food_dining: 'food', education: 'learning', real_estate: 'property', events_wedding: 'events', travel_tourism: 'travel', fashion_retail: 'shop' }
   return BY_THEME[o.themeKey] ?? 'general'
 }
@@ -64,7 +69,9 @@ function toRows(n: number, make: (i: number, g: Gen) => Record<string, string>, 
 export function appConfigFor(content: WebsiteContent, o: { themeKey: string; niche?: string; prompt?: string }): AppConfig {
   const brand = content.brandName
   const r = seeded(`${brand}|${o.niche ?? ''}|${content.subject}`)
-  const kind = appKindOf({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: o.prompt })
+  // what the business says about itself, from the page (the prompt is not there in an export: the preview and the exports must give the same dashboard)
+  const said = [content.subject, content.hero.title, content.hero.subtitle, content.features.items.map((f) => f.title).join(' ')].join(' ')
+  const kind = appKindOf({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: said })
   const cur = /₹/.test(JSON.stringify(content.pricing.plans)) || /\brupees?\b|₹/i.test(o.prompt ?? '') ? '₹' : /£/.test(JSON.stringify(content.pricing.plans)) ? '£' : /€/.test(JSON.stringify(content.pricing.plans)) ? '€' : /₹|india|jaipur|delhi|mumbai|pune|surat|lucknow/i.test(`${o.prompt} ${content.contact.address}`) ? '₹' : '$'
   const today = new Date()
   const iso = (d: Date) => d.toISOString().slice(0, 10)
@@ -343,13 +350,37 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       break
     }
     default: {
-      const reqs = toRows(10, () => ({ customer: g.name(), request: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done', 'In progress']) }), g)
-      tables = [
-        table('requests', 'Requests', 'request', 'list', [col('customer', 'Customer'), col('request', 'Request'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'In progress', 'Done'])], reqs),
-        table('customers', 'Customers', 'customer', 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers()),
-        table('messages', 'Messages', 'message', 'chat', [col('from', 'From'), col('subject', 'Subject'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Replied'])], toRows(8, () => ({ from: g.name(), subject: g.pick(['Question about a service', 'Quote request', 'Feedback', 'Appointment']), date: g.date(12), status: g.pick(['New', 'Replied']) }), g)),
-      ]
-      kpis = [kp('Requests', String(reqs.length), 'this month'), kp('Customers', '12', 'on record'), kp('New', String(reqs.filter((x) => x.status === 'New').length), 'to answer'), kp('Done', String(reqs.filter((x) => x.status === 'Done').length), 'this month')]
+      // a business nobody wrote a dashboard for: its own services are the catalogue, and the other pages follow what kind of business it is (orders, bookings, enrolments, projects ...)
+      const mode = modeOf(content.subject || '', said)
+      const items = g.serviceList.map((x) => ({ item: x, price: g.money(200, 9000, 50), status: g.pick(['Active', 'Active', 'Draft']) }))
+      const catalogue = (label: string, singular: string) => table('catalogue', label, singular, 'list', [col('item', singular.charAt(0).toUpperCase() + singular.slice(1)), col('price', 'Price', 'money'), col('status', 'Status', 'status', ['Active', 'Draft'])], items)
+      const people = (label: string, singular: string) => table(slug(label), label, singular, 'users', [col('name', 'Name'), col('phone', 'Phone'), col('email', 'Email'), col('joined', 'Since', 'date')], customers())
+      const messages = table('messages', 'Messages', 'message', 'chat', [col('from', 'From'), col('subject', 'Subject'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'Replied'])], toRows(8, () => ({ from: g.name(), subject: g.pick(['Question about a service', 'Quote request', 'Feedback', 'Appointment', 'Price list please']), date: g.date(12), status: g.pick(['New', 'Replied']) }), g))
+      if (mode === 'shop') {
+        const orders = toRows(12, (i) => ({ order: `#${1200 + i}`, customer: g.name(), item: g.pick(g.serviceList), total: g.money(200, 9000, 50), status: g.pick(['New', 'Packed', 'Delivered', 'Delivered']) }), g)
+        tables = [table('orders', 'Orders', 'order', 'box', [col('order', 'Order'), col('customer', 'Customer'), col('item', 'Item'), col('total', 'Total', 'money'), col('status', 'Status', 'status', ['New', 'Packed', 'Delivered'])], orders), catalogue('Catalogue', 'item'), people('Customers', 'customer')]
+        kpis = [kp('Orders', String(orders.length), 'this week'), kp('Sales', fmt(sum(orders, 'total')), 'this week'), kp('Items', String(items.length), 'listed'), kp('New orders', String(orders.filter((x) => x.status === 'New').length), 'to pack')]
+      } else if (mode === 'experience') {
+        const bookings = toRows(12, () => ({ guest: g.name(), experience: g.pick(g.serviceList), date: g.date(4, 20), people: String(g.int(1, 8)), status: g.pick(['Booked', 'Booked', 'Done', 'Cancelled']) }), g)
+        tables = [table('bookings', 'Bookings', 'booking', 'calendar', [col('guest', 'Guest'), col('experience', 'What'), col('date', 'Date', 'date'), col('people', 'People', 'number'), col('status', 'Status', 'status', ['Booked', 'Done', 'Cancelled'])], bookings), catalogue('Experiences', 'experience'), people('Guests', 'guest')]
+        kpis = [kp('Bookings', String(bookings.length), 'upcoming'), kp('Guests', String(sum(bookings, 'people')), 'expected'), kp('Experiences', String(items.length), 'offered'), kp('Cancelled', String(bookings.filter((b) => b.status === 'Cancelled').length), 'this month')]
+      } else if (mode === 'class') {
+        const enrol = toRows(12, () => ({ student: g.name(), class: g.pick(g.serviceList), batch: g.pick(['Morning', 'Evening', 'Weekend']), fees: g.pick(['Paid', 'Paid', 'Due']) }), g)
+        tables = [table('enrolments', 'Enrolments', 'enrolment', 'users', [col('student', 'Student'), col('class', 'Class'), col('batch', 'Batch'), col('fees', 'Fees', 'status', ['Paid', 'Due'])], enrol), catalogue('Classes', 'class'), people('Students', 'student')]
+        kpis = [kp('Students', String(enrol.length), 'enrolled'), kp('Classes', String(items.length), 'offered'), kp('Fees due', String(enrol.filter((e) => e.fees === 'Due').length), 'to collect'), kp('New this month', '4', 'enrolments')]
+      } else if (mode === 'creative') {
+        const projects = toRows(10, () => ({ client: g.name(), project: g.pick(g.serviceList), due: g.date(5, 30), budget: g.money(3000, 120000, 500), status: g.pick(['Brief', 'In progress', 'In progress', 'Delivered']) }), g)
+        tables = [table('projects', 'Projects', 'project', 'list', [col('client', 'Client'), col('project', 'Project'), col('due', 'Due', 'date'), col('budget', 'Budget', 'money'), col('status', 'Status', 'status', ['Brief', 'In progress', 'Delivered'])], projects), catalogue('Services', 'service'), people('Clients', 'client'), messages]
+        kpis = [kp('Projects', String(projects.length), 'on the board'), kp('In progress', String(projects.filter((p) => p.status === 'In progress').length), 'now'), kp('Pipeline', fmt(sum(projects, 'budget')), 'in budgets'), kp('Delivered', String(projects.filter((p) => p.status === 'Delivered').length), 'this quarter')]
+      } else if (mode === 'community') {
+        const members = toRows(12, () => ({ name: g.name(), joined: g.date(300), role: g.pick(['Member', 'Member', 'Volunteer', 'Organiser']), status: g.pick(['Active', 'Active', 'Invited']) }), g)
+        tables = [table('members', 'Members', 'member', 'users', [col('name', 'Name'), col('joined', 'Joined', 'date'), col('role', 'Role'), col('status', 'Status', 'status', ['Active', 'Invited'])], members), table('events', 'Events', 'event', 'calendar', [col('event', 'Event'), col('date', 'Date', 'date'), col('seats', 'Seats', 'number'), col('status', 'Status', 'status', ['Planned', 'Open', 'Done'])], g.serviceList.slice(0, 6).map((x) => ({ event: x, date: g.date(5, 40), seats: String(g.int(20, 200)), status: g.pick(['Planned', 'Open', 'Done']) }))), messages]
+        kpis = [kp('Members', String(members.length), 'in the community'), kp('Events', '6', 'on the calendar'), kp('Volunteers', String(members.filter((m) => m.role === 'Volunteer').length), 'helping'), kp('Invited', String(members.filter((m) => m.status === 'Invited').length), 'to join')]
+      } else {
+        const reqs = toRows(10, () => ({ customer: g.name(), request: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done', 'In progress']) }), g)
+        tables = [table('requests', 'Requests', 'request', 'list', [col('customer', 'Customer'), col('request', 'Request'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'In progress', 'Done'])], reqs), catalogue('Services', 'service'), people('Customers', 'customer'), messages]
+        kpis = [kp('Requests', String(reqs.length), 'this month'), kp('Customers', '12', 'on record'), kp('New', String(reqs.filter((x) => x.status === 'New').length), 'to answer'), kp('Done', String(reqs.filter((x) => x.status === 'Done').length), 'this month')]
+      }
     }
   }
   // what the person changed in the pages of the dashboard

@@ -84,6 +84,59 @@ const CSS = `
 @media(max-width:860px){.ap-shell{grid-template-columns:1fr}.ap-side{position:fixed;left:0;top:0;width:250px;z-index:4;background:var(--ap-bg,#fff);transform:translateX(-100%);transition:transform .2s}.ap-shell.open .ap-side{transform:none}.ap-burger{display:inline-flex}.ap-two{grid-template-columns:1fr}.ap-body{padding:16px}}
 `
 
+/** the rows of a CSV text ("a,b" or "a;b", quotes, doubled quotes, line breaks inside quotes) */
+export function parseCsv(text: string): string[][] {
+  const clean = text.replace(/^\uFEFF/, '')
+  const first = clean.split(/\r?\n/, 1)[0] ?? ''
+  const sep = (first.match(/;/g) ?? []).length > (first.match(/,/g) ?? []).length ? ';' : first.includes('\t') ? '\t' : ','
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let quoted = false
+  for (let i = 0; i < clean.length; i += 1) {
+    const ch = clean[i]
+    if (quoted) {
+      if (ch === '"' && clean[i + 1] === '"') {
+        cell += '"'
+        i += 1
+      } else if (ch === '"') quoted = false
+      else cell += ch
+    } else if (ch === '"') quoted = true
+    else if (ch === sep) {
+      row.push(cell)
+      cell = ''
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && clean[i + 1] === '\n') i += 1
+      row.push(cell)
+      cell = ''
+      if (row.some((x) => x.trim())) rows.push(row)
+      row = []
+    } else cell += ch
+  }
+  row.push(cell)
+  if (row.some((x) => x.trim())) rows.push(row)
+  return rows
+}
+
+/** the rows of a table as CSV text (the first line holds the names of the columns) */
+export function toCsv(columns: AppColumn[], rows: Record<string, string>[]): string {
+  const q = (v: string) => (/[",;\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+  return [columns.map((c) => q(c.label)).join(','), ...rows.map((r) => columns.map((c) => q(String(r[c.key] ?? ''))).join(','))].join('\r\n')
+}
+
+/** CSV rows into rows of a table: a first line that names the columns maps them by name, else the columns are taken in order */
+export function csvToRows(table: AppTable, data: string[][]): { rows: Record<string, string>[]; mapped: number } {
+  if (!data.length) return { rows: [], mapped: 0 }
+  const norm = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, '')
+  const head = data[0].map(norm)
+  const at = table.columns.map((c) => head.findIndex((h) => h && (h === norm(c.label) || h === norm(c.key))))
+  const named = at.some((i) => i >= 0)
+  const body = named ? data.slice(1) : data
+  const order = named ? at : table.columns.map((_, i) => (i < data[0].length ? i : -1))
+  const rows = body.slice(0, 500).map((cells) => Object.fromEntries(table.columns.map((c, n) => [c.key, order[n] >= 0 ? String(cells[order[n]] ?? '').trim() : ''])))
+  return { rows: rows.filter((r) => Object.values(r).some(Boolean)), mapped: order.filter((i) => i >= 0).length }
+}
+
 export function initApp(cfg: AppConfig): void {
   if (typeof document === 'undefined' || document.querySelector('.ap')) return
   const K = (name: string) => `ap:${cfg.slug}:${name}`
@@ -157,6 +210,8 @@ export function initApp(cfg: AppConfig): void {
   let sort: { key: string; dir: 1 | -1 } | null = null
   let query = ''
   let flash = ''
+  let statusFilter = ''
+  let notice = ''
 
   const authView = (kind: 'login' | 'register' | 'forgot') => {
     const title = kind === 'login' ? 'Welcome back' : kind === 'register' ? 'Create your account' : 'Reset your password'
@@ -214,18 +269,21 @@ export function initApp(cfg: AppConfig): void {
   const tableView = (t: AppTable) => {
     let rows = rowsOf(t).map((r, i) => ({ r, i }))
     const q = query.trim().toLowerCase()
+    const statusCol = t.columns.find((c) => c.type === 'status')
     if (q) rows = rows.filter(({ r }) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)))
+    if (statusCol && statusFilter) rows = rows.filter(({ r }) => r[statusCol.key] === statusFilter)
     if (sort) {
       const { key, dir } = sort
       const col = t.columns.find((c) => c.key === key)
       const num = col && (col.type === 'number' || col.type === 'money')
       rows = [...rows].sort((a, b) => (num ? (parseFloat(String(a.r[key]).replace(/[^\d.-]/g, '')) || 0) - (parseFloat(String(b.r[key]).replace(/[^\d.-]/g, '')) || 0) : String(a.r[key] ?? '').localeCompare(String(b.r[key] ?? ''))) * dir)
     }
-    return `<div class="ap-card ap-panel"><div class="ap-tools"><input class="ap-in" data-q placeholder="Search ${esc(t.label.toLowerCase())}" value="${esc(query)}" aria-label="Search" /><button class="ap-btn" data-add>+ Add ${esc(t.singular)}</button></div>
+    const filter = statusCol ? `<select class="ap-in" data-filter aria-label="Filter by ${esc(statusCol.label)}" style="max-width:170px"><option value="">All ${esc(statusCol.label.toLowerCase())}</option>${(statusCol.options ?? []).map((o) => `<option ${o === statusFilter ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>` : ''
+    return `<div class="ap-card ap-panel"><div class="ap-tools"><input class="ap-in" data-q placeholder="Search ${esc(t.label.toLowerCase())}" value="${esc(query)}" aria-label="Search" />${filter}<button class="ap-btn" data-add>+ Add ${esc(t.singular)}</button><button class="ap-btn ghost" data-import>Import CSV</button><button class="ap-btn ghost" data-export>Export CSV</button><input type="file" accept=".csv,text/csv,text/plain" data-file hidden /></div>${notice ? `<p class="ap-note" style="margin:0 0 10px;opacity:1">${esc(notice)}</p>` : ''}
       <div class="ap-wrap">${rows.length ? `<table><thead><tr>${t.columns.map((c) => `<th data-sort="${esc(c.key)}">${esc(c.label)}${sort?.key === c.key ? (sort.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('')}<th></th></tr></thead><tbody>${rows
         .slice(0, 100)
         .map(({ r, i }) => `<tr>${t.columns.map((c) => `<td>${cell(c, r[c.key] ?? '')}</td>`).join('')}<td style="text-align:right"><button class="ap-btn ghost sm" data-edit="${i}">Edit</button> <button class="ap-btn ghost sm" data-del="${i}">Delete</button></td></tr>`)
-        .join('')}</tbody></table>` : `<div class="ap-empty">${q ? 'Nothing matches that search.' : `No ${esc(t.label.toLowerCase())} yet.`} Use “Add ${esc(t.singular)}”.</div>`}</div></div>`
+        .join('')}</tbody></table>` : `<div class="ap-empty">${q || statusFilter ? 'Nothing matches that.' : `No ${esc(t.label.toLowerCase())} yet.`} Use “Add ${esc(t.singular)}” or “Import CSV”.</div>`}</div></div>`
   }
 
   const overview = () => {
@@ -315,6 +373,14 @@ export function initApp(cfg: AppConfig): void {
     else if (el.closest('[data-reset]')) {
       cfg.tables.forEach((x) => write(K(`t:${x.id}`), x.rows))
       render()
+    } else if (t && el.closest('[data-import]')) root.querySelector<HTMLInputElement>('[data-file]')?.click()
+    else if (t && el.closest('[data-export]')) {
+      const blob = new Blob([toCsv(t.columns, rowsOf(t))], { type: 'text/csv;charset=utf-8' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${cfg.slug}-${t.id}.csv`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000)
     } else if (t && el.closest('[data-add]')) modal(t, null)
     else if (t && el.closest('[data-edit]')) modal(t, Number(el.closest<HTMLElement>('[data-edit]')!.dataset.edit))
     else if (t && el.closest('[data-del]')) {
@@ -340,8 +406,31 @@ export function initApp(cfg: AppConfig): void {
       if (again && at !== null) again.setSelectionRange(at, at)
     }
   })
+  root.addEventListener('change', (event) => {
+    const el = event.target as HTMLInputElement
+    const t = cfg.tables.find((x) => x.id === page().replace(/^#\/app\/?/, ''))
+    if (el.matches('[data-filter]')) {
+      statusFilter = el.value
+      render()
+    } else if (t && el.matches('[data-file]') && el.files?.[0]) {
+      const file = el.files[0]
+      const reader = new FileReader()
+      reader.onload = () => {
+        const { rows, mapped } = csvToRows(t, parseCsv(String(reader.result ?? '')))
+        if (!rows.length) notice = 'No rows were found in that file. The first line should name the columns: ' + t.columns.map((c) => c.label).join(', ') + '.'
+        else {
+          write(K(`t:${t.id}`), [...rows, ...rowsOf(t)])
+          notice = `Added ${rows.length} row${rows.length === 1 ? '' : 's'} from ${file.name} (${mapped} of ${t.columns.length} columns matched).`
+        }
+        render()
+      }
+      reader.readAsText(file)
+    }
+  })
   window.addEventListener('hashchange', () => {
     query = ''
+    statusFilter = ''
+    notice = ''
     render()
   })
   linkIn()
