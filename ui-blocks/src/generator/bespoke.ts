@@ -11,7 +11,10 @@ const has = (text: string, re: RegExp) => re.test(text)
 /** the person has an audience (followers, subscribers, a channel, a podcast): their own page, whatever the subject, even where a niche pack exists */
 export const isCreatorPage = (subject: string, prompt = '') => {
   const s = `${subject} ${prompt}`.toLowerCase()
-  return has(s, /\b(?:influencers?|youtubers?|youtube\s+channel|vloggers?|vlogs?|bloggers?|content\s+creators?|podcasts?|podcasters?|streamers?|instagrammers?|followers|subscribers)\b/) && !has(s, /\b(?:agency|software|platform|tool|app|course|classes|school|academy)\b/)
+  const audience = has(s, /\b(?:influencers?|youtubers?|youtube\s+channel|vloggers?|vlogs?|bloggers?|content\s+creators?|podcasts?|podcasters?|streamers?|instagrammers?|followers|subscribers)\b/)
+  // a person on their own ("freelance video editor Sameer"): the page is theirs too
+  const alone = has(s, /\b(?:freelanc\w*|independent|solo)\b/) && has(s, /\b(?:designer|photographer|videographer|video\s+editor|illustrator|writer|copywriter|editor|developer|artist|musician|animator|consultant|coach|trainer|tutor)\b/)
+  return (audience || alone) && !has(s, /\b(?:agency|software|platform|tool|app|course|classes|school|academy)\b/)
 }
 export function modeOf(subject: string, prompt = ''): Mode {
   const s = `${subject} ${prompt}`.toLowerCase()
@@ -32,7 +35,7 @@ export function modeOf(subject: string, prompt = ''): Mode {
 
 const STOP = new Set(['the', 'and', 'for', 'with', 'from', 'that', 'this', 'your', 'our', 'you', 'are', 'all', 'any', 'one', 'can', 'has', 'have', 'its', 'about', 'into', 'near', 'best', 'top'])
 // words that do not say what the business is (a kind of place, a quality)
-const TYPE_WORDS = new Set(['service', 'services', 'company', 'business', 'solutions', 'solution', 'agency', 'creator', 'online', 'professional', 'freelance', 'freelancer', 'independent', 'italian', 'chinese', 'indian', 'south', 'north', 'mexican', 'thai', 'japanese', 'korean', 'french', 'german', 'continental', 'mughlai', 'punjabi', 'bengali', 'gujarati', 'rajasthani', 'vegan', 'vegetarian', 'veg', 'halal', 'artisan', 'handmade', 'homemade', 'boutique', 'kids', 'children', 'ladies', 'gents', 'unisex', 'mens', 'womens', 'bridal', 'multi', 'cuisine', 'fine', 'dining', 'fast', 'food', 'cloud', 'shop', 'store', 'stores', 'shops', 'service', 'services', 'studio', 'studios', 'centre', 'center', 'agency', 'company', 'firm', 'business', 'solution', 'solutions', 'online', 'local', 'new', 'small', 'family', 'organic', 'premium', 'luxury', 'modern', 'affordable', 'professional', 'quality', 'best', 'famous', 'popular', 'good', 'great', 'traditional', 'authentic', 'pure', 'fresh', 'home', 'house', 'point', 'hub', 'corner', 'world', 'zone', 'club', 'India', 'indian'])
+const TYPE_WORDS = new Set(['consultancy', 'consulting', 'consultant', 'consultants', 'firm', 'associates', 'enterprises', 'group', 'works', 'hub', 'house', 'lab', 'labs', 'centre', 'center', 'service', 'services', 'company', 'business', 'solutions', 'solution', 'agency', 'creator', 'online', 'professional', 'freelance', 'freelancer', 'independent', 'italian', 'chinese', 'indian', 'south', 'north', 'mexican', 'thai', 'japanese', 'korean', 'french', 'german', 'continental', 'mughlai', 'punjabi', 'bengali', 'gujarati', 'rajasthani', 'vegan', 'vegetarian', 'veg', 'halal', 'artisan', 'handmade', 'homemade', 'boutique', 'kids', 'children', 'ladies', 'gents', 'unisex', 'mens', 'womens', 'bridal', 'multi', 'cuisine', 'fine', 'dining', 'fast', 'food', 'cloud', 'shop', 'store', 'stores', 'shops', 'service', 'services', 'studio', 'studios', 'centre', 'center', 'agency', 'company', 'firm', 'business', 'solution', 'solutions', 'online', 'local', 'new', 'small', 'family', 'organic', 'premium', 'luxury', 'modern', 'affordable', 'professional', 'quality', 'best', 'famous', 'popular', 'good', 'great', 'traditional', 'authentic', 'pure', 'fresh', 'home', 'house', 'point', 'hub', 'corner', 'world', 'zone', 'club', 'India', 'indian'])
 const stem = (w: string) => w.toLowerCase().replace(/(?:ing|ed|es|s|e)$/, '')
 const wordsOf = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 3 && !STOP.has(w)).map(stem)
 
@@ -142,8 +145,8 @@ const PACKS: Record<Exclude<Mode, 'creator'>, Pack> = {
   },
 }
 
-const ROLE_WORDS = /\b(?:graphic|designers?|photographers?|videographers?|illustrators?|copywriters?|writers?|developers?|editors?|artists?|musicians?|animators?|consultants?|tutors?|coach|trainers?|twitch|discord|spotify|influencers?|youtubers?|youtube|channel|vloggers?|vlogs?|bloggers?|blog|content|creators?|podcasts?|podcasters?|streamers?|instagrammers?|instagram|tiktok|reels|website|web|site|page|weekly|daily|monthly|show|shows|about|on|for|with|my|our|the|a|an|of|followers|subscribers|freelance|freelancer|personal|new|latest)\b/g
-const CREATOR_ROLES: [RegExp, string][] = [[/graphic\s+designer/, 'Graphic Designer'], [/designer/, 'Designer'], [/photographer/, 'Photographer'], [/videographer/, 'Videographer'], [/illustrator/, 'Illustrator'], [/copywriter/, 'Copywriter'], [/writer/, 'Writer'], [/developer/, 'Developer'], [/editor/, 'Editor'], [/artist/, 'Artist'], [/musician/, 'Musician'], [/animator/, 'Animator'], [/consultant/, 'Consultant'], [/tutor/, 'Tutor'], [/coach/, 'Coach'], [/trainer/, 'Trainer'], [/podcast/, 'Podcast'], [/youtub|vlog/, 'YouTube Creator'], [/influencer|instagrammer/, 'Influencer'], [/blogger|blog/, 'Blogger'], [/streamer|twitch/, 'Streamer'], [/creator/, 'Content Creator']]
+const ROLE_WORDS = /\b(?:video\s+editors?|graphic|designers?|photographers?|videographers?|illustrators?|copywriters?|writers?|developers?|editors?|artists?|musicians?|animators?|consultants?|tutors?|coach|trainers?|twitch|discord|spotify|influencers?|youtubers?|youtube|channel|vloggers?|vlogs?|bloggers?|blog|content|creators?|podcasts?|podcasters?|streamers?|instagrammers?|instagram|tiktok|reels|website|web|site|page|weekly|daily|monthly|show|shows|about|on|for|with|my|our|the|a|an|of|followers|subscribers|freelance|freelancer|personal|new|latest)\b/g
+const CREATOR_ROLES: [RegExp, string][] = [[/video\s+editor/, 'Video Editor'], [/graphic\s+designer/, 'Graphic Designer'], [/designer/, 'Designer'], [/photographer/, 'Photographer'], [/videographer/, 'Videographer'], [/illustrator/, 'Illustrator'], [/copywriter/, 'Copywriter'], [/writer/, 'Writer'], [/developer/, 'Developer'], [/editor/, 'Editor'], [/artist/, 'Artist'], [/musician/, 'Musician'], [/animator/, 'Animator'], [/consultant/, 'Consultant'], [/tutor/, 'Tutor'], [/coach/, 'Coach'], [/trainer/, 'Trainer'], [/podcast/, 'Podcast'], [/youtub|vlog/, 'YouTube Creator'], [/influencer|instagrammer/, 'Influencer'], [/blogger|blog/, 'Blogger'], [/streamer|twitch/, 'Streamer'], [/creator/, 'Content Creator']]
 /** "250k followers", "1.2M subscribers": the audience in numbers, as the person wrote it */
 function audienceStats(prompt: string) {
   const out: { value: string; label: string; fact: true }[] = []
@@ -158,7 +161,7 @@ function creatorContent(content: WebsiteContent, o: { subject: string; prompt: s
   const text = `${o.subject} ${o.prompt}`.toLowerCase()
   const role = CREATOR_ROLES.find(([re]) => re.test(text))?.[1] ?? 'Content Creator'
   const podcast = role === 'Podcast'
-  const freelance = !podcast && /\b(?:freelanc\w*|independent|solo)\b/.test(text) && !/\b(?:influencer|youtub\w*|vlog\w*|blogger|streamer|creator|instagrammer)\b/.test(text)
+  const freelance = !podcast && /\b(?:freelanc\w*|independent|solo)\b/.test(text) && !/\b(?:influencer|vlog\w*|blogger|streamer|instagrammer|followers|subscribers|podcast\w*)\b/.test(text)
   const aboutTopic = o.prompt.match(/\babout\s+([^,.;:]{3,40})/i)?.[1]
   const topic0 = titleCase(o.subject.toLowerCase().replace(ROLE_WORDS, ' ').replace(/\s+/g, ' ').replace(/^(?:and|or)\s+|\s+(?:and|or)$/g, '').trim())
   const topic = topic0 || (aboutTopic ? titleCase(aboutTopic.trim().toLowerCase()) : '')
@@ -168,7 +171,7 @@ function creatorContent(content: WebsiteContent, o: { subject: string; prompt: s
     : freelance
       ? [`${topic ? `${topic} ` : ''}${role}, For Your Next Project`, `Work With ${upper(article(`${topic ? `${topic} ` : ''}${role}`))} ${topic ? `${topic} ` : ''}${role}`]
       : role === 'YouTube Creator'
-      ? [`Watch ${T}`, `${T}, On Camera`]
+      ? /\b(?:couple|duo|family|friends|brothers|sisters|team|crew|siblings)$/i.test(T) ? [`Meet The ${T}`, `Follow The ${T}`] : [`Watch ${T}`, `${T}, On Camera`]
       : [`${T}, With A Point Of View`, `Work With ${upper(article(`${topic ? `${topic} ` : ''}${role}`))} ${topic ? `${topic} ` : ''}${role}`, `${T} Content, Made To Share`]
   const title = titles[Math.floor(o.rand() * titles.length)]
   const brand = content.brandName

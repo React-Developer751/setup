@@ -28,7 +28,7 @@ export type Facts = {
 }
 
 const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy|\d*bhk|mvps?|sms|pdf|iot|gps|ott|api|sdk)\b/gi
-const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase().replace(/^MVPS$/, 'MVPs'))
+const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase().replace(/^MVPS$/, 'MVPs')).replace(/\byoutube\b/gi, 'YouTube').replace(/\binstagram\b/gi, 'Instagram').replace(/\bwhatsapp\b/gi, 'WhatsApp').replace(/\blinkedin\b/gi, 'LinkedIn')
 const titleCase = (s: string) => fixAcronyms(s.replace(/(^|[\s/-])([a-z])/g, (_m, a: string, c: string) => a + c.toUpperCase()))
 const lowerFirst = (s: string) => (/^[A-Z]{2,}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -51,7 +51,7 @@ const described = (prompt: string) =>
   prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])\s+[^,.;:]*?(?=\s+(?:with|for|in|at|near|selling|offering|providing|offers|which|that|who|and|including|ke liye|me|mein)(?![\p{L}])|[,.;:]|$)/giu, ' ').replace(/\s+/g, ' ').trim()
 
 /** things that are promises, not services */
-const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7(?:\s+\w+)?|\d+\+?\s*(?:years?|saal)\b.*|(?:years?|saal)\s+(?:of\s+)?experience|(?:great|good|friendly|best)\s+(?:service|prices?|staff)|prices?|pricing|staff|quality|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|cash on delivery|cod|(?:easy\s+)?(?:\d+[\s-]*days?\s+)?(?:returns?|refunds?|exchange)|(?:fast\s+)?(?:shipping|delivery)(?:\s+(?:above|over)\s+.*)?|\d{1,2}\s*%\s*(?:off|discount)|online(?:\s+(?:booking|bookings|payments?|ordering|orders?|support|shopping|delivery|service|services))?\b.*|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
+const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7(?:\s+\w+)?|\d+\+?\s*(?:years?|saal)\b.*|(?:years?|saal)\s+(?:of\s+)?experience|(?:great|good|friendly|best)\s+(?:service|prices?|staff)|prices?|pricing|staff|quality|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|cash on delivery|cod|(?:easy\s+)?(?:\d+[\s-]*days?\s+)?(?:returns?|refunds?|exchange)|(?:fast\s+)?(?:shipping|delivery)(?:\s+(?:above|over)\s+.*)?|\d{1,2}\s*%\s*(?:off|discount)|online(?:\s+(?:booking|bookings|payments?|ordering|orders?|support|shopping|delivery|service|services)\b.*)?|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
 
 const stem = (w: string) => w.replace(/(?:ing|ers?|es|s)$/, '')
 const significant = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 3 && !GENERIC.has(w) && !NOISE.has(w)).map(stem)
@@ -280,6 +280,10 @@ const list = (items: string[]) => (items.length <= 1 ? (items[0] ?? '') : `${ite
 /** Puts the facts of the prompt on the page; with no facts the content is returned as it is. */
 /** `onlyNamed`: a law firm or a clinic shows only the services the person named (a service nobody named is a claim about what they are allowed or able to do) */
 export function personalize(content: WebsiteContent, facts: Facts, size: 'compact' | 'full', rand: () => number, hasNiche = false, onlyNamed = false, prompt = '', kindWords: string[] = []): WebsiteContent {
+  // the name of the business (or of the person) in front of a service or standing alone is not part of it: "Sameer reels" is "reels"
+  const brandL = content.brandName.toLowerCase().trim()
+  const noName = (x: string) => (brandL.length >= 3 && x.toLowerCase().startsWith(`${brandL} `) ? x.slice(brandL.length + 1).trim() : x)
+  facts = { ...facts, services: facts.services.map(noName).filter((x) => x && x.toLowerCase() !== brandL), details: facts.details?.map(noName).filter((x) => x && x.toLowerCase() !== brandL) }
   const { services, place, audience, perks, years, offers, hours, prices } = facts
   if (!services.length && !place && !perks.length && !years && !audience && !offers.length && !hours && !prices.length && !facts.details?.length && !(onlyNamed && prompt)) return content
   let next = content
