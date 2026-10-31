@@ -16,9 +16,9 @@ export function featuresCss(s: FeaturesSpec, p: string): string {
   const bg = { plain: 'transparent', band: 'var(--g-band)', ink: '#111216', accent: 'var(--g-accent)' }[s.bg]
   const fg = ink ? '#f4f4f5' : onAccent ? 'var(--g-on-accent)' : 'inherit'
   const mark = ink ? '#f4f4f5' : onAccent ? 'var(--g-on-accent)' : 'var(--g-accent)'
-  const pad = s.gap === 'tight' ? '3.75rem' : '5.5rem'
+  const pad = `calc(${s.gap === 'tight' ? '3.75rem' : '5.5rem'} * var(--gp-scale,1))`
   const line = ink ? 'rgba(255,255,255,.18)' : onAccent ? 'rgba(255,255,255,.4)' : 'var(--color-gray-200, rgba(0,0,0,.1))'
-  c(`&{position:relative;background:${bg};color:${fg};padding:${pad} 1.5rem;overflow:hidden}`)
+  c(`&{position:relative;background:${bg};color:${fg};padding:${pad} 1.5rem;min-height:var(--gp-min,0px);overflow:hidden}`)
   c(`& *{box-sizing:border-box}`)
   c(`& .gf-in{max-width:76rem;margin:0 auto}`)
   c(`& .gf-head{${s.head === 'center' ? 'text-align:center;margin:0 auto 3rem;max-width:44rem' : 'max-width:44rem;margin:0 0 3rem'}}`)

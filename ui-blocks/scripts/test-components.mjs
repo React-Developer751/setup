@@ -56,7 +56,7 @@ for (const prompt of ['Create a website for a dental clinic called Smile Care in
       const page = generateLibraryPage(prompt, v, tier)
       for (const s of page.sections) {
         seen.add(s.componentId)
-        ok(byId.has(s.componentId), `a page uses a stored component (${s.componentId})`)
+        ok(byId.has(s.componentId) || s.componentId.startsWith('gen/'), `a page uses a stored component or a generated part (${s.componentId})`)
       }
       if (page.sections.some((s) => s.role === 'faq')) faqPages += 1
       if (page.sections.some((s) => s.role === 'banner')) bannerPages += 1

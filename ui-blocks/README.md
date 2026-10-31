@@ -215,4 +215,12 @@ The taste of the services part is its own (the thumbs of the first screens say n
 
 Made with one helper (`gen/partKit.ts`: axes, rules, id, taste) and listed in `gen/registry.ts`: `gen/Pricing_…` (5 layouts incl. a dotted-leader menu list, 4 card looks, highlight styles), `gen/Faq_…` (accordion with native `<details>`, two-column, grid, list, numbered), `gen/Quotes_…` (single, grid, stack, wall, slider, split; initials instead of fake faces), `gen/Gallery_…` (grid, masonry, mosaic, strip, featured, wide, polaroid; captions below / overlay / on hover). Their slots (`show-plans`, `show-faq`, `show-quotes`, `show-gallery`) are filled in `library/fillRef.ts`. Review: `/?gen=1&section=pricing|faq|quotes|gallery`; check: `npm run qa:gen -- 40 --section=gallery`. Testimonials stay hidden while a page only has the sample ones (no invented reviews).
 
+### About, contact, footer, navigation (eighth to eleventh generator)
+
+Same helper and registry. `gen/About_…` (picture left/right, centred, columns, wide picture, big lead; points as ticks, cards, numbers or chips), `gen/Contact_…` (split, form-left, centred, cards, stack; real `<form>`, the ways to reach are only the facts the person gave: `tel:`, `mailto:`, WhatsApp, a map link), `gen/Footer_…` (columns, bar, centred, big brand, split; pages, services, contact, small print), `gen/Nav_…` (bar, centre, split, pill, stack, minimal; sticky or not; the phone menu is a plain checkbox, no script). Slots `show-about`, `show-contact`, `show-footer`, `show-nav` are filled in `library/fillRef.ts` (the page links come from the page). Check: `npm run qa:gen -- 40 --section=nav|footer|about|contact`.
+
+Height and resize edits ("make the hero taller", "hero 900px high") work on generated parts: the wrapper sets `--gp-scale` and `--gp-min`, the parts use them. The design stays the same.
+
+**Prices.** The price part says what the person wrote and nothing more: a period ("/ month") only when they wrote one ("per class"). A business that sells by plans or sessions (gym, yoga/salon, course, software) has a price page without being asked; its plans say "Ask for price" until the person writes real prices. Clinics, law firms, NGOs, shops have none unless asked ("without pricing" always wins). `npm run qa:gen -- 30 --prices` checks that every price the person wrote is on the price page.
+
 `node scripts/gen-selfrate.mjs 40 pricing faq quotes gallery` writes likes (`auto:true`) for designs that passed the browser check, on the person's instruction that what is built this way counts as liked.

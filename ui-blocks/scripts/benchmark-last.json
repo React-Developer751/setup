@@ -36,7 +36,7 @@
    "brand": "Harbor Cafe",
    "sections": 14,
    "failed": [],
-   "ms": 1355,
+   "ms": 1407,
    "words": 1
   },
   {
@@ -51,7 +51,7 @@
    "brand": "Nova Restaurant",
    "sections": 14,
    "failed": [],
-   "ms": 178,
+   "ms": 183,
    "words": 3
   },
   {
@@ -68,7 +68,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 230,
+   "ms": 232,
    "words": 3
   },
   {
@@ -81,9 +81,9 @@
    "palette": "Iron",
    "hero": "Train With Coaches Who Know Your Name",
    "brand": "Blue Door Gym",
-   "sections": 13,
+   "sections": 14,
    "failed": [],
-   "ms": 142,
+   "ms": 138,
    "words": 5
   },
   {
@@ -96,9 +96,9 @@
    "palette": "Sage studio",
    "hero": "Yoga Classes For Every Body And Age",
    "brand": "Evergreen Yoga Studio",
-   "sections": 12,
+   "sections": 13,
    "failed": [],
-   "ms": 127,
+   "ms": 147,
    "words": 2
   },
   {
@@ -113,7 +113,7 @@
    "brand": "Bright Dental Clinic",
    "sections": 11,
    "failed": [],
-   "ms": 268,
+   "ms": 260,
    "words": 2
   },
   {
@@ -128,7 +128,7 @@
    "brand": "Bright General Physician Clinic",
    "sections": 10,
    "failed": [],
-   "ms": 163,
+   "ms": 148,
    "words": 3
   },
   {
@@ -145,7 +145,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 174,
+   "ms": 175,
    "words": 2
   },
   {
@@ -160,7 +160,7 @@
    "brand": "True Chartered Accountant",
    "sections": 11,
    "failed": [],
-   "ms": 118,
+   "ms": 111,
    "words": 2
   },
   {
@@ -173,11 +173,11 @@
    "palette": "Campus",
    "hero": "Coaching Institute With A Human Touch",
    "brand": "Nova Coaching Institute",
-   "sections": 11,
+   "sections": 12,
    "failed": [
     "about"
    ],
-   "ms": 139,
+   "ms": 127,
    "words": 4
   },
   {
@@ -190,11 +190,11 @@
    "palette": "Campus",
    "hero": "Your Neighbourhood School",
    "brand": "Evergreen School",
-   "sections": 11,
+   "sections": 12,
    "failed": [
     "about"
    ],
-   "ms": 169,
+   "ms": 157,
    "words": 2
   },
   {
@@ -211,7 +211,7 @@
    "failed": [
     "about"
    ],
-   "ms": 102,
+   "ms": 97,
    "words": 3
   },
   {
@@ -226,7 +226,7 @@
    "brand": "Prime Interior Designer",
    "sections": 13,
    "failed": [],
-   "ms": 128,
+   "ms": 125,
    "words": 3
   },
   {
@@ -241,7 +241,7 @@
    "brand": "Golden Photography Studio",
    "sections": 13,
    "failed": [],
-   "ms": 315,
+   "ms": 307,
    "words": 2
   },
   {
@@ -256,7 +256,7 @@
    "brand": "Summit Travel Agency",
    "sections": 14,
    "failed": [],
-   "ms": 167,
+   "ms": 157,
    "words": 3
   },
   {
@@ -271,7 +271,7 @@
    "brand": "True Hotel",
    "sections": 12,
    "failed": [],
-   "ms": 146,
+   "ms": 148,
    "words": 3
   },
   {
@@ -288,7 +288,7 @@
    "failed": [
     "about"
    ],
-   "ms": 120,
+   "ms": 130,
    "words": 3
   },
   {
@@ -303,7 +303,7 @@
    "brand": "Oak Used Car Dealer",
    "sections": 10,
    "failed": [],
-   "ms": 111,
+   "ms": 118,
    "words": 3
   },
   {
@@ -316,9 +316,9 @@
    "palette": "Mauve and champagne",
    "hero": "Look Good, Feel Even Better",
    "brand": "Blue Door Hair Salon",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 167,
+   "ms": 176,
    "words": 2
   },
   {
@@ -335,7 +335,7 @@
    "failed": [
     "about"
    ],
-   "ms": 126,
+   "ms": 130,
    "words": 3
   },
   {
@@ -348,9 +348,9 @@
    "palette": "A bolder Ink and indigo",
    "hero": "Software That Helps Your Team Do More",
    "brand": "Bright SaaS Startup",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 95,
+   "ms": 100,
    "words": 4
   },
   {
@@ -363,11 +363,11 @@
    "palette": "Ink and indigo",
    "hero": "Mobile App Fitness Tracker With A Human Touch",
    "brand": "Nova Mobile App",
-   "sections": 12,
+   "sections": 13,
    "failed": [
     "about"
    ],
-   "ms": 180,
+   "ms": 164,
    "words": 4
   },
   {
@@ -384,7 +384,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 444,
+   "ms": 419,
    "words": 3
   },
   {
@@ -401,7 +401,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 228,
+   "ms": 222,
    "words": 3
   },
   {
@@ -416,7 +416,7 @@
    "brand": "Blue Door Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 254,
+   "ms": 245,
    "words": 1
   },
   {
@@ -431,7 +431,7 @@
    "brand": "Bright Pest Control",
    "sections": 11,
    "failed": [],
-   "ms": 137,
+   "ms": 112,
    "words": 2
   },
   {
@@ -446,7 +446,7 @@
    "brand": "Bright Florist",
    "sections": 12,
    "failed": [],
-   "ms": 394,
+   "ms": 334,
    "words": 2
   },
   {
@@ -463,7 +463,7 @@
    "failed": [
     "about"
    ],
-   "ms": 165,
+   "ms": 142,
    "words": 4
   },
   {
@@ -478,7 +478,7 @@
    "brand": "Blue Door Event Decor",
    "sections": 12,
    "failed": [],
-   "ms": 115,
+   "ms": 110,
    "words": 4
   },
   {
@@ -495,7 +495,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 84,
+   "ms": 86,
    "words": 3
   },
   {
@@ -510,7 +510,7 @@
    "brand": "Bright Plumber",
    "sections": 11,
    "failed": [],
-   "ms": 116,
+   "ms": 117,
    "words": 1
   },
   {
@@ -527,7 +527,7 @@
    "failed": [
     "about"
    ],
-   "ms": 230,
+   "ms": 219,
    "words": 2
   },
   {
@@ -540,11 +540,11 @@
    "palette": "Iron",
    "hero": "Your Neighbourhood Fitness App",
    "brand": "Bright Fitness App",
-   "sections": 12,
+   "sections": 13,
    "failed": [
     "about"
    ],
-   "ms": 114,
+   "ms": 108,
    "words": 2
   },
   {
@@ -561,7 +561,7 @@
    "failed": [
     "about"
    ],
-   "ms": 136,
+   "ms": 127,
    "words": 2
   },
   {
@@ -576,7 +576,7 @@
    "brand": "Maple Ice Cream Parlour",
    "sections": 12,
    "failed": [],
-   "ms": 266,
+   "ms": 247,
    "words": 3
   },
   {
@@ -591,7 +591,7 @@
    "brand": "True Cafe",
    "sections": 13,
    "failed": [],
-   "ms": 171,
+   "ms": 166,
    "words": 1
   },
   {
@@ -608,7 +608,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 168,
+   "ms": 161,
    "words": 3
   },
   {
@@ -621,9 +621,9 @@
    "palette": "Iron",
    "hero": "Strong Starts With One Good Workout",
    "brand": "True Gym",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 67,
+   "ms": 66,
    "words": 1
   },
   {
@@ -638,7 +638,7 @@
    "brand": "Noble Dental Clinic",
    "sections": 13,
    "failed": [],
-   "ms": 90,
+   "ms": 87,
    "words": 2
   },
   {
@@ -653,7 +653,7 @@
    "brand": "Nova Kirana",
    "sections": 12,
    "failed": [],
-   "ms": 190,
+   "ms": 195,
    "words": 2
   },
   {
@@ -668,7 +668,7 @@
    "brand": "True Clothing",
    "sections": 12,
    "failed": [],
-   "ms": 174,
+   "ms": 171,
    "words": 1
   },
   {
@@ -681,7 +681,7 @@
    "palette": "Campus",
    "hero": "Where Coaching Center Feels Personal",
    "brand": "Harbor Coaching",
-   "sections": 10,
+   "sections": 11,
    "failed": [],
    "ms": 142,
    "words": 2
@@ -713,9 +713,9 @@
    "palette": "Mauve and champagne",
    "hero": "Look Good, Feel Even Better",
    "brand": "Nova Hair Salon",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 136,
+   "ms": 134,
    "words": 1
   },
   {
@@ -730,7 +730,7 @@
    "brand": "Royal Travel Agency",
    "sections": 12,
    "failed": [],
-   "ms": 165,
+   "ms": 161,
    "words": 2
   },
   {
@@ -745,7 +745,7 @@
    "brand": "Nova Restaurant",
    "sections": 14,
    "failed": [],
-   "ms": 93,
+   "ms": 89,
    "words": 1
   },
   {
@@ -758,9 +758,9 @@
    "palette": "Campus",
    "hero": "Honest School, Start To Finish",
    "brand": "Urban School",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 142,
+   "ms": 127,
    "words": 1
   },
   {
@@ -775,7 +775,7 @@
    "brand": "Oak Plumber",
    "sections": 10,
    "failed": [],
-   "ms": 147,
+   "ms": 128,
    "words": 1
   },
   {
@@ -790,7 +790,7 @@
    "brand": "Urban Tea House",
    "sections": 11,
    "failed": [],
-   "ms": 87,
+   "ms": 80,
    "words": 2
   },
   {
@@ -805,7 +805,7 @@
    "brand": "Urban Real Estate Agent",
    "sections": 13,
    "failed": [],
-   "ms": 110,
+   "ms": 103,
    "words": 2
   },
   {
@@ -820,7 +820,7 @@
    "brand": "Maple NGO",
    "sections": 10,
    "failed": [],
-   "ms": 82,
+   "ms": 91,
    "words": 1
   },
   {
@@ -833,9 +833,9 @@
    "palette": "A bolder Workwear",
    "hero": "Honest Phone Repairs With A Warranty",
    "brand": "Prime Mobile Phone Repair",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 163,
+   "ms": 176,
    "words": 3
   },
   {
@@ -850,7 +850,7 @@
    "brand": "True Event Decor",
    "sections": 12,
    "failed": [],
-   "ms": 121,
+   "ms": 130,
    "words": 2
   },
   {
@@ -865,7 +865,7 @@
    "brand": "True Jewellery Shop",
    "sections": 12,
    "failed": [],
-   "ms": 168,
+   "ms": 182,
    "words": 2
   },
   {
@@ -878,11 +878,11 @@
    "palette": "Campus",
    "hero": "Maths And Science Taught Step By Step",
    "brand": "True Tuition Centre",
-   "sections": 12,
+   "sections": 13,
    "failed": [
     "headline"
    ],
-   "ms": 88,
+   "ms": 91,
    "words": 2
   },
   {
@@ -897,7 +897,7 @@
    "brand": "Golden Collective",
    "sections": 10,
    "failed": [],
-   "ms": 145,
+   "ms": 146,
    "words": 0
   },
   {
@@ -912,7 +912,7 @@
    "brand": "Urban Collective",
    "sections": 12,
    "failed": [],
-   "ms": 176,
+   "ms": 175,
    "words": 1
   },
   {
@@ -927,7 +927,7 @@
    "brand": "Harbor Collective",
    "sections": 11,
    "failed": [],
-   "ms": 122,
+   "ms": 119,
    "words": 0
   },
   {
@@ -942,7 +942,7 @@
    "brand": "Summit Collective",
    "sections": 12,
    "failed": [],
-   "ms": 147,
+   "ms": 144,
    "words": 0
   },
   {
@@ -957,7 +957,7 @@
    "brand": "Nova Studio",
    "sections": 13,
    "failed": [],
-   "ms": 124,
+   "ms": 123,
    "words": 0
   },
   {
@@ -972,7 +972,7 @@
    "brand": "Golden Studio",
    "sections": 13,
    "failed": [],
-   "ms": 125,
+   "ms": 121,
    "words": 1
   },
   {
@@ -987,7 +987,7 @@
    "brand": "Noble Collective",
    "sections": 11,
    "failed": [],
-   "ms": 125,
+   "ms": 123,
    "words": 4
   },
   {
@@ -1004,7 +1004,7 @@
    "failed": [
     "length"
    ],
-   "ms": 158,
+   "ms": 155,
    "words": 2
   },
   {
@@ -1021,7 +1021,7 @@
    "failed": [
     "length"
    ],
-   "ms": 141,
+   "ms": 134,
    "words": 1
   },
   {
@@ -1036,7 +1036,7 @@
    "brand": "Bright Atelier",
    "sections": 12,
    "failed": [],
-   "ms": 175,
+   "ms": 171,
    "words": 2
   },
   {
@@ -1066,7 +1066,7 @@
    "brand": "Evergreen Collective",
    "sections": 11,
    "failed": [],
-   "ms": 102,
+   "ms": 97,
    "words": 1
   },
   {
@@ -1079,9 +1079,9 @@
    "palette": "Ink and indigo",
    "hero": "Evergreen Labs: Next-Gen Deployments, At Any Scale",
    "brand": "Evergreen Labs",
-   "sections": 12,
+   "sections": 13,
    "failed": [],
-   "ms": 139,
+   "ms": 125,
    "words": 0
   },
   {
@@ -1096,7 +1096,7 @@
    "brand": "Happy Collective",
    "sections": 10,
    "failed": [],
-   "ms": 96,
+   "ms": 85,
    "words": 1
   },
   {
@@ -1113,7 +1113,7 @@
    "failed": [
     "original"
    ],
-   "ms": 234,
+   "ms": 211,
    "words": 0
   },
   {
@@ -1128,7 +1128,7 @@
    "brand": "Clay Room",
    "sections": 13,
    "failed": [],
-   "ms": 184,
+   "ms": 176,
    "words": 14
   },
   {
@@ -1143,7 +1143,7 @@
    "brand": "Forno Rosso",
    "sections": 13,
    "failed": [],
-   "ms": 124,
+   "ms": 125,
    "words": 15
   },
   {
@@ -1158,7 +1158,7 @@
    "brand": "Smile Care",
    "sections": 12,
    "failed": [],
-   "ms": 91,
+   "ms": 94,
    "words": 15
   },
   {
@@ -1173,7 +1173,7 @@
    "brand": "Bright Online Clothing",
    "sections": 13,
    "failed": [],
-   "ms": 158,
+   "ms": 155,
    "words": 15
   },
   {
@@ -1186,9 +1186,9 @@
    "palette": "Sage studio",
    "hero": "Slow Down Where The Air Is Clean",
    "brand": "Golden Yoga Retreat",
-   "sections": 13,
+   "sections": 14,
    "failed": [],
-   "ms": 254,
+   "ms": 180,
    "words": 9
   },
   {
@@ -1205,7 +1205,7 @@
    "failed": [
     "headline"
    ],
-   "ms": 96,
+   "ms": 95,
    "words": 13
   },
   {
@@ -1218,9 +1218,9 @@
    "palette": "Iron",
    "hero": "Strong Starts With One Good Workout",
    "brand": "Iron Pulse",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 103,
+   "ms": 94,
    "words": 12
   },
   {
@@ -1233,9 +1233,9 @@
    "palette": "Campus",
    "hero": "Coaching Institute With A Human Touch",
    "brand": "Noble Coaching Institute",
-   "sections": 10,
+   "sections": 11,
    "failed": [],
-   "ms": 209,
+   "ms": 195,
    "words": 12
   },
   {
@@ -1250,7 +1250,7 @@
    "brand": "Studio North",
    "sections": 12,
    "failed": [],
-   "ms": 156,
+   "ms": 148,
    "words": 10
   },
   {
@@ -1267,7 +1267,7 @@
    "failed": [
     "theme"
    ],
-   "ms": 178,
+   "ms": 173,
    "words": 9
   },
   {
@@ -1282,7 +1282,7 @@
    "brand": "Golden Cafe",
    "sections": 14,
    "failed": [],
-   "ms": 123,
+   "ms": 116,
    "words": 1
   },
   {
@@ -1295,9 +1295,9 @@
    "palette": "Iron",
    "hero": "Strong Starts With One Good Workout",
    "brand": "Maple Gym",
-   "sections": 12,
+   "sections": 13,
    "failed": [],
-   "ms": 113,
+   "ms": 109,
    "words": 1
   },
   {
@@ -1315,7 +1315,7 @@
     "headline",
     "relevant"
    ],
-   "ms": 94,
+   "ms": 91,
    "words": 1
   },
   {
@@ -1330,7 +1330,7 @@
    "brand": "Oak Bakery",
    "sections": 14,
    "failed": [],
-   "ms": 116,
+   "ms": 112,
    "words": 1
   },
   {
@@ -1343,11 +1343,11 @@
    "palette": "Mauve and champagne",
    "hero": "Hair, Skin And A Little Time For You",
    "brand": "Evergreen Hair Salon",
-   "sections": 13,
+   "sections": 14,
    "failed": [
     "headline"
    ],
-   "ms": 110,
+   "ms": 102,
    "words": 1
   },
   {
@@ -1362,7 +1362,7 @@
    "brand": "Golden Clinic",
    "sections": 11,
    "failed": [],
-   "ms": 192,
+   "ms": 170,
    "words": 1
   },
   {
@@ -1375,9 +1375,9 @@
    "palette": "Campus",
    "hero": "Honest School, Start To Finish",
    "brand": "Evergreen School",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 129,
+   "ms": 115,
    "words": 1
   },
   {
@@ -1394,7 +1394,7 @@
    "failed": [
     "relevant"
    ],
-   "ms": 115,
+   "ms": 106,
    "words": 1
   },
   {
@@ -1407,9 +1407,9 @@
    "palette": "Ink and indigo",
    "hero": "Software That Helps Your Team Do More",
    "brand": "Summit SaaS Startup",
-   "sections": 11,
+   "sections": 12,
    "failed": [],
-   "ms": 171,
+   "ms": 151,
    "words": 1
   },
   {
@@ -1439,7 +1439,7 @@
    "brand": "Summit Kitchen",
    "sections": 12,
    "failed": [],
-   "ms": 159,
+   "ms": 166,
    "words": 1
   },
   {
@@ -1454,7 +1454,7 @@
    "brand": "Royal Care",
    "sections": 10,
    "failed": [],
-   "ms": 139,
+   "ms": 144,
    "words": 1
   },
   {
@@ -1469,7 +1469,7 @@
    "brand": "Summit Kitchen",
    "sections": 12,
    "failed": [],
-   "ms": 189,
+   "ms": 185,
    "words": 1
   },
   {
@@ -1484,7 +1484,7 @@
    "brand": "Royal Collective",
    "sections": 12,
    "failed": [],
-   "ms": 209,
+   "ms": 187,
    "words": 1
   },
   {
@@ -1501,7 +1501,7 @@
    "failed": [
     "original"
    ],
-   "ms": 98,
+   "ms": 86,
    "words": 2
   },
   {
@@ -1516,7 +1516,7 @@
    "brand": "Oak Chai Stall",
    "sections": 14,
    "failed": [],
-   "ms": 222,
+   "ms": 193,
    "words": 2
   },
   {
@@ -1531,7 +1531,7 @@
    "brand": "Blue Door Collective",
    "sections": 11,
    "failed": [],
-   "ms": 101,
+   "ms": 89,
    "words": 2
   },
   {
@@ -1546,7 +1546,7 @@
    "brand": "Harbor Tailoring",
    "sections": 13,
    "failed": [],
-   "ms": 225,
+   "ms": 203,
    "words": 2
   },
   {
@@ -1561,7 +1561,7 @@
    "brand": "Golden Astrologer",
    "sections": 12,
    "failed": [],
-   "ms": 137,
+   "ms": 129,
    "words": 1
   },
   {
@@ -1576,7 +1576,7 @@
    "brand": "Bright Mehndi Artist",
    "sections": 12,
    "failed": [],
-   "ms": 113,
+   "ms": 112,
    "words": 2
   }
  ]

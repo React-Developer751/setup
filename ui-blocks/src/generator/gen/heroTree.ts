@@ -23,8 +23,9 @@ export function heroCss(s: HeroSpec, p: string): string {
   const bg: Record<HeroSpec['bg'], string> = { plain: 'transparent', band: 'var(--g-band)', glow: 'radial-gradient(ellipse 70% 60% at 75% 0%, var(--g-glow), transparent 70%)', accent: 'var(--g-accent)', ink: '#111216' }
   const stacked = s.layout === 'center-stack' || s.layout === 'stack-wide' || s.layout === 'type-led'
   // (416 thumbs: the full ones are the least disliked, 1 of 115; compact 7 of 138, tall 13 of 163: the heights are the first ones again)
-  const pad = s.height === 'compact' ? '3rem' : s.height === 'tall' ? (stacked ? '4rem' : '5.5rem') : stacked ? '4.75rem' : '7rem'
-  const minH = s.height === 'full' && !stacked ? 'min-height:88vh;' : ''
+  // ("make the hero taller / shorter": the part's wrapper sets --gp-scale and --gp-min, see library/ThemeScope.tsx)
+  const pad = `calc(${s.height === 'compact' ? '3rem' : s.height === 'tall' ? (stacked ? '4rem' : '5.5rem') : stacked ? '4.75rem' : '7rem'} * var(--gp-scale,1))`
+  const minH = s.height === 'full' && !stacked ? 'min-height:max(88vh,var(--gp-min,0px));' : 'min-height:var(--gp-min,0px);'
   const wide = s.layout === 'type-led' ? '110rem' : '76rem'
   const css: string[] = []
   const c = (rule: string) => css.push(rule.replaceAll('&', `.${p}`))

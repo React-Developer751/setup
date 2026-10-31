@@ -80,12 +80,13 @@ export function pickGenCta(i: PickInput): string | undefined {
 }
 
 /** pricing, FAQ, testimonials, gallery: a little less often than the first screen (these parts are the same on many pages and a stored one is fine) */
-export function pickGenKit(role: string, i: PickInput): string | undefined {
+export function pickGenKit(role: string, i: PickInput, force = false): string | undefined {
   const kit = kitOfRole(role)
-  if (!kit || i.keep || i.level === 'safe' || i.tier === 'normal') return undefined
+  if (!kit) return undefined
+  if (!force && (i.keep || i.level === 'safe' || i.tier === 'normal')) return undefined
   const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|gen${role}|${i.variation}`))
   const chance = i.level === 'wild' ? 0.55 : 0.28
-  if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
+  if (!force && rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return kit.part.id(kit.part.random(rand, mood) as never)
 }

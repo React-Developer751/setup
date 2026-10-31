@@ -24,7 +24,7 @@ export function baseCss(p: string, o: { bg: Bg; font: (typeof FONTS)[number]; he
   const s = surface(o.bg)
   const css: string[] = []
   const c = (rule: string) => css.push(rule.replaceAll('&', `.${p}`))
-  c(`&{position:relative;overflow:hidden;isolation:isolate;padding:${o.pad} 1.5rem;background:${s.bg};color:${s.fg}}`)
+  c(`&{position:relative;overflow:hidden;isolation:isolate;padding:calc(${o.pad} * var(--gp-scale,1)) 1.5rem;min-height:var(--gp-min,0px);background:${s.bg};color:${s.fg}}`)
   c(`& *{box-sizing:border-box}`)
   c(`& .gp-in{position:relative;z-index:2;max-width:${o.wide ?? '72rem'};margin:0 auto}`)
   c(`& .gp-title{margin:0 0 ${o.center ? '3rem' : '2.5rem'};font-family:${o.font === 'serif' ? SERIF : SANS};font-size:${HEAD_SIZES[o.head]};font-weight:${o.font === 'serif' ? 600 : o.font === 'display' ? 800 : 700};line-height:1.08;letter-spacing:${o.head === 'xl' ? '-0.035em' : '-0.02em'};text-wrap:balance;overflow-wrap:break-word;color:inherit;${o.center ? 'text-align:center;' : ''}}`)

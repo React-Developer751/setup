@@ -156,7 +156,6 @@ ok(!cs.ctaOfId('gen/Hero_67ky7') && !spec.specOfId(cs.ctaId(cspecs[0])), 'a clos
 taste.setHeroTaste(cspecs.map((s, i) => ({ id: cs.ctaId(s), up: s.layout !== 'bar' || i % 9 === 0 })), cs.decodeCta, 'cta')
 ok(taste.tasteActive('cta') && taste.tasteWeight('layout', 'bar', 'cta') < 1, 'the closing banner has a taste of its own')
 // the generators made with partKit (pricing, FAQ, testimonials, gallery)
-const SLOTS = { pricing: ['title', 'plan', 'plan-name', 'plan-price', 'perk', 'plan-button'], faq: ['title', 'qa', 'q', 'a'], testimonial: ['title', 'quote', 'quote-text', 'quote-author', 'quote-role', 'quote-initial'], gallery: ['title', 'shot', 'shot-image', 'shot-caption'] }
 for (const kit of reg.KIT_PARTS) {
   const rk = seeded(kit.role.length * 91)
   const list = []
@@ -173,7 +172,7 @@ for (const kit of reg.KIT_PARTS) {
     const html = Comp ? renderToStaticMarkup(createElement(Comp)) : ''
     const src = emit.generatedHeroSource(id)
     const cc = src ? compileSource(src) : { error: 'no source' }
-    if (SLOTS[kit.role].every((n) => html.includes(`data-slot="${n}"`)) && html.includes(`data-ref="show-`) && 'code' in cc && !/undefined|\[object/.test(html) && !/className="[^"]*\b(?:text|bg|px|py|grid|flex)-/.test(html)) drawn += 1
+    if (kit.slots.every((n) => html.includes(`data-slot="${n}"`)) && html.includes(`data-ref="show-`) && 'code' in cc && !/undefined|\[object/.test(html) && !/className="[^"]*\b(?:text|bg|px|py|grid|flex)-/.test(html)) drawn += 1
     else fail.push(`${kit.role} ${id} is not drawn with its slots or does not compile`)
   }
   ok(drawn === 60, `${kit.role}: 60 drawn with all slots and compiled (${drawn})`)
@@ -199,6 +198,14 @@ ok(JSON.stringify(pf('yoga studio, pricing: drop-in 500 rupees, monthly 3000 rup
 ok(pf('gym in Pune, plans: basic 999 rupees, premium 1999 rupees, personal training 4999 rupees').prices.length === 3, 'three prices are three plans (premium is not a style word here)')
 ok(!pf('yoga studio, drop-in 500 rupees, monthly 3000 rupees, gallery and FAQ').services.some((x) => /gallery|faq|plans/.test(x)), 'gallery and FAQ named in the prompt are not services')
 ok(pf('dental clinic in Pune, 10 years of experience, open 24 hours').prices.length === 0, 'years and hours are not prices')
+// a period is shown only when the person wrote one; a business that sells by plans has a price page without being asked, the others only when asked
+const per = PF.extractFacts('yoga studio, drop-in 500 rupees per class, monthly 3000 rupees, retreat 12000 rupees', 'studio').prices
+ok(per[0].period === '/ class' && !per[1].period && !per[2].period, 'a period ("per class") is kept when the person wrote it and not invented otherwise')
+const priceOn = (prompt) => { let n = 0; for (let v = 1; v <= 8; v += 1) if (generateLibraryPage(prompt, v * 17, undefined, true, 'auto', undefined, true).sections.some((x) => x.role === 'pricing')) n += 1; return n }
+ok(['gym website in Pune', 'SaaS startup landing page', 'salon in Delhi'].every((p) => priceOn(p) === 8), 'a gym, a software and a salon site have a price page')
+ok(['dental clinic in Delhi', 'law firm website', 'NGO for girl education'].every((p) => priceOn(p) === 0) && priceOn('gym website without pricing') === 0, 'a clinic, a law firm, an NGO and "without pricing" have none')
+const askPage = generateLibraryPage('gym website in Pune', 5, undefined, true, 'auto', undefined, true).sections.find((x) => x.role === 'pricing')
+ok(askPage && askPage.componentId.startsWith('gen/Pricing_'), 'prices nobody wrote are shown by a part that says "ask for the price"')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

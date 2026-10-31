@@ -27,7 +27,7 @@ const WAVES = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 /** what every picture-led design shares: the text on the picture is white, the buttons are rectangles or pills of their own, the tiles have no card frame */
 const SHOW = `[data-gen-theme] .show-hero,[data-gen-theme] .show-hero :is(h1,p,span,a){color:#ffffff}
 [data-gen-theme] .show-hero-scrim{background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.05) 60%)}
-[data-gen-theme] .show-btn{font-weight:600;transition:opacity .2s,background .2s}
+[data-gen-theme] .show-btn{font-weight:600;transition:opacity .2s,background .2s;min-height:2.75rem}
 [data-gen-theme] .show-tile figcaption span:first-child{color:inherit}
 [data-gen-theme] [data-ref=show-tiles] .bg-gray-200{background:transparent}`
 

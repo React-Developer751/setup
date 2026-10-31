@@ -114,7 +114,7 @@ export function Section({ role, paint, fit, band, page, head, children }: { role
   // the rows of buttons (a flex row that starts with a link or a button) move to the side that was asked for
   const buttonCss = fit?.buttons ? `[data-role="${role}"] .flex:has(> a):has(> a), [data-role="${role}"] .flex:has(> button) { justify-content: ${{ left: 'flex-start', center: 'center', right: 'flex-end' }[fit.buttons]} !important; }` : undefined
   const bandStyle = role === 'hero' ? { backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, var(--g-glow), transparent 70%)' } : band ? { background: 'var(--g-band)' } : undefined
-  const fitStyle = fit ? { ...(fit.minHeight ? { minHeight: fit.minHeight } : {}), ...(fit.maxWidth ? { maxWidth: fit.maxWidth, marginInline: 'auto' } : {}), ...(fit.align ? { textAlign: fit.align } : {}) } : undefined
+  const fitStyle = fit ? { ...(fit.minHeight ? { minHeight: fit.minHeight, ['--gp-min' as string]: `${fit.minHeight}px` } : {}), ...(fit.heightFactor && fit.heightFactor !== 1 ? { ['--gp-scale' as string]: String(fit.heightFactor) } : {}), ...(fit.maxWidth ? { maxWidth: fit.maxWidth, marginInline: 'auto' } : {}), ...(fit.align ? { textAlign: fit.align } : {}) } : undefined
   if (paint && palette) {
     const t = sectionTokens(paint, palette)
     const own = { bg: t['--g-bg'], surface: t['--g-surface'], border: t['--g-border'], text: t['--g-text'], muted: t['--g-muted'], accent: t['--g-accent'], alt: t['--g-accent'] }

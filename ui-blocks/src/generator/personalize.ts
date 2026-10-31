@@ -19,7 +19,8 @@ export type Facts = {
   /** when it is open, if the prompt says ("Open on Sunday") */
   hours?: string
   /** prices named for something ("monthly membership 1999") */
-  prices: { name: string; amount: number }[]
+  /** `period`: only when the person wrote one ("per month", "/class") */
+  prices: { name: string; amount: number; period?: string }[]
   /** the currency the person wrote next to a price */
   currency?: string
 }
@@ -166,17 +167,17 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
 }
 
 /** "drop-in 500 rupees, monthly 3000 rupees": each comma-separated piece that ends in a sum of money is a thing and its price (two or more pieces make a list) */
-function pricesWritten(text: string): { name: string; amount: number }[] {
+function pricesWritten(text: string): { name: string; amount: number; period?: string }[] {
   const money = /₹|\brupees?\b|\brs\.?(?=\s*\d|\s*$|\s*,)|\binr\b|\$|£|€|\bdollars?\b|\bpounds?\b|\beuros?\b|\/-/i
-  const out: { name: string; amount: number }[] = []
+  const out: { name: string; amount: number; period?: string }[] = []
   for (const seg of text.split(/\s*(?:,|;|\n|\band\b|\baur\b)\s*/i)) {
     if (!money.test(seg) && !(out.length && /^[^\d]{2,40}\s+\d{3,6}$/.test(seg.trim()))) continue
     if (/(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|years?|since|shipping|delivery|trial|call|phone|whatsapp|open)(?![\p{L}])/iu.test(seg)) continue
-    const m = seg.match(/^(?:.*?(?:pricing|prices?|plans?|rates?|packages?|price list)\s*[:\-]\s*)?([^\d₹$£€:]{2,40}?)\s*(?:@|:|=|-|\b(?:at|for|is)\b)?\s*(?:rs\.?\s*|₹\s*|inr\s*|\$\s*|£\s*|€\s*)?(\d[\d,]{2,7})\s*(?:rupees?|rs\.?|inr|only|dollars?|pounds?|euros?|\/-)?\s*(?:\/\s*\w+|per\s+\w+)?\s*$/iu)
+    const m = seg.match(/^(?:.*?(?:pricing|prices?|plans?|rates?|packages?|price list)\s*[:\-]\s*)?([^\d₹$£€:]{2,40}?)\s*(?:@|:|=|-|\b(?:at|for|is)\b)?\s*(?:rs\.?\s*|₹\s*|inr\s*|\$\s*|£\s*|€\s*)?(\d[\d,]{2,7})\s*(?:rupees?|rs\.?|inr|only|dollars?|pounds?|euros?|\/-)?\s*(?:\/\s*(\p{L}+)|per\s+(\p{L}+))?\s*$/iu)
     if (!m) continue
     const name = m[1].toLowerCase().replace(/[^\p{L}\p{N}&' /+-]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^(?:pricing|prices?|plans?|rates?|packages?)\s+/, '')
     const amount = Number(m[2].replace(/,/g, ''))
-    if (name && name.split(' ').length <= 4 && amount >= 10 && !out.some((x) => x.name === name)) out.push({ name, amount })
+    if (name && name.split(' ').length <= 4 && amount >= 10 && !out.some((x) => x.name === name)) out.push({ name, amount, ...(m[3] || m[4] ? { period: `/ ${(m[3] || m[4]).toLowerCase()}` } : {}) })
   }
   return out
 }
@@ -287,7 +288,7 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
     // the money the person wrote ("150 rupees", "Rs 250", "£12") is the money of the page; else the one of the text pack
     const currency = facts.currency ?? /^[^\d\s]+/.exec(next.pricing.plans[0].price)?.[0] ?? '₹'
     // the plans are the prices the person wrote (the example prices of the text pack are not mixed in)
-    const plans = prices.slice(0, 6).map((priceOf, i) => ({ ...(next.pricing.plans[i] ?? next.pricing.plans[0]), name: titleCase(priceOf.name).slice(0, 28), price: `${currency}${priceOf.amount.toLocaleString(currency === '$' ? 'en-US' : 'en-IN')}` }))
+    const plans = prices.slice(0, 6).map((priceOf, i) => ({ ...(next.pricing.plans[i] ?? next.pricing.plans[0]), name: titleCase(priceOf.name).slice(0, 28), price: `${currency}${priceOf.amount.toLocaleString(currency === '$' ? 'en-US' : 'en-IN')}`, period: priceOf.period ?? '' }))
     next = { ...next, pricing: { ...next.pricing, plans, fromPrompt: true } }
   }
 

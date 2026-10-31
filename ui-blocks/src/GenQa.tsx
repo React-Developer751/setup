@@ -54,19 +54,47 @@ export default function GenQa() {
             await wait(350)
             const d = f.contentDocument!
             const w = f.contentWindow!
-            const hero = d.querySelector<HTMLElement>(kit ? '[data-gen]' : `[data-gen="${role}"]`)
+            const hero = d.querySelector<HTMLElement>(kit ? `[data-gen="${kit.part.ns === 'quotes' ? 'quotes' : kit.part.ns}"]` : `[data-gen="${role}"]`)
             if (!hero) { problems.push('not drawn'); break }
             height[label] = Math.round(hero.getBoundingClientRect().height)
             if (d.documentElement.scrollWidth > w.innerWidth + 1) problems.push(`${label}: sideways scroll`)
             if (kit) {
               const t = hero.querySelector<HTMLElement>('[data-slot="title"]')
-              if (!t || t.textContent!.trim().length < 3) problems.push(`${label}: no heading`)
-              else if (t.scrollWidth > t.clientWidth + 2) problems.push(`${label}: heading clipped`)
-              const unit = hero.querySelectorAll<HTMLElement>(`[data-slot="${{ pricing: 'plan', faq: 'qa', testimonial: 'quote', gallery: 'shot' }[kit.role]}"]`)
-              if (!unit.length) problems.push(`${label}: nothing shown`)
+              if (kit.role !== 'nav' && kit.role !== 'footer' && (!t || t.textContent!.trim().length < 3)) problems.push(`${label}: no heading`)
+              else if (t && t.scrollWidth > t.clientWidth + 2) problems.push(`${label}: heading clipped`)
+              const unit = hero.querySelectorAll<HTMLElement>(`[data-slot="${kit.unit}"]`)
+              if (!unit.length && kit.role !== 'contact') problems.push(`${label}: nothing shown`)
               if (kit.role === 'gallery') {
                 for (const im of hero.querySelectorAll<HTMLImageElement>('img[data-slot="shot-image"]')) if (!im.getAttribute('src')) problems.push(`${label}: a picture without source`)
                 if ([...unit].some((u) => w.getComputedStyle(u).display !== 'none' && u.getBoundingClientRect().height < 40)) problems.push(`${label}: a picture collapsed`)
+              }
+              if (kit.role === 'about') {
+                const im = hero.querySelector<HTMLImageElement>('img[data-slot="image"]')
+                if (!im || !im.getAttribute('src')) problems.push(`${label}: no picture`)
+              }
+              if (kit.role === 'contact') {
+                const fields = [...hero.querySelectorAll<HTMLElement>('input, textarea')].filter((f) => f.getBoundingClientRect().height > 20)
+                if (kit.part.of(id) && ((kit.part.of(id) ?? { layout: '' }) as { layout: string }).layout !== 'info' && fields.length < 3) problems.push(`${label}: the form is not shown`)
+                if (hero.querySelector('form') && !hero.querySelector('form [type="submit"]')) problems.push(`${label}: no send button`)
+              }
+              if (kit.role === 'footer' && hero.querySelectorAll('[data-slot="link"]').length < 3) problems.push(`${label}: few links`)
+              if (kit.role === 'nav') {
+                const shown = [...hero.querySelectorAll<HTMLElement>('[data-slot="link"]')].filter((a) => a.getBoundingClientRect().width > 0)
+                const burger = hero.querySelector<HTMLElement>('.gn-burger')
+                const box = hero.querySelector<HTMLInputElement>('.gn-check')
+                if (label === 'desktop' && ((kit.part.of(id) ?? { layout: '' }) as { layout: string }).layout !== 'minimal' && shown.length < 2) problems.push('desktop: the menu is hidden')
+                if (label === 'phone') {
+                  if (!burger || burger.getBoundingClientRect().width < 20) problems.push('phone: no menu button')
+                  else if (box) {
+                    box.checked = true
+                    await wait(120)
+                    const open = [...hero.querySelectorAll<HTMLElement>('[data-slot="link"]')].filter((a) => a.getBoundingClientRect().width > 0)
+                    box.checked = false
+                    if (open.length < 2) problems.push('phone: the menu does not open')
+                  }
+                }
+                const bar = hero.getBoundingClientRect().height
+                if (bar > 260) problems.push(`${label}: tall menu bar (${Math.round(bar)}px)`)
               }
               if (kit.role === 'pricing') {
                 if ([...hero.querySelectorAll('[data-slot="plan-price"]')].some((n) => !(n.textContent ?? '').trim())) problems.push(`${label}: a plan without price`)

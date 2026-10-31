@@ -164,7 +164,7 @@ export type CoreOurs = { /** the person wrote prices of their own (the built-in 
 export type CoreDecision = { use: boolean; reason: string; blocks?: CoreBlocks; /** the business name, when the prompt gave it in Devanagari */ rename?: string; /** sections that would stay in English (team, prices, reviews ...): a Hindi page does not show them */ hide?: EditOp[]; review: string[] }
 
 const HI_NAV = { home: 'होम', services: 'सेवाएं', gallery: 'गैलरी', blog: 'ब्लॉग' }
-const HI_LABELS = { learnMore: 'और जानें', welcome: 'आपका स्वागत है' }
+const HI_LABELS = { learnMore: 'और जानें', welcome: 'आपका स्वागत है', askPrice: 'कीमत पूछें' }
 
 /** a page of Core-Craft AI for one prompt (undefined when it is not running or cannot write one) */
 export async function askCorePage(prompt: string): Promise<CorePage | undefined> {

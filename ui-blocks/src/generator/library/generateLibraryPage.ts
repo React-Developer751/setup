@@ -35,6 +35,9 @@ const ROLE_OF: Partial<Record<SectionKey, Role[]>> = {
 export type LibraryFit = { /** the buttons alone */ buttons?: 'left' | 'center' | 'right'; minHeight?: number; /** scales the roomy parts (padding) of the component */ heightFactor?: number; maxWidth?: number; align?: 'left' | 'center' | 'right' }
 export type LibrarySection = { role: Role; componentId: string; /** the page of a multi-page site this part is on ('*' = every page) */ page?: string; /** the title block of an inner page */ head?: { title: string; text: string; home: string }; /** a soft band of the main colour behind this part */ band?: boolean; /** background colour of this part only ("footer green") */ paint?: string; fit?: LibraryFit }
 
+/** kinds of business that sell by plans, sessions or courses: the price page is on their site without being asked */
+const PRICE_NATURAL = new Set<string>(['modern_tech', 'bold_fitness', 'beauty_wellness', 'education'])
+
 const componentName = (id: string) => id.split('/')[1]
 
 export function generateLibraryPage(
@@ -91,11 +94,11 @@ export function generateLibraryPage(
     for (const role of roles) if (picks[role]) chosen[role] = picks[role]
   }
   // a first screen written by the design generator (gen/): for some pages, never for a named design, a resized first screen or a short simple page
-  const genHero = pickGenHero({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.hero) || !!edits?.sizes?.hero || !!edits?.aligns?.hero })
+  const genHero = pickGenHero({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.hero) || !!edits?.aligns?.hero })
   if (genHero) chosen.hero = genHero
-  const genFeatures = pickGenFeatures({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.features) || !!edits?.sizes?.features })
+  const genFeatures = pickGenFeatures({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.features) })
   if (genFeatures) chosen.features = genFeatures
-  const genCta = pickGenCta({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.cta) || !!edits?.sizes?.cta })
+  const genCta = pickGenCta({ prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: /^(refkit|showkit)\//.test(chosen.cta) })
   if (genCta) chosen.cta = genCta
   // the parts a page may have besides the always-there ones; a page that is too long is not read
   // (the chances depend on the kind of business: a clinic gets proof and answers, a restaurant gets pictures; see experience.ts)
@@ -155,12 +158,16 @@ export function generateLibraryPage(
     if (negated(word)) visible.delete(role)
     else if (tier !== 'normal') visible.add(role)
   }
+  // a business that sells by plans or sessions (a gym, a salon, a course, software) has a price page even when no price was written: the plans are there and the price says "ask" (the person adds real prices: "pricing 500 rupees ...")
+  const priceNatural = tier !== 'normal' && PRICE_NATURAL.has(base.themeKey) && !base.content.pricing.fromPrompt && !menuOn && !(/\bpricing\b|\bprices?\b|\bplans?\b/i.test(userPrompt) && /(?:\b(?:no|without|bina|remove|hatao|delete)\s+(?:the\s+)?(?:pricing|prices?|plans?)\b|\b(?:pricing|prices?|plans?)\s+(?:nahi|mat|hatao|nhi)\b)/i.test(userPrompt)) && !(edits?.hidden ?? []).includes('pricing')
+  if (priceNatural) visible.add('pricing')
   if (menuOn && tier !== 'normal') visible.add('pricing')
   if (menuOn) chosen.pricing = 'refkit/RefMenu1'
-  for (const role of ['pricing', 'faq', 'testimonial', 'gallery'] as const) {
-    const mine = pickGenKit(role, { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: chosen[role] === 'refkit/RefMenu1' || !!edits?.sizes?.[role === 'testimonial' ? 'testimonials' : role] })
+  for (const role of ['pricing', 'faq', 'testimonial', 'gallery', 'about', 'contact', 'footer', 'nav'] as const) {
+    const mine = pickGenKit(role, { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: chosen[role] === 'refkit/RefMenu1' })
     if (mine) chosen[role] = mine
   }
+  if (priceNatural) chosen.pricing = pickGenKit('pricing', { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: false }, true) ?? chosen.pricing
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)
   for (const move of edits?.moves ?? []) for (const section of [move.section, move.target]) for (const role of (section && ROLE_OF[section]) || []) if (role !== 'profile') visible.add(role)

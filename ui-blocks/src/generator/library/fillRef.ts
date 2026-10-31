@@ -44,7 +44,7 @@ function accentTitle(el: HTMLElement, title: string) {
 export type PictureFor = (index: number, width: number, height: number) => string
 
 /** the parts of the showcase kit (src/components/showkit): picture-led, filled by name like the reference kit */
-function fillShow(root: Element, kind: string, c: WebsiteContent, picture: PictureFor) {
+function fillShow(root: Element, kind: string, c: WebsiteContent, picture: PictureFor, links: { href: string; label: string }[]) {
   const features = c.features.items
   const setImg = (el: Element | null, index: number, w: number, h: number) => {
     if (!el) return
@@ -130,8 +130,9 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
           else n.remove()
         }
         set('plan-name', plan.name)
-        set('plan-price', plan.price)
-        set('plan-period', plan.period)
+        set('plan-price', c.pricing.fromPrompt ? plan.price : (c.labels?.askPrice ?? 'Ask for price'))
+        // a period ("/ month") only when the person wrote one; prices nobody wrote are not shown ("ask for the price")
+        set('plan-period', c.pricing.fromPrompt ? plan.period : '')
         set('plan-button', c.cta.button)
         el.querySelectorAll<HTMLElement>('[data-slot="perk"]').forEach((li, k) => (plan.perks[k] ? (li.textContent = short(plan.perks[k], 60)) : li.remove()))
         if (plans.length > 1 && i === (plans.length >= 3 ? 1 : 0)) el.setAttribute('data-hot', '')
@@ -178,14 +179,88 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       })
       break
     }
+    case 'show-about': {
+      put(root, 'title', c.about.title)
+      repeat(root, 'para', c.about.paragraphs.slice(0, 2), (el, text) => (el.textContent = text))
+      repeat(root, 'point', c.about.points.slice(0, 4), (el, text) => (el.textContent = text))
+      setImg(one(root, 'image'), 1, 1200, 1300)
+      break
+    }
+    case 'show-contact': {
+      const wa = c.contact.whatsapp ? `https://wa.me/${(c.contact.whatsapp.replace(/\D/g, '').replace(/^0+/, '').length === 10 ? '91' : '') + c.contact.whatsapp.replace(/\D/g, '').replace(/^0+/, '')}` : ''
+      const ways: [string, string, string][] = [
+        ['Phone', c.contact.phone, c.contact.phone ? `tel:${c.contact.phone.replace(/[^\d+]/g, '')}` : ''],
+        ['Email', c.contact.email, c.contact.email ? `mailto:${c.contact.email}` : ''],
+        ['WhatsApp', c.contact.whatsapp ?? '', wa],
+        ['Address', c.contact.address, c.contact.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.contact.address)}` : ''],
+        ['Hours', c.contact.hoursText ?? '', ''],
+      ]
+      put(root, 'title', c.contact.title)
+      put(root, 'lead', c.contact.text)
+      repeat(root, 'row', ways.filter((w) => w[1]), (el, [label, value, href]) => {
+        put(el, 'row-label', label)
+        const v = one(el, 'row-value')
+        if (!v) return
+        v.textContent = value
+        if (href) {
+          v.setAttribute('href', href)
+          if (!href.startsWith('tel:') && !href.startsWith('mailto:')) v.setAttribute('target', '_blank'), v.setAttribute('rel', 'noopener')
+        } else {
+          v.removeAttribute('href')
+        }
+      })
+      put(root, 'button', 'Send message')
+      break
+    }
+    case 'show-footer': {
+      const pages = links.length ? links : [{ href: '#home', label: 'Home' }, { href: '#about', label: 'About' }, { href: '#contact', label: 'Contact' }]
+      const contactLines: { href?: string; label: string }[] = [
+        ...(c.contact.phone ? [{ href: `tel:${c.contact.phone.replace(/[^\d+]/g, '')}`, label: c.contact.phone }] : []),
+        ...(c.contact.email ? [{ href: `mailto:${c.contact.email}`, label: c.contact.email }] : []),
+        ...(c.contact.address ? [{ label: c.contact.address }] : []),
+        ...(c.contact.hoursText ? [{ label: c.contact.hoursText }] : []),
+      ]
+      put(root, 'brand', c.brandName)
+      put(root, 'tagline', short(sentence(c.subject) || c.hero.subtitle, 110))
+      const groups: Record<string, { title: string; items: { href?: string; label: string }[] }> = {
+        pages: { title: 'Quick links', items: pages },
+        offer: { title: 'What we offer', items: features.slice(0, 5).map((f) => ({ href: '#features', label: f.title })) },
+        contact: { title: c.titles?.contact ?? 'Contact', items: contactLines },
+      }
+      all(root, 'col').forEach((col) => {
+        const g = groups[col.getAttribute('data-kind') ?? '']
+        if (!g || !g.items.length) return col.remove()
+        const title = col.querySelector('[data-slot="col-title"]')
+        if (title) title.textContent = g.title
+        repeat(col, 'link', g.items.slice(0, 6), (a, item) => {
+          a.textContent = item.label
+          if (item.href) a.setAttribute('href', item.href)
+          else a.removeAttribute('href')
+        })
+        col.querySelectorAll('li').forEach((li) => { if (!li.querySelector('[data-slot="link"]')) li.remove() })
+      })
+      put(root, 'rights', `© ${new Date().getFullYear()} ${c.brandName}. All rights reserved.`)
+      put(root, 'place', c.contact.address ? short(c.contact.address, 60) : '')
+      break
+    }
+    case 'show-nav': {
+      put(root, 'brand', c.brandName)
+      const pages = links.length ? links : [{ href: '#home', label: 'Home' }, { href: '#about', label: 'About' }, { href: '#contact', label: 'Contact' }]
+      repeat(root, 'link', pages.slice(0, 7), (a, link) => {
+        a.textContent = link.label
+        a.setAttribute('href', link.href)
+      })
+      put(root, 'button', short(c.hero.button, 22))
+      break
+    }
     default:
       break
   }
 }
 
-export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: PictureFor) {
+export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: PictureFor, links: { href: string; label: string }[] = []) {
   const showKind = root.querySelector('[data-ref^="show-"]')?.getAttribute('data-ref')
-  if (showKind && picture) return fillShow(root, showKind, c, picture)
+  if (showKind && picture) return fillShow(root, showKind, c, picture, links)
   const features = c.features.items
   switch (role) {
     case 'hero': {

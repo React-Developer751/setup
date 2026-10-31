@@ -1276,7 +1276,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   if (root.querySelector('[data-ref]')) {
     const own = [c.photos?.hero, c.photos?.about, ...(c.photos?.gallery ?? [])].filter((p): p is string => !!p)
     const picture = (index: number, w: number, h: number) => own.length ? own[index % own.length] : ((colors && artFor(`ref|${role}|${index}`, colors, w, h)) || blank(w, h))
-    step('reference kit', () => fillRef(root, role, c, picture))
+    step('reference kit', () => fillRef(root, role, c, picture, links))
     step('forms', () => readyForms(root))
     return step('dead links', () => fixDeadLinks(root, role, c))
   }

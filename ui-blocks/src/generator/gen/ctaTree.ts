@@ -12,9 +12,9 @@ export function ctaCss(s: CtaSpec, p: string): string {
   const c = (rule: string) => css.push(rule.replaceAll('&', `.${p}`))
   const bg = { plain: 'transparent', band: 'var(--g-band)', ink: '#111216', accent: 'var(--g-accent)', glow: 'radial-gradient(ellipse 80% 80% at 50% 0%, var(--g-glow), transparent 70%)' }[s.bg]
   const fg = ink ? '#f4f4f5' : acc ? 'var(--g-on-accent)' : 'inherit'
-  const pad = s.pad === 'snug' ? '2.75rem' : '5.5rem'
+  const pad = `calc(${s.pad === 'snug' ? '2.75rem' : '5.5rem'} * var(--gp-scale,1))`
   const framed = s.layout === 'card'
-  c(`&{position:relative;overflow:hidden;isolation:isolate;padding:${framed ? '3rem 1.25rem' : `${pad} 1.5rem`};${framed ? '' : `background:${bg};color:${fg};`}}`)
+  c(`&{position:relative;overflow:hidden;isolation:isolate;padding:${framed ? `calc(3rem * var(--gp-scale,1)) 1.25rem` : `${pad} 1.5rem`};min-height:var(--gp-min,0px);${framed ? '' : `background:${bg};color:${fg};`}}`)
   c(`& *{box-sizing:border-box}`)
   c(`& .gc-in{position:relative;z-index:2;max-width:${s.layout === 'giant' ? '90rem' : '66rem'};margin:0 auto;${framed ? `background:${bg};color:${fg};border-radius:${s.radius}px;padding:clamp(2rem,6vw,4.5rem);${s.bg === 'plain' ? 'border:1px solid var(--color-gray-200,rgba(0,0,0,.1));' : ''}` : ''}}`)
   c(`& .gc-title{margin:0;font-family:${FONT[s.font]};font-size:${SIZE[s.size]};font-weight:${s.font === 'serif' ? 600 : s.font === 'display' ? 800 : 700};line-height:${s.size === 'xxl' ? 0.95 : 1.06};letter-spacing:${s.size === 'xxl' || s.size === 'xl' ? '-0.04em' : '-0.02em'};text-wrap:balance;overflow-wrap:break-word;color:inherit}`)
