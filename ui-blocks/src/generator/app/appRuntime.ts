@@ -117,13 +117,40 @@ export function byStatus(table: AppTable, rows: Record<string, string>[]): { lab
   return [...counts].map(([label, n]) => ({ label, n }))
 }
 
-/** the six months up to this one: rows counted by the month of a date column, or a money column added up by month */
-export function byMonth(rows: Record<string, string>[], dateKey: string, sumKey: string | undefined, now: Date): { label: string; value: number }[] {
-  const months = Array.from({ length: 6 }, (_, i) => new Date(now.getFullYear(), now.getMonth() - 5 + i, 1))
+/** the months up to this one (six unless said): rows counted by the month of a date column, or a money column added up by month */
+export function byMonth(rows: Record<string, string>[], dateKey: string, sumKey: string | undefined, now: Date, count = 6): { label: string; value: number }[] {
+  const months = Array.from({ length: count }, (_, i) => new Date(now.getFullYear(), now.getMonth() - (count - 1) + i, 1))
   return months.map((m) => ({
-    label: MON[m.getMonth()],
+    label: count > 12 ? `${MON[m.getMonth()]} ${String(m.getFullYear()).slice(2)}` : MON[m.getMonth()],
     value: rows.filter((r) => /^\d{4}-\d{2}/.test(r[dateKey] ?? '') && r[dateKey].slice(0, 7) === `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`).reduce((t, r) => t + (sumKey ? toNumber(r[sumKey]) : 1), 0),
   }))
+}
+
+/** where the months of a chart end: this month, or a later one when rows are dated ahead (appointments, due dates), at most three months on */
+export function windowEnd(rows: Record<string, string>[], dateKey: string, now: Date): Date {
+  const limit = new Date(now.getFullYear(), now.getMonth() + 3, 28)
+  let end = now
+  rows.forEach((r) => {
+    const v = r[dateKey]
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v ?? '')) {
+      const d = new Date(`${v}T12:00:00`)
+      if (d > end && d <= limit) end = d
+    }
+  })
+  return end
+}
+
+/**
+ * A backup of this site, or of another one built for the same kind of business: the pages that have the same name are filled (the columns they share), the others are left alone.
+ * `matched` is empty when nothing fits, then nothing is restored.
+ */
+export function matchBackup(tables: AppTable[], saved: { app?: string; tables?: Data }, slug: string): { matched: { id: string; rows: Record<string, string>[] }[]; foreign: boolean } {
+  const data = saved && typeof saved === 'object' && saved.tables && typeof saved.tables === 'object' ? saved.tables : {}
+  const matched = tables.flatMap((t) => {
+    const rows = (data as Data)[t.id]
+    return Array.isArray(rows) && rows.every((r) => r && typeof r === 'object') ? [{ id: t.id, rows }] : []
+  })
+  return { matched, foreign: !!saved?.app && saved.app !== slug }
 }
 
 /** a date as a year-month-day, from "12/03/2026", "12-3-26", "12 Mar 2026", "March 12, 2026" or already "2026-03-12"; what cannot be read is left as it is */
@@ -324,6 +351,7 @@ export function initApp(cfg: AppConfig): void {
   let statusFilter = ''
   let notice = ''
   let pageNo = 0
+  let range = 6
   const PER_PAGE = 25
 
   const authView = (kind: 'login' | 'register' | 'forgot') => {
@@ -424,29 +452,39 @@ export function initApp(cfg: AppConfig): void {
     }
     const dateKey = c.column ?? t.columns.find((x) => x.type === 'date')?.key
     if (!dateKey) return ''
-    const items = byMonth(rows, dateKey, c.kind === 'sumMonth' ? c.sumColumn : undefined, new Date())
+    const items = byMonth(rows, dateKey, c.kind === 'sumMonth' ? c.sumColumn : undefined, windowEnd(rows, dateKey, new Date()), range)
     return `<div class="ap-card ap-panel"><h3 style="font-size:16px">${esc(c.title)}</h3>${bars(items)}</div>`
   }
+  const rangePicker = () => `<div class="ap-tools" style="margin:0"><label style="display:flex;gap:8px;align-items:center;font-size:13px">Months shown<select class="ap-in" data-range style="width:auto">${[3, 6, 12].map((n) => `<option value="${n}" ${n === range ? 'selected' : ''}>Last ${n}</option>`).join('')}</select></label></div>`
   const overview = () => {
     const data = allData()
     const first = cfg.tables[0]
     const recent = first ? data[first.id].slice(0, 5) : []
-    return `<div class="ap-kpis">${cfg.kpis.map((k) => `<div class="ap-card ap-kpi"><small>${esc(k.label)}</small><b>${esc(calcKpi(k, data, cfg.currency))}</b><small>${esc(k.note)}</small></div>`).join('')}</div>
+    return `${rangePicker()}<div class="ap-kpis">${cfg.kpis.map((k) => `<div class="ap-card ap-kpi"><small>${esc(k.label)}</small><b>${esc(calcKpi(k, data, cfg.currency))}</b><small>${esc(k.note)}</small></div>`).join('')}</div>
       <div class="ap-two">${cfg.charts.map((c) => chartOf(c, data)).join('')}</div>
       ${first ? `<div class="ap-card ap-panel"><h3 style="font-size:16px;margin-bottom:10px">Latest ${esc(first.label.toLowerCase())}</h3><div class="ap-wrap"><table><tbody>${recent.map((r) => `<tr>${first.columns.slice(0, 4).map((c) => `<td>${cell(c, r[c.key] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p style="margin:12px 0 0"><a href="#/app/${esc(first.id)}">See all ${esc(first.label.toLowerCase())}</a></p></div>` : ''}`
+  }
+
+  // a small chart of a page by month (rows, or the first money column added up), when the page has a date column
+  const monthMini = (t: AppTable, rows: Record<string, string>[]) => {
+    const dateCol = t.columns.find((c) => c.type === 'date')
+    if (!dateCol) return ''
+    const money = t.columns.find((c) => c.type === 'money')
+    const items = byMonth(rows, dateCol.key, money?.key, windowEnd(rows, dateCol.key, new Date()), range)
+    return items.some((x) => x.value) ? `<p style="margin:16px 0 4px;font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.05em">${esc(money ? money.label : 'Rows')} per month</p>${bars(items)}` : ''
   }
 
   // a summary of every page: how many rows, the rows by status, what the money columns add up to and the biggest rows
   const insights = () => {
     const data = allData()
-    return `<div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">${cfg.tables
+    return `${rangePicker()}<div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">${cfg.tables
       .map((t) => {
         const rows = data[t.id]
         const status = byStatus(t, rows).map((x) => ({ label: x.label, value: x.n }))
         const sums = t.columns.filter((c) => c.type === 'money').map((c) => `<p style="margin:6px 0 0;font-size:14px">${esc(c.label)} in total: <b>${esc(moneyText(rows.reduce((n, r) => n + toNumber(r[c.key]), 0), cfg.currency))}</b></p>`).join('')
         const money = t.columns.find((c) => c.type === 'money')
         const top = money ? [...rows].sort((a, b) => toNumber(b[money.key]) - toNumber(a[money.key])).slice(0, 3) : []
-        return `<div class="ap-card ap-panel"><h3 style="font-size:16px">${esc(t.label)}</h3><p style="margin:4px 0 12px;opacity:.7;font-size:13px">${rows.length} row${rows.length === 1 ? '' : 's'}</p>${status.length ? bars(status, true) : ''}${sums}${top.length ? `<p style="margin:14px 0 6px;font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.05em">Biggest ${esc(money!.label.toLowerCase())}</p>${top.map((r) => `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${esc(r[t.columns[0].key])}</span><b>${esc(r[money!.key])}</b></div>`).join('')}` : ''}<p style="margin:14px 0 0"><a href="#/app/${esc(t.id)}">Open ${esc(t.label.toLowerCase())}</a></p></div>`
+        return `<div class="ap-card ap-panel"><h3 style="font-size:16px">${esc(t.label)}</h3><p style="margin:4px 0 12px;opacity:.7;font-size:13px">${rows.length} row${rows.length === 1 ? '' : 's'}</p>${status.length ? bars(status, true) : ''}${monthMini(t, rows)}${sums}${top.length ? `<p style="margin:14px 0 6px;font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.05em">Biggest ${esc(money!.label.toLowerCase())}</p>${top.map((r) => `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${esc(r[t.columns[0].key])}</span><b>${esc(r[money!.key])}</b></div>`).join('')}` : ''}<p style="margin:14px 0 0"><a href="#/app/${esc(t.id)}">Open ${esc(t.label.toLowerCase())}</a></p></div>`
       })
       .join('')}</div>`
   }
@@ -606,7 +644,10 @@ export function initApp(cfg: AppConfig): void {
   root.addEventListener('change', (event) => {
     const el = event.target as HTMLInputElement
     const t = cfg.tables.find((x) => x.id === page().replace(/^#\/app\/?/, ''))
-    if (el.matches('[data-filter]')) {
+    if (el.matches('[data-range]')) {
+      range = Number(el.value) || 6
+      render()
+    } else if (el.matches('[data-filter]')) {
       statusFilter = el.value
       pageNo = 0
       render()
@@ -615,18 +656,16 @@ export function initApp(cfg: AppConfig): void {
       reader.onload = () => {
         try {
           const saved = JSON.parse(String(reader.result ?? '')) as { app?: string; tables?: Data }
-          if (!saved.tables || (saved.app && saved.app !== cfg.slug)) throw new Error('not this site')
-          let n = 0
-          cfg.tables.forEach((x) => {
-            const rows = saved.tables?.[x.id]
-            if (Array.isArray(rows)) {
-              write(K(`t:${x.id}`), rows.map((r) => tidyRow(x, r as Record<string, string>, cfg.currency)))
-              n += 1
-            }
+          const { matched, foreign } = matchBackup(cfg.tables, saved, cfg.slug)
+          if (!matched.length) throw new Error('nothing fits')
+          matched.forEach(({ id, rows }) => {
+            const x = cfg.tables.find((tt) => tt.id === id) as AppTable
+            write(K(`t:${id}`), rows.map((r) => tidyRow(x, r as Record<string, string>, cfg.currency)))
           })
-          notice = `Restored ${n} page${n === 1 ? '' : 's'} from the file.`
+          const names = matched.map((m) => (cfg.tables.find((tt) => tt.id === m.id) as AppTable).label).join(', ')
+          notice = foreign ? `This backup is from another site (${String(saved.app)}). Restored the pages that fit: ${names}. The columns they share were kept.` : `Restored ${matched.length} page${matched.length === 1 ? '' : 's'} from the file: ${names}.`
         } catch {
-          notice = 'That file is not a backup of this site.'
+          notice = 'That file is not a backup this site can use: none of its pages match.'
         }
         render()
       }

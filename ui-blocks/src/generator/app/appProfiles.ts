@@ -397,6 +397,19 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       tables = [...tables, table(slug(edit.page), label, label.replace(/s$/i, '').toLowerCase(), 'list', [col('name', 'Name'), col('details', 'Details'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'In progress', 'Done'])], toRows(5, () => ({ name: g.name(), details: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done']) }), g))]
     }
   }
+  // the dates of every page are spread over the last half year and the coming three weeks, so the charts by month have something to show from the first day
+  tables = tables.map((t) => {
+    const dc = t.columns.find((c) => c.type === 'date')
+    if (!dc || t.rows.length < 2) return t
+    const rows = t.rows.map((x) => ({ ...x }))
+    rows.forEach((row, i) => {
+      // (the first rows are the newest: that is what "Latest" on the overview shows)
+      const days = Math.round((i / (rows.length - 1)) * 185 - 20 + (r() * 6 - 3))
+      row[dc.key] = iso(new Date(today.getTime() - days * 86400000))
+    })
+    return { ...t, rows }
+  })
+
   // the figures follow the data: each one says which page it counts and how (see calcKpi in appRuntime.ts)
   const key = kind === 'general' ? `general:${modeOf(content.subject || '', said)}` : kind
   const usable = (spec: Spec) => {

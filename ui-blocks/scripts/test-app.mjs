@@ -4,7 +4,7 @@ import { loadGeneratorModule } from './lib/load-generator.mjs'
 globalThis.document = { styleSheets: [] }
 globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} }
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
-const { parseCsv, toCsv, csvToRows, calcKpi, byStatus, byMonth, normalizeDate, normalizeMoney, checkRow, tidyRow, freshRows } = await loadGeneratorModule('app/appRuntime.ts')
+const { parseCsv, toCsv, csvToRows, calcKpi, byStatus, byMonth, matchBackup, windowEnd, normalizeDate, normalizeMoney, checkRow, tidyRow, freshRows } = await loadGeneratorModule('app/appRuntime.ts')
 const { appConfigFor, appKindOf } = await loadGeneratorModule('app/appProfiles.ts')
 const { parseEdit } = await loadGeneratorModule('edit/understand.ts')
 const { editsFrom } = await loadGeneratorModule('edit/edits.ts')
@@ -129,6 +129,32 @@ ok(withApp.content.app === true && !page('Dr. Mehta dental clinic in Surat, brac
   ok(appConfigFor(page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }, { op: 'appPage', action: 'remove', page: 'Insights' }])).content, { themeKey: 'healthcare' }).insights === false && cfg.insights === true, 'the Insights page is there unless it was taken out')
   const noBilling = appConfigFor(page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }, { op: 'appPage', action: 'remove', page: 'Billing' }])).content, { themeKey: 'healthcare' })
   ok(noBilling.kpis.length === 4 && noBilling.kpis.every((k) => k.calc.kind === 'fixed' || noBilling.tables.some((x) => x.id === k.calc.table)), 'a page taken out of the dashboard does not leave a figure that counts it')
+}
+
+// the months of the chart are not empty from the first day, and a backup of another site is used where it fits
+{
+  let thin = 0
+  for (const [prompt] of CASES) {
+    const lib = page(prompt)
+    const cfg = appConfigFor(lib.content, { themeKey: lib.themeKey, niche: typeof lib.niche === 'string' ? lib.niche : lib.niche?.id, prompt })
+    const head = cfg.tables[0]
+    const dateCol = head.columns.find((c) => c.type === 'date')
+    if (!dateCol) continue
+    const months = byMonth(head.rows, dateCol.key, undefined, windowEnd(head.rows, dateCol.key, new Date()))
+    if (months.filter((m) => m.value > 0).length < 4) { thin += 1; console.log(` - ${prompt.slice(0, 30)}: only ${months.filter((m) => m.value > 0).length} of 6 months have rows (${head.label})`) }
+  }
+  ok(thin === 0, 'the month chart of the first page has rows in at least four of six months, from the first day')
+  const lib = page('Gym in Pune with personal training, plans: basic 999 rupees')
+  const gcfg = appConfigFor(lib.content, { themeKey: lib.themeKey })
+  const all = gcfg.tables.flatMap((t) => t.rows.filter((r) => Object.values(r).some((v) => /^\d{4}-\d\d-\d\d$/.test(v))))
+  ok(all.every((r) => Object.values(r).filter((v) => /^\d{4}-\d\d-\d\d$/.test(v)).every((d) => d >= '2025-01-01')), 'the dates of the example rows are real dates')
+  ok(byMonth([], 'd', undefined, new Date(2026, 2, 1), 3).length === 3 && byMonth([], 'd', undefined, new Date(2026, 2, 1), 12).length === 12 && byMonth([], 'd', undefined, new Date(2026, 2, 1), 12)[0].label === 'Apr', 'the chart can show 3, 6 or 12 months')
+  ok(windowEnd([{ d: '2026-03-10' }], 'd', new Date(2026, 2, 1)).getMonth() === 2 && windowEnd([{ d: '2026-05-10' }], 'd', new Date(2026, 2, 1)).getMonth() === 4 && windowEnd([{ d: '2027-05-10' }], 'd', new Date(2026, 2, 1)).getMonth() === 2, 'the months end where the dates end, at most three months ahead')
+  const own = matchBackup(gcfg.tables, { app: gcfg.slug, tables: { members: [{ name: 'A' }], classes: [] } }, gcfg.slug)
+  ok(own.matched.length === 2 && !own.foreign, 'a backup of this site: its pages are matched')
+  const other = matchBackup(gcfg.tables, { app: 'another-gym', tables: { members: [{ name: 'B' }], orders: [{ x: 1 }] } }, gcfg.slug)
+  ok(other.matched.length === 1 && other.matched[0].id === 'members' && other.foreign, 'a backup of another site: the pages with the same name are used, the others are not')
+  ok(matchBackup(gcfg.tables, { app: 'x', tables: { orders: [{ x: 1 }] } }, gcfg.slug).matched.length === 0 && matchBackup(gcfg.tables, {}, gcfg.slug).matched.length === 0 && matchBackup(gcfg.tables, { tables: { members: 'text' } }, gcfg.slug).matched.length === 0, 'a backup with no page that fits, or a broken one, restores nothing')
 }
 
 // the kind of a new column: said, or read from its name
