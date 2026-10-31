@@ -8,7 +8,7 @@ import { extractContentDetails } from './filter'
 import type { LegalDocs, Milestone, OpeningHours, Post } from './siteTypes'
 import type { ThemeKey } from './themes'
 import { applyNiche } from './niche/applyNiche'
-import { bespokeContent, nicheGap } from './bespoke'
+import { bespokeContent, isCreatorPage, nicheGap } from './bespoke'
 import type { Niche } from './niche/types'
 import { extractFacts, personalize, plainStats, safeFaq } from './personalize'
 import type { Locale } from './siteData'
@@ -130,7 +130,7 @@ export function generateWebsiteContent(
     const kitTemplates = contentTemplates[theme]
     const kitAsNiche = { label: theme.replace(/_/g, ' '), keywords: [] as string[], features: kitTemplates?.features ?? [], heroTitles: [kitTemplates?.heroTitle ?? '', ...(kitTemplates?.alternatives ?? []).map((a) => a.heroTitle)], heroSubtitles: [kitTemplates?.heroSubtitle ?? ''], featureTitle: kitTemplates?.featureTitle ?? '' } as unknown as Niche
     const gap = subject ? nicheGap(subject, shaping.niche ?? kitAsNiche) : []
-    const bespoke = gap.length > 0 && !(!shaping.niche && theme === 'modern_tech' && tech)
+    const bespoke = (gap.length > 0 && !(!shaping.niche && theme === 'modern_tech' && tech)) || (!!subject && isCreatorPage(subject, userPrompt))
     const base = bespoke ? bespokeContent(value, { subject, prompt: userPrompt, place: facts0.place, rand: shaping.rand }) : shaping.niche ? applyNiche(value, shaping.niche, size, shaping.rand, shaping.locale) : value
     // a person's page: the games, tools or brands they name (capitalised in the prompt) are what they play or use, not services they sell: they go in the line under the headline
     const ownFacts = bespoke ? extractFacts(userPrompt, subject, []) : facts0

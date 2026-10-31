@@ -372,7 +372,7 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
 
   // "my shop is called X" / "business called X" is a name, before anything else
   const called = clause.match(/(?:\bis|\bare|\bnamed|\bcalled)\s+(?:called|named)\s+(§\d+§|[^,;]+)/i) ?? clause.match(/(?<![\p{L}])(?:called|named)\s+(§\d+§|[^,;]+)/iu)
-  if (called && !/(?<![\p{L}])(?:rename|replace)(?![\p{L}])/iu.test(clause) && /(?:my|our|the|mera|meri|hamara|is|this)\s+\w*\s*(?:shop|store|business|brand|company|site|website|clinic|gym|cafe|restaurant|salon)/i.test(clause)) {
+  if (called && !/(?<![\p{L}])(?:rename|replace)(?![\p{L}])/iu.test(clause) && /(?:my|our|the|mera|meri|hamara|is|this)\s+\w*\s*(?:shop|store|business|brand|company|site|website|clinic|gym|cafe|restaurant|salon|channel|podcast|page|blog|studio|show|agency|firm)/i.test(clause)) {
     const name = shown(called[1])
     if (name.length >= 2) {
       push({ op: 'rename', name })

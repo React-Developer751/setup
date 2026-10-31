@@ -27,13 +27,13 @@ export type Facts = {
   currency?: string
 }
 
-const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy|mvps?|sms|pdf|iot|gps|ott|api|sdk)\b/gi
+const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy|\d*bhk|mvps?|sms|pdf|iot|gps|ott|api|sdk)\b/gi
 const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase().replace(/^MVPS$/, 'MVPs'))
 const titleCase = (s: string) => fixAcronyms(s.replace(/(^|[\s/-])([a-z])/g, (_m, a: string, c: string) => a + c.toUpperCase()))
 const lowerFirst = (s: string) => (/^[A-Z]{2,}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const AUDIENCE = new Set(['small businesses', 'small business', 'msmes', 'freelancers', 'homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'landlords', 'tenants', 'owners', 'clients', 'customers', 'employees', 'recruiters', 'sellers', 'buyers', 'drivers', 'founders', 'entrepreneurs', 'managers', 'executives', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
+const AUDIENCE = new Set(['small businesses', 'small business', 'msmes', 'freelancers', 'homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'colleges', 'universities', 'hospitals', 'clinics', 'landlords', 'tenants', 'owners', 'clients', 'customers', 'employees', 'recruiters', 'sellers', 'buyers', 'drivers', 'founders', 'entrepreneurs', 'managers', 'executives', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
 const NOISE = new Set(['the', 'a', 'an', 'my', 'our', 'your', 'all', 'various', 'many', 'some', 'best', 'good', 'great', 'quality', 'affordable', 'cheap', 'professional', 'top', 'reliable', 'trusted', 'premium', 'modern', 'simple', 'beautiful', 'new', 'and', 'or', 'with', 'also', 'etc'])
 const GENERIC = new Set(['business', 'website', 'site', 'page', 'company', 'services', 'service', 'shop', 'store', 'products', 'product', 'things', 'work', 'stuff'])
 
@@ -51,7 +51,7 @@ const described = (prompt: string) =>
   prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])\s+[^,.;:]*?(?=\s+(?:with|for|in|at|near|selling|offering|providing|offers|which|that|who|and|including|ke liye|me|mein)(?![\p{L}])|[,.;:]|$)/giu, ' ').replace(/\s+/g, ' ').trim()
 
 /** things that are promises, not services */
-const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7(?:\s+\w+)?|\d+\+?\s*(?:years?|saal)\b.*|(?:years?|saal)\s+(?:of\s+)?experience|(?:great|good|friendly|best)\s+(?:service|prices?|staff)|prices?|pricing|staff|quality|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|cash on delivery|cod|(?:easy\s+)?(?:\d+[\s-]*days?\s+)?(?:returns?|refunds?|exchange)|(?:fast\s+)?(?:shipping|delivery)(?:\s+(?:above|over)\s+.*)?|\d{1,2}\s*%\s*(?:off|discount)|online\b.*|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
+const PERK_ITEM = /^(?:\d+\s*[x×/]\s*7(?:\s+\w+)?|\d+\+?\s*(?:years?|saal)\b.*|(?:years?|saal)\s+(?:of\s+)?experience|(?:great|good|friendly|best)\s+(?:service|prices?|staff)|prices?|pricing|staff|quality|24\s*hours?|24\/7|round the clock|free\b.*|home delivery|doorstep delivery|cash on delivery|cod|(?:easy\s+)?(?:\d+[\s-]*days?\s+)?(?:returns?|refunds?|exchange)|(?:fast\s+)?(?:shipping|delivery)(?:\s+(?:above|over)\s+.*)?|\d{1,2}\s*%\s*(?:off|discount)|online(?:\s+(?:booking|bookings|payments?|ordering|orders?|support|shopping|delivery|service|services))?\b.*|open\b.*|available\b.*|affordable|best price|low cost|cheap|fast|quick|experienced|certified|licensed|trusted)$/
 
 const stem = (w: string) => w.replace(/(?:ing|ers?|es|s)$/, '')
 const significant = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 3 && !GENERIC.has(w) && !NOISE.has(w)).map(stem)
@@ -69,7 +69,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   const text = described(prompt.replace(FIRM_NAME, ' '))
     .replace(/\b(?:Dr|Mr|Mrs|Ms|Prof|Er|Adv)\.?\s+[A-Z][\p{L}-]+(?:\s+[A-Z][\p{L}-]+)?/gu, ' ')
     // "family and property law" = "family law and property law"
-    .replace(/\b([a-z]+) and ([a-z]+) (law|dentistry|surgery|therapy|medicine|care|design)\b/gi, '$1 $3 and $2 $3')
+    .replace(/\b([a-z]*[^s\s]) and ([a-z]+) (law|dentistry|surgery|therapy|medicine|care|design|trips|tours|treks|packages|classes|courses|programs|programmes)\b/gi, '$1 $3 and $2 $3')
     .replace(/\s+/g, ' ')
     .trim()
   const facts: Facts = { services: [], perks: [], offers: [], prices: [] }
@@ -149,8 +149,13 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
     // the business itself ("dental clinic") is not one of its services, also when it is cut down to "dental"
     if (subject && cleanItem(subject) === whole) continue
     // "Food blogger Ananya", "Freelance graphic designer Kabir": the business and its name are not one of its services
-    if (subject && subject.split(/\s+/).length >= 2 && cleanItem(whole).startsWith(cleanItem(subject))) continue
-    const raw = whole.replace(/\s+(?:online\s+)?(?:store|shop|boutique|studio|clinic|centre|center|restaurant|cafe|bakery|salon|dukaan)$/i, '').trim()
+    // (when something follows the subject, "Event management software ticketing", that part is the service)
+    let whole2 = whole
+    if (subject && subject.split(/\s+/).length >= 2 && cleanItem(whole).startsWith(cleanItem(subject))) {
+      whole2 = cleanItem(whole).slice(cleanItem(subject).length).replace(/^\s*(?:on|for|in|at|by|with|of)\s+\S+\s*/i, '').trim()
+      if (!whole2 || whole2.length < 3) continue
+    }
+    const raw = whole2.replace(/\s+(?:online\s+)?(?:store|shop|boutique|studio|clinic|centre|center|restaurant|cafe|bakery|salon|dukaan)$/i, '').trim()
     if (!raw) continue
     const words = raw.split(/\s+/)
     // "small companies", "busy founders": an adjective and the people it is for
@@ -204,6 +209,7 @@ function notAService(item: string, prices: { name: string }[]): boolean {
   // "plans basic", "pricing premium": the word for the list and the name of one plan
   if (/^(?:plans?|pricing|prices?|fees?|rates?)\s+\p{L}+$/u.test(x)) return true
   if (/^(?:rooms?|booking|bookings|online booking|online|app|site)$/.test(x)) return true
+  if (/\bon\s+(?:instagram|youtube|twitch|spotify|facebook|tiktok|twitter|linkedin|snapchat)$/.test(x)) return true
   if (/^(?:guests?|episodes?|videos?|reviews?|posts?|content)$/.test(x)) return true
   // where to find a person or how to follow them, and how often a show comes out: not things they sell
   if (/^(?:listen|watch|follow|subscribe|available|find\s+(?:me|us)|streaming)\b/.test(x) || /^(?:weekly|daily|monthly|new)\s+(?:show|podcast|videos?|episodes?)\b/.test(x) || /\b(?:followers|subscribers|listeners|fans|views)$/.test(x)) return true

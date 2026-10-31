@@ -8,6 +8,11 @@ export type Mode = 'shop' | 'class' | 'experience' | 'service' | 'creative' | 'c
 
 const has = (text: string, re: RegExp) => re.test(text)
 /** what kind of business it is, by its own words (the order matters: the first that fits) */
+/** the person has an audience (followers, subscribers, a channel, a podcast): their own page, whatever the subject, even where a niche pack exists */
+export const isCreatorPage = (subject: string, prompt = '') => {
+  const s = `${subject} ${prompt}`.toLowerCase()
+  return has(s, /\b(?:influencers?|youtubers?|youtube\s+channel|vloggers?|vlogs?|bloggers?|content\s+creators?|podcasts?|podcasters?|streamers?|instagrammers?|followers|subscribers)\b/) && !has(s, /\b(?:agency|software|platform|tool|app|course|classes|school|academy)\b/)
+}
 export function modeOf(subject: string, prompt = ''): Mode {
   const s = `${subject} ${prompt}`.toLowerCase()
   // a person with an audience (an influencer, a YouTuber, a podcast, a freelancer): the page is theirs, in the first person
@@ -161,10 +166,10 @@ function creatorContent(content: WebsiteContent, o: { subject: string; prompt: s
   const titles = podcast
     ? [`${topic ? `${topic}: ` : ''}Listen In`, `${topic ? `${topic}, ` : ''}One Episode At A Time`]
     : freelance
-      ? [`${topic ? `${topic} ` : ''}${role}, For Your Next Project`, `Work With A ${topic ? `${topic} ` : ''}${role}`]
+      ? [`${topic ? `${topic} ` : ''}${role}, For Your Next Project`, `Work With ${upper(article(`${topic ? `${topic} ` : ''}${role}`))} ${topic ? `${topic} ` : ''}${role}`]
       : role === 'YouTube Creator'
       ? [`Watch ${T}`, `${T}, On Camera`]
-      : [`${T}, With A Point Of View`, `Work With A ${topic ? `${topic} ` : ''}${role}`, `${T} Content, Made To Share`]
+      : [`${T}, With A Point Of View`, `Work With ${upper(article(`${topic ? `${topic} ` : ''}${role}`))} ${topic ? `${topic} ` : ''}${role}`, `${T} Content, Made To Share`]
   const title = titles[Math.floor(o.rand() * titles.length)]
   const brand = content.brandName
   const stats = audienceStats(o.prompt)

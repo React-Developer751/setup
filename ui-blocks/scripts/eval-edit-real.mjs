@@ -27,6 +27,8 @@ const CASES = [
   ['services me 3 naye add karo: Wedding Cakes, Cupcakes, Brownies', (lib) => has('Wedding Cakes', 'Cupcakes', 'Brownies')(lib) && lib.content.features.items.length >= 8 && lib.content.added?.features === 3],
   ['add a new service called Macarons', (lib) => has('Macarons')(lib) && lib.content.features.items.length >= 7],
   ['services me Pastry aur Bread bhi add karo', has('Pastry', 'Bread')],
+  ['my channel is called Wander Duo', has('Wander Duo')],
+  ['my podcast is called Startup Chai', has('Startup Chai')],
   ['upar wali line me likho: Fresh every morning', (lib) => lib.content.subject === 'Fresh every morning'],
   ['eyebrow badlo: Since 1998', (lib) => lib.content.subject === 'Since 1998'],
   ['headline change karke Best Eggless Cakes in Jaipur karo', has('Best Eggless Cakes in Jaipur')],

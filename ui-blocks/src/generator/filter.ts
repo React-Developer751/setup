@@ -74,6 +74,8 @@ const clean = (raw: string) =>
     .replace(/[^\w&' -]/g, ' ')
     // "yoga studio in Jaipur" / "plumber near me": the place is not part of the business
     .replace(/\s+(?:in|at|near|around)\s+\S[\s\S]*$/i, '')
+    // "fitness coach on Instagram": where the person is, not what they are
+    .replace(/\s+on\s+(?:instagram|youtube|twitch|spotify|facebook|tiktok|twitter|linkedin|snapchat)\b[\s\S]*$/i, '')
     .replace(CUT_WORDS, '')
     .replace(CUT_AFTER_BUSINESS, '')
     .replace(/\b(?:web\s*site|landing\s+page|page|site)\s*$/i, '')
@@ -118,7 +120,7 @@ function extractSubject(userPrompt: string) {
   }
   // a long prompt that starts with the business ("kurti and saree online store, free shipping above 999, ..."): its first part is the subject
   const firstPart = clean(withoutName.split(/[,.;]/)[0])
-  if (firstPart && firstPart.split(/\s+/).length <= MAX_SUBJECT_WORDS && firstPart.split(/\s+/).some(isBusinessWord) && !hinglish) return firstPart.toLowerCase()
+  if (firstPart && firstPart.split(/\s+/).length <= MAX_SUBJECT_WORDS && (firstPart.split(/\s+/).some(isBusinessWord) || /\b(?:coach|trainer|tutor|influencer|youtuber|vlogger|blogger|streamer|creator|photographer|designer|editor|consultant|astrologer)\b/i.test(firstPart)) && !hinglish) return firstPart.toLowerCase()
   // a long or Hinglish prompt: the business words in it are the subject
   return subjectFromBusinessWords(withoutName).toLowerCase()
 }
@@ -217,6 +219,6 @@ export function extractContentDetails(userPrompt: string, themeKey?: string, nic
   // only looks and request words are left ("unique", "sabse alag hatke"): the prompt does not say what the business is
   if (vagueWords(subject)) subject = ''
   // nothing that names a kind of business is left: the niche says what the business is
-  if (nicheLabel && !subject.split(/\s+/).some((w) => isBusinessWord(w))) subject = nicheLabel.toLowerCase()
+  if (nicheLabel && !subject.split(/\s+/).some((w) => isBusinessWord(w)) && !/\b(?:coach|trainer|tutor|influencer|youtuber|vlogger|blogger|streamer|creator|astrologer)\b/.test(subject)) subject = nicheLabel.toLowerCase()
   return { businessName: named || inventName(subject, userPrompt, themeKey, nicheLabel), subject, /** the person gave the name (else it was made up) */ given: !!named }
 }
