@@ -28,9 +28,9 @@ export type Facts = {
 }
 
 const ACRONYMS = /\b(?:gst|itr|ac|cctv|dj|pg|seo|ai|it|ev|ngo|hr|ui|ux|gps|llc|pvc|upvc|ro|uv|led|pcb|crm|erp|tv|cv|hvac|mri|ecg|ielts|toefl|upsc|ssc|clat|nda|cuet|gate|gre|gmat|neet|jee|cbse|icse|ca|cs|emi|fd|sip|kyc|pan|rto|ott|b2b|b2c|saas|api|vr|ar|3d|2d|ups|cnc|diy|\d*bhk|mvps?|sms|pdf|iot|gps|ott|api|sdk)\b/gi
-const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase().replace(/^MVPS$/, 'MVPs')).replace(/\byoutube\b/gi, 'YouTube').replace(/\binstagram\b/gi, 'Instagram').replace(/\bwhatsapp\b/gi, 'WhatsApp').replace(/\blinkedin\b/gi, 'LinkedIn')
+const fixAcronyms = (s: string) => s.replace(ACRONYMS, (m) => m.toUpperCase().replace(/^MVPS$/, 'MVPs')).replace(/\byoutube\b/gi, 'YouTube').replace(/\binstagram\b/gi, 'Instagram').replace(/\bwhatsapp\b/gi, 'WhatsApp').replace(/\blinkedin\b/gi, 'LinkedIn').replace(/\bshopify\b/gi, 'Shopify').replace(/\bwordpress\b/gi, 'WordPress').replace(/\breact\b/gi, 'React').replace(/\bfigma\b/gi, 'Figma').replace(/\bflutter\b/gi, 'Flutter')
 const titleCase = (s: string) => fixAcronyms(s.replace(/(^|[\s/-])([a-z])/g, (_m, a: string, c: string) => a + c.toUpperCase()))
-const lowerFirst = (s: string) => (/^[A-Z]{2,}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
+const lowerFirst = (s: string) => (/^[A-Z]{2,}|^(?:Shopify|WordPress|React|Figma|Flutter|YouTube|Instagram|WhatsApp|LinkedIn)\b/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 const AUDIENCE = new Set(['small businesses', 'small business', 'msmes', 'freelancers', 'homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'colleges', 'universities', 'hospitals', 'clinics', 'landlords', 'tenants', 'owners', 'clients', 'customers', 'employees', 'recruiters', 'sellers', 'buyers', 'drivers', 'founders', 'entrepreneurs', 'managers', 'executives', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
@@ -159,7 +159,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
     if (!raw) continue
     const words = raw.split(/\s+/)
     // "small companies", "busy founders": an adjective and the people it is for
-    const peopleOnly = words.length >= 1 && words.length <= 3 && AUDIENCE.has(words[words.length - 1]) && words.slice(0, -1).every((w) => /^(?:small|medium|mid-?sized|growing|busy|local|young|new|early-?stage|large|big|working|first-?time|aspiring|corporate|indian|all)$/.test(w))
+    const peopleOnly = words.length >= 1 && words.length <= 3 && AUDIENCE.has(words[words.length - 1]) && (words.length === 1 || /s$/.test(words[words.length - 1]))
     if (peopleOnly || words.every((w) => AUDIENCE.has(w) || AUDIENCE.has(raw)) || AUDIENCE.has(raw)) {
       audience.push(raw)
       continue
@@ -186,7 +186,7 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   // a list of prices written on purpose ("drop-in 500 rupees, monthly 3000 rupees, retreat 12000 rupees"): read segment by segment, before the word lists above cut a name ("premium") or a price off
   const listed = pricesWritten(prompt)
   if (listed.length >= 2) facts.prices = listed
-  const dropped = facts.services.filter((x) => notAService(x, facts.prices) && !/rupees?|\brs\b|inr|fees?|plans?|prices?|web ?site|website|landing|page|followers|subscribers|listeners|^listen|^watch|^follow|show$|^(?:guests?|episodes?|videos?|reviews?|posts?|content)$/i.test(x) && x.length <= 24)
+  const dropped = facts.services.filter((x) => notAService(x, facts.prices) && !/rupees?|\brs\b|inr|fees?|plans?|prices?|web ?site|website|landing|page|followers|subscribers|listeners|^listen|^watch|^follow|^ships?$|^delivers?$|show$|^(?:guests?|episodes?|videos?|reviews?|posts?|content)$/i.test(x) && x.length <= 24)
   if (dropped.length) facts.details = [...new Set(dropped)].slice(0, 3)
   facts.services = facts.services.filter((x) => !notAService(x, facts.prices)).filter((x) => !/^[\d][\d,\s]*(?:rupees?|rs\.?|inr|only)?$/i.test(x.trim()) && !/^(?:call|phone|whatsapp)\s+\d/i.test(x.trim()) && !/^(?:plans?|gallery|galleries|faqs?|pages?|pricing|blog|contact|about|testimonials?)$/i.test(x.trim())).slice(0, 6)
   facts.offers = [...new Set(facts.offers)].slice(0, 4)
@@ -210,6 +210,7 @@ function notAService(item: string, prices: { name: string }[]): boolean {
   if (/^(?:plans?|pricing|prices?|fees?|rates?)\s+\p{L}+$/u.test(x)) return true
   if (/^(?:rooms?|booking|bookings|online booking|online|app|site)$/.test(x)) return true
   if (/\bon\s+(?:instagram|youtube|twitch|spotify|facebook|tiktok|twitter|linkedin|snapchat)$/.test(x)) return true
+  if (/^(?:ships?|ship|delivers?|shipping|delivery|ships\s+(?:across|all|to)\b.*)$/.test(x)) return true
   if (/^(?:guests?|episodes?|videos?|reviews?|posts?|content)$/.test(x)) return true
   // where to find a person or how to follow them, and how often a show comes out: not things they sell
   if (/^(?:listen|watch|follow|subscribe|available|find\s+(?:me|us)|streaming)\b/.test(x) || /^(?:weekly|daily|monthly|new)\s+(?:show|podcast|videos?|episodes?)\b/.test(x) || /\b(?:followers|subscribers|listeners|fans|views)$/.test(x)) return true

@@ -79,7 +79,7 @@ export function generateWebsiteContent(
 ): WebsiteContent {
   const details0 = extractContentDetails(userPrompt, theme, shaping?.niche?.label)
   // the niche is a loose fit for what was said ("reptile pet shop" under the pet care pack): the name is made from the person's words, not from the label of the pack
-  const details = shaping?.niche && details0.subject && nicheGap(details0.subject, shaping.niche).length > 0 ? extractContentDetails(userPrompt, theme, undefined) : details0
+  const details = shaping?.niche && details0.subject && nicheGap(details0.subject.split(/\s+/).filter((w) => !new Set((details0.given ? details0.businessName : '').toLowerCase().split(/[^\p{L}\p{N}]+/u).concat(['dr', 'mr', 'mrs', 'ms', 'prof'])).has(w.toLowerCase())).join(' ') || details0.subject, shaping.niche).length > 0 ? extractContentDetails(userPrompt, theme, undefined) : details0
   const businessName = brandOverride ?? details.businessName
   const subject = details.subject
   const templates = contentTemplates[theme] || contentTemplates.modern_tech
@@ -129,7 +129,10 @@ export function generateWebsiteContent(
     const tech = /\b(?:software|apps?|saas|platform|start-?ups?|tools?|cloud|api|crm|erp|dashboards?|digital|data|ai|developers?|code|coding|website\s+builder)\b/i.test(`${subject} ${userPrompt}`)
     const kitTemplates = contentTemplates[theme]
     const kitAsNiche = { label: theme.replace(/_/g, ' '), keywords: [] as string[], features: kitTemplates?.features ?? [], heroTitles: [kitTemplates?.heroTitle ?? '', ...(kitTemplates?.alternatives ?? []).map((a) => a.heroTitle)], heroSubtitles: [kitTemplates?.heroSubtitle ?? ''], featureTitle: kitTemplates?.featureTitle ?? '' } as unknown as Niche
-    const gap = subject ? nicheGap(subject, shaping.niche ?? kitAsNiche) : []
+    // (the words of the name — "Dr. Mehta dental clinic" — are not words about the business)
+    const nameWords = new Set((details.given ? details.businessName : '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).concat(['dr', 'mr', 'mrs', 'ms', 'prof']))
+    const gapSubject = subject.split(/\s+/).filter((w) => !nameWords.has(w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, ''))).join(' ')
+    const gap = subject ? nicheGap(gapSubject || subject, shaping.niche ?? kitAsNiche) : []
     const bespoke = (gap.length > 0 && !(!shaping.niche && theme === 'modern_tech' && tech)) || (!!subject && isCreatorPage(subject, userPrompt))
     const base = bespoke ? bespokeContent(value, { subject, prompt: userPrompt, place: facts0.place, rand: shaping.rand }) : shaping.niche ? applyNiche(value, shaping.niche, size, shaping.rand, shaping.locale) : value
     // a person's page: the games, tools or brands they name (capitalised in the prompt) are what they play or use, not services they sell: they go in the line under the headline
