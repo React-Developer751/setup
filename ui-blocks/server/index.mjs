@@ -12,6 +12,7 @@
 // GET  /api/health    -> { ok, images, corecraft }
 // The page checks every operation again (cleanOp), so this server is never trusted with more than the offline rules may do.
 import crypto from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import zlib from 'node:zlib'
 import { backupData } from './backup.mjs'
 import fs from 'node:fs'
@@ -913,6 +914,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const run = () => { const r = backupData(DATA, out, Number(process.env.EDIT_BACKUP_KEEP ?? 14)); console.log(r.ok ? `backup: ${r.file}` : `backup failed: ${r.error}`) }
     setTimeout(run, 5000).unref()
     setInterval(run, backupHours * 3600_000).unref()
+  }
+  // what was learned on another computer (server/seed, kept in git) joins this computer's memory: only rows that are not here yet are added
+  try {
+    execFileSync(process.execPath, [path.join(here, '..', 'scripts', 'learning-sync.mjs'), 'import'], { env: { ...process.env, EDIT_DATA_DIR: DATA }, stdio: 'ignore' })
+  } catch {
+    /* the memory simply starts as it is */
   }
   server.listen(PORT, HOST, () => console.log(`edit server on http://${HOST}:${PORT}  (no external AI or API: only your own engines)`))
 }

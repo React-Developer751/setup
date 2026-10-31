@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "gen": "node scripts/gen-runtime.mjs",
+    "learning:export": "node scripts/learning-sync.mjs export",
+    "learning:import": "node scripts/learning-sync.mjs import",
     "learn:components": "node scripts/learn-components.mjs",
     "predev": "npm run gen",
     "dev": "vite",
