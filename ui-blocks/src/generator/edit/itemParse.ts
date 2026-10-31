@@ -156,15 +156,28 @@ const thin = (payload: string) => {
 /** one more item, with what was said about it after a colon, a dash or "called" */
 function addItem(plain: string, page?: PageFacts): ItemResult | undefined {
   // "reviews ko about se pehle lagao", "faq ko blog ke baad lagao": moving a part, not adding an item
-  if (R(U('before|after|above|below|upar|neeche|baad|bottom|top|se\\s+pehle|ke\\s+pehle')).test(plain.split(':')[0])) return undefined
+  if (R(U('before|after|above|below|upar|neeche|niche|baad|bottom|top|se\\s+pehle|ke\\s+pehle')).test(plain.split(':')[0])) return undefined
   // "stats me 500+ happy customers likho": a number and what it counts
   const stat = plain.match(R(`^\\s*(?:the\\s+)?(?:stats?|numbers?|highlights?)\\s+(?:me|mein|mai|ko|:)\\s*(?<v>[\\p{Sc}]?\\d[\\d,.]*\\s*[+%kKmM]*\\+?)\\s*(?<l>[\\p{L} ]{3,40}?)\\s*(?:${SETV}|${ADD})?\\s*[.!]*$`, 'iu'))
   if (stat?.groups && !R(REMOVE).test(plain)) return { ops: [itemOf('stats', 'add', {}, { value: stat.groups.v.trim(), label: unquote(stat.groups.l) })], notes: [] }
   if (!R(ADD).test(plain)) return undefined
   const noun = nounOf(plain)
-  if (!noun || noun.list === 'features') return undefined
+  if (!noun) return undefined
   const n = R(U(noun.re)).exec(plain)!
   const rest = plain.slice(n.index + n[0].length)
+  // "services me Cupcakes aur Brownies bhi add karo", "add 3 new services: A, B, C": services are added to the ones the page has (a plain list of services replaces them, that is the other parser)
+  if (noun.list === 'features') {
+    const colon = rest.indexOf(':')
+    let body = colon >= 0 && rest.slice(0, colon).split(/\s+/).filter(Boolean).length <= 6 ? rest.slice(colon + 1) : rest
+    body = body.replace(R(`\\s*(?:${SETV}|${ADD})(?:\\s+(?:do|de|dena|diya))?\\s*(?:hai|h)?\\s*[.!]*$`, 'iu'), '').replace(R('^\\s*(?:me|mein|mai|ko|:|called|named|naam|naya|nayi|naye|new|ek|a|an|\\d+|teen|do|char|more|aur|bhi|also|add|jodo|jod|daalo|daal|and)(?![\\p{L}])\\s*', 'iu'), '')
+    for (let i = 0; i < 5; i += 1) body = body.replace(R('^\\s*(?:me|mein|mai|ko|:|called|named|naam|naya|nayi|naye|new|ek|a|an|\\d+|teen|char|more|aur|bhi|also|add|and)(?![\\p{L}])\\s*', 'iu'), '')
+    body = body.replace(R('\\s+(?:bhi|also|too)\\s*$', 'iu'), '')
+    body = body.replace(R(`\\s*(?:${SETV}|${ADD})\\s*$`, 'iu'), '').replace(R('\\s+(?:bhi|also|too)\\s*$', 'iu'), '')
+    const names = body.split(R('\\s*(?:,|;|\\s+aur\\s+|\\s+and\\s+|\\s*&\\s*)\\s*', 'iu')).map((x) => unquote(x.trim())).filter(Boolean)
+    const bad = (x: string) => x.length < 2 || x.length > 40 || x.split(/\s+/).length > 5 || R(U('section|page|part|block|with|for|about|price|pricing|photo|image|button|color|colour')).test(x) || /\d{3,}/.test(x)
+    if (!names.length || names.some(bad) || names.length > 6 || R(REMOVE).test(plain)) return undefined
+    return { ops: names.map((title) => itemOf('features', 'add', {}, { title: title.charAt(0).toUpperCase() + title.slice(1) })), notes: [] }
+  }
   // what was said about the new item: after a colon when there is one ("FAQ me naya sawal jodo: Q? answer: A"), else after the filler words
   const colon = rest.indexOf(':')
   let lead = colon >= 0 && !/^\s*:/.test(rest) && rest.slice(0, colon).split(/\s+/).filter(Boolean).length <= 8 ? rest.slice(colon + 1) : rest
@@ -252,6 +265,7 @@ function setItem(plain: string, page?: PageFacts): ItemResult | undefined {
 
 // ── single texts of the page
 const TEXT_TARGETS: { field: TextField | 'brand'; re: string }[] = [
+  { field: 'subject', re: '(?:upar|oopar|top)\\s+(?:wali|wala)\\s+(?:choti\\s+|chhoti\\s+)?line|(?:small|chhoti|choti)\\s+line\\s+(?:above|upar)\\s+(?:the\\s+)?(?:title|heading|headline)|line\\s+above\\s+(?:the\\s+)?(?:title|heading|headline)|eyebrow(?:\\s+(?:text|line))?|kicker|tag\\s*line\\s+above' },
   { field: 'heroSubtitle', re: '(?:under|below)\\s+(?:the\\s+)?(?:title|heading|headline)|(?:neeche|niche|neechay)\\s+wali\\s+line|(?:hero\\s+)?(?:sub\\s*-?\\s*(?:title|heading|headline)|tagline|tag\\s+line|description|line\\s+(?:below|under|neeche)\\s+(?:the\\s+)?(?:title|heading|headline)|intro)' },
   { field: 'heroButton', re: '(?:hero\\s+|main\\s+|first\\s+)?(?:button|btn|cta\\s+button)(?:\\s+(?:text|label))?' },
   { field: 'aboutTitle', re: 'about(?:\\s+us)?(?:\\s+section)?\\s+(?:title|heading|headline|ka\\s+(?:title|heading|naam))' },

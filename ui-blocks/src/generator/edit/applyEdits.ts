@@ -102,7 +102,7 @@ function findItem<T>(items: T[], edit: ItemEdit, text: (item: T) => string): num
 const FIRST = new Set<ItemEdit['list']>(['faq', 'testimonials', 'stats', 'blog'])
 
 /** one change of one item of a list (see ItemEdit): a card, a question, a step, a number, a review, a plan, a caption, a paragraph */
-export function applyItem(content: WebsiteContent, edit: ItemEdit): WebsiteContent {
+function applyItemTo(content: WebsiteContent, edit: ItemEdit): WebsiteContent {
   const f = edit.fields ?? {}
   const change = <T extends object>(items: T[], text: (item: T) => string, make: () => T, patch: (item: T) => T): T[] => {
     // a new question, review, number or note goes first: the parts show only the first few, and the person must see what they added (a step or a service goes last: the order means something)
@@ -141,6 +141,13 @@ export function applyItem(content: WebsiteContent, edit: ItemEdit): WebsiteConte
     case 'blog':
       return { ...content, blog: { ...content.blog, posts: change(content.blog.posts, (p) => `${p.title} ${p.tag}`, () => ({ title: f.title ?? 'Note', tag: f.tag ?? '' }), (p) => ({ ...p, title: f.title ?? p.title, tag: f.tag ?? p.tag })) } }
   }
+}
+
+export function applyItem(content: WebsiteContent, edit: ItemEdit): WebsiteContent {
+  const next = applyItemTo(content, edit)
+  if (edit.action !== 'add') return next
+  const k = edit.list
+  return { ...next, added: { ...content.added, [k]: (content.added?.[k] ?? 0) + 1 } }
 }
 
 export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | undefined, currency = '$'): WebsiteContent {

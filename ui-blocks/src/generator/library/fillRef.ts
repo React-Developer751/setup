@@ -17,8 +17,20 @@ const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 const lowerFirst = (s: string) => s.split(' ').map((w) => (/^[A-Z]{2,}/.test(w) ? w : w.toLowerCase())).join(' ')
 
 /** n slots of a repeated part: the first ones get the items, the others are removed */
+const LIST_OF: Record<string, string> = { tile: 'features', row: 'features', card: 'features', qa: 'faq', quote: 'testimonials', shot: 'gallery', stat: 'stats', step: 'steps', post: 'blog', para: 'paragraphs', point: 'points', plan: 'plans' }
+/** how many items of the list the person added by hand (set when a part is filled): a part may grow by that many places */
+let ADDED: Record<string, number> = {}
 function repeat<T>(root: Element, slot: string, items: T[], fill: (el: HTMLElement, item: T, index: number) => void) {
-  all(root, slot).forEach((el, i) => {
+  const slots = all(root, slot)
+  const grow = ADDED[LIST_OF[slot] ?? ''] ?? 0
+  const last = slots[slots.length - 1]
+  // a place more for each item the person added, copied from the last one, so that the new item is not cut off
+  for (let n = 0; last && n < grow && slots.length < items.length; n += 1) {
+    const copy = last.cloneNode(true) as HTMLElement
+    slots[slots.length - 1].after(copy)
+    slots.push(copy)
+  }
+  slots.forEach((el, i) => {
     if (i < items.length) fill(el, items[i], i)
     else el.remove()
   })
@@ -45,6 +57,7 @@ export type PictureFor = (index: number, width: number, height: number) => strin
 
 /** the parts of the showcase kit (src/components/showkit): picture-led, filled by name like the reference kit */
 function fillShow(root: Element, kind: string, c: WebsiteContent, picture: PictureFor, links: { href: string; label: string }[]) {
+  ADDED = c.added ?? {}
   const features = c.features.items
   const setImg = (el: Element | null, index: number, w: number, h: number) => {
     if (!el) return
@@ -64,8 +77,8 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-tiles': {
       put(root, 'title', c.features.title)
-      put(root, 'lead', `${sentence(andList(features.slice(0, 4).map((f) => lowerFirst(f.title))))}.`)
-      repeat(root, 'tile', features.slice(0, 6), (el, item, i) => {
+      put(root, 'lead', `${sentence(andList(features.slice(0, 4 + (c.added?.features ?? 0)).map((f) => lowerFirst(f.title))))}.`)
+      repeat(root, 'tile', features.slice(0, 6 + (c.added?.features ?? 0)), (el, item, i) => {
         setImg(el.querySelector('[data-slot="tile-image"]'), i + 1, 900, 1100)
         const t = el.querySelector('[data-slot="tile-title"]')
         const x = el.querySelector('[data-slot="tile-text"]')
@@ -75,7 +88,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       break
     }
     case 'show-stack': {
-      repeat(root, 'tile', features.slice(0, 4), (el, item, i) => {
+      repeat(root, 'tile', features.slice(0, 4 + (c.added?.features ?? 0)), (el, item, i) => {
         setImg(el.querySelector('[data-slot="tile-image"]'), i + 1, 1200, 800)
         const set = (slot: string, text: string) => {
           const n = el.querySelector(`[data-slot="${slot}"]`)
@@ -100,8 +113,8 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-index': {
       put(root, 'title', c.features.title)
-      put(root, 'lead', `${sentence(andList(features.slice(0, 4).map((f) => lowerFirst(f.title))))}.`)
-      repeat(root, 'row', features.slice(0, 6), (el, item, i) => {
+      put(root, 'lead', `${sentence(andList(features.slice(0, 4 + (c.added?.features ?? 0)).map((f) => lowerFirst(f.title))))}.`)
+      repeat(root, 'row', features.slice(0, 6 + (c.added?.features ?? 0)), (el, item, i) => {
         const set = (slot: string, text: string) => {
           const n = el.querySelector(`[data-slot="${slot}"]`)
           if (n) n.textContent = text
@@ -121,7 +134,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-plans': {
       // prices nobody wrote: one card that says to ask (the plans of the text pack are guesses about what the business sells)
-      const plans = c.pricing.fromPrompt ? c.pricing.plans.slice(0, 4) : [{ name: c.labels?.quote ?? 'Get a quote', price: '', period: '', perks: [] as string[] }]
+      const plans = c.pricing.fromPrompt ? c.pricing.plans.slice(0, 4 + (c.added?.plans ?? 0)) : [{ name: c.labels?.quote ?? 'Get a quote', price: '', period: '', perks: [] as string[] }]
       put(root, 'title', c.pricing.title)
       repeat(root, 'plan', plans, (el, plan, i) => {
         const set = (slot: string, text: string | undefined) => {
@@ -142,7 +155,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-faq': {
       put(root, 'title', c.titles?.faq ?? 'Frequently asked questions')
-      repeat(root, 'qa', c.faq.slice(0, 6), (el, item) => {
+      repeat(root, 'qa', c.faq.slice(0, 6 + (c.added?.faq ?? 0)), (el, item) => {
         const q = el.querySelector('[data-slot="q"]')
         const a = el.querySelector('[data-slot="a"]')
         if (q) q.textContent = item.q
@@ -152,7 +165,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-quotes': {
       put(root, 'title', c.titles?.testimonials ?? 'What people say')
-      repeat(root, 'quote', c.testimonials.slice(0, 6), (el, item) => {
+      repeat(root, 'quote', c.testimonials.slice(0, 6 + (c.added?.testimonials ?? 0)), (el, item) => {
         const set = (slot: string, text: string) => {
           const n = el.querySelector(`[data-slot="${slot}"]`)
           if (!n) return
@@ -169,7 +182,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     case 'show-gallery': {
       const captions = c.gallery.captions.length ? c.gallery.captions : features.map((f) => f.title)
       put(root, 'title', c.gallery.title)
-      repeat(root, 'shot', captions.slice(0, 8), (el, caption, i) => {
+      repeat(root, 'shot', captions.slice(0, 8 + (c.added?.gallery ?? 0)), (el, caption, i) => {
         const img = el.querySelector('[data-slot="shot-image"]')
         if (img) {
           img.setAttribute('src', picture(i, 1000, 800))
@@ -181,7 +194,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       break
     }
     case 'show-stats': {
-      repeat(root, 'stat', c.stats.slice(0, 4), (el, item) => {
+      repeat(root, 'stat', c.stats.slice(0, 4 + (c.added?.stats ?? 0)), (el, item) => {
         put(el, 'stat-value', item.value)
         put(el, 'stat-label', item.label)
       })
@@ -189,7 +202,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-steps': {
       put(root, 'title', c.steps.title)
-      repeat(root, 'step', c.steps.items.slice(0, 5), (el, item) => {
+      repeat(root, 'step', c.steps.items.slice(0, 5 + (c.added?.steps ?? 0)), (el, item) => {
         put(el, 'step-title', item.title)
         put(el, 'step-text', short(item.text, 120))
       })
@@ -197,7 +210,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-blog': {
       put(root, 'title', c.blog.title)
-      repeat(root, 'post', c.blog.posts.slice(0, 4), (el, post, i) => {
+      repeat(root, 'post', c.blog.posts.slice(0, 4 + (c.added?.blog ?? 0)), (el, post, i) => {
         put(el, 'post-tag', post.tag)
         put(el, 'post-title', post.title)
         const img = el.querySelector('[data-slot="post-image"]')
@@ -218,8 +231,8 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
     }
     case 'show-about': {
       put(root, 'title', c.about.title)
-      repeat(root, 'para', c.about.paragraphs.slice(0, 2), (el, text) => (el.textContent = text))
-      repeat(root, 'point', c.about.points.slice(0, 4), (el, text) => (el.textContent = text))
+      repeat(root, 'para', c.about.paragraphs.slice(0, 2 + (c.added?.paragraphs ?? 0)), (el, text) => (el.textContent = text))
+      repeat(root, 'point', c.about.points.slice(0, 4 + (c.added?.points ?? 0)), (el, text) => (el.textContent = text))
       setImg(one(root, 'image'), 0, 1200, 1300)
       break
     }
@@ -296,6 +309,7 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
 }
 
 export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: PictureFor, links: { href: string; label: string }[] = []) {
+  ADDED = c.added ?? {}
   const showKind = root.querySelector('[data-ref^="show-"]')?.getAttribute('data-ref')
   if (showKind && picture) return fillShow(root, showKind, c, picture, links)
   const features = c.features.items
@@ -332,10 +346,10 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
     case 'features': {
       put(root, 'eyebrow', c.brandName)
       put(root, 'title', c.features.title)
-      put(root, 'lead', `${sentence(andList(features.slice(0, 4).map((f) => lowerFirst(f.title))))}.`)
+      put(root, 'lead', `${sentence(andList(features.slice(0, 4 + (c.added?.features ?? 0)).map((f) => lowerFirst(f.title))))}.`)
       all(root, 'card-tag').forEach((el) => el.remove())
       const more = c.labels?.learnMore ?? 'Learn more'
-      repeat(root, 'card', features.slice(0, 6), (el, item) => {
+      repeat(root, 'card', features.slice(0, 6 + (c.added?.features ?? 0)), (el, item) => {
         const t = el.querySelector('[data-slot="card-title"]')
         const x = el.querySelector('[data-slot="card-text"]')
         const l = el.querySelector('[data-slot="card-link"]')
@@ -348,7 +362,7 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
     case 'steps': {
       put(root, 'eyebrow', c.brandName)
       put(root, 'title', c.steps.title)
-      const items = c.steps.items.slice(0, 6)
+      const items = c.steps.items.slice(0, 6 + (c.added?.steps ?? 0))
       repeat(root, 'step', items, (el, item, i) => {
         const set = (slot: string, text: string) => {
           const n = el.querySelector(`[data-slot="${slot}"]`)
@@ -385,7 +399,7 @@ export function fillRef(root: Element, role: Role, c: WebsiteContent, picture?: 
         })
         break
       }
-      const plans = c.pricing.plans.slice(0, 6)
+      const plans = c.pricing.plans.slice(0, 6 + (c.added?.plans ?? 0))
       if (!plans.length) return root.setAttribute('hidden', '')
       put(root, 'eyebrow', c.brandName)
       put(root, 'title', c.pricing.title)

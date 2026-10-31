@@ -13,6 +13,8 @@ const FAMILIES = ['indigo', 'blue', 'purple', 'violet', 'fuchsia', 'pink', 'rose
 const BUTTON_BG = [...FAMILIES.flatMap((f) => [500, 600, 700].map((n) => `.bg-${f}-${n}`)), '.bg-primary', '.bg-brand', '.bg-brand-strong'].join(',')
 
 /** the buttons of the generated parts (they have no Tailwind classes: their slots name them) */
+/** the cards and pictures of the generated parts (class names of the part generators): they follow "rounded corners" too */
+const GEN_CARDS = ['tile', 'qa', 'quote', 'plan', 'post', 'shot', 'stat', 'step', 'img', 'pic', 'pimg', 'cell1', 'cell2', 'form', 'side', 'stage'].map((n) => `[class*="-${n}"]:not([class*="-${n}s"])`).join(',')
 const GEN_BUTTONS = '[data-slot="button"],[data-slot="button2"],[data-slot="plan-button"],.gp-send,.gn-action,.gp-button'
 
 const scopes = (target: FitTarget): string[] => (target === 'page' ? ['[data-gen-theme]'] : (ROLES_OF[target] ?? []).map((role) => `[data-role="${role}"]`))
@@ -47,6 +49,7 @@ export function editCss(edits: SiteEdits | undefined): string {
       if (style.radius === 'square') rules.push(`${under(scope, '*')}{border-radius:0!important}`)
       if (style.radius === 'pill') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,' + GEN_BUTTONS)}{border-radius:9999px!important}`)
       if (style.radius === 'rounded') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,' + GEN_BUTTONS + ',[class*="rounded"]:not(.rounded-full):not(img)')}{border-radius:.75rem!important}`)
+      if (style.radius === 'rounded') rules.push(`${under(scope, GEN_CARDS)}{border-radius:.75rem!important}`)
       if (style.headingSize) {
         rules.push(`@supports (zoom:1){${under(scope, 'h1,h2,h3,h4')}{zoom:${scale(style.headingSize)}}}`)
         rules.push(`@supports not (zoom:1){${scope}{${sizeVars(['xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'], scale(style.headingSize))}}}`)

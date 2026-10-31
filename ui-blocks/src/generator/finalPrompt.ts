@@ -44,6 +44,8 @@ export type WebsiteContent = {
   offers?: string[]
   /** the page was written from the person's own words (no text pack fits the business): see bespoke.ts */
   bespoke?: boolean
+  /** how many items of each list the person added by hand: the parts get that many more places than their template has */
+  added?: Record<string, number>
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>

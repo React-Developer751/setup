@@ -24,6 +24,11 @@ const order = (a, b) => (lib) => { const roles = lib.sections.map((s) => s.role)
 const CASES = [
   // ── words on the page
   ['hero ka title "Fresh Cakes Daily" kar do', has('Fresh Cakes Daily')],
+  ['services me 3 naye add karo: Wedding Cakes, Cupcakes, Brownies', (lib) => has('Wedding Cakes', 'Cupcakes', 'Brownies')(lib) && lib.content.features.items.length >= 8 && lib.content.added?.features === 3],
+  ['add a new service called Macarons', (lib) => has('Macarons')(lib) && lib.content.features.items.length >= 7],
+  ['services me Pastry aur Bread bhi add karo', has('Pastry', 'Bread')],
+  ['upar wali line me likho: Fresh every morning', (lib) => lib.content.subject === 'Fresh every morning'],
+  ['eyebrow badlo: Since 1998', (lib) => lib.content.subject === 'Since 1998'],
   ['headline change karke Best Eggless Cakes in Jaipur karo', has('Best Eggless Cakes in Jaipur')],
   ['change the main heading to Baked With Love', has('Baked With Love')],
   ['subtitle me likho: Order before 6pm for same day delivery', has('Order before 6pm for same day delivery')],

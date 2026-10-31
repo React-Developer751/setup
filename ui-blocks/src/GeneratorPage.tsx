@@ -923,6 +923,16 @@ function GeneratorPage() {
       {/* ───────────── right: preview or code ───────────── */}
       <section id="preview-section" className="relative flex min-h-[75vh] min-w-0 flex-1 flex-col lg:h-full lg:min-h-0">
         <BuildingScreen key={build.since} prompt={build.prompt} stage={build.stage} open={build.on} />
+        {madeUpName && !build.on && (
+          <div role="status" className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900">
+            <span>
+              The name <b>{madeUpName}</b> is a placeholder I made up. Type your real one (for example “my business is called Green Leaf”) or
+            </span>
+            <button type="button" onClick={() => setKeptName(active.content.brandName)} className="rounded border border-amber-400 px-2 py-0.5 font-medium hover:bg-amber-100">
+              keep it
+            </button>
+          </div>
+        )}
         <ToolsDrawer
           open={tools.open}
           tab={tools.tab}
