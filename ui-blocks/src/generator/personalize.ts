@@ -14,6 +14,8 @@ export type Facts = {
   /** promises: 24/7, home delivery, free inspection ... */
   perks: { kind: 'always' | 'delivery' | 'free' | 'online'; text: string }[]
   years?: number
+  /** what the person said that is a detail of the place, not a service ("12 rooms", "lake view", "class 10"): it goes into the line under the headline */
+  details?: string[]
   /** offers named in the prompt ("Free shipping above ₹999", "Cash on delivery", "7-day returns"), as short ready-to-show phrases */
   offers: string[]
   /** when it is open, if the prompt says ("Open on Sunday") */
@@ -31,7 +33,7 @@ const titleCase = (s: string) => fixAcronyms(s.replace(/(^|[\s/-])([a-z])/g, (_m
 const lowerFirst = (s: string) => (/^[A-Z]{2,}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const AUDIENCE = new Set(['homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
+const AUDIENCE = new Set(['small businesses', 'small business', 'msmes', 'freelancers', 'homes', 'home', 'houses', 'offices', 'office', 'shops', 'shop owners', 'businesses', 'business', 'companies', 'families', 'family', 'startups', 'students', 'kids', 'children', 'brides', 'bride', 'grooms', 'couples', 'tourists', 'travellers', 'travelers', 'women', 'men', 'ladies', 'pets', 'patients', 'professionals', 'beginners', 'weddings', 'wedding', 'events', 'parties', 'corporates', 'schools', 'hotels', 'restaurants', 'apartments', 'societies', 'individuals', 'seniors', 'teachers', 'farmers', 'freelancers', 'residents', 'commercial', 'residential', 'everyone'])
 const NOISE = new Set(['the', 'a', 'an', 'my', 'our', 'your', 'all', 'various', 'many', 'some', 'best', 'good', 'great', 'quality', 'affordable', 'cheap', 'professional', 'top', 'reliable', 'trusted', 'premium', 'modern', 'simple', 'beautiful', 'new', 'and', 'or', 'with', 'also', 'etc'])
 const GENERIC = new Set(['business', 'website', 'site', 'page', 'company', 'services', 'service', 'shop', 'store', 'products', 'product', 'things', 'work', 'stuff'])
 
@@ -58,9 +60,18 @@ const significant = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u
  * `avoid` = words that already describe the business itself (the niche's label, keywords and feature titles): a service that only
  * repeats them ("packers", "scrap dealer") says nothing new.
  */
+const FIRM_WORDS = ['associates?', 'partners?', 'sons', 'brothers', 'bros', 'co', 'company', 'enterprises', 'traders', 'group', 'industries', 'sisters'].map((w) => `[${w[0].toUpperCase()}${w[0]}]${w.slice(1)}`).join('|')
+/** "Sharma & Associates", "Rao and Partners", "Gupta Brothers": a name that holds an "&" or an "and" */
+const FIRM_NAME = new RegExp(`\\b[A-Z][\\p{L}'-]+(?:\\s+[A-Z][\\p{L}'-]+)?\\s*(?:&|and)\\s*(?:${FIRM_WORDS})\\b|\\b[A-Z][\\p{L}'-]+\\s+(?:${FIRM_WORDS})\\b`, 'gu')
+
 export function extractFacts(prompt: string, subject: string, avoid: string[] = []): Facts {
   // a person's title and name ("Dr. Sharma") is the brand, not a service
-  const text = described(prompt).replace(/\b(?:Dr|Mr|Mrs|Ms|Prof|Er|Adv)\.?\s+[A-Z][\p{L}-]+(?:\s+[A-Z][\p{L}-]+)?/gu, ' ').replace(/\s+/g, ' ').trim()
+  const text = described(prompt.replace(FIRM_NAME, ' '))
+    .replace(/\b(?:Dr|Mr|Mrs|Ms|Prof|Er|Adv)\.?\s+[A-Z][\p{L}-]+(?:\s+[A-Z][\p{L}-]+)?/gu, ' ')
+    // "family and property law" = "family law and property law"
+    .replace(/\b([a-z]+) and ([a-z]+) (law|dentistry|surgery|therapy|medicine|care|design)\b/gi, '$1 $3 and $2 $3')
+    .replace(/\s+/g, ' ')
+    .trim()
   const facts: Facts = { services: [], perks: [], offers: [], prices: [] }
   // the money the person wrote ("150 rupees", "Rs 250", "£12") is the money of the page
   facts.currency = /₹|\brupees?\b|\brs\.?(?=\s*\d)|\binr\b/i.test(text) ? '₹' : /£|\bpounds?\b/i.test(text) ? '£' : /€|\beuros?\b/i.test(text) ? '€' : undefined
@@ -160,26 +171,56 @@ export function extractFacts(prompt: string, subject: string, avoid: string[] = 
   // a list of prices written on purpose ("drop-in 500 rupees, monthly 3000 rupees, retreat 12000 rupees"): read segment by segment, before the word lists above cut a name ("premium") or a price off
   const listed = pricesWritten(prompt)
   if (listed.length >= 2) facts.prices = listed
-  facts.services = facts.services.filter((x) => !/^[\d][\d,\s]*(?:rupees?|rs\.?|inr|only)?$/i.test(x.trim()) && !/^(?:call|phone|whatsapp)\s+\d/i.test(x.trim()) && !/^(?:plans?|gallery|galleries|faqs?|pages?|pricing|blog|contact|about|testimonials?)$/i.test(x.trim())).slice(0, 6)
+  const dropped = facts.services.filter((x) => notAService(x, facts.prices) && !/rupees?|\brs\b|inr|fees?|plans?|prices?|web ?site|website|landing|page/i.test(x) && x.length <= 24)
+  if (dropped.length) facts.details = [...new Set(dropped)].slice(0, 3)
+  facts.services = facts.services.filter((x) => !notAService(x, facts.prices)).filter((x) => !/^[\d][\d,\s]*(?:rupees?|rs\.?|inr|only)?$/i.test(x.trim()) && !/^(?:call|phone|whatsapp)\s+\d/i.test(x.trim()) && !/^(?:plans?|gallery|galleries|faqs?|pages?|pricing|blog|contact|about|testimonials?)$/i.test(x.trim())).slice(0, 6)
   facts.offers = [...new Set(facts.offers)].slice(0, 4)
   facts.prices = facts.prices.slice(0, 4)
   return facts
 }
 
+/**
+ * A thing the person wrote that is not something the business sells: a sum or a number of something ("12 rooms", "class 10", "999 rupees per month"), the word for a price list ("fees", "plans"),
+ * a part of the website itself ("portfolio website"), an amenity ("lake view").
+ */
+function notAService(item: string, prices: { name: string }[]): boolean {
+  const x = item.trim().toLowerCase()
+  if (/(?:^|\s)\d+(?:\s|$|-)/.test(x)) return true
+  if (GENERIC_PRICE_NAME.test(x) || /^(?:basic|standard|premium|pro|plus|starter|business|plan \d)$/.test(x)) return true
+  if (prices.some((p) => p.name.toLowerCase() === x) && /^(?:basic|standard|premium|pro|plus|starter|business)$/.test(x)) return true
+  if (/\b(?:web ?site|landing page|web page|webpage|portfolio site)\b/.test(x)) return true
+  if (/\bplans?$/.test(x) && /^(?:gym|membership|monthly|pricing|price|fee|class)\b/.test(x)) return true
+  if (/^(?:rooms?|booking|bookings|online booking|online|app|site)$/.test(x)) return true
+  if (/\b(?:view|views|wifi|wi-fi|parking|ac rooms?)$/.test(x) && x.split(' ').length <= 3) return true
+  return false
+}
+
 /** "drop-in 500 rupees, monthly 3000 rupees": each comma-separated piece that ends in a sum of money is a thing and its price (two or more pieces make a list) */
+const GENERIC_PRICE_NAME = /^(?:fees?|prices?|pricing|plans?|rates?|cost|charges?|packages?|price list|membership|subscription)$/i
+const DEFAULT_PLAN_NAMES: Record<number, string[]> = { 2: ['Basic', 'Pro'], 3: ['Basic', 'Standard', 'Premium'], 4: ['Starter', 'Basic', 'Standard', 'Premium'] }
+
 function pricesWritten(text: string): { name: string; amount: number; period?: string }[] {
   const money = /₹|\brupees?\b|\brs\.?(?=\s*\d|\s*$|\s*,)|\binr\b|\$|£|€|\bdollars?\b|\bpounds?\b|\beuros?\b|\/-/i
   const out: { name: string; amount: number; period?: string }[] = []
   for (const seg of text.split(/\s*(?:,|;|\n|\band\b|\baur\b)\s*/i)) {
     if (!money.test(seg) && !(out.length && /^[^\d]{2,40}\s+\d{3,6}$/.test(seg.trim()))) continue
     if (/(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|years?|since|shipping|delivery|trial|call|phone|whatsapp|open)(?![\p{L}])/iu.test(seg)) continue
-    const m = seg.match(/^(?:.*?(?:pricing|prices?|plans?|rates?|packages?|price list)\s*[:\-]\s*)?([^\d₹$£€:]{2,40}?)\s*(?:@|:|=|-|\b(?:at|for|is)\b)?\s*(?:rs\.?\s*|₹\s*|inr\s*|\$\s*|£\s*|€\s*)?(\d[\d,]{2,7})\s*(?:rupees?|rs\.?|inr|only|dollars?|pounds?|euros?|\/-)?\s*(?:\/\s*(\p{L}+)|per\s+(\p{L}+))?\s*$/iu)
+    const m = seg.match(/^(?:.*?(?:pricing|prices?|plans?|rates?|packages?|price list)\s*[:\-]\s*)?([^\d₹$£€:]{0,40}?)\s*(?:@|:|=|-|\b(?:at|for|is)\b)?\s*(?:rs\.?\s*|₹\s*|inr\s*|\$\s*|£\s*|€\s*)?(\d[\d,]{2,7})\s*(?:rupees?|rs\.?|inr|only|dollars?|pounds?|euros?|\/-)?\s*(?:\/\s*(\p{L}+)|per\s+(\p{L}+))?\s*$/iu)
     if (!m) continue
-    const name = m[1].toLowerCase().replace(/[^\p{L}\p{N}&' /+-]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^(?:pricing|prices?|plans?|rates?|packages?)\s+/, '')
+    let name = m[1].toLowerCase().replace(/[^\p{L}\p{N}&' /+-]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^(?:pricing|prices?|plans?|rates?|packages?)\s+/, '')
+    // "plans", "fees": the word for the list, not a name of one plan
+    if (GENERIC_PRICE_NAME.test(name)) name = name.toLowerCase() === 'plan' || name.toLowerCase() === 'plans' ? '' : name
     const amount = Number(m[2].replace(/,/g, ''))
-    if (name && name.split(' ').length <= 4 && amount >= 10 && !out.some((x) => x.name === name)) out.push({ name, amount, ...(m[3] || m[4] ? { period: `/ ${(m[3] || m[4]).toLowerCase()}` } : {}) })
+    if (name.split(' ').length > 4 || amount < 10 || (name && out.some((x) => x.name === name))) continue
+    out.push({ name, amount, ...(m[3] || m[4] ? { period: `/ ${(m[3] || m[4]).toLowerCase()}` } : {}) })
   }
-  return out
+  // prices without a name ("plans 499 rupees and 999 rupees per month") are plans of the page: they get plain names, in order
+  const names = DEFAULT_PLAN_NAMES[Math.min(4, out.length)]
+  const allUnnamed = out.length >= 2 && out.every((p) => !p.name)
+  const named = out.map((p, i) => (p.name ? p : { ...p, name: (names?.[i] ?? `Plan ${i + 1}`).toLowerCase() }))
+  // "plans 499 rupees and 999 rupees per month": the period was said once, at the end, for all of them
+  const last = named[named.length - 1]
+  return allUnnamed && last?.period && named.slice(0, -1).every((p) => !p.period) ? named.map((p) => ({ ...p, period: last.period })) : named
 }
 
 const CARD_TEXT = [
@@ -197,10 +238,20 @@ export const serviceText = (name: string, index: number) => CARD_TEXT[index % CA
 const list = (items: string[]) => (items.length <= 1 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`)
 
 /** Puts the facts of the prompt on the page; with no facts the content is returned as it is. */
-export function personalize(content: WebsiteContent, facts: Facts, size: 'compact' | 'full', rand: () => number, hasNiche = false): WebsiteContent {
+/** `onlyNamed`: a law firm or a clinic shows only the services the person named (a service nobody named is a claim about what they are allowed or able to do) */
+export function personalize(content: WebsiteContent, facts: Facts, size: 'compact' | 'full', rand: () => number, hasNiche = false, onlyNamed = false, prompt = '', kindWords: string[] = []): WebsiteContent {
   const { services, place, audience, perks, years, offers, hours, prices } = facts
-  if (!services.length && !place && !perks.length && !years && !audience && !offers.length && !hours && !prices.length) return content
+  if (!services.length && !place && !perks.length && !years && !audience && !offers.length && !hours && !prices.length && !facts.details?.length && !(onlyNamed && prompt)) return content
   let next = content
+  // a law firm or a clinic: the cards of the text pack that the person's own words name stay, the others (which they never said) go
+  if (onlyNamed && prompt) {
+    // (the words that only say what kind of business it is — "insurance agent" — do not name a service)
+    const kind = new Set(significant(`${content.subject} ${facts.place ?? ''} ${kindWords.join(' ')}`))
+    const said = new Set(significant(prompt).filter((w) => !kind.has(w)))
+    const common = new Set(['law', 'legal', 'matter', 'care', 'treatment', 'service', 'clinic', 'consultation', 'document', 'case', 'dental', 'medical', 'general'])
+    const named = next.features.items.filter((item) => significant(item.title).some((w) => !common.has(w) && said.has(w)))
+    if (named.length >= 2) next = { ...next, features: { ...next.features, items: named } }
+  }
 
   // the line under the headline says what the business does, for whom and where. A niche page already has a good line: it only gets the
   // place, the audience and the promises added; a kit page gets a line made of the services.
@@ -209,12 +260,13 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
     const where = place ? `Serving ${audience ? `${audience} in ` : ''}${place}.` : audience ? `For ${audience}.` : ''
     // what the person named comes into the line: "Wood fired pizza, fresh pasta and tiramisu."
     const named = services.length >= 2 ? `${upperFirst(list(services.slice(0, 3).map((s) => lowerFirst(fixAcronyms(s)))))}.` : ''
-    const extra = [named, where, perkLine].filter(Boolean).join(' ')
+    const detail = facts.details?.length ? `${upperFirst(list(facts.details.map((d) => lowerFirst(fixAcronyms(d)))))}.` : ''
+    const extra = [named, detail, where, perkLine].filter(Boolean).join(' ')
     const base = next.hero.subtitle.replace(/\s*$/, '')
     if (extra && base.length + extra.length + 1 <= 215) next = { ...next, hero: { ...next.hero, subtitle: `${base} ${extra}` } }
   } else if (services.length >= 2) {
     const shown = services.slice(0, 3).map((s, i) => (i === 0 ? upperFirst(lowerFirst(fixAcronyms(s))) : lowerFirst(fixAcronyms(s))))
-    const subtitle = `${list(shown)}${audience ? ` for ${audience}` : ''}${place ? ` in ${place}` : ''}.${perkLine ? ` ${perkLine}` : ''}`
+    const subtitle = `${list(shown)}${audience ? ` for ${audience}` : ''}${place ? ` in ${place}` : ''}.${facts.details?.length ? ` ${upperFirst(list(facts.details.map((d) => lowerFirst(fixAcronyms(d)))))}.` : ''}${perkLine ? ` ${perkLine}` : ''}`
     if (subtitle.length <= 150) next = { ...next, hero: { ...next.hero, subtitle } }
   } else if (place && !next.hero.subtitle.includes(place) && next.hero.subtitle.length < 120) {
     next = { ...next, hero: { ...next.hero, subtitle: `${next.hero.subtitle.replace(/[.]?$/, '.')} Serving ${place}.` } }
@@ -238,12 +290,12 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
     })
     const rest = next.features.items.filter((item, n) => !used.has(n) && !cards.some((c) => c.title.toLowerCase() === item.title.toLowerCase()))
     const keep = size === 'full' ? 6 : 3
-    next = { ...next, features: { ...next.features, items: [...cards, ...rest].slice(0, keep) }, marquee: [...new Set([...services.slice(0, 4).map((s) => titleCase(s).slice(0, 16)), ...next.marquee])].slice(0, 8) }
+    next = { ...next, features: { ...next.features, items: (onlyNamed && services.length >= 2 ? cards : [...cards, ...rest]).slice(0, keep) }, marquee: [...new Set([...services.slice(0, 4).map((s) => titleCase(s).slice(0, 16)), ...next.marquee])].slice(0, 8) }
   }
 
   // questions people would ask about exactly these things
   const questions: { q: string; a: string }[] = []
-  if (services[0]) questions.push({ q: `Do you offer ${lowerFirst(fixAcronyms(services[0]))}?`, a: `Yes, ${lowerFirst(fixAcronyms(services[0]))} is something we do regularly. Send us a message with the details and we will tell you how we can help.` })
+  if (services[0] && services[0].length >= 6 && !/^[A-Za-z]{2,5}$/.test(services[0].trim()) && services[0].trim().split(' ').length <= 4) questions.push({ q: `Do you offer ${lowerFirst(fixAcronyms(services[0]))}?`, a: `Yes, ${lowerFirst(fixAcronyms(services[0]))} is something we do regularly. Send us a message with the details and we will tell you how we can help.` })
   if (place) questions.push({ q: 'Where are you based?', a: `We are based in ${place}. Get in touch to check that we cover your area.` })
   for (const perk of perks) {
     if (perk.kind === 'delivery') questions.push({ q: `Do you offer ${perk.text}?`, a: 'Yes, we bring it to your door. Ask us about delivery areas and timing when you get in touch.' })

@@ -138,27 +138,32 @@ document.addEventListener('submit', (event) => {
     if (!note) { note = document.createElement('p'); note.setAttribute('data-lead-note', ''); note.setAttribute('role', 'status'); note.style.cssText = 'margin-top:.75rem;font-size:.9rem'; form.appendChild(note); }
     note.textContent = text; note.style.color = ok ? '#15803d' : '#b45309';
   };
-  const endpoint = form.getAttribute('data-endpoint') || window.SITE_FORM_ENDPOINT;
+  // where the message goes: a form service of the owner, else this server's inbox when the site is published here (/s/<id>/), else the e-mail or WhatsApp of the business
+  const here = location.pathname.match(/^\\/s\\/([a-z0-9]{8,16})\\//);
+  const endpoint = form.getAttribute('data-endpoint') || window.SITE_FORM_ENDPOINT || (here ? new URL('/api/lead?site=' + here[1], location.href).href : '');
+  const fallback = () => {
+    if (LEAD.email) {
+      const subject = form.getAttribute('data-subject') || ('Message from the website of ' + LEAD.brand);
+      const body = rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
+      say('Your mail program is opening with the message written. Press send there to finish.', true);
+      window.location.href = 'mailto:' + LEAD.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      return;
+    }
+    if (LEAD.whatsapp) {
+      const text = 'Message from the website of ' + LEAD.brand + '\\n' + rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
+      say('WhatsApp is opening with the message written. Press send there to finish.', true);
+      window.open('https://wa.me/' + LEAD.whatsapp + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      return;
+    }
+    say('This form is not connected yet. Please contact us directly.', false);
+  };
   if (endpoint) {
     fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(Object.fromEntries(rows)) })
       .then((r) => { if (!r.ok) throw new Error('bad'); form.reset(); say('Thank you, your message was sent.', true); })
-      .catch(() => say('Sorry, the message could not be sent. Please contact us directly.', false));
+      .catch(() => (LEAD.email || LEAD.whatsapp ? fallback() : say('Sorry, the message could not be sent. Please contact us directly.', false)));
     return;
   }
-  if (LEAD.email) {
-    const subject = form.getAttribute('data-subject') || ('Message from the website of ' + LEAD.brand);
-    const body = rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
-    say('Your mail program is opening with the message written. Press send there to finish.', true);
-    window.location.href = 'mailto:' + LEAD.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    return;
-  }
-  if (LEAD.whatsapp) {
-    const text = 'Message from the website of ' + LEAD.brand + '\\n' + rows.map((r) => r[0] + ': ' + r[1]).join('\\n');
-    say('WhatsApp is opening with the message written. Press send there to finish.', true);
-    window.open('https://wa.me/' + LEAD.whatsapp + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
-    return;
-  }
-  say('This form is not connected yet. Please contact us directly.', false);
+  fallback();
 });
 `
 }

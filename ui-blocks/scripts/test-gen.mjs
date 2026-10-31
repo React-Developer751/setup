@@ -206,6 +206,33 @@ ok(['gym website in Pune', 'SaaS startup landing page', 'salon in Delhi'].every(
 ok(['dental clinic in Delhi', 'law firm website', 'NGO for girl education'].every((p) => priceOn(p) === 0) && priceOn('gym website without pricing') === 0, 'a clinic, a law firm, an NGO and "without pricing" have none')
 const askPage = generateLibraryPage('gym website in Pune', 5, undefined, true, 'auto', undefined, true).sections.find((x) => x.role === 'pricing')
 ok(askPage && askPage.componentId.startsWith('gen/Pricing_'), 'prices nobody wrote are shown by a part that says "ask for the price"')
+// what the person wrote is read for what it is (found with 8 real prompts: a firm's name, prices, a number of rooms and a website were taken for services)
+const CL = await loadGeneratorModule('edit/claims.ts')
+const facts = (t, subject = 'x') => PF.extractFacts(t, subject)
+const sv = (t, subject) => facts(t, subject).services
+ok(!sv('Sharma & Associates law firm in Delhi, family and property law', 'law firm').some((x) => /sharma|associates/.test(x)) && sv('Sharma & Associates law firm in Delhi, family and property law', 'law firm').includes('family law'), 'a firm named with "&" is the brand, "family and property law" is two services')
+ok(!sv('Rao and Partners CA firm, gst filing, audit', 'ca firm').some((x) => /rao|partners/.test(x)), '"Rao and Partners" is a name')
+const plans = facts('Invoice software for small businesses, plans 499 rupees and 999 rupees per month', 'invoice software')
+ok(plans.prices.length === 2 && plans.prices[0].name === 'basic' && plans.prices[1].name === 'pro' && plans.prices.every((p) => p.period === '/ month') && !plans.services.some((x) => /\d|rupee/.test(x)), 'unnamed prices are two plans, the period said once is for both, and no price is a service')
+ok(facts('Coaching institute for UPSC in Delhi, fees 45000 rupees', 'coaching institute').prices[0]?.amount === 45000 && !sv('Coaching institute for UPSC in Delhi, fees 45000 rupees', 'coaching institute').includes('fees'), '"fees 45000" is a price, not a service')
+ok(!sv('Wedding photographer in Jaipur, portfolio website', 'wedding photographer').some((x) => /website/.test(x)), '"portfolio website" is the website, not a service')
+const hotel = facts('Boutique hotel in Udaipur with 12 rooms and lake view', 'boutique hotel')
+ok(hotel.services.length === 0 && hotel.details?.includes('12 rooms') && hotel.details?.includes('lake view'), '"12 rooms" and "lake view" are details of the place, not services')
+const hotelPage = generateLibraryPage('Boutique hotel in Udaipur with 12 rooms and lake view', 7, undefined, true, 'auto', undefined, false).content
+ok(/12 rooms and lake view/.test(hotelPage.hero.subtitle) && !hotelPage.faq.some((f) => /do you offer (?:12|lake)/i.test(f.q)), 'the details are in the line under the headline and not in a question')
+const lawPage = generateLibraryPage('Sharma & Associates law firm in Delhi, family and property law', 7, undefined, true, 'auto', undefined, false).content
+ok(lawPage.features.items.length >= 2 && lawPage.features.items.every((f) => /family|property/i.test(f.title)), 'a law firm shows only the services it named (no criminal defence nobody said)')
+// the chat lists what the generator wrote that the person did not say
+const cafe = generateLibraryPage('cafe website in Jaipur', 7, undefined, true, 'auto', undefined, false).content
+const claim = CL.claimsToCheck('cafe website in Jaipur', cafe)
+ok(claim && claim.services.length > 0 && /Check before you publish/.test(claim.text), 'a prompt that names nothing gets the list of what was written from the kind of business')
+const lawClaim = CL.claimsToCheck('Sharma & Associates law firm in Delhi, family and property law', lawPage)
+ok(!lawClaim || lawClaim.services.length === 0, 'a law firm with only its named services has no services to check')
+ok(CL.claimChoices(claim, cafe).some((c) => c.action === 'dismiss') && CL.claimChoices(claim, cafe).every((c) => c.label), 'the message always has a way to keep everything')
+// a site has a way to write to the business
+let withForm = 0
+for (let v = 1; v <= 30; v += 1) { const l = generateLibraryPage('law firm website', v * 13, undefined, true, 'auto', undefined, v % 2 === 0); const c = l.sections.find((x) => x.role === 'contact'); if (c && !/^contact\/Contact(?:1|2|3|5|6)$/.test(c.componentId)) withForm += 1 }
+ok(withForm === 30, `every contact part has a form (${withForm} of 30)`)
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

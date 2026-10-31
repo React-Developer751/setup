@@ -11,11 +11,11 @@ import { getLearningVersion, subscribeLearning } from './generator/ml/learned'
 import { setSmart, smartStatus, smartVersion, smartWanted, subscribeSmart, understand } from './generator/ml/smart'
 import { getPoolVersion, poolSummary, subscribePool } from './generator/dataPool'
 import BusinessForm from './BusinessForm'
+import LeadsPanel from './LeadsPanel'
 import PhotosPanel from './PhotosPanel'
 import { scenePlan } from './generator/imageAi'
 import ProjectsPanel from './ProjectsPanel'
 import { saveRemote, deleteRemote } from './generator/projectSync'
-import { userId } from './generator/userId'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
 import EditChat, { ServerSetting, type ChatMessage } from './EditChat'
 import { answerFor, clarify, type Choice, type Expect } from './generator/edit/clarify'
@@ -56,6 +56,9 @@ import { parseEdit } from './generator/edit/understand'
 import { widgetOps } from './generator/edit/widgetParse'
 import { recogniseBusiness } from './generator/edit/packClient'
 import { loadHeroTaste } from './generator/gen/heroPick'
+import { userId } from './generator/userId'
+import { claimChoices, claimsToCheck } from './generator/edit/claims'
+import { extractContentDetails } from './generator/filter'
 import { generateSite } from './generator/generateSite'
 import { generateWebsite } from './generator/generateWebsite'
 import { generateLibraryPage } from './generator/library/generateLibraryPage'
@@ -146,6 +149,8 @@ function GeneratorPage() {
     window.setTimeout(() => setBuild((b) => (b.on ? { ...b, on: false } : b)), Math.max(700, 2500 - (Date.now() - buildStart.current)))
   }
   const buildStart = useRef(0)
+  // the prompt of a site that was just made: once it is shown, the chat asks for the name and the contact details and lists what the generator wrote that the person did not say
+  const fresh = useRef('')
   const messageId = useRef(0)
   // a question of the chat that waits for a typed value (a name, a business type ...)
   const pending = useRef<Expect | undefined>(undefined)
@@ -204,7 +209,9 @@ function GeneratorPage() {
     shownEngine === 'library'
       ? buildLibraryStandalone(libraryWithDetails(library, details))
       : buildStandalone(applyDetails(tplMulti ? sourceFromSite(multi) : sourceFromPage(site), details))
-  const previewHtml = usePreviewDocument(buildDocument, [shownEngine, isMulti, multi, site, library, details, poolVersion, overrideVersion])
+  // (in the preview, a message sent from the contact form goes to the inbox of this person's drafts: it can be tried before the site is published)
+  const buildPreviewDocument = () => buildDocument().replace('<head>', `<head><script>window.SITE_FORM_ENDPOINT=${JSON.stringify(`${location.origin}/api/lead?site=draft&u=${userId()}`)}</script>`)
+  const previewHtml = usePreviewDocument(buildPreviewDocument, [shownEngine, isMulti, multi, site, library, details, poolVersion, overrideVersion])
 
   useEffect(() => {
     if (view !== 'code') return
@@ -359,6 +366,7 @@ function GeneratorPage() {
     setCodeNote('')
     setTools((t) => ({ ...t, open: false }))
     buildStart.current = Date.now()
+    fresh.current = text.trim()
     setBuild({ on: true, stage: 0, prompt: text.trim(), since: buildStart.current })
     // on a phone the preview is under the prompt: the build screen is brought into view
     if (window.innerWidth < 1024) requestAnimationFrame(() => document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -447,6 +455,28 @@ function GeneratorPage() {
     const id = messageId.current
     setMessages((list) => [...list, { ...message, id }])
   }
+
+  useEffect(() => {
+    if (!fresh.current || build.on || !started) return
+    const prompt = fresh.current
+    fresh.current = ''
+    const content = (active as { content: import('./generator/finalPrompt').WebsiteContent }).content
+    if (!content) return
+    const given = extractContentDetails(prompt).given
+    const reachable = !!(content.contact.phone || content.contact.email || content.contact.whatsapp)
+    if (!given || !reachable) {
+      say({
+        role: 'ai',
+        text: given
+          ? 'Nobody can reach you from this site yet. Add your phone, e-mail or WhatsApp (messages from the contact form come to the e-mail):'
+          : `I had to make up a name for the site ("${content.brandName}"), and the page has no way to reach you yet. Make it yours:`,
+        form: 'details',
+      })
+    }
+    const claims = claimsToCheck(prompt, content)
+    if (claims) say({ role: 'ai', text: claims.text, choices: claimChoices(claims, content) })
+    // (only a fresh site: opening an old project does not ask again)
+  }, [build.on, started, active])
 
   useEffect(() => {
     if (!useServer) return
@@ -866,6 +896,18 @@ function GeneratorPage() {
             onRedo={redo}
             onReset={reset}
             onRate={(id, up) => void rateAnswer(id, up)}
+            renderForm={(kind) =>
+              kind === 'details' ? (
+                <BusinessForm
+                  compact
+                  madeUpName={extractContentDetails(submitted).given ? undefined : active.content.brandName}
+                  onApply={(ops) => {
+                    say({ role: 'user', text: 'My business details' })
+                    applyOps('My business details', ops, 'rules', 'Added your business details.')
+                  }}
+                />
+              ) : null
+            }
           />
         </div>
       </aside>
@@ -948,6 +990,7 @@ function GeneratorPage() {
               applyOps('My business details', ops, 'rules', 'Added your business details.')
             }}
           />
+          <LeadsPanel />
           <PhotosPanel
             defaultQuery={active.content.subject || brandName}
             hasPhotos={!!edits.photos}

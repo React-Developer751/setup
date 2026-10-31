@@ -36,6 +36,8 @@ export type LibraryFit = { /** the buttons alone */ buttons?: 'left' | 'center' 
 export type LibrarySection = { role: Role; componentId: string; /** the page of a multi-page site this part is on ('*' = every page) */ page?: string; /** the title block of an inner page */ head?: { title: string; text: string; home: string }; /** a soft band of the main colour behind this part */ band?: boolean; /** background colour of this part only ("footer green") */ paint?: string; fit?: LibraryFit }
 
 /** kinds of business that sell by plans, sessions or courses: the price page is on their site without being asked */
+/** the stored contact parts that show an address and no form */
+const NO_FORM_CONTACT = new Set(['contact/Contact1', 'contact/Contact2', 'contact/Contact3', 'contact/Contact5', 'contact/Contact6'])
 const PRICE_NATURAL = new Set<string>(['modern_tech', 'bold_fitness', 'beauty_wellness', 'education'])
 
 const componentName = (id: string) => id.split('/')[1]
@@ -167,6 +169,8 @@ export function generateLibraryPage(
     const mine = pickGenKit(role, { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: chosen[role] === 'refkit/RefMenu1' })
     if (mine) chosen[role] = mine
   }
+  // a site needs a way to write to the business: these stored contact parts have no form, so the generated contact part (a real form and the ways to reach) takes their place
+  if (NO_FORM_CONTACT.has(chosen.contact)) chosen.contact = pickGenKit('contact', { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: false }, true) ?? chosen.contact
   if (priceNatural) chosen.pricing = pickGenKit('pricing', { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: false }, true) ?? chosen.pricing
   for (const section of edits?.added ?? []) for (const role of ROLE_OF[section] ?? []) if (role !== 'profile') visible.add(role)
   // a part that is moved is a part the person wants to see ("move FAQ above pricing" on a page without a FAQ)

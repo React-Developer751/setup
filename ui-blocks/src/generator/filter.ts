@@ -189,5 +189,5 @@ export function extractContentDetails(userPrompt: string, themeKey?: string, nic
   if (vagueWords(subject)) subject = ''
   // nothing that names a kind of business is left: the niche says what the business is
   if (nicheLabel && !subject.split(/\s+/).some((w) => isBusinessWord(w))) subject = nicheLabel.toLowerCase()
-  return { businessName: named || inventName(subject, userPrompt, themeKey, nicheLabel), subject }
+  return { businessName: named || inventName(subject, userPrompt, themeKey, nicheLabel), subject, /** the person gave the name (else it was made up) */ given: !!named }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Choice } from './generator/edit/clarify'
 import { colorFromFile } from './generator/edit/imageColor'
 import { describeOp, type EditOp } from './generator/edit/edits'
@@ -15,6 +15,8 @@ export type ChatMessage = {
   /** the answer that built or rebuilt the whole site: it can be liked or not liked */
   site?: boolean
   rating?: 'up' | 'down'
+  /** a form shown inside the answer (the business details right after a site is made) */
+  form?: 'details'
 }
 
 type Props = {
@@ -32,11 +34,13 @@ type Props = {
   onReset: () => void
   /** like (true) or not like (false) an answer of the chat */
   onRate: (id: number, up: boolean) => void
+  /** draws the form of a message that has one */
+  renderForm?: (kind: string) => ReactNode
 }
 
 const SUGGESTIONS = ['remove the FAQ', 'rename it to Green Leaf', 'make the buttons blue', 'dark mode', 'pricing hatao', 'add a gallery', 'no animations', 'rename pricing to Our Plans', 'move FAQ above pricing', 'make the gallery shorter', 'center the hero']
 
-function EditChat({ messages, busy, canUndo, canRedo, changes, onSend, onChoose, onColor, onUndo, onRedo, onReset, onRate }: Props) {
+function EditChat({ messages, busy, canUndo, canRedo, changes, onSend, onChoose, onColor, onUndo, onRedo, onReset, onRate, renderForm }: Props) {
   const [text, setText] = useState('')
   const end = useRef<HTMLDivElement>(null)
   const [note, setNote] = useState('')
@@ -108,6 +112,7 @@ function EditChat({ messages, busy, canUndo, canRedo, changes, onSend, onChoose,
                   ))}
                 </div>
               )}
+              {m.form && renderForm && <div className="mt-2">{renderForm(m.form)}</div>}
               {m.via === 'server' && <p className="mt-0.5 text-[10px] text-stone-400">understood by the local server</p>}
               {m.choices && m.choices.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">

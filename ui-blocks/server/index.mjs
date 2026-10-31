@@ -70,7 +70,7 @@ function readBody(req, max = MAX_BODY) {
 
 /** the address of the caller; behind a reverse proxy (TRUST_PROXY=1) the first address of X-Forwarded-For */
 const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || 'unknown'
-const STORED_READS = new Set(['/api/gen-ratings', '/api/projects', '/api/projects/versions', '/api/projects/version', '/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events', '/api/prompt-memory', '/api/prompt-memory/export', '/api/prompt-memory/keywords'])
+const STORED_READS = new Set(['/api/leads', '/api/gen-ratings', '/api/projects', '/api/projects/versions', '/api/projects/version', '/api/designs', '/api/edit-log', '/api/image-ratings', '/api/palettes', '/api/phrase-events', '/api/prompt-memory', '/api/prompt-memory/export', '/api/prompt-memory/keywords'])
 const EXTRA_ORIGINS = new Set(String(process.env.EDIT_ALLOWED_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean))
 /** this machine's own pages (any port: Vite, preview), the page the server itself was reached from, and what the operator listed */
 function originAllowed(origin, host) {
@@ -96,6 +96,7 @@ const bump = (map, key, window = 60_000) => {
 const limited = (ip, user = '') => (user ? bump(hits, `u:${user}`) > RATE_PER_MINUTE || bump(hits, `a:${ip}`) > RATE_PER_MINUTE * 6 : bump(hits, `a:${ip}`) > RATE_PER_MINUTE)
 
 
+const leadHits = new Map()
 const imageHits = new Map()
 const imagesLimited = (ip, user = '') => (user ? bump(imageHits, `u:${user}`) > IMAGES_PER_MINUTE || bump(imageHits, `a:${ip}`) > IMAGES_PER_MINUTE * 6 : bump(imageHits, `a:${ip}`) > IMAGES_PER_MINUTE)
 
@@ -241,6 +242,61 @@ export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
     if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, images: await imageEngineUp(), corecraft: await coreCraftUp(), imageQueue: { running: imagesRunning, waiting: imageWaiting.length, cached: specCache.size, ...imageStats } })
+    // the contact forms of the sites made here: a visitor's message is kept for the owner of the site (published at /s/<id>/, or a draft shown in the app). The page of a published site runs in a sandbox (its
+    // origin is "null"), so this one route answers any origin; what it accepts is small, rate limited and only ever stored, never executed.
+    if (url.pathname === '/api/lead') {
+      const cors = { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type', 'access-control-allow-private-network': 'true', 'access-control-max-age': '600' }
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, cors)
+        return res.end()
+      }
+      const reply = (status, body) => {
+        res.writeHead(status, { ...cors, 'content-type': 'application/json; charset=utf-8' })
+        res.end(JSON.stringify(body))
+      }
+      if (req.method !== 'POST') return reply(405, { error: 'POST only' })
+      const site = String(url.searchParams.get('site') ?? '')
+      let owner = ''
+      if (site === 'draft') owner = /^[a-f0-9]{16,40}$/.test(String(url.searchParams.get('u') ?? '')) ? String(url.searchParams.get('u')) : ''
+      else if (/^[a-z0-9]{8,16}$/.test(site)) {
+        const meta = readMeta(path.join(DATA, 'sites'), site)
+        if (!meta) return reply(404, { error: 'no such site' })
+        owner = String(meta.owner ?? '')
+      } else return reply(400, { error: 'unknown site' })
+      if (bump(leadHits, `${clientIp(req)}|${site}`, 3_600_000) > 30) return reply(429, { error: 'too many messages from this address, try again later' })
+      let body
+      try {
+        body = JSON.parse(await readBody(req, 16_000))
+      } catch {
+        return reply(400, { error: 'send a small JSON object' })
+      }
+      if (!body || typeof body !== 'object' || Array.isArray(body)) return reply(400, { error: 'send a JSON object' })
+      const fields = {}
+      for (const [key, value] of Object.entries(body).slice(0, 15)) {
+        const k = String(key).replace(/[^\w .-]/g, '').slice(0, 40)
+        const v = String(value ?? '').replace(/\u0000/g, '').trim().slice(0, 3000)
+        if (k && v) fields[k] = v
+      }
+      if (!Object.keys(fields).length) return reply(400, { error: 'the message is empty' })
+      const row = { id: crypto.randomBytes(5).toString('hex'), site, owner, at: new Date().toISOString(), fields }
+      fs.mkdirSync(DATA, { recursive: true })
+      const file = path.join(DATA, 'leads.jsonl')
+      fs.appendFileSync(file, `${JSON.stringify(row)}\n`)
+      // the file does not grow without end: the last 3000 messages stay
+      if (fs.statSync(file).size > 4_000_000) fs.writeFileSync(file, fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).slice(-3000).join('\n') + '\n')
+      // an owner who runs a webhook (a Slack, a sheet, a mail service of their own) gets each message as it comes
+      if (process.env.LEAD_WEBHOOK) fetch(process.env.LEAD_WEBHOOK, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(row), signal: AbortSignal.timeout(5000) }).catch(() => undefined)
+      return reply(200, { ok: true })
+    }
+    // what the visitors of my sites wrote (read with my anonymous id)
+    if (req.method === 'GET' && url.pathname === '/api/leads') {
+      const me = userOf(req)
+      if (!me) return send(res, 400, { error: 'send the x-user header (the page does this)' })
+      if (TOKEN && req.headers['x-edit-token'] !== TOKEN) return send(res, 401, { error: 'missing or wrong token' })
+      const file = path.join(DATA, 'leads.jsonl')
+      const rows = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l) } catch { return undefined } }).filter((r) => r && r.owner === me) : []
+      return send(res, 200, { leads: rows.slice(-200).reverse().map(({ owner, ...rest }) => rest) })
+    }
     // every request that writes (or reads what people wrote) passes these checks first, before any handler runs
     const ip = clientIp(req)
     if (req.method === 'POST' && url.pathname.startsWith('/api/')) {
@@ -376,7 +432,7 @@ export const server = http.createServer(async (req, res) => {
         fs.writeFileSync(path.join(tmp, f.rel), f.data)
       }
       const old = known ? readMeta(sites, id) : undefined
-      fs.writeFileSync(path.join(tmp, '.meta.json'), JSON.stringify({ secret: known ? old.secret : hash(secret), name: String(r.name ?? '').slice(0, 80), at: old?.at ?? new Date().toISOString(), updated: new Date().toISOString(), bytes, files: clean.length }))
+      fs.writeFileSync(path.join(tmp, '.meta.json'), JSON.stringify({ secret: known ? old.secret : hash(secret), name: String(r.name ?? '').slice(0, 80), at: old?.at ?? new Date().toISOString(), updated: new Date().toISOString(), bytes, files: clean.length, owner: userOf(req) || old?.owner || '' }))
       fs.rmSync(dir, { recursive: true, force: true })
       fs.renameSync(tmp, dir)
       const origin = `${req.headers['x-forwarded-proto'] ?? 'http'}://${req.headers.host}`
