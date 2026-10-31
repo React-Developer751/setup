@@ -50,6 +50,8 @@ export type WebsiteContent = {
   voice?: 'me'
   /** a demo app on the site (log in, register, a dashboard with example data): see generator/app */
   app?: boolean
+  /** what the person changed in the pages of the dashboard (see edit/edits.ts) */
+  appPages?: { action: 'remove' | 'add' | 'rename' | 'column'; page: string; to?: string }[]
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>

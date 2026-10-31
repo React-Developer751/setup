@@ -917,7 +917,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   // what was learned on another computer (server/seed, kept in git) joins this computer's memory: only rows that are not here yet are added
   try {
-    execFileSync(process.execPath, [path.join(here, '..', 'scripts', 'learning-sync.mjs'), 'import'], { env: { ...process.env, EDIT_DATA_DIR: DATA }, stdio: 'ignore' })
+    // (a data folder named on purpose, by a test or an operator, is left as it is)
+    if (!process.env.EDIT_DATA_DIR || process.env.EDIT_SEED === '1') execFileSync(process.execPath, [path.join(here, '..', 'scripts', 'learning-sync.mjs'), 'import'], { env: { ...process.env, EDIT_DATA_DIR: DATA }, stdio: 'ignore' })
   } catch {
     /* the memory simply starts as it is */
   }

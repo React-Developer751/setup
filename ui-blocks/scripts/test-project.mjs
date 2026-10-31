@@ -12,6 +12,7 @@ const ok = (c, n) => (c ? (pass += 1) : fail.push(n))
 
 globalThis.document = { styleSheets: [] }
 const { generateLibraryPage } = await loadGeneratorModule('library/generateLibraryPage.ts')
+const { editsFrom } = await loadGeneratorModule('edit/edits.ts')
 const { libraryProjectEntries, contentTypesFrom } = await loadGeneratorModule('library/projectBuilder.ts')
 
 const { generatedHeroSource } = await loadGeneratorModule('gen/heroEmit.ts')
@@ -30,14 +31,14 @@ const env = {
 }
 
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'lib-project-'))
-const CASES = [['one page', false, 'dental clinic called Smile Care in Pune'], ['pages', true, 'pizza shop called Slice Hub in Mumbai']]
+const CASES = [['one page', false, 'dental clinic called Smile Care in Pune'], ['pages', true, 'pizza shop called Slice Hub in Mumbai'], ['with app', false, 'dental clinic called Smile Care in Pune', editsFrom([{ op: 'app', on: true }])]]
 // ALL_PROJECTS=1 builds a project for many kinds of business (slow: one Vite build each)
 if (process.env.ALL_PROJECTS) {
   const prompts = ['law firm called Rao and Partners', 'yoga studio in Goa', 'online store for kurtis and sarees', 'gym called Iron Pulse in Delhi', 'bakery called Crumb', 'kids school in Jaipur', 'plumber in Delhi', 'real estate agency Skyline', 'hair salon Glow', 'pest control company in Pune', 'SaaS startup for invoicing', 'NGO for children']
   prompts.forEach((prompt, i) => CASES.push([`case-${i}${i % 2 ? '-pages' : ''}`, i % 2 === 1, prompt]))
 }
-for (const [label, multi, prompt] of CASES) {
-  const lib = generateLibraryPage(prompt, 3, 'better', true, 'auto', undefined, multi)
+for (const [label, multi, prompt, edits] of CASES) {
+  const lib = generateLibraryPage(prompt, 3, 'better', true, 'auto', edits, multi)
   const entries = await libraryProjectEntries(lib, env)
   const dir = path.join(work, label.replace(' ', '-'))
   for (const entry of entries) {
@@ -55,6 +56,7 @@ for (const [label, multi, prompt] of CASES) {
   const dist = path.join(root, 'dist')
   const js = fs.existsSync(path.join(dist, 'assets')) ? fs.readdirSync(path.join(dist, 'assets')).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(dist, 'assets', f), 'utf8')).join('\n') : ''
   ok(js.includes(lib.content.brandName), `${label}: the built page has the name of the business`)
+  if (edits) ok(js.includes('Create your account') && js.includes('Demo mode') && fs.existsSync(path.join(root, 'src/generator/app/appRuntime.ts')), `${label}: the built project has the login, the register page and the dashboard`)
   if (multi) ok(js.includes('data-page') && js.includes('hashchange'), `${label}: the built site switches its pages`)
 }
 // KEEP_PROJECT=folder keeps the built projects there (to open the finished site in a browser)

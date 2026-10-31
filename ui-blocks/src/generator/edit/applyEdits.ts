@@ -169,7 +169,7 @@ export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | un
   if (whatsapp) next = { ...next, contact: { ...next.contact, whatsapp } }
   if (hours) next = { ...next, hours: parseHours(hours), contact: { ...next.contact, hoursText: hours } }
   if (edits.photos) next = { ...next, photos: edits.photos }
-  if (edits.app !== undefined) next = { ...next, app: edits.app }
+  if (edits.app !== undefined) next = { ...next, app: edits.app, appPages: edits.appPages }
   if (edits.widgets?.length) next = { ...next, widgets: edits.widgets }
   // new headings: the field the template reads, and `titles` for the headings that were fixed text before
   const T = { ...(edits.core?.titles ?? {}), ...edits.titles }

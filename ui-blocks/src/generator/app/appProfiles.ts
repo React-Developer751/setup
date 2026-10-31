@@ -234,5 +234,22 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       kpis = [kp('Requests', String(reqs.length), 'this month'), kp('Customers', '12', 'on record'), kp('New', String(reqs.filter((x) => x.status === 'New').length), 'to answer'), kp('Done', String(reqs.filter((x) => x.status === 'Done').length), 'this month')]
     }
   }
+  // what the person changed in the pages of the dashboard
+  const norm = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, '').replace(/s$/, '')
+  const same = (t: AppTable, name: string) => norm(t.label) === norm(name) || norm(t.id) === norm(name) || norm(t.singular) === norm(name)
+  const title = (x: string) => x.replace(/\b\p{L}/gu, (c) => c.toUpperCase())
+  for (const edit of content.appPages ?? []) {
+    if (edit.action === 'remove') {
+      if (tables.length > 1) tables = tables.filter((t) => !same(t, edit.page))
+    } else if (edit.action === 'rename' && edit.to) {
+      tables = tables.map((t) => (same(t, edit.page) ? { ...t, label: title(edit.to as string), title: title(edit.to as string) } : t))
+    } else if (edit.action === 'column' && edit.to) {
+      const key = slug(edit.to).replace(/-/g, '_')
+      tables = tables.map((t) => (same(t, edit.page) && !t.columns.some((c) => c.key === key) ? { ...t, columns: [...t.columns, col(key, title(edit.to as string))], rows: t.rows.map((r) => ({ ...r, [key]: '' })) } : t))
+    } else if (edit.action === 'add' && !tables.some((t) => same(t, edit.page))) {
+      const label = title(edit.page)
+      tables = [...tables, table(slug(edit.page), label, label.replace(/s$/i, '').toLowerCase(), 'list', [col('name', 'Name'), col('details', 'Details'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'In progress', 'Done'])], toRows(5, () => ({ name: g.name(), details: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done']) }), g))]
+    }
+  }
   return { brand, slug: slug(brand), kpis, chart, tables }
 }

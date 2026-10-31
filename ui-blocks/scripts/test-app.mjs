@@ -53,5 +53,25 @@ ok(!parseEdit('login button ka color blue karo', 'single').ops?.some((o) => o.op
 const withApp = page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }]))
 ok(withApp.content.app === true && !page('Dr. Mehta dental clinic in Surat, braces, implants').content.app, 'the app is on only when it was asked for')
 
+// the pages of the dashboard, changed from the chat
+const dash = (text) => {
+  const r = parseEdit(text, 'single')
+  const lib = page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }, ...(r.kind === 'ops' ? r.ops : [])]))
+  return { r, cfg: appConfigFor(lib.content, { themeKey: lib.themeKey, niche: typeof lib.niche === 'string' ? lib.niche : lib.niche?.id }) }
+}
+{
+  const a = dash('dashboard se Billing hatao')
+  ok(!a.cfg.tables.some((t) => t.label === 'Billing') && a.cfg.tables.length === 2, 'dashboard: "Billing" is taken out of the sidebar')
+  const b = dash('dashboard me Reports page add karo')
+  ok(b.cfg.tables.some((t) => t.label === 'Reports' && t.rows.length >= 3 && t.rows.every((r) => t.columns.every((c) => c.key in r))), 'dashboard: a new "Reports" page with example rows')
+  const c = dash('dashboard me Patients ko Clients naam do')
+  ok(c.cfg.tables.some((t) => t.label === 'Clients') && !c.cfg.tables.some((t) => t.label === 'Patients'), 'dashboard: "Patients" is renamed "Clients"')
+  const d = dash('Patients table me Age column jodo')
+  ok(d.cfg.tables.find((t) => t.label === 'Patients')?.columns.some((x) => x.label === 'Age'), 'dashboard: a column "Age" is added to Patients')
+  const e = dash('add column Age to the Patients page')
+  ok(e.cfg.tables.find((t) => t.label === 'Patients')?.columns.some((x) => x.label === 'Age'), 'dashboard: "add column Age to the Patients page"')
+  ok(dash('dashboard hatao').cfg.tables.length >= 1 && !page('Dr. Mehta dental clinic in Surat, braces, implants', editsFrom([{ op: 'app', on: true }, { op: 'app', on: false }])).content.app, 'removing the dashboard turns the app off')
+}
+
 console.log(`app: ${passed} checks passed, ${failed} failed`)
 process.exit(failed ? 1 : 0)

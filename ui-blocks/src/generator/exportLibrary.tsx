@@ -67,7 +67,7 @@ async function assetFiles(sources: string[]): Promise<ZipEntry[]> {
   return found
 }
 
-const generatorSources = import.meta.glob<string>('./{*,library/*,edit/*,art/*,kits/*}.{ts,tsx}', { query: '?raw', import: 'default' })
+const generatorSources = import.meta.glob<string>('./{*,library/*,edit/*,art/*,kits/*,app/*}.{ts,tsx}', { query: '?raw', import: 'default' })
 const dataSources = import.meta.glob<string>('../data/premiumPalettes.json', { query: '?raw', import: 'default' })
 
 export async function buildLibraryProject(lib: Library): Promise<ZipEntry[]> {

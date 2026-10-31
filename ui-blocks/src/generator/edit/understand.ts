@@ -855,6 +855,34 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
   if (control) return { kind: 'control', control }
   if (isNewSite(plain)) return { kind: 'newSite' }
 
+  // a page of the dashboard: "dashboard se Billing hatao", "dashboard me Reports page add karo", "dashboard me Patients ko Clients naam do", "Patients table me Age column jodo"
+  if (/(?<![\p{L}])(?:dashboard|sidebar|admin\s+panel|user\s+panel|member\s+area)(?![\p{L}])/iu.test(plain) || /(?<![\p{L}])(?:table|page)\b.*\bcolumn\b|\bcolumn\b.*(?:table|page)/iu.test(plain)) {
+    const q = plain.match(/["“”'‘’]([^"“”'‘’]{2,40})["“”'‘’]/)?.[1]
+    const word = '([A-Za-z][A-Za-z0-9 &-]{1,28}?)'
+    const IN = '(?:me|mein|mai|in|ke\\s+andar)'
+    const colA = plain.match(new RegExp(`${word}\\s+(?:table|page|list)\\s+${IN}\\s+${word}\\s+(?:column|kolam)\\s*(?:jodo|jod|add|daalo|dalo|lagao|banao)?`, 'iu'))
+    const colB = plain.match(new RegExp(`${word}\\s+(?:table|page|list)\\s+${IN}\\s+(?:column|kolam)\\s+${word}\\s*(?:jodo|jod|add|daalo|dalo|lagao|banao)`, 'iu'))
+    const colC = plain.match(new RegExp(`(?:add|jodo|jod|daalo)\\s+(?:a\\s+)?(?:column|kolam)\\s+${word}\\s+(?:to|in|into)\\s+(?:the\\s+)?${word}(?:\\s+(?:table|page))?\\s*$`, 'iu'))
+    const col = colB ? [colB[1], colB[2]] : colA ? [colA[1], colA[2]] : colC ? [colC[2], colC[1]] : null
+    const noun = '(?:dashboard|sidebar|panel|member\\s+area|app)'
+    const rem = plain.match(new RegExp(`(?:${noun}\\s+(?:se|mein\\s+se|me\\s+se|from)\\s+(?:the\\s+)?${word}\\s+(?:page\\s+|tab\\s+|menu\\s+)?(?:ko\\s+)?(?:hatao|hata\\s+do|remove|delete|nikalo))|(?:remove|delete|hatao)\\s+(?:the\\s+)?${word}\\s+(?:page|tab|menu)?\\s*(?:from|se)\\s+(?:the\\s+)?${noun}`, 'iu'))
+    const add = plain.match(new RegExp(`${noun}\\s+(?:me|mein|mai|mein|ke\\s+andar|mai)\\s+${word}\\s+(?:page|tab|section)\\s+(?:add|jodo|jod|daalo|banao|lagao)|(?:add|create|jodo)\\s+(?:a\\s+|an\\s+)?${word}\\s+(?:page|tab)\\s+(?:to|in|into)\\s+(?:the\\s+)?${noun}`, 'iu'))
+    const ren = plain.match(new RegExp(`${noun}\\s+(?:me|mein|mai|mein|ke\\s+andar)\\s+${word}\\s+(?:ko|ka\\s+naam)\\s+${word}\\s+(?:naam\\s+do|karo|kar\\s+do|rakho|badlo)|rename\\s+(?:the\\s+)?${word}\\s+(?:page|tab)?\\s*(?:to|as)\\s+${word}\\s*(?:in|on)\\s+(?:the\\s+)?${noun}`, 'iu'))
+    const first = (m: RegExpMatchArray | null) => (m ? m.slice(1).filter(Boolean).map((x) => x.trim()) : [])
+    const clean = (x: string) => x.replace(/\s+(?:page|tab|menu)$/i, '').trim()
+    if (col) {
+      const page = clean(col[0])
+      const to = clean(col[1])
+      if (to && page) return { kind: 'ops', ops: [{ op: 'appPage', action: 'column', page, to }], notes: [] }
+    }
+    if (rem) return { kind: 'ops', ops: [{ op: 'appPage', action: 'remove', page: clean(q ?? first(rem)[0]) }], notes: [] }
+    if (add) return { kind: 'ops', ops: [{ op: 'appPage', action: 'add', page: clean(q ?? first(add)[0]) }], notes: [] }
+    if (ren) {
+      const names = first(ren)
+      if (names.length >= 2) return { kind: 'ops', ops: [{ op: 'appPage', action: 'rename', page: clean(names[0]), to: clean(names[1]) }], notes: [] }
+    }
+  }
+
   // "login aur dashboard add karo", "add register page", "remove the dashboard": the demo app of the site (log in, register, a dashboard with example data)
   const appWord = /(?<![\p{L}])(?:log\s*-?\s*in|login|sign\s*-?\s*in|signin|register|sign\s*-?\s*up|signup|dashboard|member\s+area|user\s+panel|admin\s+panel|customer\s+portal|client\s+portal)(?![\p{L}])/iu.test(plain)
   if (appWord && !/(?<![\p{L}])(?:button|link|colou?r|font|size|heading|title|text|form\s+field|newsletter|subscribe|subscription|mailing|waitlist|updates)(?![\p{L}])/iu.test(plain)) {

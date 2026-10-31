@@ -11,6 +11,8 @@ import { rewritePageLinks } from './pageLinks'
 import { LIBRARY_CSS, artColors, libraryThemeStyle } from './libraryTheme'
 import { renderWidgets } from './widgets'
 import { initWidgets } from './widgetRuntime'
+import { initApp } from '../app/appRuntime'
+import { appConfigFor } from '../app/appProfiles'
 import { sectionIds } from './sectionIds'
 import type { Role } from './libraryRoles'
 
@@ -228,6 +230,12 @@ export function ThemeScope({
       made.forEach((box) => box.remove())
     }
   }, [content, pages])
+
+  // the demo app (log in, register, a dashboard), when the person asked for it: it covers the page on its own addresses (#/login, #/app ...)
+  useLayoutEffect(() => {
+    if (!content.app || !ref.current) return
+    initApp(appConfigFor(content, { themeKey: theme }))
+  }, [content, theme])
 
   // the page of a multi-page site that is shown: the one of the address (#/about); the others are hidden (the exported site does the same with its own script)
   useLayoutEffect(() => {

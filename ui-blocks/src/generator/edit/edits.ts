@@ -123,6 +123,8 @@ export type EditOp =
   | { op: 'clearPhotos' }
   /** a demo app on the site: log in, register, a dashboard with the pages of the business (see generator/app) */
   | { op: 'app'; on: boolean }
+  /** a change to the pages of the dashboard: "dashboard se Billing hatao", "dashboard me Reports page add karo", "Patients ko Clients naam do", "Patients me column Age jodo" */
+  | { op: 'appPage'; action: 'remove' | 'add' | 'rename' | 'column'; page: string; to?: string }
   | { op: 'core'; data: CoreBlocks }
   | { op: 'concept'; data: ConceptData }
   | { op: 'tier'; tier: Tier }
@@ -188,6 +190,7 @@ export type SiteEdits = {
   concept?: ConceptData
   photos?: PhotoSet
   app?: boolean
+  appPages?: { action: 'remove' | 'add' | 'rename' | 'column'; page: string; to?: string }[]
   /** new headings of sections */
   titles: Partial<Record<TitleSection, string>>
   /** new labels of the pages in the navigation */
@@ -370,6 +373,11 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       return { op: 'clearPhotos' }
     case 'app':
       return typeof o.on === 'boolean' ? { op: 'app', on: o.on } : undefined
+    case 'appPage': {
+      const page = typeof o.page === 'string' ? o.page.trim().slice(0, 40) : ''
+      const to = typeof o.to === 'string' ? o.to.trim().slice(0, 40) : undefined
+      return (o.action === 'remove' || o.action === 'add' || o.action === 'rename' || o.action === 'column') && page.length >= 2 && (o.action !== 'rename' || (to && to.length >= 2)) ? { op: 'appPage', action: o.action, page, ...(to ? { to } : {}) } : undefined
+    }
     case 'core': {
       const data = cleanCore(o.data)
       return data ? { op: 'core', data } : undefined
@@ -556,6 +564,11 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
         break
       case 'app':
         e.app = op.on
+        if (!op.on) e.appPages = undefined
+        break
+      case 'appPage':
+        e.app = true
+        e.appPages = [...(e.appPages ?? []), { action: op.action, page: op.page, ...(op.to ? { to: op.to } : {}) }]
         break
       case 'core':
         e.core = op.data
@@ -657,6 +670,8 @@ export function describeOp(op: EditOp): string {
       return `Added photos: ${[op.hero ? 'first screen' : '', op.about ? 'about' : '', op.gallery ? `${op.gallery.length} in the gallery` : ''].filter(Boolean).join(', ')}`
     case 'clearPhotos':
       return 'Removed the photos'
+    case 'appPage':
+      return op.action === 'remove' ? `Removed "${op.page}" from the dashboard` : op.action === 'add' ? `Added a "${op.page}" page to the dashboard` : op.action === 'rename' ? `Renamed "${op.page}" to "${op.to}" in the dashboard` : `Added the column "${op.to ?? op.page}" to the dashboard page`
     case 'app':
       return op.on ? 'Added a login, a register page and a dashboard (demo, no backend)' : 'Removed the login and the dashboard'
     case 'concept':
