@@ -3,6 +3,7 @@
 // Every choice (colour palette, headline set, navbar, hero, features layout, optional sections)
 // comes from a seeded random generator, so the same prompt always gives the same page, while
 // different prompts - or a different `variation` number - give a different one.
+import { stripAppRequest } from './app/appIntent'
 import { namesColor, thinkColors } from './colorBrain'
 import { harmonisePalette } from './colorHarmony'
 import type { ConceptData } from './edit/edits'
@@ -201,7 +202,8 @@ export function generateWebsite(
   /** changes the person asked for (see edit/edits.ts) */
   edits?: SiteEdits,
 ) {
-  const plan = planWebsite(userPrompt, variation, tierOverride, creative, motionSetting, { edits })
+  // (the words about a login and a dashboard are not about the business: the demo app is asked for apart from the description)
+  const plan = planWebsite(stripAppRequest(userPrompt), variation, tierOverride, creative, motionSetting, { edits })
   const { theme, content, tokens, initialMode, tier, motion, choice } = plan
   const layoutIds = orderLayout(filterLayout(buildLayout(choice), edits), edits)
   // sizes and alignments of single parts ("make the pricing section shorter")

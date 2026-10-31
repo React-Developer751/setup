@@ -15,6 +15,7 @@ import LeadsPanel from './LeadsPanel'
 import PhotosPanel from './PhotosPanel'
 import { creatorSceneKey, scenePlan } from './generator/imageAi'
 import { appKindOf, type AppKind } from './generator/app/appProfiles'
+import { appIntent, stripAppRequest } from './generator/app/appIntent'
 import ProjectsPanel from './ProjectsPanel'
 import { saveRemote, deleteRemote } from './generator/projectSync'
 import { deleteProject, forgetSession, lastSession, listProjects, rememberSession, saveProject, type Project, type Snapshot } from './generator/projects'
@@ -157,6 +158,8 @@ function GeneratorPage() {
   const fresh = useRef('')
   // the name the person kept although the generator made it up (they pressed "Keep")
   const [keptName, setKeptName] = useState('')
+  /** what the first prompt said about a login and a dashboard (on: asked for, off: refused, undefined: nothing said: only an offer in the chat) */
+  const appPref = useRef<'on' | 'off' | undefined>(undefined)
   const [barName, setBarName] = useState('')
   const messageId = useRef(0)
   // a question of the chat that waits for a typed value (a name, a business type ...)
@@ -368,8 +371,12 @@ function GeneratorPage() {
     setPages(next)
     setRoute('/')
   }
-  const generate = async (text: string) => {
-    if (!text.trim()) return
+  const generate = async (raw: string) => {
+    if (!raw.trim()) return
+    // "gym with login and dashboard": the demo app is asked for in the first prompt; the business is described by the rest
+    const text = stripAppRequest(raw)
+    const wantsApp = appIntent(raw) === 'on'
+    appPref.current = appIntent(raw)
     // a new site: the files the person changed belonged to the old one
     setCodeEdits({})
     setCodeNote('')
@@ -408,7 +415,8 @@ function GeneratorPage() {
     messageId.current += recognised ? 2 : 1
     // "a gym with a booking form and a map": the working parts the prompt asks for are there from the start (only those that need no more from the person)
     const asked = (widgetOps(text)?.ops ?? []).filter((o) => o.op === 'widget' && (!!o.widget.value || ['booking', 'order', 'newsletter'].includes(o.widget.kind)))
-    setHistory([...(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : []), ...(asked.length ? [{ text: 'From your prompt', ops: asked }] : [])])
+    setHistory([...(plan.ops.length ? [{ text: DESIGN_COLOUR, ops: plan.ops }] : []), ...(asked.length ? [{ text: 'From your prompt', ops: asked }] : []), ...(wantsApp ? [{ text: 'From your prompt', ops: [{ op: 'app' as const, on: true }] }] : [])])
+    if (wantsApp) say({ role: 'ai', text: 'You asked for a login and a dashboard in the prompt, so the site has them: press "Log in" in the menu (a demo with example data, no backend).' })
     if (asked.length) say({ role: 'ai', text: 'You asked for these in the prompt, so they are on the page already.', ops: asked })
     setVariation(plan.variation)
     setRuns((n) => n + 1)
@@ -486,7 +494,7 @@ function GeneratorPage() {
     const claims = claimsToCheck(prompt, content)
     if (claims) say({ role: 'ai', text: claims.text, choices: claimChoices(claims, content) })
     // software, learning, a gym, a clinic ...: a member or customer area is likely wanted: it is offered once (never added by itself)
-    if (!content.app && APP_OFFER.has(appKindOf({ themeKey, niche: typeof niche === 'string' ? niche : (niche as { id?: string } | undefined)?.id, subject: content.subject, voice: content.voice, prompt }))) {
+    if (!content.app && appPref.current === undefined && APP_OFFER.has(appKindOf({ themeKey, niche: typeof niche === 'string' ? niche : (niche as { id?: string } | undefined)?.id, subject: content.subject, voice: content.voice, prompt }))) {
       say({ role: 'ai', text: 'A site like this often needs a login and a dashboard. I can add a demo one: log in, register and a dashboard with example data for your kind of business (no backend: it all stays in the browser). Add it?', choices: [{ label: 'Add login and dashboard', ops: [{ op: 'app', on: true }] }, { label: 'Not now', action: 'dismiss' }] })
     }
     // (only a fresh site: opening an old project does not ask again)

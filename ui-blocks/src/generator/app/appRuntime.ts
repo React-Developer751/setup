@@ -419,8 +419,11 @@ export function initApp(cfg: AppConfig): void {
         const { rows, mapped } = csvToRows(t, parseCsv(String(reader.result ?? '')))
         if (!rows.length) notice = 'No rows were found in that file. The first line should name the columns: ' + t.columns.map((c) => c.label).join(', ') + '.'
         else {
-          write(K(`t:${t.id}`), [...rows, ...rowsOf(t)])
-          notice = `Added ${rows.length} row${rows.length === 1 ? '' : 's'} from ${file.name} (${mapped} of ${t.columns.length} columns matched).`
+          const have = rowsOf(t)
+          // rows are already there: replace them or put the new ones in front
+          const replace = have.length > 0 && window.confirm(`Replace the ${have.length} rows that are there with the ${rows.length} from the file?\n\nOK = replace them\nCancel = add the new rows in front of them`)
+          write(K(`t:${t.id}`), replace ? rows : [...rows, ...have])
+          notice = `${replace ? 'Replaced the rows with' : 'Added'} ${rows.length} row${rows.length === 1 ? '' : 's'} from ${file.name} (${mapped} of ${t.columns.length} columns matched).`
         }
         render()
       }
