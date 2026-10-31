@@ -28,7 +28,9 @@ const HINGLISH = new Set(['mere', 'meri', 'mera', 'ke', 'ki', 'ka', 'liye', 'ban
 
 
 // words that end the business description: "boutique hotel that offers ..." -> "boutique hotel"
-const CUT_WORDS = /\s+(?:that|which|who|whose|where|offers?|offering|with|having|has|and\s+has|jo|ke\s+liye)\b[\s\S]*$/i
+const CUT_WORDS = /\s+(?:that|which|who|whose|where|offers?|offering|with|having|has|and\s+has|jo|ke\s+liye|selling|sells|providing|provides|dealing|specialising|specializing|serving|growing)\b[\s\S]*$/i
+// "indie game studio making pixel art games" is a studio; "kite making workshop" is a workshop (the word "making" cuts only after a kind of business)
+const CUT_AFTER_BUSINESS = /(?<=\b(?:studio|company|firm|agency|shop|store|team|farm|factory|brand|house|lab|labs|startup))\s+(?:making|makes|creating|building)\b[\s\S]*$/i
 
 /** "gym Iron Pulse" has no "called", but "Iron Pulse" is clearly the name: capitalised words inside the prompt. */
 function nameFromCapitals(rawPrompt: string) {
@@ -40,6 +42,8 @@ function nameFromCapitals(rawPrompt: string) {
     while (parts.length > 1 && NOT_A_NAME.has(parts[parts.length - 1].toLowerCase())) parts = parts.slice(0, -1)
     const words = parts.filter((w) => !NOT_A_NAME.has(w.toLowerCase()))
     if (!words.length || words.length !== parts.length) continue
+    // a capitalised word after "in / at / near" is the place ("beekeeping farm in Coorg"), not the name
+    if (/(?:^|\s)(?:in|at|near|from|around|across|of|to|based\s+in)\s+$/i.test(userPrompt.slice(0, match.index))) continue
     // at the very start of the prompt a single capitalised word is just the first word of a sentence
     if (match.index === 0 && words.length < 2) continue
     // an acronym after "for" or "of" ("coaching institute for UPSC", "classes for NEET") is what the business teaches, not its name
@@ -60,6 +64,7 @@ const clean = (raw: string) =>
     // "yoga studio in Jaipur" / "plumber near me": the place is not part of the business
     .replace(/\s+(?:in|at|near|around)\s+\S[\s\S]*$/i, '')
     .replace(CUT_WORDS, '')
+    .replace(CUT_AFTER_BUSINESS, '')
     .replace(/\b(?:web\s*site|landing\s+page|page|site)\s*$/i, '')
     .replace(/\s+/g, ' ')
     .trim()
@@ -79,7 +84,8 @@ function subjectFromBusinessWords(userPrompt: string) {
 
 /** What the site is about: "organic green tea cafe" from "... for an organic green tea cafe named Leafy". */
 function extractSubject(userPrompt: string) {
-  const withoutName = userPrompt.replace(/\b(?:called|named)\b[\s\S]*$/i, ' ')
+  // "astrology and tarot readings by Meera": the person after "by" is the name, the subject is what comes before
+  const withoutName = userPrompt.replace(/\b(?:called|named)\b[\s\S]*$/i, ' ').replace(/\s+by\s+[A-Z][\p{L}'-]+(?:\s+[A-Z][\p{L}'-]+)?(?=\s*[,.;]|\s*$)/u, ' ')
   const hinglish = withoutName.toLowerCase().split(/[^a-z]+/).some((w) => HINGLISH.has(w) && w.length > 2)
   const afterFor = withoutName.match(/\b(?:web\s*site|landing\s+page|page|site)\s+(?:for|of)\s+(?:an?\s+|the\s+|my\s+|our\s+)?([^,.]+)/i)?.[1] ?? withoutName.slice(0, 40).match(/\bfor\s+(?:an?\s+|the\s+|my\s+|our\s+)?([^,.]+)/i)?.[1]
   const stripped = withoutName.replace(
@@ -90,7 +96,7 @@ function extractSubject(userPrompt: string) {
   const beforeFor = stripped.split(/\s+for\s+/i)[0].trim()
   const afterHasBusiness = (afterFor ?? '').split(/\W+/).some(isBusinessWord)
   // "invoice software for small businesses": the product is in front of "for" (what is sold), the businesses after it are the customers
-  const productBefore = beforeFor !== stripped.trim() && /\b(?:software|app|application|tool|platform|system|saas|crm|erp|portal|dashboard|plugin|extension|solution)$/i.test(beforeFor)
+  const productBefore = beforeFor !== stripped.trim() && /\b(?:software|app|application|tool|platform|system|saas|crm|erp|portal|dashboard|plugin|extension|solution|services?)$/i.test(beforeFor) && beforeFor.split(/\s+/).length >= 2
   const lead = afterFor && productBefore ? beforeFor : afterFor && !afterHasBusiness && beforeFor !== stripped.trim() && beforeFor.split(/\W+/).some(isBusinessWord) ? beforeFor : afterFor
   const candidates = hinglish ? [] : [lead, stripped]
   for (const candidate of candidates) {
@@ -146,7 +152,7 @@ function inventPlainName(subject: string, userPrompt: string, themeKey?: string,
   const words = subject.split(/\s+/).filter((w) => w && !GENERIC_TAIL.has(w))
   const last = words.pop() ?? ''
   // "car rental company" -> "car rental"; "bakery" -> "bakery"; "dentist" -> "dental"
-  const head = PERSON_TO_PLACE[last] ?? (PLACES.has(last) || isBusinessWord(last) ? [...words.slice(-1), last].join(' ') : '')
+  const head = PERSON_TO_PLACE[last] ?? (PLACES.has(last) || isBusinessWord(last) ? ([...words.slice(-2), last].join(' ').length <= 22 && words.length >= 2 ? [...words.slice(-2), last] : [...words.slice(-1), last]).join(' ') : '')
   const seed = [...userPrompt.toLowerCase()].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7)
   if (!head || head.length > 22 || !/^[a-z' -]+$/.test(head)) {
     // nothing usable in the prompt: the business type still says what it is

@@ -60,7 +60,7 @@ ok(ops('menu ko right side karo').some((o) => o.op === 'align' && o.target === '
 ok(!ops('menu mein Services ko Classes naam do').some((o) => o.op === 'align'), 'renaming a menu item is not an alignment')
 
 // ── things that do not exist: an answer, and no other change
-const cannot = ['instagram link add karo', 'footer mein instagram link add karo', 'cookie banner hatao', 'chat widget lagao', 'heading bold karo', 'italic karo', 'letter spacing badhao', 'shadow hatao', 'gradient lagao hero par', 'border add karo', 'sections ke beech divider lagao', 'pricing plans ka price 999 karo', 'cards ka color white karo']
+const cannot = ['instagram link add karo', 'footer mein instagram link add karo', 'cookie banner hatao', 'chat widget lagao', 'letter spacing badhao', 'shadow hatao', 'gradient lagao hero par', 'border add karo', 'sections ke beech divider lagao', 'pricing plans ka price 999 karo', 'cards ka color white karo']
 for (const text of cannot) {
   ok(ops(text).length === 0 && notes(text).length > 20, `"${text}" gets an answer and no wrong edit (${JSON.stringify(ops(text)).slice(0, 80)})`)
 }

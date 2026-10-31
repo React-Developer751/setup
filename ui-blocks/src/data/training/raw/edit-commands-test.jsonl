@@ -1,260 +1,260 @@
-{"text":"rename it to Green Leaf","context":"single","expect":{"ops":[{"op":"rename","name":"Green Leaf"}]}}
-{"text":"naam Sharma Sweets rakho","context":"single","expect":{"ops":[{"op":"rename","name":"Sharma Sweets"}]}}
-{"text":"call the shop Blue Bird","context":"multi","expect":{"ops":[{"op":"rename","name":"Blue Bird"}]}}
-{"text":"Business name Ravi Electricals kar do","context":"multi","expect":{"ops":[{"op":"rename","name":"Ravi Electricals"}]}}
-{"text":"pls change the name to Spice Route","context":"single","expect":{"ops":[{"op":"rename","name":"Spice Route"}]}}
-{"text":"mera business ka naam \"Anand Dental Care\" rakh do","context":"single","expect":{"ops":[{"op":"rename","name":"Anand Dental Care"}]}}
-{"text":"rename to Urban Nest","context":"multi","expect":{"ops":[{"op":"rename","name":"Urban Nest"}]}}
-{"text":"change brand name to Kapoor & Sons","context":"single","expect":{"ops":[{"op":"rename","name":"Kapoor & Sons"}]}}
-{"text":"shop ka naam Gupta Tea Stall kar do bhai","context":"multi","expect":{"ops":[{"op":"rename","name":"Gupta Tea Stall"}]}}
-{"text":"name it FitZone Gym","context":"single","expect":{"ops":[{"op":"rename","name":"FitZone Gym"}]}}
-{"text":"plz rename website as Lotus Yoga Studio","context":"multi","expect":{"ops":[{"op":"rename","name":"Lotus Yoga Studio"}]}}
-{"text":"naam badal ke Mehta Jewellers kar do","context":"single","expect":{"ops":[{"op":"rename","name":"Mehta Jewellers"}]}}
-{"text":"Could you please change the business name to Harbour Bakery? Thank you so much","context":"multi","expect":{"ops":[{"op":"rename","name":"Harbour Bakery"}]}}
-{"text":"नाम बदलकर श्री साईं स्वीट्स रखो","context":"single","expect":{"ops":[{"op":"rename","name":"श्री साईं स्वीट्स"}]}}
-{"text":"brand ka naam Taj Tailors rakhna hai","context":"multi","expect":{"ops":[{"op":"rename","name":"Taj Tailors"}]}}
-{"text":"call it Oak & Ivy","context":"single","expect":{"ops":[{"op":"rename","name":"Oak & Ivy"}]}}
-{"text":"renmae it to Cloud Nine Salon","context":"single","expect":{"ops":[{"op":"rename","name":"Cloud Nine Salon"}]}}
-{"text":"company name should be Bright Minds Academy","context":"multi","expect":{"ops":[{"op":"rename","name":"Bright Minds Academy"}]}}
-{"text":"naam Pooja Boutique rakh do","context":"single","expect":{"ops":[{"op":"rename","name":"Pooja Boutique"}]}}
-{"text":"change my business name to Sunrise Pharmacy","context":"multi","expect":{"ops":[{"op":"rename","name":"Sunrise Pharmacy"}]}}
-{"text":"hello, my shop is called Deepak Hardware, please put that name on the site instead of the current one","context":"single","expect":{"ops":[{"op":"rename","name":"Deepak Hardware"}]}}
-{"text":"make the buttons blue","context":"single","expect":{"ops":[{"op":"accent","hex":"#2563eb"}]}}
-{"text":"theme colour red karo","context":"multi","expect":{"ops":[{"op":"accent","hex":"#dc2626"}]}}
-{"text":"use #ff6600","context":"single","expect":{"ops":[{"op":"accent","hex":"#ff6600"}]}}
-{"text":"buttons ka color hara kar do","context":"multi","expect":{"ops":[{"op":"accent","hex":"#16a34a"}]}}
-{"text":"I want orange buttons","context":"single","expect":{"ops":[{"op":"accent","hex":"#ea580c"}]}}
-{"text":"colour neela chahiye","context":"single","expect":{"ops":[{"op":"accent","hex":"#2563eb"}]}}
-{"text":"change the theme to teal","context":"multi","expect":{"ops":[{"op":"accent","hex":"#0d9488"}]}}
-{"text":"make links purple","context":"single","expect":{"ops":[{"op":"accent","hex":"#7c3aed"}]}}
-{"text":"use #1A2B3C as the main colour","context":"multi","expect":{"ops":[{"op":"accent","hex":"#1a2b3c"}]}}
-{"text":"gulabi color lagao","context":"single","expect":{"ops":[{"op":"accent","hex":"#ec4899"}]}}
-{"text":"golden color karo buttons ka","context":"single","expect":{"ops":[{"op":"accent","hex":"#ca8a04"}]}}
-{"text":"sky blue theme please","context":"multi","expect":{"ops":[{"op":"accent","hex":"#0ea5e9"}]}}
-{"text":"navy blue buttons","context":"single","expect":{"ops":[{"op":"accent","hex":"#1e3a8a"}]}}
-{"text":"lal rang kar do","context":"multi","expect":{"ops":[{"op":"accent","hex":"#dc2626"}]}}
-{"text":"peela rang chahiye website me","context":"single","expect":{"ops":[{"op":"accent","hex":"#eab308"}]}}
-{"text":"maroon theme","context":"single","expect":{"ops":[{"op":"accent","hex":"#991b1b"}]}}
-{"text":"make it more vibrant","context":"single","expect":{"ops":[{"op":"tone","tone":"vibrant"}]}}
-{"text":"thoda warm colors chahiye","context":"multi","expect":{"ops":[{"op":"tone","tone":"warmer"}]}}
-{"text":"cooler colours please","context":"single","expect":{"ops":[{"op":"tone","tone":"cooler"}]}}
-{"text":"thanda color scheme karo","context":"multi","expect":{"ops":[{"op":"tone","tone":"cooler"}]}}
-{"text":"colors soft pastel type kar do","context":"single","expect":{"ops":[{"op":"tone","tone":"muted"}]}}
-{"text":"make the colours darker","context":"multi","expect":{"ops":[{"op":"tone","tone":"darker"}]}}
-{"text":"halka color rakho","context":"single","expect":{"ops":[{"op":"tone","tone":"lighter"}]}}
-{"text":"bold colourful look","context":"single","expect":{"ops":[{"op":"tone","tone":"vibrant"}]}}
-{"text":"gehra color chahiye","context":"multi","expect":{"ops":[{"op":"tone","tone":"darker"}]}}
-{"text":"use hex #00AA88","context":"single","expect":{"ops":[{"op":"accent","hex":"#00aa88"}]}}
-{"text":"brown buttons","context":"single","expect":{"ops":[{"op":"accent","hex":"#92400e"}]}}
-{"text":"lime colour karo","context":"multi","expect":{"ops":[{"op":"accent","hex":"#84cc16"}]}}
-{"text":"coral color use karo","context":"single","expect":{"ops":[{"op":"accent","hex":"#f87171"}]}}
-{"text":"magenta buttons please","context":"multi","expect":{"ops":[{"op":"accent","hex":"#c026d3"}]}}
-{"text":"नीला रंग कर दो","context":"single","expect":{"ops":[{"op":"accent","hex":"#2563eb"}]}}
-{"text":"बटन हरा कर दो","context":"multi","expect":{"ops":[{"op":"accent","hex":"#16a34a"}]}}
-{"text":"aasmani color theme karo","context":"single","expect":{"ops":[{"op":"accent","hex":"#0ea5e9"}]}}
-{"text":"the colours are too loud, make them softer and more subtle","context":"single","expect":{"ops":[{"op":"tone","tone":"muted"}]}}
-{"text":"dark mode default karo","context":"single","expect":{"ops":[{"op":"mode","mode":"dark"}]}}
-{"text":"make it light","context":"multi","expect":{"ops":[{"op":"mode","mode":"light"}]}}
-{"text":"light mode chahiye","context":"multi","expect":{"ops":[{"op":"mode","mode":"light"}]}}
-{"text":"start in dark mode","context":"single","expect":{"ops":[{"op":"mode","mode":"dark"}]}}
-{"text":"dark mode on kar do","context":"multi","expect":{"ops":[{"op":"mode","mode":"dark"}]}}
-{"text":"डार्क मोड रखो","context":"single","expect":{"ops":[{"op":"mode","mode":"dark"}]}}
-{"text":"लाइट मोड कर दो","context":"multi","expect":{"ops":[{"op":"mode","mode":"light"}]}}
-{"text":"remove the FAQ","context":"single","expect":{"ops":[{"op":"remove","section":"faq"}]}}
-{"text":"testimonials mat dikhao","context":"single","expect":{"ops":[{"op":"remove","section":"testimonials"}]}}
-{"text":"gallery hata do","context":"single","expect":{"ops":[{"op":"remove","section":"gallery"}]}}
-{"text":"delete the blog","context":"single","expect":{"ops":[{"op":"remove","section":"blog"}]}}
-{"text":"stats section nahi chahiye","context":"single","expect":{"ops":[{"op":"remove","section":"stats"}]}}
-{"text":"remove the scrolling strip","context":"single","expect":{"ops":[{"op":"remove","section":"marquee"}]}}
-{"text":"how it works hata do","context":"single","expect":{"ops":[{"op":"remove","section":"steps"}]}}
-{"text":"team section remove karo","context":"single","expect":{"ops":[{"op":"remove","section":"team"}]}}
-{"text":"pricing hatao","context":"single","expect":{"ops":[{"op":"remove","section":"pricing"}]}}
-{"text":"hide the reviews","context":"single","expect":{"ops":[{"op":"remove","section":"testimonials"}]}}
-{"text":"about us nahi chahiye","context":"single","expect":{"ops":[{"op":"remove","section":"about"}]}}
-{"text":"remove the call to action banner","context":"single","expect":{"ops":[{"op":"remove","section":"cta"}]}}
-{"text":"remove contact","context":"single","expect":{"ops":[]}}
-{"text":"pricing page hatao","context":"multi","expect":{"ops":[{"op":"removePage","page":"pricing"},{"op":"remove","section":"pricing"}]}}
-{"text":"remove the blog page","context":"multi","expect":{"ops":[{"op":"removePage","page":"blog"},{"op":"remove","section":"blog"}]}}
-{"text":"gallery hata do","context":"multi","expect":{"ops":[{"op":"removePage","page":"gallery"},{"op":"remove","section":"gallery"}]}}
-{"text":"delete the FAQ page","context":"multi","expect":{"ops":[{"op":"removePage","page":"faq"},{"op":"remove","section":"faq"}]}}
-{"text":"team page remove karo","context":"multi","expect":{"ops":[{"op":"removePage","page":"team"},{"op":"remove","section":"team"}]}}
-{"text":"remove about us page","context":"multi","expect":{"ops":[{"op":"removePage","page":"about"},{"op":"remove","section":"about"}]}}
-{"text":"services page nahi chahiye","context":"multi","expect":{"ops":[{"op":"removePage","page":"services"},{"op":"remove","section":"features"}]}}
-{"text":"remove testimonials","context":"multi","expect":{"ops":[{"op":"remove","section":"testimonials"}]}}
-{"text":"stats hata do","context":"multi","expect":{"ops":[{"op":"remove","section":"stats"}]}}
-{"text":"remove how it works","context":"multi","expect":{"ops":[{"op":"remove","section":"steps"}]}}
-{"text":"remove contact","context":"multi","expect":{"ops":[]}}
-{"text":"contact page delete karo","context":"multi","expect":{"ops":[]}}
-{"text":"ticker remove kar do","context":"multi","expect":{"ops":[{"op":"remove","section":"marquee"}]}}
-{"text":"cta banner remove","context":"multi","expect":{"ops":[{"op":"remove","section":"cta"}]}}
-{"text":"remove the FAQ","context":"multi","expect":{"ops":[{"op":"removePage","page":"faq"},{"op":"remove","section":"faq"}]}}
-{"text":"FAQ हटा दो","context":"single","expect":{"ops":[{"op":"remove","section":"faq"}]}}
-{"text":"गैलरी हटाओ","context":"multi","expect":{"ops":[{"op":"removePage","page":"gallery"},{"op":"remove","section":"gallery"}]}}
-{"text":"प्राइसिंग हटाओ","context":"single","expect":{"ops":[{"op":"remove","section":"pricing"}]}}
-{"text":"pls remove the photos section, we dont have good pics yet","context":"single","expect":{"ops":[{"op":"remove","section":"gallery"}]}}
-{"text":"rates wala page hata dijiye","context":"multi","expect":{"ops":[{"op":"removePage","page":"pricing"},{"op":"remove","section":"pricing"}]}}
-{"text":"our story hata do","context":"multi","expect":{"ops":[{"op":"removePage","page":"about"},{"op":"remove","section":"about"}]}}
-{"text":"add a gallery","context":"single","expect":{"ops":[{"op":"add","section":"gallery"}]}}
-{"text":"FAQ bhi daalo","context":"single","expect":{"ops":[{"op":"add","section":"faq"}]}}
-{"text":"I want a pricing section","context":"single","expect":{"ops":[{"op":"add","section":"pricing"}]}}
-{"text":"team add karo","context":"single","expect":{"ops":[{"op":"add","section":"team"}]}}
-{"text":"show testimonials","context":"single","expect":{"ops":[{"op":"add","section":"testimonials"}]}}
-{"text":"blog bhi chahiye","context":"single","expect":{"ops":[{"op":"add","section":"blog"}]}}
-{"text":"add a how it works section","context":"single","expect":{"ops":[{"op":"add","section":"steps"}]}}
-{"text":"add contact form","context":"single","expect":{"ops":[{"op":"add","section":"contact"}]}}
-{"text":"add a scrolling ticker","context":"single","expect":{"ops":[{"op":"add","section":"marquee"}]}}
-{"text":"about us daal do","context":"single","expect":{"ops":[{"op":"add","section":"about"}]}}
-{"text":"services bhi dikhao","context":"single","expect":{"ops":[{"op":"add","section":"features"}]}}
-{"text":"add a cta banner","context":"single","expect":{"ops":[{"op":"add","section":"cta"}]}}
-{"text":"team page add karo","context":"multi","expect":{"ops":[{"op":"addPage","page":"team"},{"op":"add","section":"team"}]}}
-{"text":"add a gallery page","context":"multi","expect":{"ops":[{"op":"addPage","page":"gallery"},{"op":"add","section":"gallery"}]}}
-{"text":"I want pricing","context":"multi","expect":{"ops":[{"op":"addPage","page":"pricing"},{"op":"add","section":"pricing"}]}}
-{"text":"add blog","context":"multi","expect":{"ops":[{"op":"addPage","page":"blog"},{"op":"add","section":"blog"}]}}
-{"text":"FAQ page daalo","context":"multi","expect":{"ops":[{"op":"addPage","page":"faq"},{"op":"add","section":"faq"}]}}
-{"text":"add about us page","context":"multi","expect":{"ops":[{"op":"addPage","page":"about"},{"op":"add","section":"about"}]}}
-{"text":"add services page","context":"multi","expect":{"ops":[{"op":"addPage","page":"services"},{"op":"add","section":"features"}]}}
-{"text":"add reviews","context":"multi","expect":{"ops":[{"op":"add","section":"testimonials"}]}}
-{"text":"stats counters add karo","context":"multi","expect":{"ops":[{"op":"add","section":"stats"}]}}
-{"text":"add contact section","context":"multi","expect":{"ops":[{"op":"add","section":"contact"}]}}
-{"text":"how it works add karo","context":"multi","expect":{"ops":[{"op":"add","section":"steps"}]}}
-{"text":"add a FAQ","context":"multi","expect":{"ops":[{"op":"addPage","page":"faq"},{"op":"add","section":"faq"}]}}
-{"text":"गैलरी जोड़ो","context":"single","expect":{"ops":[{"op":"add","section":"gallery"}]}}
-{"text":"photos wala page bhi banao","context":"multi","expect":{"ops":[{"op":"addPage","page":"gallery"},{"op":"add","section":"gallery"}]}}
-{"text":"change the main headline to Fresh Every Day","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Fresh Every Day"}]}}
-{"text":"button par Order Now likho","context":"single","expect":{"ops":[{"op":"text","field":"heroButton","text":"Order Now"}]}}
-{"text":"hero subtitle: Baked with love","context":"multi","expect":{"ops":[{"op":"text","field":"heroSubtitle","text":"Baked with love"}]}}
-{"text":"headline: Best Biryani in Town","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Best Biryani in Town"}]}}
-{"text":"set the tagline to Quality You Can Trust","context":"multi","expect":{"ops":[{"op":"text","field":"heroSubtitle","text":"Quality You Can Trust"}]}}
-{"text":"make the hero button say Book a Table","context":"single","expect":{"ops":[{"op":"text","field":"heroButton","text":"Book a Table"}]}}
-{"text":"change the services section title to What We Offer","context":"multi","expect":{"ops":[{"op":"text","field":"featuresTitle","text":"What We Offer"}]}}
-{"text":"about title: Our Story","context":"single","expect":{"ops":[{"op":"text","field":"aboutTitle","text":"Our Story"}]}}
-{"text":"CTA banner title ko Join Us Today kar do","context":"single","expect":{"ops":[{"op":"text","field":"ctaTitle","text":"Join Us Today"}]}}
-{"text":"contact heading: Reach Out To Us","context":"multi","expect":{"ops":[{"op":"text","field":"contactTitle","text":"Reach Out To Us"}]}}
-{"text":"contact section heading ko Get In Touch With Us karo","context":"single","expect":{"ops":[{"op":"text","field":"contactTitle","text":"Get In Touch With Us"}]}}
-{"text":"main heading Welcome to Sharma Sweets rakho","context":"multi","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Welcome to Sharma Sweets"}]}}
-{"text":"subtitle me likho Pure ghee, pure taste","context":"single","expect":{"ops":[{"op":"text","field":"heroSubtitle","text":"Pure ghee, pure taste"}]}}
-{"text":"button ka text Call Now kar do","context":"multi","expect":{"ops":[{"op":"text","field":"heroButton","text":"Call Now"}]}}
-{"text":"heading badal ke Naya Savera karo","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Naya Savera"}]}}
-{"text":"sub heading: Open 7 days a week","context":"multi","expect":{"ops":[{"op":"text","field":"heroSubtitle","text":"Open 7 days a week"}]}}
-{"text":"change the button to Get a Quote","context":"single","expect":{"ops":[{"op":"text","field":"heroButton","text":"Get a Quote"}]}}
-{"text":"title of the page should be Your Smile, Our Priority","context":"multi","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Your Smile, Our Priority"}]}}
-{"text":"call to action title: Start Your Journey Today","context":"single","expect":{"ops":[{"op":"text","field":"ctaTitle","text":"Start Your Journey Today"}]}}
-{"text":"about heading ko About Our Family karo","context":"multi","expect":{"ops":[{"op":"text","field":"aboutTitle","text":"About Our Family"}]}}
-{"text":"मुख्य हेडलाइन बदलकर ताज़ा और स्वादिष्ट करो","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"ताज़ा और स्वादिष्ट"}]}}
-{"text":"बटन पर अभी ऑर्डर करें लिखो","context":"multi","expect":{"ops":[{"op":"text","field":"heroButton","text":"अभी ऑर्डर करें"}]}}
-{"text":"features section ka title Our Menu rakho","context":"single","expect":{"ops":[{"op":"text","field":"featuresTitle","text":"Our Menu"}]}}
-{"text":"hi, could you set the subheading under the headline to \"Handcrafted furniture for modern homes\", thanks","context":"single","expect":{"ops":[{"op":"text","field":"heroSubtitle","text":"Handcrafted furniture for modern homes"}]}}
-{"text":"hero title ko \"Glow Up Your Skin\" kar do","context":"multi","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Glow Up Your Skin"}]}}
-{"text":"main button label: Join Now","context":"single","expect":{"ops":[{"op":"text","field":"heroButton","text":"Join Now"}]}}
-{"text":"services title ko Our Treatments kar do","context":"multi","expect":{"ops":[{"op":"text","field":"featuresTitle","text":"Our Treatments"}]}}
-{"text":"contact title: Visit Us Today","context":"single","expect":{"ops":[{"op":"text","field":"contactTitle","text":"Visit Us Today"}]}}
-{"text":"replace coaches with trainers","context":"single","expect":{"ops":[{"op":"replace","from":"coaches","to":"trainers"}]}}
-{"text":"'cafe' ki jagah 'bistro' likho","context":"multi","expect":{"ops":[{"op":"replace","from":"cafe","to":"bistro"}]}}
-{"text":"change every Gym to Fitness Club","context":"single","expect":{"ops":[{"op":"replace","from":"Gym","to":"Fitness Club"}]}}
-{"text":"replace patients with clients","context":"multi","expect":{"ops":[{"op":"replace","from":"patients","to":"clients"}]}}
-{"text":"customers ko guests se badal do","context":"single","expect":{"ops":[{"op":"replace","from":"customers","to":"guests"}]}}
-{"text":"swap 'salon' for 'studio'","context":"multi","expect":{"ops":[{"op":"replace","from":"salon","to":"studio"}]}}
-{"text":"jahan bhi doctor likha hai wahan physician likho","context":"single","expect":{"ops":[{"op":"replace","from":"doctor","to":"physician"}]}}
-{"text":"replace Mumbai with Pune everywhere","context":"multi","expect":{"ops":[{"op":"replace","from":"Mumbai","to":"Pune"}]}}
-{"text":"'students' ki jagah 'learners' kar do","context":"single","expect":{"ops":[{"op":"replace","from":"students","to":"learners"}]}}
-{"text":"replace chefs by cooks","context":"multi","expect":{"ops":[{"op":"replace","from":"chefs","to":"cooks"}]}}
-{"text":"instead of 'shop' write 'store'","context":"single","expect":{"ops":[{"op":"replace","from":"shop","to":"store"}]}}
-{"text":"सब जगह 'ग्राहक' की जगह 'मेहमान' लिखो","context":"multi","expect":{"ops":[{"op":"replace","from":"ग्राहक","to":"मेहमान"}]}}
-{"text":"change the word classes to sessions","context":"single","expect":{"ops":[{"op":"replace","from":"classes","to":"sessions"}]}}
-{"text":"all 'rooms' to 'suites' please","context":"multi","expect":{"ops":[{"op":"replace","from":"rooms","to":"suites"}]}}
-{"text":"Delhi ki jagah Jaipur likho","context":"single","expect":{"ops":[{"op":"replace","from":"Delhi","to":"Jaipur"}]}}
-{"text":"email hello@abc.com rakho","context":"single","expect":{"ops":[{"op":"contact","field":"email","value":"hello@abc.com"}]}}
-{"text":"my phone is 98765 43210","context":"multi","expect":{"ops":[{"op":"contact","field":"phone","value":"98765 43210"}]}}
-{"text":"address: 12 MG Road Pune","context":"single","expect":{"ops":[{"op":"contact","field":"address","value":"12 MG Road Pune"}]}}
-{"text":"contact number +91 98100 22334 daalo","context":"multi","expect":{"ops":[{"op":"contact","field":"phone","value":"+91 98100 22334"}]}}
-{"text":"mail id info@kapoorsons.in kar do","context":"single","expect":{"ops":[{"op":"contact","field":"email","value":"info@kapoorsons.in"}]}}
-{"text":"phone number 07911 123456","context":"multi","expect":{"ops":[{"op":"contact","field":"phone","value":"07911 123456"}]}}
-{"text":"call us on (555) 013-2288","context":"single","expect":{"ops":[{"op":"contact","field":"phone","value":"(555) 013-2288"}]}}
-{"text":"address change karo to Shop 4, Sector 17, Chandigarh","context":"multi","expect":{"ops":[{"op":"contact","field":"address","value":"Shop 4, Sector 17, Chandigarh"}]}}
-{"text":"mera phone number 9876543210 hai","context":"single","expect":{"ops":[{"op":"contact","field":"phone","value":"9876543210"}]}}
-{"text":"put our address as 221B Baker Street, London","context":"multi","expect":{"ops":[{"op":"contact","field":"address","value":"221B Baker Street, London"}]}}
-{"text":"email: orders@spiceroute.com","context":"single","expect":{"ops":[{"op":"contact","field":"email","value":"orders@spiceroute.com"}]}}
-{"text":"फोन नंबर 98765 11223 लिखो","context":"multi","expect":{"ops":[{"op":"contact","field":"phone","value":"98765 11223"}]}}
-{"text":"पता: 45 गांधी रोड, जयपुर","context":"single","expect":{"ops":[{"op":"contact","field":"address","value":"45 गांधी रोड, जयपुर"}]}}
-{"text":"send enquiries to bookings@zencafe.in","context":"single","expect":{"ops":[{"op":"contact","field":"email","value":"bookings@zencafe.in"}]}}
-{"text":"location is Plot 9, Banjara Hills, Hyderabad","context":"multi","expect":{"ops":[{"op":"contact","field":"address","value":"Plot 9, Banjara Hills, Hyderabad"}]}}
-{"text":"phone number change karke 011-2345 6789 kar do","context":"single","expect":{"ops":[{"op":"contact","field":"phone","value":"011-2345 6789"}]}}
-{"text":"address 5th Avenue, New York, NY 10001 daalo","context":"multi","expect":{"ops":[{"op":"contact","field":"address","value":"5th Avenue, New York, NY 10001"}]}}
-{"text":"mail pe hello@nova.store dikhao","context":"single","expect":{"ops":[{"op":"contact","field":"email","value":"hello@nova.store"}]}}
-{"text":"make it simpler","context":"single","expect":{"ops":[{"op":"tier","tier":"normal"}]}}
-{"text":"premium look do","context":"multi","expect":{"ops":[{"op":"tier","tier":"premium"}]}}
-{"text":"thoda aur fancy","context":"single","expect":{"ops":[{"op":"tier","tier":"premium"}]}}
-{"text":"luxury feel chahiye","context":"multi","expect":{"ops":[{"op":"tier","tier":"premium"}]}}
-{"text":"minimal rakho","context":"single","expect":{"ops":[{"op":"tier","tier":"normal"}]}}
-{"text":"isko better banao","context":"multi","expect":{"ops":[{"op":"tier","tier":"better"}]}}
-{"text":"basic sa rakho","context":"multi","expect":{"ops":[{"op":"tier","tier":"normal"}]}}
-{"text":"pro look chahiye","context":"single","expect":{"ops":[{"op":"tier","tier":"premium"}]}}
-{"text":"no animations","context":"single","expect":{"ops":[{"op":"motion","level":"off"}]}}
-{"text":"animation kam karo","context":"multi","expect":{"ops":[{"op":"motion","level":"subtle"}]}}
-{"text":"add more motion","context":"single","expect":{"ops":[{"op":"motion","level":"rich"}]}}
-{"text":"stop all animations","context":"multi","expect":{"ops":[{"op":"motion","level":"off"}]}}
-{"text":"animations band karo","context":"single","expect":{"ops":[{"op":"motion","level":"off"}]}}
-{"text":"animation zyada karo","context":"multi","expect":{"ops":[{"op":"motion","level":"rich"}]}}
-{"text":"little animation only","context":"single","expect":{"ops":[{"op":"motion","level":"subtle"}]}}
-{"text":"एनीमेशन बंद करो","context":"single","expect":{"ops":[{"op":"motion","level":"off"}]}}
-{"text":"this is a restaurant, not a gym","context":"single","expect":{"ops":[{"op":"theme","theme":"food_dining"}]}}
-{"text":"yeh dentist ki site hai","context":"multi","expect":{"ops":[{"op":"theme","theme":"healthcare"}]}}
-{"text":"treat it as a travel agency","context":"single","expect":{"ops":[{"op":"theme","theme":"travel_tourism"}]}}
-{"text":"it's a salon","context":"multi","expect":{"ops":[{"op":"theme","theme":"beauty_wellness"}]}}
-{"text":"yeh school hai","context":"single","expect":{"ops":[{"op":"theme","theme":"education"}]}}
-{"text":"this is a law firm","context":"multi","expect":{"ops":[{"op":"theme","theme":"professional_services"}]}}
-{"text":"yeh car dealership ki site hai","context":"single","expect":{"ops":[{"op":"theme","theme":"automotive"}]}}
-{"text":"we are a wedding planner, you got it wrong","context":"multi","expect":{"ops":[{"op":"theme","theme":"events_wedding"}]}}
-{"text":"my business is a pet shop","context":"single","expect":{"ops":[{"op":"theme","theme":"pets_animals"}]}}
-{"text":"yeh NGO ki website hai","context":"multi","expect":{"ops":[{"op":"theme","theme":"nonprofit"}]}}
-{"text":"real estate agency hai yeh","context":"single","expect":{"ops":[{"op":"theme","theme":"real_estate"}]}}
-{"text":"it's a clothing boutique, not a restaurant","context":"multi","expect":{"ops":[{"op":"theme","theme":"fashion_retail"}]}}
-{"text":"undo","context":"single","expect":{"control":"undo"}}
-{"text":"wapas karo","context":"multi","expect":{"control":"undo"}}
-{"text":"that was wrong, revert","context":"single","expect":{"control":"undo"}}
-{"text":"pichla change cancel karo","context":"multi","expect":{"control":"undo"}}
-{"text":"redo","context":"single","expect":{"control":"redo"}}
-{"text":"phir se lagao","context":"multi","expect":{"control":"redo"}}
-{"text":"bring it back, redo that change","context":"single","expect":{"control":"redo"}}
-{"text":"reset everything","context":"single","expect":{"control":"reset"}}
-{"text":"sab changes hata do","context":"multi","expect":{"control":"reset"}}
-{"text":"start over with the original","context":"single","expect":{"control":"reset"}}
-{"text":"sab kuch original jaisa kar do","context":"multi","expect":{"control":"reset"}}
-{"text":"create a website for a bakery in Pune","context":"single","expect":{"newSite":true}}
-{"text":"ek gym ki website banao","context":"multi","expect":{"newSite":true}}
-{"text":"make me a portfolio for a photographer","context":"single","expect":{"newSite":true}}
-{"text":"mujhe ek dentist clinic ka naya website chahiye","context":"multi","expect":{"newSite":true}}
-{"text":"build a site for my yoga classes in London","context":"single","expect":{"newSite":true}}
-{"text":"nayi website banao hotel ke liye","context":"multi","expect":{"newSite":true}}
-{"text":"I need a website for my boutique in Jaipur","context":"single","expect":{"newSite":true}}
-{"text":"ek restaurant ki website bana do Delhi me","context":"multi","expect":{"newSite":true}}
-{"text":"remove the FAQ and make the buttons green","context":"single","expect":{"ops":[{"op":"remove","section":"faq"},{"op":"accent","hex":"#16a34a"}]}}
-{"text":"naam Zen Cafe rakho aur gallery hata do","context":"multi","expect":{"ops":[{"op":"rename","name":"Zen Cafe"},{"op":"removePage","page":"gallery"},{"op":"remove","section":"gallery"}]}}
-{"text":"dark mode and rename it to Nova","context":"single","expect":{"ops":[{"op":"mode","mode":"dark"},{"op":"rename","name":"Nova"}]}}
-{"text":"rename to Kiran Clinic and add a blog","context":"single","expect":{"ops":[{"op":"rename","name":"Kiran Clinic"},{"op":"add","section":"blog"}]}}
-{"text":"pricing hatao aur theme blue karo","context":"multi","expect":{"ops":[{"op":"removePage","page":"pricing"},{"op":"remove","section":"pricing"},{"op":"accent","hex":"#2563eb"}]}}
-{"text":"email hello@zen.in aur phone 98765 43210 rakho","context":"single","expect":{"ops":[{"op":"contact","field":"email","value":"hello@zen.in"},{"op":"contact","field":"phone","value":"98765 43210"}]}}
-{"text":"remove testimonials, remove stats and add FAQ","context":"single","expect":{"ops":[{"op":"remove","section":"testimonials"},{"op":"remove","section":"stats"},{"op":"add","section":"faq"}]}}
-{"text":"name Pixel Studio rakho, red color karo aur dark mode default karo","context":"single","expect":{"ops":[{"op":"rename","name":"Pixel Studio"},{"op":"accent","hex":"#dc2626"},{"op":"mode","mode":"dark"}]}}
-{"text":"add a gallery and a team page","context":"multi","expect":{"ops":[{"op":"addPage","page":"gallery"},{"op":"add","section":"gallery"},{"op":"addPage","page":"team"},{"op":"add","section":"team"}]}}
-{"text":"change headline to Wash Fast, Dry Fast and button to Book Now","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Wash Fast, Dry Fast"},{"op":"text","field":"heroButton","text":"Book Now"}]}}
-{"text":"replace coaches with trainers and make buttons orange","context":"multi","expect":{"ops":[{"op":"replace","from":"coaches","to":"trainers"},{"op":"accent","hex":"#ea580c"}]}}
-{"text":"FAQ hata do aur blog bhi hata do","context":"multi","expect":{"ops":[{"op":"removePage","page":"faq"},{"op":"remove","section":"faq"},{"op":"removePage","page":"blog"},{"op":"remove","section":"blog"}]}}
-{"text":"rename it to Hilltop Resort and treat it as a travel agency","context":"single","expect":{"ops":[{"op":"rename","name":"Hilltop Resort"},{"op":"theme","theme":"travel_tourism"}]}}
-{"text":"yeh restaurant hai, naam Masala Magic rakho","context":"multi","expect":{"ops":[{"op":"theme","theme":"food_dining"},{"op":"rename","name":"Masala Magic"}]}}
-{"text":"remove the blog and change the hero subtitle to Care that feels like home","context":"single","expect":{"ops":[{"op":"remove","section":"blog"},{"op":"text","field":"heroSubtitle","text":"Care that feels like home"}]}}
-{"text":"dark mode, premium look, rich animations","context":"multi","expect":{"ops":[{"op":"mode","mode":"dark"},{"op":"tier","tier":"premium"},{"op":"motion","level":"rich"}]}}
-{"text":"services page hatao aur team page bhi","context":"multi","expect":{"ops":[{"op":"removePage","page":"services"},{"op":"remove","section":"features"},{"op":"removePage","page":"team"},{"op":"remove","section":"team"}]}}
-{"text":"rename it to Fresh Basket, add pricing and make it light","context":"single","expect":{"ops":[{"op":"rename","name":"Fresh Basket"},{"op":"add","section":"pricing"},{"op":"mode","mode":"light"}]}}
-{"text":"make the headline Grow Faster With Us and the colour #0A7A5C","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Grow Faster With Us"},{"op":"accent","hex":"#0a7a5c"}]}}
-{"text":"नाम बदलकर रवि इलेक्ट्रॉनिक्स रखो और डार्क मोड करो","context":"single","expect":{"ops":[{"op":"rename","name":"रवि इलेक्ट्रॉनिक्स"},{"op":"mode","mode":"dark"}]}}
-{"text":"add about us page and change about title to Who We Are","context":"multi","expect":{"ops":[{"op":"addPage","page":"about"},{"op":"add","section":"about"},{"op":"text","field":"aboutTitle","text":"Who We Are"}]}}
-{"text":"replace cafe with bistro and rename it to Le Petit","context":"single","expect":{"ops":[{"op":"replace","from":"cafe","to":"bistro"},{"op":"rename","name":"Le Petit"}]}}
-{"text":"hero button Call Now kar do, email info@royal.in","context":"single","expect":{"ops":[{"op":"text","field":"heroButton","text":"Call Now"},{"op":"contact","field":"email","value":"info@royal.in"}]}}
-{"text":"dentist site hai, theme teal kar do","context":"multi","expect":{"ops":[{"op":"theme","theme":"healthcare"},{"op":"accent","hex":"#0d9488"}]}}
-{"text":"add blog, add FAQ, remove stats","context":"multi","expect":{"ops":[{"op":"addPage","page":"blog"},{"op":"add","section":"blog"},{"op":"addPage","page":"faq"},{"op":"add","section":"faq"},{"op":"remove","section":"stats"}]}}
-{"text":"headline ko Taste of Home karo aur subtitle Homemade meals daily","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Taste of Home"},{"op":"text","field":"heroSubtitle","text":"Homemade meals daily"}]}}
-{"text":"rename to Nova Tech, this is a software company, dark mode","context":"single","expect":{"ops":[{"op":"rename","name":"Nova Tech"},{"op":"theme","theme":"modern_tech"},{"op":"mode","mode":"dark"}]}}
-{"text":"hey! can you rename the site to Wanderlust Tours, make it a travel agency and use #0b6e99 for the colour?","context":"multi","expect":{"ops":[{"op":"rename","name":"Wanderlust Tours"},{"op":"theme","theme":"travel_tourism"},{"op":"accent","hex":"#0b6e99"}]}}
-{"text":"sorry wrong change, undo it please","context":"single","expect":{"control":"undo"}}
-{"text":"hide the pricing section and the stats counters","context":"single","expect":{"ops":[{"op":"remove","section":"pricing"},{"op":"remove","section":"stats"}]}}
+{"text": "rename it to Green Leaf", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Green Leaf"}]}}
+{"text": "naam Sharma Sweets rakho", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Sharma Sweets"}]}}
+{"text": "call the shop Blue Bird", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Blue Bird"}]}}
+{"text": "Business name Ravi Electricals kar do", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Ravi Electricals"}]}}
+{"text": "pls change the name to Spice Route", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Spice Route"}]}}
+{"text": "mera business ka naam \"Anand Dental Care\" rakh do", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Anand Dental Care"}]}}
+{"text": "rename to Urban Nest", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Urban Nest"}]}}
+{"text": "change brand name to Kapoor & Sons", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Kapoor & Sons"}]}}
+{"text": "shop ka naam Gupta Tea Stall kar do bhai", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Gupta Tea Stall"}]}}
+{"text": "name it FitZone Gym", "context": "single", "expect": {"ops": [{"op": "rename", "name": "FitZone Gym"}]}}
+{"text": "plz rename website as Lotus Yoga Studio", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Lotus Yoga Studio"}]}}
+{"text": "naam badal ke Mehta Jewellers kar do", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Mehta Jewellers"}]}}
+{"text": "Could you please change the business name to Harbour Bakery? Thank you so much", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Harbour Bakery"}]}}
+{"text": "नाम बदलकर श्री साईं स्वीट्स रखो", "context": "single", "expect": {"ops": [{"op": "rename", "name": "श्री साईं स्वीट्स"}]}}
+{"text": "brand ka naam Taj Tailors rakhna hai", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Taj Tailors"}]}}
+{"text": "call it Oak & Ivy", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Oak & Ivy"}]}}
+{"text": "renmae it to Cloud Nine Salon", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Cloud Nine Salon"}]}}
+{"text": "company name should be Bright Minds Academy", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Bright Minds Academy"}]}}
+{"text": "naam Pooja Boutique rakh do", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Pooja Boutique"}]}}
+{"text": "change my business name to Sunrise Pharmacy", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Sunrise Pharmacy"}]}}
+{"text": "hello, my shop is called Deepak Hardware, please put that name on the site instead of the current one", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Deepak Hardware"}]}}
+{"text": "make the buttons blue", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#2563eb"}]}}
+{"text": "theme colour red karo", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#dc2626"}]}}
+{"text": "use #ff6600", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#ff6600"}]}}
+{"text": "buttons ka color hara kar do", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#16a34a"}]}}
+{"text": "I want orange buttons", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#ea580c"}]}}
+{"text": "colour neela chahiye", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#2563eb"}]}}
+{"text": "change the theme to teal", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#0d9488"}]}}
+{"text": "make links purple", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#7c3aed"}]}}
+{"text": "use #1A2B3C as the main colour", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#1a2b3c"}]}}
+{"text": "gulabi color lagao", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#ec4899"}]}}
+{"text": "golden color karo buttons ka", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#ca8a04"}]}}
+{"text": "sky blue theme please", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#0ea5e9"}]}}
+{"text": "navy blue buttons", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#1e3a8a"}]}}
+{"text": "lal rang kar do", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#dc2626"}]}}
+{"text": "peela rang chahiye website me", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#eab308"}]}}
+{"text": "maroon theme", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#991b1b"}]}}
+{"text": "make it more vibrant", "context": "single", "expect": {"ops": [{"op": "tone", "tone": "vibrant"}]}}
+{"text": "thoda warm colors chahiye", "context": "multi", "expect": {"ops": [{"op": "tone", "tone": "warmer"}]}}
+{"text": "cooler colours please", "context": "single", "expect": {"ops": [{"op": "tone", "tone": "cooler"}]}}
+{"text": "thanda color scheme karo", "context": "multi", "expect": {"ops": [{"op": "tone", "tone": "cooler"}]}}
+{"text": "colors soft pastel type kar do", "context": "single", "expect": {"ops": [{"op": "tone", "tone": "muted"}]}}
+{"text": "make the colours darker", "context": "multi", "expect": {"ops": [{"op": "tone", "tone": "darker"}]}}
+{"text": "halka color rakho", "context": "single", "expect": {"ops": [{"op": "tone", "tone": "lighter"}]}}
+{"text": "bold colourful look", "context": "single", "expect": {"ops": [{"op": "tone", "tone": "vibrant"}]}}
+{"text": "gehra color chahiye", "context": "multi", "expect": {"ops": [{"op": "tone", "tone": "darker"}]}}
+{"text": "use hex #00AA88", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#00aa88"}]}}
+{"text": "brown buttons", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#92400e"}]}}
+{"text": "lime colour karo", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#84cc16"}]}}
+{"text": "coral color use karo", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#f87171"}]}}
+{"text": "magenta buttons please", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#c026d3"}]}}
+{"text": "नीला रंग कर दो", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#2563eb"}]}}
+{"text": "बटन हरा कर दो", "context": "multi", "expect": {"ops": [{"op": "accent", "hex": "#16a34a"}]}}
+{"text": "aasmani color theme karo", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#0ea5e9"}]}}
+{"text": "the colours are too loud, make them softer and more subtle", "context": "single", "expect": {"ops": [{"op": "tone", "tone": "muted"}]}}
+{"text": "dark mode default karo", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}]}}
+{"text": "make it light", "context": "multi", "expect": {"ops": [{"op": "mode", "mode": "light"}]}}
+{"text": "light mode chahiye", "context": "multi", "expect": {"ops": [{"op": "mode", "mode": "light"}]}}
+{"text": "start in dark mode", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}]}}
+{"text": "dark mode on kar do", "context": "multi", "expect": {"ops": [{"op": "mode", "mode": "dark"}]}}
+{"text": "डार्क मोड रखो", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}]}}
+{"text": "लाइट मोड कर दो", "context": "multi", "expect": {"ops": [{"op": "mode", "mode": "light"}]}}
+{"text": "remove the FAQ", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}]}}
+{"text": "testimonials mat dikhao", "context": "single", "expect": {"ops": [{"op": "remove", "section": "testimonials"}]}}
+{"text": "gallery hata do", "context": "single", "expect": {"ops": [{"op": "remove", "section": "gallery"}]}}
+{"text": "delete the blog", "context": "single", "expect": {"ops": [{"op": "remove", "section": "blog"}]}}
+{"text": "stats section nahi chahiye", "context": "single", "expect": {"ops": [{"op": "remove", "section": "stats"}]}}
+{"text": "remove the scrolling strip", "context": "single", "expect": {"ops": [{"op": "remove", "section": "marquee"}]}}
+{"text": "how it works hata do", "context": "single", "expect": {"ops": [{"op": "remove", "section": "steps"}]}}
+{"text": "team section remove karo", "context": "single", "expect": {"ops": [{"op": "remove", "section": "team"}]}}
+{"text": "pricing hatao", "context": "single", "expect": {"ops": [{"op": "remove", "section": "pricing"}]}}
+{"text": "hide the reviews", "context": "single", "expect": {"ops": [{"op": "remove", "section": "testimonials"}]}}
+{"text": "about us nahi chahiye", "context": "single", "expect": {"ops": [{"op": "remove", "section": "about"}]}}
+{"text": "remove the call to action banner", "context": "single", "expect": {"ops": [{"op": "remove", "section": "cta"}]}}
+{"text": "remove contact", "context": "single", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "pricing page hatao", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "pricing"}, {"op": "remove", "section": "pricing"}]}}
+{"text": "remove the blog page", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "blog"}, {"op": "remove", "section": "blog"}]}}
+{"text": "gallery hata do", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "gallery"}, {"op": "remove", "section": "gallery"}]}}
+{"text": "delete the FAQ page", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "faq"}, {"op": "remove", "section": "faq"}]}}
+{"text": "team page remove karo", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "team"}, {"op": "remove", "section": "team"}]}}
+{"text": "remove about us page", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "about"}, {"op": "remove", "section": "about"}]}}
+{"text": "services page nahi chahiye", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "services"}, {"op": "remove", "section": "features"}]}}
+{"text": "remove testimonials", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "testimonials"}]}}
+{"text": "stats hata do", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "stats"}]}}
+{"text": "remove how it works", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "steps"}]}}
+{"text": "remove contact", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "contact page delete karo", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "ticker remove kar do", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "marquee"}]}}
+{"text": "cta banner remove", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "cta"}]}}
+{"text": "remove the FAQ", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "faq"}, {"op": "remove", "section": "faq"}]}}
+{"text": "FAQ हटा दो", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}]}}
+{"text": "गैलरी हटाओ", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "gallery"}, {"op": "remove", "section": "gallery"}]}}
+{"text": "प्राइसिंग हटाओ", "context": "single", "expect": {"ops": [{"op": "remove", "section": "pricing"}]}}
+{"text": "pls remove the photos section, we dont have good pics yet", "context": "single", "expect": {"ops": [{"op": "remove", "section": "gallery"}]}}
+{"text": "rates wala page hata dijiye", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "pricing"}, {"op": "remove", "section": "pricing"}]}}
+{"text": "our story hata do", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "about"}, {"op": "remove", "section": "about"}]}}
+{"text": "add a gallery", "context": "single", "expect": {"ops": [{"op": "add", "section": "gallery"}]}}
+{"text": "FAQ bhi daalo", "context": "single", "expect": {"ops": [{"op": "add", "section": "faq"}]}}
+{"text": "I want a pricing section", "context": "single", "expect": {"ops": [{"op": "add", "section": "pricing"}]}}
+{"text": "team add karo", "context": "single", "expect": {"ops": [{"op": "add", "section": "team"}]}}
+{"text": "show testimonials", "context": "single", "expect": {"ops": [{"op": "add", "section": "testimonials"}]}}
+{"text": "blog bhi chahiye", "context": "single", "expect": {"ops": [{"op": "add", "section": "blog"}]}}
+{"text": "add a how it works section", "context": "single", "expect": {"ops": [{"op": "add", "section": "steps"}]}}
+{"text": "add contact form", "context": "single", "expect": {"ops": [{"op": "add", "section": "contact"}]}}
+{"text": "add a scrolling ticker", "context": "single", "expect": {"ops": [{"op": "add", "section": "marquee"}]}}
+{"text": "about us daal do", "context": "single", "expect": {"ops": [{"op": "add", "section": "about"}]}}
+{"text": "services bhi dikhao", "context": "single", "expect": {"ops": [{"op": "add", "section": "features"}]}}
+{"text": "add a cta banner", "context": "single", "expect": {"ops": [{"op": "add", "section": "cta"}]}}
+{"text": "team page add karo", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "team"}, {"op": "add", "section": "team"}]}}
+{"text": "add a gallery page", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}]}}
+{"text": "I want pricing", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "pricing"}, {"op": "add", "section": "pricing"}]}}
+{"text": "add blog", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "blog"}, {"op": "add", "section": "blog"}]}}
+{"text": "FAQ page daalo", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "faq"}, {"op": "add", "section": "faq"}]}}
+{"text": "add about us page", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "about"}, {"op": "add", "section": "about"}]}}
+{"text": "add services page", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "services"}, {"op": "add", "section": "features"}]}}
+{"text": "add reviews", "context": "multi", "expect": {"ops": [{"op": "add", "section": "testimonials"}]}}
+{"text": "stats counters add karo", "context": "multi", "expect": {"ops": [{"op": "add", "section": "stats"}]}}
+{"text": "add contact section", "context": "multi", "expect": {"ops": [{"op": "add", "section": "contact"}]}}
+{"text": "how it works add karo", "context": "multi", "expect": {"ops": [{"op": "add", "section": "steps"}]}}
+{"text": "add a FAQ", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "faq"}, {"op": "add", "section": "faq"}]}}
+{"text": "गैलरी जोड़ो", "context": "single", "expect": {"ops": [{"op": "add", "section": "gallery"}]}}
+{"text": "photos wala page bhi banao", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}]}}
+{"text": "change the main headline to Fresh Every Day", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Fresh Every Day"}]}}
+{"text": "button par Order Now likho", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Order Now"}]}}
+{"text": "hero subtitle: Baked with love", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroSubtitle", "text": "Baked with love"}]}}
+{"text": "headline: Best Biryani in Town", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Best Biryani in Town"}]}}
+{"text": "set the tagline to Quality You Can Trust", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroSubtitle", "text": "Quality You Can Trust"}]}}
+{"text": "make the hero button say Book a Table", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Book a Table"}]}}
+{"text": "change the services section title to What We Offer", "context": "multi", "expect": {"ops": [{"op": "text", "field": "featuresTitle", "text": "What We Offer"}]}}
+{"text": "about title: Our Story", "context": "single", "expect": {"ops": [{"op": "text", "field": "aboutTitle", "text": "Our Story"}]}}
+{"text": "CTA banner title ko Join Us Today kar do", "context": "single", "expect": {"ops": [{"op": "text", "field": "ctaTitle", "text": "Join Us Today"}]}}
+{"text": "contact heading: Reach Out To Us", "context": "multi", "expect": {"ops": [{"op": "text", "field": "contactTitle", "text": "Reach Out To Us"}]}}
+{"text": "contact section heading ko Get In Touch With Us karo", "context": "single", "expect": {"ops": [{"op": "text", "field": "contactTitle", "text": "Get In Touch With Us"}]}}
+{"text": "main heading Welcome to Sharma Sweets rakho", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Welcome to Sharma Sweets"}]}}
+{"text": "subtitle me likho Pure ghee, pure taste", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroSubtitle", "text": "Pure ghee, pure taste"}]}}
+{"text": "button ka text Call Now kar do", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Call Now"}]}}
+{"text": "heading badal ke Naya Savera karo", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Naya Savera"}]}}
+{"text": "sub heading: Open 7 days a week", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroSubtitle", "text": "Open 7 days a week"}]}}
+{"text": "change the button to Get a Quote", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Get a Quote"}]}}
+{"text": "title of the page should be Your Smile, Our Priority", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Your Smile, Our Priority"}]}}
+{"text": "call to action title: Start Your Journey Today", "context": "single", "expect": {"ops": [{"op": "text", "field": "ctaTitle", "text": "Start Your Journey Today"}]}}
+{"text": "about heading ko About Our Family karo", "context": "multi", "expect": {"ops": [{"op": "text", "field": "aboutTitle", "text": "About Our Family"}]}}
+{"text": "मुख्य हेडलाइन बदलकर ताज़ा और स्वादिष्ट करो", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "ताज़ा और स्वादिष्ट"}]}}
+{"text": "बटन पर अभी ऑर्डर करें लिखो", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "अभी ऑर्डर करें"}]}}
+{"text": "features section ka title Our Menu rakho", "context": "single", "expect": {"ops": [{"op": "text", "field": "featuresTitle", "text": "Our Menu"}]}}
+{"text": "hi, could you set the subheading under the headline to \"Handcrafted furniture for modern homes\", thanks", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroSubtitle", "text": "Handcrafted furniture for modern homes"}]}}
+{"text": "hero title ko \"Glow Up Your Skin\" kar do", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Glow Up Your Skin"}]}}
+{"text": "main button label: Join Now", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Join Now"}]}}
+{"text": "services title ko Our Treatments kar do", "context": "multi", "expect": {"ops": [{"op": "text", "field": "featuresTitle", "text": "Our Treatments"}]}}
+{"text": "contact title: Visit Us Today", "context": "single", "expect": {"ops": [{"op": "text", "field": "contactTitle", "text": "Visit Us Today"}]}}
+{"text": "replace coaches with trainers", "context": "single", "expect": {"ops": [{"op": "replace", "from": "coaches", "to": "trainers"}]}}
+{"text": "'cafe' ki jagah 'bistro' likho", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "cafe", "to": "bistro"}]}}
+{"text": "change every Gym to Fitness Club", "context": "single", "expect": {"ops": [{"op": "replace", "from": "Gym", "to": "Fitness Club"}]}}
+{"text": "replace patients with clients", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "patients", "to": "clients"}]}}
+{"text": "customers ko guests se badal do", "context": "single", "expect": {"ops": [{"op": "replace", "from": "customers", "to": "guests"}]}}
+{"text": "swap 'salon' for 'studio'", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "salon", "to": "studio"}]}}
+{"text": "jahan bhi doctor likha hai wahan physician likho", "context": "single", "expect": {"ops": [{"op": "replace", "from": "doctor", "to": "physician"}]}}
+{"text": "replace Mumbai with Pune everywhere", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "Mumbai", "to": "Pune"}]}}
+{"text": "'students' ki jagah 'learners' kar do", "context": "single", "expect": {"ops": [{"op": "replace", "from": "students", "to": "learners"}]}}
+{"text": "replace chefs by cooks", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "chefs", "to": "cooks"}]}}
+{"text": "instead of 'shop' write 'store'", "context": "single", "expect": {"ops": [{"op": "replace", "from": "shop", "to": "store"}]}}
+{"text": "सब जगह 'ग्राहक' की जगह 'मेहमान' लिखो", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "ग्राहक", "to": "मेहमान"}]}}
+{"text": "change the word classes to sessions", "context": "single", "expect": {"ops": [{"op": "replace", "from": "classes", "to": "sessions"}]}}
+{"text": "all 'rooms' to 'suites' please", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "rooms", "to": "suites"}]}}
+{"text": "Delhi ki jagah Jaipur likho", "context": "single", "expect": {"ops": [{"op": "replace", "from": "Delhi", "to": "Jaipur"}]}}
+{"text": "email hello@abc.com rakho", "context": "single", "expect": {"ops": [{"op": "contact", "field": "email", "value": "hello@abc.com"}]}}
+{"text": "my phone is 98765 43210", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "98765 43210"}]}}
+{"text": "address: 12 MG Road Pune", "context": "single", "expect": {"ops": [{"op": "contact", "field": "address", "value": "12 MG Road Pune"}]}}
+{"text": "contact number +91 98100 22334 daalo", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "+91 98100 22334"}]}}
+{"text": "mail id info@kapoorsons.in kar do", "context": "single", "expect": {"ops": [{"op": "contact", "field": "email", "value": "info@kapoorsons.in"}]}}
+{"text": "phone number 07911 123456", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "07911 123456"}]}}
+{"text": "call us on (555) 013-2288", "context": "single", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "(555) 013-2288"}]}}
+{"text": "address change karo to Shop 4, Sector 17, Chandigarh", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "address", "value": "Shop 4, Sector 17, Chandigarh"}]}}
+{"text": "mera phone number 9876543210 hai", "context": "single", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "9876543210"}]}}
+{"text": "put our address as 221B Baker Street, London", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "address", "value": "221B Baker Street, London"}]}}
+{"text": "email: orders@spiceroute.com", "context": "single", "expect": {"ops": [{"op": "contact", "field": "email", "value": "orders@spiceroute.com"}]}}
+{"text": "फोन नंबर 98765 11223 लिखो", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "98765 11223"}]}}
+{"text": "पता: 45 गांधी रोड, जयपुर", "context": "single", "expect": {"ops": [{"op": "contact", "field": "address", "value": "45 गांधी रोड, जयपुर"}]}}
+{"text": "send enquiries to bookings@zencafe.in", "context": "single", "expect": {"ops": [{"op": "contact", "field": "email", "value": "bookings@zencafe.in"}]}}
+{"text": "location is Plot 9, Banjara Hills, Hyderabad", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "address", "value": "Plot 9, Banjara Hills, Hyderabad"}]}}
+{"text": "phone number change karke 011-2345 6789 kar do", "context": "single", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "011-2345 6789"}]}}
+{"text": "address 5th Avenue, New York, NY 10001 daalo", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "address", "value": "5th Avenue, New York, NY 10001"}]}}
+{"text": "mail pe hello@nova.store dikhao", "context": "single", "expect": {"ops": [{"op": "contact", "field": "email", "value": "hello@nova.store"}]}}
+{"text": "make it simpler", "context": "single", "expect": {"ops": [{"op": "tier", "tier": "normal"}]}}
+{"text": "premium look do", "context": "multi", "expect": {"ops": [{"op": "tier", "tier": "premium"}]}}
+{"text": "thoda aur fancy", "context": "single", "expect": {"ops": [{"op": "tier", "tier": "premium"}]}}
+{"text": "luxury feel chahiye", "context": "multi", "expect": {"ops": [{"op": "tier", "tier": "premium"}]}}
+{"text": "minimal rakho", "context": "single", "expect": {"ops": [{"op": "tier", "tier": "normal"}]}}
+{"text": "isko better banao", "context": "multi", "expect": {"ops": [{"op": "tier", "tier": "better"}]}}
+{"text": "basic sa rakho", "context": "multi", "expect": {"ops": [{"op": "tier", "tier": "normal"}]}}
+{"text": "pro look chahiye", "context": "single", "expect": {"ops": [{"op": "tier", "tier": "premium"}]}}
+{"text": "no animations", "context": "single", "expect": {"ops": [{"op": "motion", "level": "off"}]}}
+{"text": "animation kam karo", "context": "multi", "expect": {"ops": [{"op": "motion", "level": "subtle"}]}}
+{"text": "add more motion", "context": "single", "expect": {"ops": [{"op": "motion", "level": "rich"}]}}
+{"text": "stop all animations", "context": "multi", "expect": {"ops": [{"op": "motion", "level": "off"}]}}
+{"text": "animations band karo", "context": "single", "expect": {"ops": [{"op": "motion", "level": "off"}]}}
+{"text": "animation zyada karo", "context": "multi", "expect": {"ops": [{"op": "motion", "level": "rich"}]}}
+{"text": "little animation only", "context": "single", "expect": {"ops": [{"op": "motion", "level": "subtle"}]}}
+{"text": "एनीमेशन बंद करो", "context": "single", "expect": {"ops": [{"op": "motion", "level": "off"}]}}
+{"text": "this is a restaurant, not a gym", "context": "single", "expect": {"ops": [{"op": "theme", "theme": "food_dining"}]}}
+{"text": "yeh dentist ki site hai", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "healthcare"}]}}
+{"text": "treat it as a travel agency", "context": "single", "expect": {"ops": [{"op": "theme", "theme": "travel_tourism"}]}}
+{"text": "it's a salon", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "beauty_wellness"}]}}
+{"text": "yeh school hai", "context": "single", "expect": {"ops": [{"op": "theme", "theme": "education"}]}}
+{"text": "this is a law firm", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "professional_services"}]}}
+{"text": "yeh car dealership ki site hai", "context": "single", "expect": {"ops": [{"op": "theme", "theme": "automotive"}]}}
+{"text": "we are a wedding planner, you got it wrong", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "events_wedding"}]}}
+{"text": "my business is a pet shop", "context": "single", "expect": {"ops": [{"op": "theme", "theme": "pets_animals"}]}}
+{"text": "yeh NGO ki website hai", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "nonprofit"}]}}
+{"text": "real estate agency hai yeh", "context": "single", "expect": {"ops": [{"op": "theme", "theme": "real_estate"}]}}
+{"text": "it's a clothing boutique, not a restaurant", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "fashion_retail"}]}}
+{"text": "undo", "context": "single", "expect": {"control": "undo"}}
+{"text": "wapas karo", "context": "multi", "expect": {"control": "undo"}}
+{"text": "that was wrong, revert", "context": "single", "expect": {"control": "undo"}}
+{"text": "pichla change cancel karo", "context": "multi", "expect": {"control": "undo"}}
+{"text": "redo", "context": "single", "expect": {"control": "redo"}}
+{"text": "phir se lagao", "context": "multi", "expect": {"control": "redo"}}
+{"text": "bring it back, redo that change", "context": "single", "expect": {"control": "redo"}}
+{"text": "reset everything", "context": "single", "expect": {"control": "reset"}}
+{"text": "sab changes hata do", "context": "multi", "expect": {"control": "reset"}}
+{"text": "start over with the original", "context": "single", "expect": {"control": "reset"}}
+{"text": "sab kuch original jaisa kar do", "context": "multi", "expect": {"control": "reset"}}
+{"text": "create a website for a bakery in Pune", "context": "single", "expect": {"newSite": true}}
+{"text": "ek gym ki website banao", "context": "multi", "expect": {"newSite": true}}
+{"text": "make me a portfolio for a photographer", "context": "single", "expect": {"newSite": true}}
+{"text": "mujhe ek dentist clinic ka naya website chahiye", "context": "multi", "expect": {"newSite": true}}
+{"text": "build a site for my yoga classes in London", "context": "single", "expect": {"newSite": true}}
+{"text": "nayi website banao hotel ke liye", "context": "multi", "expect": {"newSite": true}}
+{"text": "I need a website for my boutique in Jaipur", "context": "single", "expect": {"newSite": true}}
+{"text": "ek restaurant ki website bana do Delhi me", "context": "multi", "expect": {"newSite": true}}
+{"text": "remove the FAQ and make the buttons green", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}, {"op": "accent", "hex": "#16a34a"}]}}
+{"text": "naam Zen Cafe rakho aur gallery hata do", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Zen Cafe"}, {"op": "removePage", "page": "gallery"}, {"op": "remove", "section": "gallery"}]}}
+{"text": "dark mode and rename it to Nova", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}, {"op": "rename", "name": "Nova"}]}}
+{"text": "rename to Kiran Clinic and add a blog", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Kiran Clinic"}, {"op": "add", "section": "blog"}]}}
+{"text": "pricing hatao aur theme blue karo", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "pricing"}, {"op": "remove", "section": "pricing"}, {"op": "accent", "hex": "#2563eb"}]}}
+{"text": "email hello@zen.in aur phone 98765 43210 rakho", "context": "single", "expect": {"ops": [{"op": "contact", "field": "email", "value": "hello@zen.in"}, {"op": "contact", "field": "phone", "value": "98765 43210"}]}}
+{"text": "remove testimonials, remove stats and add FAQ", "context": "single", "expect": {"ops": [{"op": "remove", "section": "testimonials"}, {"op": "remove", "section": "stats"}, {"op": "add", "section": "faq"}]}}
+{"text": "name Pixel Studio rakho, red color karo aur dark mode default karo", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Pixel Studio"}, {"op": "accent", "hex": "#dc2626"}, {"op": "mode", "mode": "dark"}]}}
+{"text": "add a gallery and a team page", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}, {"op": "addPage", "page": "team"}, {"op": "add", "section": "team"}]}}
+{"text": "change headline to Wash Fast, Dry Fast and button to Book Now", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Wash Fast, Dry Fast"}, {"op": "text", "field": "heroButton", "text": "Book Now"}]}}
+{"text": "replace coaches with trainers and make buttons orange", "context": "multi", "expect": {"ops": [{"op": "replace", "from": "coaches", "to": "trainers"}, {"op": "accent", "hex": "#ea580c"}]}}
+{"text": "FAQ hata do aur blog bhi hata do", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "faq"}, {"op": "remove", "section": "faq"}, {"op": "removePage", "page": "blog"}, {"op": "remove", "section": "blog"}]}}
+{"text": "rename it to Hilltop Resort and treat it as a travel agency", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Hilltop Resort"}, {"op": "theme", "theme": "travel_tourism"}]}}
+{"text": "yeh restaurant hai, naam Masala Magic rakho", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "food_dining"}, {"op": "rename", "name": "Masala Magic"}]}}
+{"text": "remove the blog and change the hero subtitle to Care that feels like home", "context": "single", "expect": {"ops": [{"op": "remove", "section": "blog"}, {"op": "text", "field": "heroSubtitle", "text": "Care that feels like home"}]}}
+{"text": "dark mode, premium look, rich animations", "context": "multi", "expect": {"ops": [{"op": "mode", "mode": "dark"}, {"op": "tier", "tier": "premium"}, {"op": "motion", "level": "rich"}]}}
+{"text": "services page hatao aur team page bhi", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "services"}, {"op": "remove", "section": "features"}, {"op": "removePage", "page": "team"}, {"op": "remove", "section": "team"}]}}
+{"text": "rename it to Fresh Basket, add pricing and make it light", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Fresh Basket"}, {"op": "add", "section": "pricing"}, {"op": "mode", "mode": "light"}]}}
+{"text": "make the headline Grow Faster With Us and the colour #0A7A5C", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Grow Faster With Us"}, {"op": "accent", "hex": "#0a7a5c"}]}}
+{"text": "नाम बदलकर रवि इलेक्ट्रॉनिक्स रखो और डार्क मोड करो", "context": "single", "expect": {"ops": [{"op": "rename", "name": "रवि इलेक्ट्रॉनिक्स"}, {"op": "mode", "mode": "dark"}]}}
+{"text": "add about us page and change about title to Who We Are", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "about"}, {"op": "add", "section": "about"}, {"op": "text", "field": "aboutTitle", "text": "Who We Are"}]}}
+{"text": "replace cafe with bistro and rename it to Le Petit", "context": "single", "expect": {"ops": [{"op": "replace", "from": "cafe", "to": "bistro"}, {"op": "rename", "name": "Le Petit"}]}}
+{"text": "hero button Call Now kar do, email info@royal.in", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Call Now"}, {"op": "contact", "field": "email", "value": "info@royal.in"}]}}
+{"text": "dentist site hai, theme teal kar do", "context": "multi", "expect": {"ops": [{"op": "theme", "theme": "healthcare"}, {"op": "accent", "hex": "#0d9488"}]}}
+{"text": "add blog, add FAQ, remove stats", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "blog"}, {"op": "add", "section": "blog"}, {"op": "addPage", "page": "faq"}, {"op": "add", "section": "faq"}, {"op": "remove", "section": "stats"}]}}
+{"text": "headline ko Taste of Home karo aur subtitle Homemade meals daily", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Taste of Home"}, {"op": "text", "field": "heroSubtitle", "text": "Homemade meals daily"}]}}
+{"text": "rename to Nova Tech, this is a software company, dark mode", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Nova Tech"}, {"op": "theme", "theme": "modern_tech"}, {"op": "mode", "mode": "dark"}]}}
+{"text": "hey! can you rename the site to Wanderlust Tours, make it a travel agency and use #0b6e99 for the colour?", "context": "multi", "expect": {"ops": [{"op": "rename", "name": "Wanderlust Tours"}, {"op": "theme", "theme": "travel_tourism"}, {"op": "accent", "hex": "#0b6e99"}]}}
+{"text": "sorry wrong change, undo it please", "context": "single", "expect": {"control": "undo"}}
+{"text": "hide the pricing section and the stats counters", "context": "single", "expect": {"ops": [{"op": "remove", "section": "pricing"}, {"op": "remove", "section": "stats"}]}}

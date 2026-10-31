@@ -6,7 +6,7 @@ import type { Palette } from '../themes'
 import type { ThemeKey } from '../themes'
 import type { OpeningHours } from '../siteTypes'
 import { serviceText } from '../personalize'
-import type { SectionKey, SiteEdits } from './edits'
+import type { ItemEdit, SectionKey, SiteEdits } from './edits'
 import { reorder } from './fit'
 
 /** which section a layout block belongs to */
@@ -87,6 +87,62 @@ function mergeCore(content: WebsiteContent, core: NonNullable<SiteEdits['core']>
   return next
 }
 
+const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim()
+
+/** the position (0-based) of the item a change is about: counted ("2nd", "last") or named (its words are in the item) */
+function findItem<T>(items: T[], edit: ItemEdit, text: (item: T) => string): number {
+  if (edit.index !== undefined) return edit.index === 0 ? items.length - 1 : edit.index - 1 < items.length ? edit.index - 1 : -1
+  const words = norm(edit.match ?? '').split(' ').filter((w) => w.length >= 2)
+  if (!words.length) return -1
+  const scored = items.map((item, i) => ({ i, hits: words.filter((w) => norm(text(item)).includes(w.replace(/s$/, ''))).length }))
+  const best = scored.reduce((a, b) => (b.hits > a.hits ? b : a), { i: -1, hits: 0 })
+  return best.hits >= Math.max(1, Math.ceil(words.length / 2)) ? best.i : -1
+}
+
+const FIRST = new Set<ItemEdit['list']>(['faq', 'testimonials', 'stats', 'blog'])
+
+/** one change of one item of a list (see ItemEdit): a card, a question, a step, a number, a review, a plan, a caption, a paragraph */
+export function applyItem(content: WebsiteContent, edit: ItemEdit): WebsiteContent {
+  const f = edit.fields ?? {}
+  const change = <T extends object>(items: T[], text: (item: T) => string, make: () => T, patch: (item: T) => T): T[] => {
+    // a new question, review, number or note goes first: the parts show only the first few, and the person must see what they added (a step or a service goes last: the order means something)
+    if (edit.action === 'add') return FIRST.has(edit.list) ? [make(), ...items].slice(0, 12) : [...items, make()].slice(0, 12)
+    const at = findItem(items, edit, text)
+    if (at < 0) return items
+    return edit.action === 'remove' ? items.filter((_, i) => i !== at) : items.map((item, i) => (i === at ? patch(item) : item))
+  }
+  switch (edit.list) {
+    case 'features': {
+      const cards = change(content.features.items, (c) => `${c.title} ${c.text}`, () => ({ title: f.title ?? 'New service', text: f.text ?? serviceText(f.title ?? 'New service', content.features.items.length) }), (c) => ({ title: f.title ?? c.title, text: f.text ?? (f.title && !f.text ? serviceText(f.title, 0) : c.text) }))
+      return { ...content, features: { ...content.features, items: cards }, marquee: cards.map((c) => c.title.slice(0, 16)).slice(0, 8) }
+    }
+    case 'faq':
+      return { ...content, faq: change(content.faq, (q) => `${q.q} ${q.a}`, () => ({ q: f.q ?? 'Question', a: f.a ?? 'Please message us and we will answer.', own: true }), (q) => ({ ...q, q: f.q ?? q.q, a: f.a ?? q.a, own: true })) }
+    case 'steps':
+      return { ...content, steps: { ...content.steps, items: change(content.steps.items, (s) => `${s.title} ${s.text}`, () => ({ title: f.title ?? 'Step', text: f.text ?? '' }), (s) => ({ title: f.title ?? s.title, text: f.text ?? s.text })) } }
+    case 'stats':
+      return { ...content, stats: change(content.stats, (s) => `${s.value} ${s.label}`, () => ({ value: f.value ?? '', label: f.label ?? '', fact: true }), (s) => ({ ...s, value: f.value ?? s.value, label: f.label ?? s.label, fact: true })) }
+    case 'testimonials': {
+      const list = change(content.testimonials, (t) => `${t.author} ${t.quote} ${t.role}`, () => ({ quote: f.quote ?? '', author: f.author ?? 'A customer', role: f.role ?? '' }), (t) => ({ quote: f.quote ?? t.quote, author: f.author ?? t.author, role: f.role ?? t.role }))
+      // the sample reviews of the pack are not kept next to the ones the person wrote
+      const own = edit.action === 'add' ? list.filter((t) => !/sample/i.test(t.author)) : list
+      return { ...content, testimonials: own, testimonial: own[0] ?? content.testimonial }
+    }
+    case 'plans':
+      return { ...content, pricing: { ...content.pricing, fromPrompt: true, plans: change(content.pricing.plans, (p) => p.name, () => ({ name: f.name ?? 'Plan', price: f.price ?? '', period: f.period ?? '', perks: f.perks ? f.perks.split(/\s*[,;|]\s*/).filter(Boolean) : [] }), (p) => ({ name: f.name ?? p.name, price: f.price ?? p.price, period: f.period ?? p.period, perks: f.perks ? f.perks.split(/\s*[,;|]\s*/).filter(Boolean) : p.perks })) } }
+    case 'gallery': {
+      const captions = change(content.gallery.captions.map((c) => ({ c })), (x) => x.c, () => ({ c: f.caption ?? '' }), (x) => ({ c: f.caption ?? x.c })).map((x) => x.c)
+      return { ...content, gallery: { ...content.gallery, captions } }
+    }
+    case 'paragraphs':
+      return { ...content, about: { ...content.about, paragraphs: change(content.about.paragraphs.map((p) => ({ p })), (x) => x.p, () => ({ p: f.text ?? '' }), (x) => ({ p: f.text ?? x.p })).map((x) => x.p) } }
+    case 'points':
+      return { ...content, about: { ...content.about, points: change(content.about.points.map((p) => ({ p })), (x) => x.p, () => ({ p: f.text ?? '' }), (x) => ({ p: f.text ?? x.p })).map((x) => x.p) } }
+    case 'blog':
+      return { ...content, blog: { ...content.blog, posts: change(content.blog.posts, (p) => `${p.title} ${p.tag}`, () => ({ title: f.title ?? 'Note', tag: f.tag ?? '' }), (p) => ({ ...p, title: f.title ?? p.title, tag: f.tag ?? p.tag })) } }
+  }
+}
+
 export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | undefined, currency = '$'): WebsiteContent {
   if (!edits) return content
   let next: WebsiteContent = content
@@ -139,5 +195,6 @@ export function applyContentEdits(content: WebsiteContent, edits: SiteEdits | un
     }
   }
   for (const { from, to } of edits.replace) next = replaceIn(next, from, to) as WebsiteContent
+  for (const item of edits.items ?? []) next = applyItem(next, item)
   return next
 }

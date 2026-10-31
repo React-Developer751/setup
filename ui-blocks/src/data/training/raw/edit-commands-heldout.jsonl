@@ -168,13 +168,13 @@
 {"text": "thanks!", "context": "single", "expect": {"ops": []}}
 {"text": "hello", "context": "multi", "expect": {"ops": []}}
 {"text": "what can you do?", "context": "single", "expect": {"ops": []}}
-{"text": "contact hata do", "context": "multi", "expect": {"ops": []}}
+{"text": "contact hata do", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "kya yeh free hai", "context": "single", "expect": {"ops": []}}
 {"text": "धन्यवाद", "context": "single", "expect": {"ops": []}}
-{"text": "remove the contact page", "context": "multi", "expect": {"ops": []}}
+{"text": "remove the contact page", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "ok cool bro", "context": "single", "expect": {"ops": []}}
 {"text": "how long will it take", "context": "multi", "expect": {"ops": []}}
-{"text": "delete contact section", "context": "single", "expect": {"ops": []}}
+{"text": "delete contact section", "context": "single", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "kala button karo aur animations kam", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#000000"}, {"op": "motion", "level": "subtle"}]}}
 {"text": "remove the stats, rename to Joe's Garage, then use #00AA55", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "stats"}, {"op": "rename", "name": "Joe's Garage"}, {"op": "accent", "hex": "#00aa55"}]}}
 {"text": "remove the faq and rename it to Zen Cafe", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}, {"op": "rename", "name": "Zen Cafe"}]}}
@@ -214,7 +214,7 @@
 {"text": "button par Book Now likho aur headline Welcome to 4 Seasons", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Book Now"}, {"op": "text", "field": "heroTitle", "text": "Welcome to 4 Seasons"}]}}
 {"text": "add about, add team and add pricing", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "about"}, {"op": "add", "section": "about"}, {"op": "addPage", "page": "team"}, {"op": "add", "section": "team"}, {"op": "addPage", "page": "pricing"}, {"op": "add", "section": "pricing"}]}}
 {"text": "can you please make it dark and remove the blog", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}, {"op": "remove", "section": "blog"}]}}
-{"text": "remove contact and add gallery", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}]}}
+{"text": "remove contact and add gallery", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}, {"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}]}}
 {"text": "services title Our Menu & Specials, about title Who We Are", "context": "single", "expect": {"ops": [{"op": "text", "field": "featuresTitle", "text": "Our Menu & Specials"}, {"op": "text", "field": "aboutTitle", "text": "Who We Are"}]}}
 {"text": "phone number 98765 43210 daal do aur email info@sharmasweets.in", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "98765 43210"}, {"op": "contact", "field": "email", "value": "info@sharmasweets.in"}]}}
 {"text": "hata do faq, add steps, make it premium", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}, {"op": "add", "section": "steps"}, {"op": "tier", "tier": "premium"}]}}

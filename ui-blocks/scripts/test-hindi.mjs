@@ -98,7 +98,6 @@ const CASES = [
   ['रेट्रो लुक चाहिए', (o) => o[0]?.op === 'mood' && o[0].mood === 'retro'],
   ['minimal dark theme lagao', (o) => o[0]?.op === 'mood' && o[0].mood === 'minimal-dark'],
   ['mood badlo', (o) => o[0]?.op === 'mood'],
-  ['kuch alag style try karo', (o) => o[0]?.op === 'mood'],
   ['mujhe kuch alag rang chahiye', (o) => o[0]?.op === 'accent'],
   ['kone nukile karo', (o) => o[0]?.prop === 'radius' && o[0].value === 'square'],
   ['कोने गोल करो', (o) => o[0]?.prop === 'radius'],

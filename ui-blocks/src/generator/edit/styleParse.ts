@@ -29,13 +29,44 @@ const CANNOT: { when: RegExp; note: string }[] = [
   { when: W('(?:google\\s+)?maps?|embed(?:ded)?\\s+map|video|youtube|vimeo|reel'), note: 'I cannot add a map or a video yet. The address and the contact details can be changed: "address 12 MG Road, Pune".' },
   { when: W('newsletter|subscribe|subscription\\s+form|sign\\s*up|signup|log\\s*in|login|search\\s+bar|shopping\\s+cart|cart|checkout|payment\\s+(?:button|gateway)'), note: 'I cannot add forms for newsletters, logins, carts or payments. The contact section has the form of the page.' },
   { when: W('instagram|facebook|twitter|linkedin|youtube|social(?:\\s+media)?|insta|whatsapp\\s+(?:button|icon|chat|link)'), note: 'I cannot add social media links or buttons yet. The WhatsApp number can be set (say "whatsapp number 98765 43210"); other links can be added in the exported code.' },
-  { when: W('bold|italic|underline|uppercase|lowercase|capital(?:s|ise|ize)?|letter\\s*spacing|line\\s*height|text\\s*shadow'), note: 'I cannot change the weight or style of the letters (bold, italic, underline) yet. I can change the typeface ("serif font"), the size of headings and text, and their colours.' },
+  { when: W('underline|letter\\s*spacing|line\\s*height|text\\s*shadow'), note: 'I cannot underline, change letter spacing, line height or text shadows yet. I can make letters bold, italic or UPPER CASE ("heading bold karo", "title uppercase karo") and change size, colour and typeface.' },
   { when: W('shadows?|gradients?|borders?|outlines?|dividers?|separators?|blur|glow|overlay'), note: 'I cannot add shadows, gradients, borders or dividers one by one. A whole look does it: try "make it glass", "neumorphism style", "flat look" or "gradient look".' },
 ]
+
+const BOLD = W('bold|bolder|moti|mota|motaa|extra\\s+bold')
+const UNBOLD = W('not\\s+bold|bold\\s+nahi|bold\\s+hatao|bold\\s+hata\\s+do|unbold|normal\\s+weight|bold\\s+mat')
+const ITALIC = W('italics?|tirchi|tirchha|slanted|oblique')
+const UNITALIC = W('(?:not|no)\\s+italics?|italics?\\s+(?:nahi|hatao|hata\\s+do|mat)|upright|seedha')
+const UPPER = W('upper\\s*case|uppercase|all\\s+caps|caps|capitals?|capital\\s+letters|bade\\s+akshar(?:on)?\\s+(?:me|mein)')
+const LOWER = W('lower\\s*case|lowercase|small\\s+letters|normal\\s+case|chhote\\s+akshar')
+
+/** "heading bold karo", "title uppercase", "text italic nahi", "hero heading not bold": the style of the letters */
+function letterOps(text: string): StyleResult {
+  const bold = BOLD.test(text), unbold = UNBOLD.test(text), italic = ITALIC.test(text), unitalic = UNITALIC.test(text), upper = UPPER.test(text), lower = LOWER.test(text)
+  if (!bold && !unbold && !italic && !unitalic && !upper && !lower) return undefined
+  // "bold and colourful look", "make it bold": a wish about the whole look needs a letter word to be about letters
+  if (QUOTE.test(text) || (W('look|style|vibe|mood|theme|colourful|colorful|modern|elegant|minimal|design|feel|make\\s+it|banao|lagna|lage').test(text) && !HEADING.test(text) && !BODY.test(text) && !FONT.test(text))) return undefined
+  const heading = HEADING.test(text)
+  const body = BODY.test(text) && !W('sub-?titles?|sub-?headings?|taglines?').test(text) || W('paragraphs?|body').test(text)
+  const kinds: ('heading' | 'text')[] = heading && body ? ['heading', 'text'] : body ? ['text'] : ['heading']
+  const targets = partsOf(text.replace(HEADING, ' ').replace(BODY, ' '))
+  const list: FitTarget[] = targets.length ? targets : ['page']
+  const ops: EditOp[] = []
+  for (const target of list) {
+    for (const kind of kinds) {
+      if (bold || unbold) ops.push({ op: 'style', target, prop: kind === 'heading' ? 'headingWeight' : 'textWeight', value: unbold ? 'normal' : 'bold' })
+      if (italic || unitalic) ops.push({ op: 'style', target, prop: kind === 'heading' ? 'headingItalic' : 'textItalic', value: unitalic ? 'off' : 'on' })
+      if ((upper || lower) && kind === 'heading') ops.push({ op: 'style', target, prop: 'headingCase', value: lower ? 'normal' : 'upper' })
+    }
+  }
+  return ops.length ? { ops, notes: [] } : undefined
+}
 
 export function styleOps(raw: string): StyleResult {
   const text = raw.trim().normalize('NFC')
   if (!text) return undefined
+  const letters = letterOps(text)
+  if (letters) return letters
   const quoted = QUOTE.test(text)
   const removing = W('hata|hatao|hata do|remove|delete|nikalo|nikal do|band|off').test(text)
 

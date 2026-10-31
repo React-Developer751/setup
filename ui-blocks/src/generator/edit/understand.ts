@@ -2,6 +2,7 @@
 // Rule based, offline, in English, Hinglish and Hindi: the text is split into commands, and every command is read for its
 // subject (section, page, colour, text field, contact detail ...) and what to do with it. The result is only a list of
 // operations (see edits.ts); the learned model (intent.ts) produce the same thing.
+import { itemOps, textOpsOf, type PageFacts } from './itemParse'
 import { extraOps, unsupportedNote } from './extraParse'
 import { layoutOps } from './layoutParse'
 import { widgetOps } from './widgetParse'
@@ -30,7 +31,8 @@ import {
 } from './lexicon'
 
 export type EditContext = 'single' | 'multi'
-export type Control = 'undo' | 'redo' | 'reset'
+/** `redesign`: "kuch alag design chahiye", "another look": the same business, another design (the button "Another design") */
+export type Control = 'undo' | 'redo' | 'reset' | 'redesign'
 
 export type Understood =
   | { kind: 'ops'; ops: EditOp[]; notes: string[] }
@@ -245,6 +247,10 @@ function controlOf(text: string): Control | undefined {
   // "undo the undo", "undo cancel karo": taking an undo back is a redo
   if (/(?<![\p{L}])un-?undo|undo\s+(?:the\s+)?undo|undo\s+ko\s+undo|revert\s+the\s+undo|(?:undo|undone)\b.*\b(?:cancel|reverse|restore|wapas|revert|kiya tha)|(?:cancel|reverse|restore|apply|bring back|take back|revert)\b.*\b(?:undo|undone)\b/iu.test(text)) return 'redo'
   if (/सब\s+बदलाव\s+(?:हटा|वापस|रीसेट)/u.test(text)) return 'reset'
+  // "sab hata ke fir se shuru karo": start over
+  if (words <= 8 && /(?<![\p{L}])(?:sab(?:kuch)?|everything|all)\s+(?:hata|delete|remove|mita)\w*\s*(?:ke|kar|do)?\s*(?:phir|fir|again)\s+(?:se\s+)?(?:shuru|start)/iu.test(text)) return 'reset'
+  // another design for the same business (not a colour, not a part): "yeh design kuch alag chahiye", "show me a different look", "try another style"
+  if (words <= 9 && !sections && /(?<![\p{L}])(?:(?:kuch\s+)?(?:alag|aur|naya|nayi|different|another|new|else)\s+(?:wala\s+)?(?:design|look|style|version|layout|template)|(?:design|look|style|layout|version)\b.{0,24}\b(?:kuch\s+)?(?:alag|different|badlo|change|naya)|(?:design|look|style)\s+(?:pasand\s+nahi|nahi\s+(?:pasand|achha|accha))|redesign|try\s+(?:another|a\s+different)|something\s+(?:different|else|new))(?![\p{L}])/iu.test(text) && !/(?:colou?r|rang|font|button|heading|text|size)/i.test(text)) return 'redesign'
   if (words <= 5 && /(?<![\p{L}])(?:start\s+(?:again|over|fresh)|from\s+scratch|fresh\s+start|shuru\s+se|phir\s+se\s+shuru|dobara\s+shuru)(?![\p{L}])/iu.test(text)) return 'reset'
   if (re.reset.test(text) && !/(?<![\p{L}\p{M}])(?:साइज़|साइज|लेआउट|layout|sizes?|heights?|widths?|alignments?|spacing|positions?|order)(?![\p{L}])/iu.test(text)) return 'reset'
   if (!sections && re.redo.test(text)) return 'redo'
@@ -534,6 +540,12 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
 
   // mode ─────────
   const aboutAPart = partMentions(clause).length > 0
+  // "website ko light mode me karo", "dark theme on": the words say it, whatever else is in the clause
+  const explicitMode = /(?<![\p{L}])(light|dark)\s+(?:mode|theme)(?![\p{L}])/iu.exec(clause)
+  if (explicitMode && !/(?:button|link|heading|header|footer|navbar|menu|hero|about|section|card|text|font)\b/i.test(clause.replace(explicitMode[0], ' '))) {
+    push({ op: 'mode', mode: /dark/i.test(explicitMode[1]) ? 'dark' : 'light' })
+    return { ops, notes }
+  }
   const modeText = clause.replace(/(?<![\p{L}])(?:dark|light|night|deep)\s+(?:blue|red|green|gray|grey|purple|pink|brown|orange|yellow|neela|lal|hara|golden|gold)/giu, ' ')
   const darkWord = /(?<![\p{L}])(?:dark|night|andhera|andheri|andhere|डार्क|अंधेरा|नाइट|ब्लैक)(?![\p{L}\p{M}])/iu.test(modeText)
   const lightWord = /(?<![\p{L}])(?:light|day|daylight|ujala|bright|लाइट|उजाला|सफेद|सफ़ेद|व्हाइट)(?![\p{L}\p{M}])/iu.test(modeText)
@@ -699,7 +711,9 @@ function clauseOps(rawClause: string, context: EditContext, quotes: string[], ca
       carry.verb = verb
       for (const key of sections) {
         if (key === 'contact' && verb === 'remove') {
-          notes.push('The contact section stays: a website needs a way to be reached.')
+          // it is their site: the contact part goes, and they are told what that means
+          for (const op of sectionChange(key, verb, context)) push(op)
+          notes.push('Removed the contact part. The phone and e-mail you gave still show in the footer; say "add contact" to bring it back.')
           continue
         }
         for (const op of sectionChange(key, verb, context)) push(op)
@@ -811,6 +825,8 @@ const KNOWN = [...vocabulary]
 // everyday words that are one letter away from a command word
 const COMMON = new Set(['glass', 'glasses', 'right', 'rights', 'left', 'write', 'writes', 'store', 'stores', 'stone', 'those', 'three', 'other', 'there', 'where', 'which', 'shine', 'phone', 'plain', 'place', 'point', 'paint', 'print', 'quote', 'order', 'orders', 'items', 'teams', 'trial', 'brand', 'rates', 'prices', 'lower', 'power', 'fresh', 'order', 'house', 'horse', 'table', 'cable', 'water', 'later', 'under', 'every', 'above', 'while', 'never', 'where', 'shops', 'style', 'tales', 'tasks', 'class', 'clean', 'close', 'clear', 'coach'])
 
+/** words the typo fixer must leave alone: "pehla" is not "peela" */
+const ORDINAL_WORDS = new Set(['pehla', 'pehli', 'pehle', 'pahla', 'pahli', 'dusra', 'dusri', 'doosra', 'doosri', 'teesra', 'teesri', 'chautha', 'chauthi', 'aakhri', 'akhri', 'sawal', 'sawaal', 'jawab', 'jawaab', 'wali', 'wala', 'waali'])
 const SHORT_TYPOS: Record<string, string> = { drak: 'dark', dakr: 'dark', udno: 'undo', unod: 'undo', rdeo: 'redo', lihgt: 'light', ligth: 'light', whtie: 'white', mneu: 'menu', blakc: 'black' }
 function fixTypos(input: string): string {
   // the first word of a message may start with a capital letter ("Renmae it to ..."): it is a command word, not a name
@@ -821,14 +837,14 @@ function fixTypos(input: string): string {
   const boundary = text.search(/\s(?:to|as|ko)\s|:/i)
   const head = boundary < 0 ? text : text.slice(0, boundary)
   const tail = boundary < 0 ? '' : text.slice(boundary)
-  const fixed = head.replace(/(?<![\p{L}§@.])[a-z]{4,5}(?![\p{L}§@.])/gu, (w) => SHORT_TYPOS[w] ?? w).replace(/(?<![\p{L}§@.])[a-z]{5,12}(?![\p{L}§@.])/gu, (word) => (vocabulary.has(word) || COMMON.has(word) ? word : KNOWN.find((k) => near(word, k) && k + 's' !== word && word + 's' !== k && k + 'er' !== word && k + 'ing' !== word) ?? word))
+  const fixed = head.replace(/(?<![\p{L}§@.])[a-z]{4,5}(?![\p{L}§@.])/gu, (w) => SHORT_TYPOS[w] ?? w).replace(/(?<![\p{L}§@.])[a-z]{5,12}(?![\p{L}§@.])/gu, (word) => (vocabulary.has(word) || COMMON.has(word) || ORDINAL_WORDS.has(word) ? word : KNOWN.find((k) => near(word, k) && k + 's' !== word && word + 's' !== k && k + 'er' !== word && k + 'ing' !== word) ?? word))
   return fixed + tail
 }
 
 const PRONOUN = /(?<![\p{L}])(?:it|this|that|isko|isse|ise|iska|iski|usko|isme|yeh|yah|ye|woh|wo)(?![\p{L}])/iu
 
 /** Reads one message. `context` says whether the site has pages ("multi") or is one long page ("single"). */
-export function parseEdit(input: string, context: EditContext = 'single', last?: { target?: string; /** the site on the screen has several pages (also a site made from the stored components, whose parts are on pages without being "multi" for the editor) */ pages?: boolean; /** the site is made from the stored components: its pages are made of its parts */ library?: boolean }): Understood {
+export function parseEdit(input: string, context: EditContext = 'single', last?: { target?: string; /** the site on the screen has several pages (also a site made from the stored components, whose parts are on pages without being "multi" for the editor) */ pages?: boolean; /** the site is made from the stored components: its pages are made of its parts */ library?: boolean; /** the page on the screen: a named item ("the cookies service") is looked for in it */ page?: PageFacts }): Understood {
   const raw = input.replace(/\s+/g, ' ').trim()
   if (!raw) return { kind: 'none', reason: 'Nothing was typed.' }
   const hidden = hideQuotes(raw)
@@ -838,6 +854,17 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
   const control = controlOf(plain)
   if (control) return { kind: 'control', control }
   if (isNewSite(plain)) return { kind: 'newSite' }
+
+  // "website ko light mode me karo", "dark theme on": only this, nothing else is asked
+  const modeOnly = /(?<![\p{L}])(light|dark)\s+(?:mode|theme)(?![\p{L}])/iu.exec(plain)
+  if (modeOnly) {
+    const left = plain.replace(modeOnly[0], ' ').toLowerCase().split(/[^\p{L}]+/u).filter((w) => w && !/^(?:website|site|page|ko|ka|ki|ke|me|mein|mai|on|off|karo|kar|do|de|lagao|laga|rakho|rakh|chalu|enable|set|use|switch|change|badlo|badal|the|a|my|please|ye|yeh|isko|it|to|into|in)$/.test(w))
+    if (!left.length) return { kind: 'ops', ops: [{ op: 'mode', mode: /dark/i.test(modeOnly[1]) ? 'dark' : 'light' }], notes: [] }
+  }
+
+  // a text was given for a part ("title chhota aur catchy chahiye: Cakes Made Fresh", "hero me 'Celebrate With Us' likhna hai"): that is the change, not the words around it
+  const given = splitCommands(hidden.text).length === 1 ? textOpsOf(raw) : undefined
+  if (given && /["“”‘’`]|:/.test(raw)) return { kind: 'ops', ops: given.ops, notes: given.notes }
 
   // one page or several ("multiple page me convert karo", "add about page and contact page"): the whole message is about the pages
   const pages = pagesOps(plain, last?.pages ? 'multi' : context, !!last?.library)
@@ -853,6 +880,14 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
     const moreOps = more?.kind === 'ops' ? more.ops : []
     const moreNotes = more?.kind === 'ops' ? more.notes : []
     return { kind: 'ops', ops: [...widgets.ops, ...moreOps], notes: [...widgets.notes, ...moreNotes] }
+  }
+
+  // one item inside a list of the page ("cookies wali service hata do", "2nd step ka title X", "FAQ me sawal jodo: ..."): before the section words are read, which would take the whole part
+  const clausesOf = splitCommands(hidden.text)
+  const payloadAdd = /[:"“”]/.test(raw) && /(?:faq|question|sawal|testimonial|review|step|stat)/i.test(raw)
+  if (clausesOf.length === 1 || payloadAdd) {
+    const itemChange = itemOps(raw, last?.page)
+    if (itemChange) return { kind: 'ops', ops: itemChange.ops, notes: itemChange.notes }
   }
 
   // a list with commas ("services: haircut 300, facial 800") must not be cut into commands
@@ -872,7 +907,9 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
   const commands = splitCommands(hidden.text)
   const results: ClauseResult[] = []
   for (const command of commands) {
-    const result = clauseOps(command, context, hidden.quotes, carry)
+    // one item inside a list ("cookies wali service hata do") in a message of several requests
+    const inItem = commands.length > 1 ? itemOps(showQuotes(command, hidden.quotes), last?.page) : undefined
+    const result = inItem ?? clauseOps(command, context, hidden.quotes, carry)
     carry.last = result.ops.at(-1)?.op
     for (const o of result.ops) {
       const t = 'section' in o ? o.section : 'page' in o ? (o.page === 'services' ? 'features' : o.page) : 'target' in o ? o.target : undefined
@@ -904,6 +941,23 @@ export function parseEdit(input: string, context: EditContext = 'single', last?:
   const unique = ops.filter((op) => !seen.has(JSON.stringify(op)) && !!seen.add(JSON.stringify(op)))
   ops.length = 0
   ops.push(...unique)
+  // "mujhe hero me 'Celebrate With Us' likhna hai", "about ka heading Our Story rakho": a single text of the page
+  if (!ops.length && notes.every((n) => /did not change the text/.test(n))) {
+    const said = textOpsOf(plain)
+    if (said) { notes.length = 0; ops.push(...said.ops) }
+  }
+  // "bold aur modern lagna chahiye", "I want it to feel calm": a wish about the look, said without a command word
+  if (!ops.length && !notes.length) {
+    const wish = /(?<![\p{L}])(?:chahiye|chaiye|chahta|chahti|lagna|lage|lagni|dikhna|dikhe|dikhni|feel|look|looking|vibe|style)(?![\p{L}])/iu.test(plain)
+    const adj = plain.toLowerCase().match(/(?<![\p{L}])(bold|modern|minimal|minimalist|elegant|classy|luxury|luxurious|playful|fun|calm|soft|clean|simple|professional|serious|colourful|colorful|vibrant|premium|fancy|dark|light|warm|cool|rich|sleek|rustic|vintage|retro|trendy|stylish)(?![\p{L}])/gu)
+    if (wish && adj?.length) {
+      // one word at a time: "make it bold and modern" is read as a whole by nobody, "make it bold" and "make it modern" are
+      const got = [...new Set(adj)].map((a) => parseEdit(`make it ${a}`, context)).flatMap((r) => (r.kind === 'ops' ? r.ops : []))
+      const seenLook = new Set<string>()
+      const looks = got.filter((o) => !seenLook.has(o.op) && !!seenLook.add(o.op))
+      if (looks.length) return { kind: 'ops', ops: looks, notes: [] }
+    }
+  }
   if (!ops.length && !notes.length) {
     const note = unsupportedNote(plain)
     if (note) notes.push(note)

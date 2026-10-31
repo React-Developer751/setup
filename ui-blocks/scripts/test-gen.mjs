@@ -279,6 +279,27 @@ const NN = await loadGeneratorModule('niche/niches.ts')
 const nicheOf = (t) => NI.detectNiche(t, NN.NICHES)?.id
 ok(nicheOf('Gym in Pune with personal training and diet plans') === 'gym_fitness_studio' && nicheOf('gym with diet plans') === 'gym_fitness_studio' && nicheOf('dietitian in Pune with gym plans') === 'nutritionist_dietitian' && nicheOf('ngo for stray dogs') === 'animal_welfare', 'the business named first decides the kind of business (a gym with diet plans is a gym; an NGO for dogs is about the dogs)')
 ok(!facts('Gym in Pune with personal training and diet plans, plans: basic 999 rupees, premium 1999 rupees', 'gym').services.some((x) => /^plans?\b/.test(x)), '"plans basic" is not a service')
+// a business nobody wrote a pack for is written from its own words (found with escape room, astrology, game studio, reptile shop: they got Premium Homes, Ethnic Wear, Team Workspaces, Dog Grooming)
+const oddPrompts = ['escape room in Gurgaon', 'astrology and tarot readings by Meera', 'indie game studio making pixel art games', 'reptile pet shop selling snakes and lizards', 'kite making workshop in Ahmedabad', 'hot air balloon rides in Jaipur', 'board game cafe in Bangalore', 'vintage vinyl record store in Mumbai']
+const FOREIGN = /premium homes|ready-to-move|ethnic wear|new arrivals|team workspaces|secure by default|dog grooming|vet check|visa assistance|brand systems|coffee|espresso|satisfaction guarantee|study live|returns policy/i
+let foreign = 0
+let bespokeCount = 0
+let nameIsPlace = 0
+for (const p of oddPrompts) {
+  const c = generateLibraryPage(p, 5, undefined, true, 'auto', undefined, false).content
+  if (c.bespoke) bespokeCount += 1
+  if (FOREIGN.test(JSON.stringify([c.hero, c.features, c.about, c.steps, c.faq, c.cta]))) foreign += 1
+  if (/^(?:Coorg|Goa|Pune|Jaipur)$/.test(c.brandName)) nameIsPlace += 1
+}
+ok(bespokeCount === oddPrompts.length && foreign === 0, `businesses without a pack are written from their own words, with nothing of another business (${bespokeCount} of ${oddPrompts.length} written from the words, ${foreign} with foreign claims)`)
+const honey = generateLibraryPage('rooftop honey beekeeping farm in Coorg', 5, undefined, true, 'auto', undefined, false).content
+ok(honey.brandName !== 'Coorg' && /honey/i.test(honey.hero.title + honey.hero.subtitle), 'a place after "in" is the place, not the name of the business')
+const tattoo = generateLibraryPage('tattoo studio in Goa', 5, undefined, true, 'auto', undefined, false).content
+ok(!tattoo.bespoke && /tattoo/i.test(JSON.stringify(tattoo.features)), 'a business the packs know keeps its own pack (a tattoo studio is not rewritten)')
+const kitePage = generateLibraryPage('kite making workshop in Ahmedabad, single page', 5, undefined, true, 'auto', undefined, false).content
+ok(!kitePage.features.items.some((f) => /single page/i.test(f.title)) && !/single page/i.test(kitePage.hero.subtitle), '"single page" in the prompt is about the website, not a service')
+const gapNiche = generateLibraryPage('reptile pet shop selling snakes and lizards', 5, undefined, true, 'auto', undefined, false).content
+ok(gapNiche.features.items.some((f) => /snake/i.test(f.title)) && !/Prime Pet Care/.test(gapNiche.brandName), 'a loose niche fit (a reptile shop under the pet pack) keeps the named services and does not take the name of the pack')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

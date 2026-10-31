@@ -10,6 +10,10 @@ const words = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filt
 
 /** the cards and numbers of the page that the prompt does not name (undefined when nothing needs a second look) */
 export function claimsToCheck(prompt: string, content: WebsiteContent): Claims | undefined {
+  // a page written from the person's own words only says what a visitor can ask for: nothing to check, but the facts are missing
+  if (content.bespoke) {
+    return { text: 'I wrote this page from your words only: it does not claim anything about your business. Tell me your real services, prices and hours in the chat (for example "services: Kite making 500, Manjha 200" or "add faq: Do you teach kids? answer: Yes, from age 8") and they replace the general lines.', services: [], strip: [], named: [] }
+  }
   const said = new Set(words(prompt))
   const cards = content.features.items
   const named = cards.filter((card) => words(card.title).some((w) => said.has(w)))
@@ -25,6 +29,7 @@ export function claimsToCheck(prompt: string, content: WebsiteContent): Claims |
 
 /** the buttons of the chat message: what can be removed in one tap */
 export function claimChoices(claims: Claims, content: WebsiteContent): { label: string; ops?: EditOp[]; action?: 'dismiss' }[] {
+  if (content.bespoke) return [{ label: 'Okay', action: 'dismiss' }]
   const out: { label: string; ops?: EditOp[]; action?: 'dismiss' }[] = []
   if (claims.named.length >= 1 && claims.services.length) {
     out.push({ label: 'Keep only my services', ops: [{ op: 'core', data: { features: { items: content.features.items.filter((c) => claims.named.includes(c.title)).map((c) => ({ title: c.title, text: c.text })) } } }] })

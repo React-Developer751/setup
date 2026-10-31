@@ -17,6 +17,24 @@ export const PAGES = ['about', 'services', 'pricing', 'team', 'gallery', 'blog',
 export type PageKey = (typeof PAGES)[number]
 
 /** texts that can be set directly */
+/** the lists of the page whose items can be changed one by one, and the fields of each item */
+export const ITEM_FIELDS = {
+  features: ['title', 'text'],
+  faq: ['q', 'a'],
+  steps: ['title', 'text'],
+  stats: ['value', 'label'],
+  testimonials: ['quote', 'author', 'role'],
+  plans: ['name', 'price', 'period', 'perks'],
+  gallery: ['caption'],
+  paragraphs: ['text'],
+  points: ['text'],
+  blog: ['title', 'tag'],
+} as const
+export type ItemList = keyof typeof ITEM_FIELDS
+export const ITEM_LISTS = Object.keys(ITEM_FIELDS) as ItemList[]
+/** `index`: 1 is the first, 0 the last; `match`: words of the item (its title, its question ...) when the person named it instead of counting */
+export type ItemEdit = { list: ItemList; action: 'set' | 'add' | 'remove'; index?: number; match?: string; fields?: Record<string, string> }
+
 export const TEXT_FIELDS = ['heroTitle', 'heroSubtitle', 'heroButton', 'featuresTitle', 'aboutTitle', 'ctaTitle', 'contactTitle', 'subject'] as const
 export type TextField = (typeof TEXT_FIELDS)[number]
 
@@ -29,7 +47,9 @@ export const MOOD_CHOICES = ['minimal-light', 'minimal-dark', 'soft-neo', 'retro
 export type MoodChoice = (typeof MOOD_CHOICES)[number]
 
 /** the look of one kind of thing on a part of the page (or the whole page): the colour of the buttons, of the headings, of the text, the roundness of corners, the typeface */
-export const STYLE_PROPS = ['buttonColor', 'headingColor', 'textColor', 'radius', 'font', 'headingSize', 'textSize'] as const
+export const STYLE_PROPS = ['buttonColor', 'headingColor', 'textColor', 'radius', 'font', 'headingSize', 'textSize', 'headingWeight', 'headingCase', 'headingItalic', 'textWeight', 'textItalic'] as const
+/** the style of the letters: bold or normal, UPPER CASE or normal, italic or upright */
+export const LETTER_STYLES: Record<string, readonly string[]> = { headingWeight: ['bold', 'normal'], headingCase: ['upper', 'normal'], headingItalic: ['on', 'off'], textWeight: ['bold', 'normal'], textItalic: ['on', 'off'] }
 /** headingSize / textSize are steps on the type scale (-3 .. 3) */
 export const SIZE_PROPS = ['headingSize', 'textSize'] as const
 export type StyleProp = (typeof STYLE_PROPS)[number]
@@ -87,6 +107,8 @@ export type EditOp =
   | { op: 'addPage'; page: PageKey }
   | { op: 'text'; field: TextField; text: string }
   | { op: 'replace'; from: string; to: string }
+  /** one thing inside a list of the page: change, add or remove a service card, a question, a step, a number, a review, a plan, a gallery caption, a paragraph of the about part */
+  | ({ op: 'item' } & ItemEdit)
   | { op: 'contact'; field: ContactField; value: string }
   /** what the business offers, with prices when the person gives them: the feature cards, and the price list when prices are there */
   | { op: 'services'; items: ServiceItem[] }
@@ -154,6 +176,8 @@ export type SiteEdits = {
   addedPages: PageKey[]
   text: Partial<Record<TextField, string>>
   replace: { from: string; to: string }[]
+  /** changes of single items of the lists, in the order they were asked */
+  items: ItemEdit[]
   contact: Partial<Record<ContactField, string>>
   services?: ServiceItem[]
   /** texts of Core-Craft AI (op 'core') */
@@ -182,7 +206,7 @@ export type SiteEdits = {
   pagesMode?: 'single' | 'multi'
 }
 
-export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], contact: {}, widgets: [] })
+export const noEdits = (): SiteEdits => ({ titles: {}, navLabels: {}, moves: [], pageMoves: [], sizes: {}, aligns: {}, buttonAligns: {}, styles: {}, tones: [], harmony: [], sectionColors: {}, hidden: [], added: [], hiddenPages: [], addedPages: [], text: {}, replace: [], items: [], contact: {}, widgets: [] })
 
 const HEX = /^#[0-9a-f]{6}$/i
 const CONCEPT_FONTS: Record<string, true> = { serif: true, sans: true, mono: true, elegant: true, rounded: true, display: true }
@@ -264,7 +288,7 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       if (!(FIT_TARGETS as readonly unknown[]).includes(o.target) || !(STYLE_PROPS as readonly unknown[]).includes(o.prop)) return undefined
       const prop = o.prop as StyleProp
       const value = typeof o.value === 'string' ? o.value.trim().toLowerCase() : ''
-      const ok = value === 'default' || ((SIZE_PROPS as readonly string[]).includes(prop) ? /^[+-][1-3]$/.test(value) : prop === 'radius' ? (RADIUS_CHOICES as readonly string[]).includes(value) : prop === 'font' ? (FONT_KEYS as readonly string[]).includes(value) : HEX.test(value))
+      const ok = value === 'default' || (prop in LETTER_STYLES ? LETTER_STYLES[prop].includes(value) : (SIZE_PROPS as readonly string[]).includes(prop) ? /^[+-][1-3]$/.test(value) : prop === 'radius' ? (RADIUS_CHOICES as readonly string[]).includes(value) : prop === 'font' ? (FONT_KEYS as readonly string[]).includes(value) : HEX.test(value))
       return ok ? { op: 'style', target: o.target as FitTarget, prop, value } : undefined
     }
     case 'mood':
@@ -285,6 +309,19 @@ export function cleanOp(raw: unknown): EditOp | undefined {
       const from = clean(o.from, 120)
       const to = clean(o.to, 120)
       return from.length >= 2 && from !== to ? { op: 'replace', from, to } : undefined
+    }
+    case 'item': {
+      const list = o.list as ItemList
+      if (!(ITEM_LISTS as readonly unknown[]).includes(list) || !['set', 'add', 'remove'].includes(String(o.action))) return undefined
+      const allowed = ITEM_FIELDS[list] as readonly string[]
+      const fields = Object.fromEntries(Object.entries((o.fields ?? {}) as Record<string, unknown>).flatMap(([k, v]) => (allowed.includes(k) && clean(v, 300) ? [[k, noMarkup(clean(v, 300))]] : [])))
+      const index = typeof o.index === 'number' && Number.isInteger(o.index) && o.index >= 0 && o.index <= 20 ? o.index : undefined
+      const match = clean(o.match, 60)
+      // a change needs something to say, an item to find, a removal an item to find; an addition needs something to say
+      if (o.action === 'set' && (!Object.keys(fields).length || (index === undefined && !match))) return undefined
+      if (o.action === 'remove' && index === undefined && !match) return undefined
+      if (o.action === 'add' && !Object.keys(fields).length) return undefined
+      return { op: 'item', list, action: o.action as ItemEdit['action'], ...(index !== undefined ? { index } : {}), ...(match ? { match } : {}), ...(Object.keys(fields).length ? { fields } : {}) }
     }
     case 'contact': {
       const value = clean(o.value, 120)
@@ -453,6 +490,9 @@ export function editsFrom(ops: EditOp[]): SiteEdits {
       case 'replace':
         e.replace = [...e.replace, { from: op.from, to: op.to }]
         break
+      case 'item':
+        e.items = [...e.items, { list: op.list, action: op.action, index: op.index, match: op.match, fields: op.fields }].slice(-40)
+        break
       case 'contact':
         e.contact = { ...e.contact, [op.field]: op.value }
         break
@@ -564,7 +604,7 @@ export function describeOp(op: EditOp): string {
         const where = op.target === 'page' ? 'the page' : `the ${op.target}`
         return op.value === 'default' ? `The ${noun} of ${where} have the normal size again` : `The ${noun} of ${where} are ${op.value.startsWith('+') ? 'bigger' : 'smaller'}`
       }
-      const what = { buttonColor: 'buttons', headingColor: 'headings', textColor: 'text', radius: 'corners', font: 'typeface' }[op.prop]
+      const what = { buttonColor: 'buttons', headingColor: 'headings', textColor: 'text', radius: 'corners', font: 'typeface', headingWeight: 'heading weight', headingCase: 'heading letters', headingItalic: 'heading slant', textWeight: 'text weight', textItalic: 'text slant' }[op.prop]
       return op.value === 'default' ? `The ${what} of ${op.target === 'page' ? 'the page' : `the ${op.target}`} are back to normal` : `${op.target === 'page' ? 'All' : `The ${op.target}`} ${what}: ${op.value}`
     }
     case 'mood':
@@ -583,6 +623,12 @@ export function describeOp(op: EditOp): string {
       return `Changed the ${op.field.replace(/([A-Z])/g, ' $1').toLowerCase()} to "${op.text}"`
     case 'replace':
       return `Replaced "${op.from}" with "${op.to}"`
+    case 'item': {
+      const what = { features: 'service', faq: 'question', steps: 'step', stats: 'number', testimonials: 'review', plans: 'plan', gallery: 'picture caption', paragraphs: 'paragraph of the about part', points: 'point of the about part', blog: 'note' }[op.list]
+      const which = op.match ? `"${op.match}"` : op.index === 0 ? 'the last' : op.index ? `number ${op.index}` : ''
+      const said = Object.values(op.fields ?? {}).join(' / ').slice(0, 70)
+      return op.action === 'remove' ? `Removed the ${what} ${which}`.trim() : op.action === 'add' ? `Added a ${what}: ${said}` : `Changed the ${what} ${which}: ${said}`
+    }
     case 'contact':
       return `Set the ${op.field} to ${op.value}`
     case 'title':

@@ -740,7 +740,10 @@ function GeneratorPage() {
       if (parsed.kind === 'control') {
         if (parsed.control === 'undo') undo()
         else if (parsed.control === 'redo') redo()
-        else reset()
+        else if (parsed.control === 'redesign') {
+          say({ role: 'ai', text: 'Here is another design for the same business.' })
+          await anotherDesign()
+        } else reset()
         return
       }
       if (parsed.kind === 'newSite') {

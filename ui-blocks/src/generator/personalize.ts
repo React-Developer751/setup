@@ -189,6 +189,7 @@ function notAService(item: string, prices: { name: string }[]): boolean {
   if (GENERIC_PRICE_NAME.test(x) || /^(?:basic|standard|premium|pro|plus|starter|business|plan \d)$/.test(x)) return true
   if (prices.some((p) => p.name.toLowerCase() === x) && /^(?:basic|standard|premium|pro|plus|starter|business)$/.test(x)) return true
   if (/\b(?:web ?site|landing page|web page|webpage|portfolio site)\b/.test(x)) return true
+  if (/^(?:single|one|multi|multiple|several|long|short|simple|full)\s+pages?$/.test(x) || /^(?:responsive|mobile friendly|modern|clean)$/.test(x)) return true
   if (/\bplans?$/.test(x) && /^(?:gym|membership|monthly|pricing|price|fee|class)\b/.test(x)) return true
   // "plans basic", "pricing premium": the word for the list and the name of one plan
   if (/^(?:plans?|pricing|prices?|fees?|rates?)\s+\p{L}+$/u.test(x)) return true
@@ -270,7 +271,9 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
   // place, the audience and the promises added; a kit page gets a line made of the services.
   const perkLine = perks.find((p) => p.kind === 'always') ? 'Available 24/7.' : perks.find((p) => p.kind === 'delivery') ? `${upperFirst(perks.find((p) => p.kind === 'delivery')!.text)} available.` : perks.find((p) => p.kind === 'free') ? `Free ${perks.find((p) => p.kind === 'free')!.text}.` : ''
   if (hasNiche) {
-    const where = place ? `Serving ${audience ? `${audience} in ` : ''}${place}.` : audience ? `For ${audience}.` : ''
+    // (the place is not said twice in the line)
+    const placed = !!place && next.hero.subtitle.toLowerCase().includes(place.toLowerCase())
+    const where = place && !placed ? `Serving ${audience ? `${audience} in ` : ''}${place}.` : audience ? `For ${audience}.` : ''
     // what the person named comes into the line: "Wood fired pizza, fresh pasta and tiramisu."
     const named = services.length >= 2 ? `${upperFirst(list(services.slice(0, 3).map((s) => lowerFirst(fixAcronyms(s)))))}.` : ''
     const detail = facts.details?.length ? `${upperFirst(list(facts.details.map((d) => lowerFirst(fixAcronyms(d)))))}.` : ''

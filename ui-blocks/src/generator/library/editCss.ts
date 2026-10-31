@@ -12,6 +12,9 @@ const FAMILIES = ['indigo', 'blue', 'purple', 'violet', 'fuchsia', 'pink', 'rose
 /** the classes the kits give to their buttons (the colour families all follow the main colour in this engine) */
 const BUTTON_BG = [...FAMILIES.flatMap((f) => [500, 600, 700].map((n) => `.bg-${f}-${n}`)), '.bg-primary', '.bg-brand', '.bg-brand-strong'].join(',')
 
+/** the buttons of the generated parts (they have no Tailwind classes: their slots name them) */
+const GEN_BUTTONS = '[data-slot="button"],[data-slot="button2"],[data-slot="plan-button"],.gp-send,.gn-action,.gp-button'
+
 const scopes = (target: FitTarget): string[] => (target === 'page' ? ['[data-gen-theme]'] : (ROLES_OF[target] ?? []).map((role) => `[data-role="${role}"]`))
 const under = (scope: string, selector: string) => selector.split(',').map((part) => `${scope} ${part.trim()}`).join(',')
 /** Tailwind's type scale (rem): a browser without CSS zoom gets the sizes scaled through these variables instead (all text of that size, not only headings) */
@@ -33,9 +36,17 @@ export function editCss(edits: SiteEdits | undefined): string {
       if (style.buttonColor) rules.push(`${under(scope, BUTTON_BG)}{background-color:${style.buttonColor}!important;border-color:${style.buttonColor}!important;color:${onColor(style.buttonColor)}!important}`)
       if (style.headingColor) rules.push(`${under(scope, 'h1,h2,h3,h4,h5,h6')}{color:${style.headingColor}!important}`)
       if (style.textColor) rules.push(`${under(scope, 'p,li,label,td,th,dd')}{color:${style.textColor}!important}`)
+      // the letters: bold, UPPER CASE, italic
+      const H = 'h1,h2,h3,h4,h5,h6'
+      const T = 'p,li,label,td,th,dd'
+      if (style.headingWeight) rules.push(`${under(scope, H)}{font-weight:${style.headingWeight === 'bold' ? 800 : 400}!important}`)
+      if (style.headingCase) rules.push(`${under(scope, H)}{text-transform:${style.headingCase === 'upper' ? 'uppercase' : 'none'}!important}`)
+      if (style.headingItalic) rules.push(`${under(scope, H)}{font-style:${style.headingItalic === 'on' ? 'italic' : 'normal'}!important}`)
+      if (style.textWeight) rules.push(`${under(scope, T)}{font-weight:${style.textWeight === 'bold' ? 700 : 400}!important}`)
+      if (style.textItalic) rules.push(`${under(scope, T)}{font-style:${style.textItalic === 'on' ? 'italic' : 'normal'}!important}`)
       if (style.radius === 'square') rules.push(`${under(scope, '*')}{border-radius:0!important}`)
-      if (style.radius === 'pill') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select')}{border-radius:9999px!important}`)
-      if (style.radius === 'rounded') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,[class*="rounded"]:not(.rounded-full):not(img)')}{border-radius:.75rem!important}`)
+      if (style.radius === 'pill') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,' + GEN_BUTTONS)}{border-radius:9999px!important}`)
+      if (style.radius === 'rounded') rules.push(`${under(scope, BUTTON_BG + ',input,textarea,select,' + GEN_BUTTONS + ',[class*="rounded"]:not(.rounded-full):not(img)')}{border-radius:.75rem!important}`)
       if (style.headingSize) {
         rules.push(`@supports (zoom:1){${under(scope, 'h1,h2,h3,h4')}{zoom:${scale(style.headingSize)}}}`)
         rules.push(`@supports not (zoom:1){${scope}{${sizeVars(['xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'], scale(style.headingSize))}}}`)

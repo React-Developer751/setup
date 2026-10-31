@@ -72,7 +72,7 @@
 {"text": "hide the reviews", "context": "single", "expect": {"ops": [{"op": "remove", "section": "testimonials"}]}}
 {"text": "about us nahi chahiye", "context": "single", "expect": {"ops": [{"op": "remove", "section": "about"}]}}
 {"text": "remove the call to action banner", "context": "single", "expect": {"ops": [{"op": "remove", "section": "cta"}]}}
-{"text": "remove contact", "context": "single", "expect": {"ops": []}}
+{"text": "remove contact", "context": "single", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "pricing page hatao", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "pricing"}, {"op": "remove", "section": "pricing"}]}}
 {"text": "remove the blog page", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "blog"}, {"op": "remove", "section": "blog"}]}}
 {"text": "gallery hata do", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "gallery"}, {"op": "remove", "section": "gallery"}]}}
@@ -83,8 +83,8 @@
 {"text": "remove testimonials", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "testimonials"}]}}
 {"text": "stats hata do", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "stats"}]}}
 {"text": "remove how it works", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "steps"}]}}
-{"text": "remove contact", "context": "multi", "expect": {"ops": []}}
-{"text": "contact page delete karo", "context": "multi", "expect": {"ops": []}}
+{"text": "remove contact", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "contact page delete karo", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "ticker remove kar do", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "marquee"}]}}
 {"text": "cta banner remove", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "cta"}]}}
 {"text": "remove the FAQ", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "faq"}, {"op": "remove", "section": "faq"}]}}
@@ -428,13 +428,13 @@
 {"text": "thanks!", "context": "single", "expect": {"ops": []}}
 {"text": "hello", "context": "multi", "expect": {"ops": []}}
 {"text": "what can you do?", "context": "single", "expect": {"ops": []}}
-{"text": "contact hata do", "context": "multi", "expect": {"ops": []}}
+{"text": "contact hata do", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "kya yeh free hai", "context": "single", "expect": {"ops": []}}
 {"text": "धन्यवाद", "context": "single", "expect": {"ops": []}}
-{"text": "remove the contact page", "context": "multi", "expect": {"ops": []}}
+{"text": "remove the contact page", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "ok cool bro", "context": "single", "expect": {"ops": []}}
 {"text": "how long will it take", "context": "multi", "expect": {"ops": []}}
-{"text": "delete contact section", "context": "single", "expect": {"ops": []}}
+{"text": "delete contact section", "context": "single", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "kala button karo aur animations kam", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#000000"}, {"op": "motion", "level": "subtle"}]}}
 {"text": "remove the stats, rename to Joe's Garage, then use #00AA55", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "stats"}, {"op": "rename", "name": "Joe's Garage"}, {"op": "accent", "hex": "#00aa55"}]}}
 {"text": "remove the faq and rename it to Zen Cafe", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}, {"op": "rename", "name": "Zen Cafe"}]}}
@@ -474,7 +474,7 @@
 {"text": "button par Book Now likho aur headline Welcome to 4 Seasons", "context": "multi", "expect": {"ops": [{"op": "text", "field": "heroButton", "text": "Book Now"}, {"op": "text", "field": "heroTitle", "text": "Welcome to 4 Seasons"}]}}
 {"text": "add about, add team and add pricing", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "about"}, {"op": "add", "section": "about"}, {"op": "addPage", "page": "team"}, {"op": "add", "section": "team"}, {"op": "addPage", "page": "pricing"}, {"op": "add", "section": "pricing"}]}}
 {"text": "can you please make it dark and remove the blog", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}, {"op": "remove", "section": "blog"}]}}
-{"text": "remove contact and add gallery", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}]}}
+{"text": "remove contact and add gallery", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}, {"op": "addPage", "page": "gallery"}, {"op": "add", "section": "gallery"}]}}
 {"text": "services title Our Menu & Specials, about title Who We Are", "context": "single", "expect": {"ops": [{"op": "title", "target": "features", "text": "Our Menu & Specials"}, {"op": "title", "target": "about", "text": "Who We Are"}]}}
 {"text": "phone number 98765 43210 daal do aur email info@sharmasweets.in", "context": "multi", "expect": {"ops": [{"op": "contact", "field": "phone", "value": "98765 43210"}, {"op": "contact", "field": "email", "value": "info@sharmasweets.in"}]}}
 {"text": "hata do faq, add steps, make it premium", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}, {"op": "add", "section": "steps"}, {"op": "tier", "tier": "premium"}]}}
@@ -533,7 +533,7 @@
 {"text": "हमारे बारे में वाला हिस्सा हटा दो", "context": "single", "expect": {"ops": [{"op": "remove", "section": "about"}]}}
 {"text": "services page nahi chahiye, delete it", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "services"}, {"op": "remove", "section": "features"}]}}
 {"text": "take out the about us page", "context": "multi", "expect": {"ops": [{"op": "removePage", "page": "about"}, {"op": "remove", "section": "about"}]}}
-{"text": "can you remove the contact page", "context": "multi", "expect": {"ops": []}}
+{"text": "can you remove the contact page", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "add a galery, i have lots of cake photos", "context": "single", "expect": {"ops": [{"op": "add", "section": "gallery"}]}}
 {"text": "FAQ bhi daalo please", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "faq"}, {"op": "add", "section": "faq"}]}}
 {"text": "I want a pricing section for my membership plans", "context": "single", "expect": {"ops": [{"op": "add", "section": "pricing"}]}}
@@ -911,7 +911,7 @@
 {"text": "phir se lagao", "context": "single", "expect": {"control": "redo"}}
 {"text": "सब बदलाव हटा दो", "context": "single", "expect": {"control": "reset"}}
 {"text": "move home to the bottom of the menu", "context": "multi", "expect": {"ops": []}}
-{"text": "contact page hatao menu se", "context": "multi", "expect": {"ops": []}}
+{"text": "contact page hatao menu se", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "home ko menu me last karo", "context": "multi", "expect": {"ops": []}}
-{"text": "contact section remove karo", "context": "single", "expect": {"ops": []}}
+{"text": "contact section remove karo", "context": "single", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
 {"text": "move Home below Blog in the menu", "context": "multi", "expect": {"ops": []}}

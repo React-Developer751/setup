@@ -8,6 +8,7 @@ import { extractContentDetails } from './filter'
 import type { LegalDocs, Milestone, OpeningHours, Post } from './siteTypes'
 import type { ThemeKey } from './themes'
 import { applyNiche } from './niche/applyNiche'
+import { bespokeContent, nicheGap } from './bespoke'
 import type { Niche } from './niche/types'
 import { extractFacts, personalize, plainStats, safeFaq } from './personalize'
 import type { Locale } from './siteData'
@@ -41,6 +42,8 @@ export type WebsiteContent = {
   widgets?: { kind: string; value?: string; text?: string }[]
   /** the offers the person named ("free shipping above ₹999", "cash on delivery", "7-day returns"): the announcement bar of the page */
   offers?: string[]
+  /** the page was written from the person's own words (no text pack fits the business): see bespoke.ts */
+  bespoke?: boolean
   /** headings and menu labels the person changed (see edit/edits.ts) */
   titles?: Partial<Record<string, string>>
   navLabels?: Partial<Record<string, string>>
@@ -70,7 +73,9 @@ export function generateWebsiteContent(
   /** a hand-written niche pack and what the prompt says about this business (see niche/ and personalize.ts) */
   shaping?: { niche?: Niche; rand: () => number; locale?: Locale },
 ): WebsiteContent {
-  const details = extractContentDetails(userPrompt, theme, shaping?.niche?.label)
+  const details0 = extractContentDetails(userPrompt, theme, shaping?.niche?.label)
+  // the niche is a loose fit for what was said ("reptile pet shop" under the pet care pack): the name is made from the person's words, not from the label of the pack
+  const details = shaping?.niche && details0.subject && nicheGap(details0.subject, shaping.niche).length > 0 ? extractContentDetails(userPrompt, theme, undefined) : details0
   const businessName = brandOverride ?? details.businessName
   const subject = details.subject
   const templates = contentTemplates[theme] || contentTemplates.modern_tech
@@ -115,15 +120,21 @@ export function generateWebsiteContent(
   // the niche pack replaces the kit's wording, then the facts of the prompt (services, place, promises) go on top
   const shape = (value: WebsiteContent) => {
     if (!shaping) return value
-    const base = shaping.niche ? applyNiche(value, shaping.niche, size, shaping.rand, shaping.locale) : value
-    const avoid = shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords, ...shaping.niche.features.map((f) => f.title)] : []
-    const personal0 = personalize(base, extractFacts(userPrompt, subject, avoid), size, shaping.rand, !!shaping.niche, theme === 'professional_services' || theme === 'healthcare', userPrompt, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords] : [])
+    // a business the pack of its niche (or of its kind of site) knows nothing about ("board game cafe", "escape room", "kite making workshop"): the page is written from the person's own words, not from another business
+    const facts0 = extractFacts(userPrompt, subject, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords, ...shaping.niche.features.map((f) => f.title)] : [])
+    const tech = /\b(?:software|apps?|saas|platform|start-?ups?|tools?|cloud|api|crm|erp|dashboards?|digital|data|ai|developers?|code|coding|website\s+builder)\b/i.test(`${subject} ${userPrompt}`)
+    const kitTemplates = contentTemplates[theme]
+    const kitAsNiche = { label: theme.replace(/_/g, ' '), keywords: [] as string[], features: kitTemplates?.features ?? [], heroTitles: [kitTemplates?.heroTitle ?? '', ...(kitTemplates?.alternatives ?? []).map((a) => a.heroTitle)], heroSubtitles: [kitTemplates?.heroSubtitle ?? ''], featureTitle: kitTemplates?.featureTitle ?? '' } as unknown as Niche
+    const gap = subject ? nicheGap(subject, shaping.niche ?? kitAsNiche) : []
+    const bespoke = gap.length > 0 && !(!shaping.niche && theme === 'modern_tech' && tech)
+    const base = bespoke ? bespokeContent(value, { subject, prompt: userPrompt, place: facts0.place, rand: shaping.rand }) : shaping.niche ? applyNiche(value, shaping.niche, size, shaping.rand, shaping.locale) : value
+    const personal0 = personalize(base, bespoke ? extractFacts(userPrompt, subject, []) : facts0, size, shaping.rand, !!shaping.niche || bespoke, theme === 'professional_services' || theme === 'healthcare', userPrompt, shaping.niche ? [shaping.niche.label, ...shaping.niche.keywords] : [])
     // the answers of the pack that promise something specific (a time, a guarantee, free) are not the person's: they send the visitor to a message
     const personal = { ...personal0, faq: safeFaq(personal0.faq) }
     // example numbers of the kits are claims nobody made: plain statements instead
     const plain = withCuisine({ ...personal, stats: plainStats(personal.stats, shaping.rand, !/\b(?:ngo|charity|foundation|donat\w*|shelter|rescue|trust|store|shop|restaurants?|cafes?|bakery|tapri|chai|school)\b/i.test(userPrompt)) }, userPrompt)
     // no text pack: the cards of the business type next to it must not talk about another business
-    return shaping.niche ? plain : scrubForeign(plain, userPrompt)
+    return shaping.niche || bespoke ? plain : scrubForeign(plain, userPrompt)
   }
   if (!creative) return shape(content)
 

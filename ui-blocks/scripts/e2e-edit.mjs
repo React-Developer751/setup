@@ -115,7 +115,7 @@ const m = parseEdit('remove the pricing and faq', 'multi')
 ok(m.kind === 'ops' && J(m.ops.map((o) => o.op)) === J(['removePage', 'remove', 'removePage', 'remove']), 'multi-page removal gives page + section')
 const s = parseEdit('remove the pricing and faq', 'single')
 ok(s.kind === 'ops' && s.ops.every((o) => o.op === 'remove'), 'single-page removal gives sections only')
-ok(parseEdit('remove the contact form', 'single').ops?.length === 0, 'contact cannot be removed')
+ok(parseEdit('remove the contact form', 'single').ops?.some((o) => o.op === 'remove' && o.section === 'contact'), 'the contact part can be removed (it is their site; they are told what stays)')
 
 console.log(`\n${pass} checks passed, ${fail.length} failed`)
 for (const f of fail) console.log(`  ✗ ${f}`)

@@ -1,240 +1,240 @@
-{"text":"rename the pricing section to Our Plans","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Our Plans"}]}}
-{"text":"pricing ka title Our Plans karo","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Our Plans"}]}}
-{"text":"features section heading: What We Do","context":"single","expect":{"ops":[{"op":"title","target":"features","text":"What We Do"}]}}
-{"text":"gallery ka naam Our Work rakho","context":"single","expect":{"ops":[{"op":"title","target":"gallery","text":"Our Work"}]}}
-{"text":"FAQ ko Got Questions? naam do","context":"single","expect":{"ops":[{"op":"title","target":"faq","text":"Got Questions?"}]}}
-{"text":"bhai about section ka heading Our Story kar do please","context":"single","expect":{"ops":[{"op":"title","target":"about","text":"Our Story"}]}}
-{"text":"can you change the testimonials heading to Happy Customers","context":"multi","expect":{"ops":[{"op":"title","target":"testimonials","text":"Happy Customers"}]}}
-{"text":"team section title Meet the Chefs","context":"single","expect":{"ops":[{"op":"title","target":"team","text":"Meet the Chefs"}]}}
-{"text":"blog ka heading Latest News rakho","context":"single","expect":{"ops":[{"op":"title","target":"blog","text":"Latest News"}]}}
-{"text":"how it works section ko Simple Steps naam de do","context":"single","expect":{"ops":[{"op":"title","target":"steps","text":"Simple Steps"}]}}
-{"text":"cta banner ka title Join Us Today likho","context":"single","expect":{"ops":[{"op":"title","target":"cta","text":"Join Us Today"}]}}
-{"text":"contact section heading Get In Touch karo","context":"single","expect":{"ops":[{"op":"title","target":"contact","text":"Get In Touch"}]}}
-{"text":"प्राइसिंग सेक्शन का टाइटल Our Plans करो","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Our Plans"}]}}
-{"text":"गैलरी का हेडिंग Our Work रखो","context":"single","expect":{"ops":[{"op":"title","target":"gallery","text":"Our Work"}]}}
-{"text":"रिव्यूज़ सेक्शन का नाम Happy Clients रखो","context":"single","expect":{"ops":[{"op":"title","target":"testimonials","text":"Happy Clients"}]}}
-{"text":"टीम के सेक्शन का नाम Our Experts कर दो","context":"multi","expect":{"ops":[{"op":"title","target":"team","text":"Our Experts"}]}}
-{"text":"renmae the servcies section to What We Offer","context":"single","expect":{"ops":[{"op":"title","target":"features","text":"What We Offer"}]}}
-{"text":"pricng section heading Best Rates karo","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Best Rates"}]}}
-{"text":"plz change reviews section title to Kind Words","context":"single","expect":{"ops":[{"op":"title","target":"testimonials","text":"Kind Words"}]}}
-{"text":"i want the packages heading to say Choose Your Plan","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Choose Your Plan"}]}}
-{"text":"photos wale section ka title Moments karo","context":"single","expect":{"ops":[{"op":"title","target":"gallery","text":"Moments"}]}}
-{"text":"stats section ka heading By The Numbers likho","context":"single","expect":{"ops":[{"op":"title","target":"stats","text":"By The Numbers"}]}}
-{"text":"set the news section heading to Journal","context":"multi","expect":{"ops":[{"op":"title","target":"blog","text":"Journal"}]}}
-{"text":"our story section ka heading Who We Are karo","context":"single","expect":{"ops":[{"op":"title","target":"about","text":"Who We Are"}]}}
-{"text":"programs section ka heading Our Classes rakho","context":"single","expect":{"ops":[{"op":"title","target":"features","text":"Our Classes"}]}}
-{"text":"call to action banner heading Book Now rakhna","context":"single","expect":{"ops":[{"op":"title","target":"cta","text":"Book Now"}]}}
-{"text":"common questions section ko Quick Answers naam do","context":"single","expect":{"ops":[{"op":"title","target":"faq","text":"Quick Answers"}]}}
-{"text":"doctors section title Our Doctors","context":"single","expect":{"ops":[{"op":"title","target":"team","text":"Our Doctors"}]}}
-{"text":"hey could you rename the process section to How We Work","context":"single","expect":{"ops":[{"op":"title","target":"steps","text":"How We Work"}]}}
-{"text":"services wale section ka heading Our Treatments karo","context":"single","expect":{"ops":[{"op":"title","target":"features","text":"Our Treatments"}]}}
-{"text":"rename Services in the menu to Treatments","context":"multi","expect":{"ops":[{"op":"navLabel","target":"services","text":"Treatments"}]}}
-{"text":"menu me About ko Our Story karo","context":"multi","expect":{"ops":[{"op":"navLabel","target":"about","text":"Our Story"}]}}
-{"text":"navbar me pricing ka naam Rates likho","context":"multi","expect":{"ops":[{"op":"navLabel","target":"pricing","text":"Rates"}]}}
-{"text":"change the Blog link to News","context":"multi","expect":{"ops":[{"op":"navLabel","target":"blog","text":"News"}]}}
-{"text":"pricing page ka naam Rates karo","context":"multi","expect":{"ops":[{"op":"navLabel","target":"pricing","text":"Rates"}]}}
-{"text":"nav me gallery ko Photos kar do","context":"multi","expect":{"ops":[{"op":"navLabel","target":"gallery","text":"Photos"}]}}
-{"text":"tab name for FAQ should be Help","context":"multi","expect":{"ops":[{"op":"navLabel","target":"faq","text":"Help"}]}}
-{"text":"menu mein team ko Our People rakho","context":"multi","expect":{"ops":[{"op":"navLabel","target":"team","text":"Our People"}]}}
-{"text":"can you rename the contact link in the navigation to Reach Us","context":"multi","expect":{"ops":[{"op":"navLabel","target":"contact","text":"Reach Us"}]}}
-{"text":"home ko menu me Start karo","context":"multi","expect":{"ops":[{"op":"navLabel","target":"home","text":"Start"}]}}
-{"text":"मेन्यू में Services को Treatments कर दो","context":"multi","expect":{"ops":[{"op":"navLabel","target":"services","text":"Treatments"}]}}
-{"text":"नेवबार में ब्लॉग का नाम News रखो","context":"multi","expect":{"ops":[{"op":"navLabel","target":"blog","text":"News"}]}}
-{"text":"menu me about ka naam Hamari Kahani likho","context":"multi","expect":{"ops":[{"op":"navLabel","target":"about","text":"Hamari Kahani"}]}}
-{"text":"services page ka naam Our Menu karo","context":"multi","expect":{"ops":[{"op":"navLabel","target":"services","text":"Our Menu"}]}}
-{"text":"in the nav bar change FAQ to Questions","context":"multi","expect":{"ops":[{"op":"navLabel","target":"faq","text":"Questions"}]}}
-{"text":"menu me gallery ka naam Portfolio likho","context":"multi","expect":{"ops":[{"op":"navLabel","target":"gallery","text":"Portfolio"}]}}
-{"text":"mneu me pricing ko Plans karo","context":"multi","expect":{"ops":[{"op":"navLabel","target":"pricing","text":"Plans"}]}}
-{"text":"navbar: Team link ko Staff naam do","context":"multi","expect":{"ops":[{"op":"navLabel","target":"team","text":"Staff"}]}}
-{"text":"rename the About tab to Company","context":"multi","expect":{"ops":[{"op":"navLabel","target":"about","text":"Company"}]}}
-{"text":"blog page ka naam Stories rakho","context":"multi","expect":{"ops":[{"op":"navLabel","target":"blog","text":"Stories"}]}}
-{"text":"menu me contact ko Talk To Us karo","context":"multi","expect":{"ops":[{"op":"navLabel","target":"contact","text":"Talk To Us"}]}}
-{"text":"please change Home to Welcome in the top menu","context":"multi","expect":{"ops":[{"op":"navLabel","target":"home","text":"Welcome"}]}}
-{"text":"move pricing above about","context":"single","expect":{"ops":[{"op":"move","section":"pricing","where":"before","target":"about"}]}}
-{"text":"FAQ ko sabse neeche karo","context":"single","expect":{"ops":[{"op":"move","section":"faq","where":"bottom"}]}}
-{"text":"gallery ko top par lao","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"top"}]}}
-{"text":"testimonials ko features ke baad rakho","context":"single","expect":{"ops":[{"op":"move","section":"testimonials","where":"after","target":"features"}]}}
-{"text":"move team up","context":"single","expect":{"ops":[{"op":"move","section":"team","where":"up"}]}}
-{"text":"put the blog at the bottom","context":"single","expect":{"ops":[{"op":"move","section":"blog","where":"bottom"}]}}
-{"text":"reviews ko about se pehle lagao","context":"single","expect":{"ops":[{"op":"move","section":"testimonials","where":"before","target":"about"}]}}
-{"text":"can you move the faq section below pricing","context":"single","expect":{"ops":[{"op":"move","section":"faq","where":"after","target":"pricing"}]}}
-{"text":"stats ko sabse upar rakho","context":"single","expect":{"ops":[{"op":"move","section":"stats","where":"top"}]}}
-{"text":"cta ko ek step neeche karo","context":"single","expect":{"ops":[{"op":"move","section":"cta","where":"down"}]}}
-{"text":"move gallery down a bit","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"down"}]}}
-{"text":"pricing ko gallery ke upar le jao","context":"single","expect":{"ops":[{"op":"move","section":"pricing","where":"before","target":"gallery"}]}}
-{"text":"team ko features ke niche daalo","context":"single","expect":{"ops":[{"op":"move","section":"team","where":"after","target":"features"}]}}
-{"text":"how it works ko top par karo","context":"single","expect":{"ops":[{"op":"move","section":"steps","where":"top"}]}}
-{"text":"contact section sabse last me rakho","context":"single","expect":{"ops":[{"op":"move","section":"contact","where":"bottom"}]}}
-{"text":"गैलरी को सबसे ऊपर करो","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"top"}]}}
-{"text":"FAQ को सबसे नीचे रखो","context":"single","expect":{"ops":[{"op":"move","section":"faq","where":"bottom"}]}}
-{"text":"प्राइसिंग को एबाउट से पहले रखो","context":"multi","expect":{"ops":[{"op":"move","section":"pricing","where":"before","target":"about"}]}}
-{"text":"टीम को एक स्टेप ऊपर करो","context":"single","expect":{"ops":[{"op":"move","section":"team","where":"up"}]}}
-{"text":"रिव्यूज़ को गैलरी के बाद रखो","context":"single","expect":{"ops":[{"op":"move","section":"testimonials","where":"after","target":"gallery"}]}}
-{"text":"plz put about us section above services","context":"single","expect":{"ops":[{"op":"move","section":"about","where":"before","target":"features"}]}}
-{"text":"blog ko pricing ke baad le aao","context":"single","expect":{"ops":[{"op":"move","section":"blog","where":"after","target":"pricing"}]}}
-{"text":"move the numbers section to the top","context":"single","expect":{"ops":[{"op":"move","section":"stats","where":"top"}]}}
-{"text":"photos wale section ko ek step neeche bhejo","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"down"}]}}
-{"text":"i'd like the packages above the team","context":"single","expect":{"ops":[{"op":"move","section":"pricing","where":"before","target":"team"}]}}
-{"text":"scrolling strip ko sabse upar lagao","context":"single","expect":{"ops":[{"op":"move","section":"marquee","where":"top"}]}}
-{"text":"pricing section ko ek step upar karo","context":"single","expect":{"ops":[{"op":"move","section":"pricing","where":"up"}]}}
-{"text":"move the FAQ section up","context":"multi","expect":{"ops":[{"op":"move","section":"faq","where":"up"}]}}
-{"text":"mov the gallry to the bottom","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"bottom"}]}}
-{"text":"our story ko sabse upar rakh do","context":"single","expect":{"ops":[{"op":"move","section":"about","where":"top"}]}}
-{"text":"cta ko pricing ke pehle rakho","context":"single","expect":{"ops":[{"op":"move","section":"cta","where":"before","target":"pricing"}]}}
-{"text":"put contact after faq","context":"single","expect":{"ops":[{"op":"move","section":"contact","where":"after","target":"faq"}]}}
-{"text":"features ko about ke upar karo","context":"single","expect":{"ops":[{"op":"move","section":"features","where":"before","target":"about"}]}}
-{"text":"staff section ko end me rakho","context":"single","expect":{"ops":[{"op":"move","section":"team","where":"bottom"}]}}
-{"text":"news section ko ek level neeche karo","context":"single","expect":{"ops":[{"op":"move","section":"blog","where":"down"}]}}
-{"text":"move Pricing before About in the menu","context":"multi","expect":{"ops":[{"op":"movePage","page":"pricing","where":"before","target":"about"}]}}
-{"text":"blog page ko menu me last karo","context":"multi","expect":{"ops":[{"op":"movePage","page":"blog","where":"bottom"}]}}
-{"text":"menu me team ko gallery ke baad rakho","context":"multi","expect":{"ops":[{"op":"movePage","page":"team","where":"after","target":"gallery"}]}}
-{"text":"move the FAQ tab to the end of the nav","context":"multi","expect":{"ops":[{"op":"movePage","page":"faq","where":"bottom"}]}}
-{"text":"services page ko menu me sabse pehle rakho","context":"multi","expect":{"ops":[{"op":"movePage","page":"services","where":"top"}]}}
-{"text":"move gallery up in the menu","context":"multi","expect":{"ops":[{"op":"movePage","page":"gallery","where":"up"}]}}
-{"text":"pricing tab ko ek step peeche karo menu me","context":"multi","expect":{"ops":[{"op":"movePage","page":"pricing","where":"down"}]}}
-{"text":"menu me about ko pricing se pehle karo","context":"multi","expect":{"ops":[{"op":"movePage","page":"about","where":"before","target":"pricing"}]}}
-{"text":"put the contact page last in the navbar","context":"multi","expect":{"ops":[{"op":"movePage","page":"contact","where":"bottom"}]}}
-{"text":"मेन्यू में ब्लॉग को सबसे आखिर में रखो","context":"multi","expect":{"ops":[{"op":"movePage","page":"blog","where":"bottom"}]}}
-{"text":"टीम पेज को मेन्यू में गैलरी से पहले रखो","context":"multi","expect":{"ops":[{"op":"movePage","page":"team","where":"before","target":"gallery"}]}}
-{"text":"navbar me faq ko blog ke baad lagao","context":"multi","expect":{"ops":[{"op":"movePage","page":"faq","where":"after","target":"blog"}]}}
-{"text":"move the team page down in the menu","context":"multi","expect":{"ops":[{"op":"movePage","page":"team","where":"down"}]}}
-{"text":"can you put the about tab above services in navigation","context":"multi","expect":{"ops":[{"op":"movePage","page":"about","where":"before","target":"services"}]}}
-{"text":"make the gallery shorter","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"height","factor":0.7}]}}
-{"text":"pricing me thoda kam padding karo","context":"single","expect":{"ops":[{"op":"size","target":"pricing","axis":"height","factor":0.85}]}}
-{"text":"hero ki height bahut kam karo","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":0.5}]}}
-{"text":"make the hero slightly taller","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":1.15}]}}
-{"text":"footer ka spacing kam karo","context":"single","expect":{"ops":[{"op":"size","target":"footer","axis":"height","factor":0.7}]}}
-{"text":"increase the faq height","context":"single","expect":{"ops":[{"op":"size","target":"faq","axis":"height","factor":1.3}]}}
-{"text":"features section bahut zyada ooncha karo","context":"single","expect":{"ops":[{"op":"size","target":"features","axis":"height","factor":1.6}]}}
-{"text":"double the height of the hero","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":1.6}]}}
-{"text":"half the height of the gallery please","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"height","factor":0.5}]}}
-{"text":"reduce gap in team section","context":"single","expect":{"ops":[{"op":"size","target":"team","axis":"height","factor":0.7}]}}
-{"text":"make everything shorter","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"height","factor":0.7}]}}
-{"text":"poori website ka spacing thoda kam karo","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"height","factor":0.85}]}}
-{"text":"make the cta bigger","context":"single","expect":{"ops":[{"op":"size","target":"cta","axis":"height","factor":1.3}]}}
-{"text":"testimonials ka padding zyada karo","context":"single","expect":{"ops":[{"op":"size","target":"testimonials","axis":"height","factor":1.3}]}}
-{"text":"stats section thoda chhota karo","context":"single","expect":{"ops":[{"op":"size","target":"stats","axis":"height","factor":0.85}]}}
-{"text":"much less space in the blog","context":"single","expect":{"ops":[{"op":"size","target":"blog","axis":"height","factor":0.5}]}}
-{"text":"header ki height thodi kam karo","context":"single","expect":{"ops":[{"op":"size","target":"header","axis":"height","factor":0.85}]}}
-{"text":"गैलरी की ऊंचाई कम करो","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"height","factor":0.7}]}}
-{"text":"हीरो की ऊंचाई बहुत कम करो","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":0.5}]}}
-{"text":"प्राइसिंग का पैडिंग ज्यादा करो","context":"single","expect":{"ops":[{"op":"size","target":"pricing","axis":"height","factor":1.3}]}}
-{"text":"फुटर की ऊंचाई थोड़ी कम करो","context":"single","expect":{"ops":[{"op":"size","target":"footer","axis":"height","factor":0.85}]}}
-{"text":"slightly more space around steps","context":"single","expect":{"ops":[{"op":"size","target":"steps","axis":"height","factor":1.15}]}}
-{"text":"make the about section smaller","context":"single","expect":{"ops":[{"op":"size","target":"about","axis":"height","factor":0.7}]}}
-{"text":"contact ke upar neeche ki jagah kam karo","context":"single","expect":{"ops":[{"op":"size","target":"contact","axis":"height","factor":0.7}]}}
-{"text":"pls make the marquee strip slightly shorter","context":"single","expect":{"ops":[{"op":"size","target":"marquee","axis":"height","factor":0.85}]}}
-{"text":"increase the hero height","context":"multi","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":1.3}]}}
-{"text":"gallery ki lambai zyada karo","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"height","factor":1.3}]}}
-{"text":"faq ka gap bahut kam karo","context":"single","expect":{"ops":[{"op":"size","target":"faq","axis":"height","factor":0.5}]}}
-{"text":"reduce spacing everywhere","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"height","factor":0.7}]}}
-{"text":"hero ko much taller karo","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":1.6}]}}
-{"text":"make the pricing narrower","context":"single","expect":{"ops":[{"op":"size","target":"pricing","axis":"width","factor":0.7}]}}
-{"text":"features ko thoda patla karo","context":"single","expect":{"ops":[{"op":"size","target":"features","axis":"width","factor":0.85}]}}
-{"text":"gallery wider karo","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"width","factor":1.3}]}}
-{"text":"hero ki chaurai kam karo","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"width","factor":0.7}]}}
-{"text":"make everything a bit narrower","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"width","factor":0.85}]}}
-{"text":"container ko bahut patla karo","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"width","factor":0.5}]}}
-{"text":"increase the team width","context":"single","expect":{"ops":[{"op":"size","target":"team","axis":"width","factor":1.3}]}}
-{"text":"much wider testimonials please","context":"single","expect":{"ops":[{"op":"size","target":"testimonials","axis":"width","factor":1.6}]}}
-{"text":"faq section slightly wider","context":"single","expect":{"ops":[{"op":"size","target":"faq","axis":"width","factor":1.15}]}}
-{"text":"footer ko half width me karo","context":"single","expect":{"ops":[{"op":"size","target":"footer","axis":"width","factor":0.5}]}}
-{"text":"blog ko thoda chauda karo","context":"single","expect":{"ops":[{"op":"size","target":"blog","axis":"width","factor":1.15}]}}
-{"text":"cta narrow karo","context":"single","expect":{"ops":[{"op":"size","target":"cta","axis":"width","factor":0.7}]}}
-{"text":"stats ki chaurai double karo","context":"single","expect":{"ops":[{"op":"size","target":"stats","axis":"width","factor":1.6}]}}
-{"text":"header narrower","context":"single","expect":{"ops":[{"op":"size","target":"header","axis":"width","factor":0.7}]}}
-{"text":"about ko wider karna","context":"single","expect":{"ops":[{"op":"size","target":"about","axis":"width","factor":1.3}]}}
-{"text":"गैलरी की चौड़ाई कम करो","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"width","factor":0.7}]}}
-{"text":"फीचर्स की चौड़ाई ज्यादा करो","context":"single","expect":{"ops":[{"op":"size","target":"features","axis":"width","factor":1.3}]}}
-{"text":"पूरी वेबसाइट थोड़ी पतली करो","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"width","factor":0.85}]}}
-{"text":"टीम सेक्शन बहुत चौड़ा करो","context":"single","expect":{"ops":[{"op":"size","target":"team","axis":"width","factor":1.6}]}}
-{"text":"make the steps section much narrower","context":"single","expect":{"ops":[{"op":"size","target":"steps","axis":"width","factor":0.5}]}}
-{"text":"contact form patla karo","context":"single","expect":{"ops":[{"op":"size","target":"contact","axis":"width","factor":0.7}]}}
-{"text":"reviews thode patle karo","context":"single","expect":{"ops":[{"op":"size","target":"testimonials","axis":"width","factor":0.85}]}}
-{"text":"marquee ko zyada chauda karo","context":"single","expect":{"ops":[{"op":"size","target":"marquee","axis":"width","factor":1.3}]}}
-{"text":"sab sections thode patle karo","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"width","factor":0.85}]}}
-{"text":"make everything wider","context":"multi","expect":{"ops":[{"op":"size","target":"page","axis":"width","factor":1.3}]}}
-{"text":"set the gallery width to 800px","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"width","px":800}]}}
-{"text":"hero height 500 px karo","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","px":500}]}}
-{"text":"reduce the pricing height by 20%","context":"single","expect":{"ops":[{"op":"size","target":"pricing","axis":"height","factor":0.8}]}}
-{"text":"increase team width by 50%","context":"single","expect":{"ops":[{"op":"size","target":"team","axis":"width","factor":1.5}]}}
-{"text":"make the faq section 60%","context":"single","expect":{"ops":[{"op":"size","target":"faq","axis":"height","factor":0.6}]}}
-{"text":"features ki chaurai 900px rakho","context":"single","expect":{"ops":[{"op":"size","target":"features","axis":"width","px":900}]}}
-{"text":"footer height 120px","context":"single","expect":{"ops":[{"op":"size","target":"footer","axis":"height","px":120}]}}
-{"text":"blog ko 30% kam karo","context":"single","expect":{"ops":[{"op":"size","target":"blog","axis":"height","factor":0.7}]}}
-{"text":"pricing width 20% kam karo","context":"single","expect":{"ops":[{"op":"size","target":"pricing","axis":"width","factor":0.8}]}}
-{"text":"hero ki height 40% badhao","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","factor":1.4}]}}
-{"text":"gallery width 1000 px please","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"width","px":1000}]}}
-{"text":"whole site width 1100px kar do","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"width","px":1100}]}}
-{"text":"टीम की चौड़ाई 75% कर दो","context":"single","expect":{"ops":[{"op":"size","target":"team","axis":"width","factor":0.75}]}}
-{"text":"cta height 300px kar do","context":"single","expect":{"ops":[{"op":"size","target":"cta","axis":"height","px":300}]}}
-{"text":"center the pricing heading","context":"single","expect":{"ops":[{"op":"align","target":"pricing","align":"center"}]}}
-{"text":"faq ko left align karo","context":"single","expect":{"ops":[{"op":"align","target":"faq","align":"left"}]}}
-{"text":"text right me karo","context":"single","expect":{"ops":[{"op":"align","target":"page","align":"right"}]}}
-{"text":"poori website center","context":"single","expect":{"ops":[{"op":"align","target":"page","align":"center"}]}}
-{"text":"hero text center karo","context":"single","expect":{"ops":[{"op":"align","target":"hero","align":"center"}]}}
-{"text":"align the features to the left","context":"single","expect":{"ops":[{"op":"align","target":"features","align":"left"}]}}
-{"text":"gallery ko beech me karo","context":"single","expect":{"ops":[{"op":"align","target":"gallery","align":"center"}]}}
-{"text":"footer right align please","context":"single","expect":{"ops":[{"op":"align","target":"footer","align":"right"}]}}
-{"text":"blog section ka text left me rakho","context":"single","expect":{"ops":[{"op":"align","target":"blog","align":"left"}]}}
-{"text":"cta ko center me lao","context":"single","expect":{"ops":[{"op":"align","target":"cta","align":"center"}]}}
-{"text":"make the about section centered","context":"single","expect":{"ops":[{"op":"align","target":"about","align":"center"}]}}
-{"text":"team ko right side karo","context":"single","expect":{"ops":[{"op":"align","target":"team","align":"right"}]}}
-{"text":"प्राइसिंग को सेंटर करो","context":"single","expect":{"ops":[{"op":"align","target":"pricing","align":"center"}]}}
-{"text":"फुटर का टेक्स्ट लेफ्ट करो","context":"single","expect":{"ops":[{"op":"align","target":"footer","align":"left"}]}}
-{"text":"पूरी वेबसाइट सेंटर में रखो","context":"single","expect":{"ops":[{"op":"align","target":"page","align":"center"}]}}
-{"text":"हीरो राइट अलाइन करो","context":"single","expect":{"ops":[{"op":"align","target":"hero","align":"right"}]}}
-{"text":"testimonials ko beech me rakho","context":"single","expect":{"ops":[{"op":"align","target":"testimonials","align":"center"}]}}
-{"text":"left align everything","context":"multi","expect":{"ops":[{"op":"align","target":"page","align":"left"}]}}
-{"text":"stats center me karo","context":"single","expect":{"ops":[{"op":"align","target":"stats","align":"center"}]}}
-{"text":"cetner the steps","context":"single","expect":{"ops":[{"op":"align","target":"steps","align":"center"}]}}
-{"text":"reset the sizes","context":"single","expect":{"ops":[{"op":"resetLayout"}]}}
-{"text":"pricing ka size normal karo","context":"single","expect":{"ops":[{"op":"resetLayout","target":"pricing"}]}}
-{"text":"layout reset","context":"single","expect":{"ops":[{"op":"resetLayout"}]}}
-{"text":"reset layout of the gallery","context":"single","expect":{"ops":[{"op":"resetLayout","target":"gallery"}]}}
-{"text":"hero ko normal size me lao","context":"single","expect":{"ops":[{"op":"resetLayout","target":"hero"}]}}
-{"text":"साइज़ रीसेट करो","context":"single","expect":{"ops":[{"op":"resetLayout"}]}}
-{"text":"footer ka layout reset karo","context":"single","expect":{"ops":[{"op":"resetLayout","target":"footer"}]}}
-{"text":"reset the faq to its normal size","context":"multi","expect":{"ops":[{"op":"resetLayout","target":"faq"}]}}
-{"text":"rename the pricing section to Our Plans and center it","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Our Plans"},{"op":"align","target":"pricing","align":"center"}]}}
-{"text":"move faq to the bottom and make gallery shorter","context":"single","expect":{"ops":[{"op":"move","section":"faq","where":"bottom"},{"op":"size","target":"gallery","axis":"height","factor":0.7}]}}
-{"text":"gallery ko top par lao aur uski height kam karo","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"top"},{"op":"size","target":"gallery","axis":"height","factor":0.7}]}}
-{"text":"remove the blog and move team up","context":"single","expect":{"ops":[{"op":"remove","section":"blog"},{"op":"move","section":"team","where":"up"}]}}
-{"text":"make the buttons blue and center the hero","context":"single","expect":{"ops":[{"op":"accent","hex":"#2563eb"},{"op":"align","target":"hero","align":"center"}]}}
-{"text":"rename it to Zen Cafe and move pricing above about","context":"single","expect":{"ops":[{"op":"rename","name":"Zen Cafe"},{"op":"move","section":"pricing","where":"before","target":"about"}]}}
-{"text":"features ka title Our Menu karo aur use patla karo","context":"single","expect":{"ops":[{"op":"title","target":"features","text":"Our Menu"},{"op":"size","target":"features","axis":"width","factor":0.7}]}}
-{"text":"move cta to top, center it and make it taller","context":"single","expect":{"ops":[{"op":"move","section":"cta","where":"top"},{"op":"align","target":"cta","align":"center"},{"op":"size","target":"cta","axis":"height","factor":1.3}]}}
-{"text":"menu me Services ko Treatments karo aur Blog ko News","context":"multi","expect":{"ops":[{"op":"navLabel","target":"services","text":"Treatments"},{"op":"navLabel","target":"blog","text":"News"}]}}
-{"text":"rename Pricing to Rates in the menu and move it before About in the menu","context":"multi","expect":{"ops":[{"op":"navLabel","target":"pricing","text":"Rates"},{"op":"movePage","page":"pricing","where":"before","target":"about"}]}}
-{"text":"dark mode karo aur gallery ko neeche karo","context":"single","expect":{"ops":[{"op":"mode","mode":"dark"},{"op":"move","section":"gallery","where":"bottom"}]}}
-{"text":"team section ka title Our Chefs karo and make it half height","context":"single","expect":{"ops":[{"op":"title","target":"team","text":"Our Chefs"},{"op":"size","target":"team","axis":"height","factor":0.5}]}}
-{"text":"reset the sizes and make the hero shorter","context":"single","expect":{"ops":[{"op":"resetLayout"},{"op":"size","target":"hero","axis":"height","factor":0.7}]}}
-{"text":"footer green karo aur footer ko center align karo","context":"single","expect":{"ops":[{"op":"sectionColor","target":"footer","hex":"#16a34a"},{"op":"align","target":"footer","align":"center"}]}}
-{"text":"faq ka heading Help Centre rakho, phir faq ko sabse neeche karo","context":"single","expect":{"ops":[{"op":"title","target":"faq","text":"Help Centre"},{"op":"move","section":"faq","where":"bottom"}]}}
-{"text":"make everything narrower and center everything","context":"single","expect":{"ops":[{"op":"size","target":"page","axis":"width","factor":0.7},{"op":"align","target":"page","align":"center"}]}}
-{"text":"remove the stats section and rename gallery section to Our Work","context":"single","expect":{"ops":[{"op":"remove","section":"stats"},{"op":"title","target":"gallery","text":"Our Work"}]}}
-{"text":"pricing heading Our Plans, gallery heading Our Work, team heading Our Crew","context":"single","expect":{"ops":[{"op":"title","target":"pricing","text":"Our Plans"},{"op":"title","target":"gallery","text":"Our Work"},{"op":"title","target":"team","text":"Our Crew"}]}}
-{"text":"hero height 500px karo aur hero text center karo","context":"single","expect":{"ops":[{"op":"size","target":"hero","axis":"height","px":500},{"op":"align","target":"hero","align":"center"}]}}
-{"text":"theme colour red karo aur pricing ko about ke upar rakho","context":"single","expect":{"ops":[{"op":"accent","hex":"#dc2626"},{"op":"move","section":"pricing","where":"before","target":"about"}]}}
-{"text":"move the Blog page to the end of the menu and rename it to Stories in the menu","context":"multi","expect":{"ops":[{"op":"movePage","page":"blog","where":"bottom"},{"op":"navLabel","target":"blog","text":"Stories"}]}}
-{"text":"make gallery wider and move it above team","context":"single","expect":{"ops":[{"op":"size","target":"gallery","axis":"width","factor":1.3},{"op":"move","section":"gallery","where":"before","target":"team"}]}}
-{"text":"reviews ka title Happy Clients karo aur reviews ko top par lao","context":"single","expect":{"ops":[{"op":"title","target":"testimonials","text":"Happy Clients"},{"op":"move","section":"testimonials","where":"top"}]}}
-{"text":"गैलरी को सबसे ऊपर करो और उसे सेंटर करो","context":"single","expect":{"ops":[{"op":"move","section":"gallery","where":"top"},{"op":"align","target":"gallery","align":"center"}]}}
-{"text":"FAQ हटाओ और प्राइसिंग का नाम Our Plans रखो","context":"single","expect":{"ops":[{"op":"remove","section":"faq"},{"op":"title","target":"pricing","text":"Our Plans"}]}}
-{"text":"footer ki height 100px karo aur right align karo","context":"single","expect":{"ops":[{"op":"size","target":"footer","axis":"height","px":100},{"op":"align","target":"footer","align":"right"}]}}
-{"text":"change the main headline to Fresh Every Day and make the hero shorter","context":"single","expect":{"ops":[{"op":"text","field":"heroTitle","text":"Fresh Every Day"},{"op":"size","target":"hero","axis":"height","factor":0.7}]}}
-{"text":"add a gallery and move it to the top","context":"single","expect":{"ops":[{"op":"add","section":"gallery"},{"op":"move","section":"gallery","where":"top"}]}}
-{"text":"add team page, then move team up in the menu","context":"multi","expect":{"ops":[{"op":"addPage","page":"team"},{"op":"add","section":"team"},{"op":"movePage","page":"team","where":"up"}]}}
-{"text":"about section ka heading Our Story karo, use center karo aur thoda chhota karo","context":"single","expect":{"ops":[{"op":"title","target":"about","text":"Our Story"},{"op":"align","target":"about","align":"center"},{"op":"size","target":"about","axis":"height","factor":0.85}]}}
-{"text":"undo","context":"single","expect":{"control":"undo"}}
-{"text":"undo that last move please","context":"single","expect":{"control":"undo"}}
-{"text":"redo","context":"multi","expect":{"control":"redo"}}
-{"text":"phir se lagao","context":"single","expect":{"control":"redo"}}
-{"text":"reset everything","context":"single","expect":{"control":"reset"}}
-{"text":"सब बदलाव हटा दो","context":"single","expect":{"control":"reset"}}
-{"text":"move home to the bottom of the menu","context":"multi","expect":{"ops":[]}}
-{"text":"remove the contact page","context":"multi","expect":{"ops":[]}}
-{"text":"contact page hatao menu se","context":"multi","expect":{"ops":[]}}
-{"text":"home ko menu me last karo","context":"multi","expect":{"ops":[]}}
-{"text":"contact section remove karo","context":"single","expect":{"ops":[]}}
-{"text":"move Home below Blog in the menu","context":"multi","expect":{"ops":[]}}
+{"text": "rename the pricing section to Our Plans", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Our Plans"}]}}
+{"text": "pricing ka title Our Plans karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Our Plans"}]}}
+{"text": "features section heading: What We Do", "context": "single", "expect": {"ops": [{"op": "title", "target": "features", "text": "What We Do"}]}}
+{"text": "gallery ka naam Our Work rakho", "context": "single", "expect": {"ops": [{"op": "title", "target": "gallery", "text": "Our Work"}]}}
+{"text": "FAQ ko Got Questions? naam do", "context": "single", "expect": {"ops": [{"op": "title", "target": "faq", "text": "Got Questions?"}]}}
+{"text": "bhai about section ka heading Our Story kar do please", "context": "single", "expect": {"ops": [{"op": "title", "target": "about", "text": "Our Story"}]}}
+{"text": "can you change the testimonials heading to Happy Customers", "context": "multi", "expect": {"ops": [{"op": "title", "target": "testimonials", "text": "Happy Customers"}]}}
+{"text": "team section title Meet the Chefs", "context": "single", "expect": {"ops": [{"op": "title", "target": "team", "text": "Meet the Chefs"}]}}
+{"text": "blog ka heading Latest News rakho", "context": "single", "expect": {"ops": [{"op": "title", "target": "blog", "text": "Latest News"}]}}
+{"text": "how it works section ko Simple Steps naam de do", "context": "single", "expect": {"ops": [{"op": "title", "target": "steps", "text": "Simple Steps"}]}}
+{"text": "cta banner ka title Join Us Today likho", "context": "single", "expect": {"ops": [{"op": "title", "target": "cta", "text": "Join Us Today"}]}}
+{"text": "contact section heading Get In Touch karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "contact", "text": "Get In Touch"}]}}
+{"text": "प्राइसिंग सेक्शन का टाइटल Our Plans करो", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Our Plans"}]}}
+{"text": "गैलरी का हेडिंग Our Work रखो", "context": "single", "expect": {"ops": [{"op": "title", "target": "gallery", "text": "Our Work"}]}}
+{"text": "रिव्यूज़ सेक्शन का नाम Happy Clients रखो", "context": "single", "expect": {"ops": [{"op": "title", "target": "testimonials", "text": "Happy Clients"}]}}
+{"text": "टीम के सेक्शन का नाम Our Experts कर दो", "context": "multi", "expect": {"ops": [{"op": "title", "target": "team", "text": "Our Experts"}]}}
+{"text": "renmae the servcies section to What We Offer", "context": "single", "expect": {"ops": [{"op": "title", "target": "features", "text": "What We Offer"}]}}
+{"text": "pricng section heading Best Rates karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Best Rates"}]}}
+{"text": "plz change reviews section title to Kind Words", "context": "single", "expect": {"ops": [{"op": "title", "target": "testimonials", "text": "Kind Words"}]}}
+{"text": "i want the packages heading to say Choose Your Plan", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Choose Your Plan"}]}}
+{"text": "photos wale section ka title Moments karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "gallery", "text": "Moments"}]}}
+{"text": "stats section ka heading By The Numbers likho", "context": "single", "expect": {"ops": [{"op": "title", "target": "stats", "text": "By The Numbers"}]}}
+{"text": "set the news section heading to Journal", "context": "multi", "expect": {"ops": [{"op": "title", "target": "blog", "text": "Journal"}]}}
+{"text": "our story section ka heading Who We Are karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "about", "text": "Who We Are"}]}}
+{"text": "programs section ka heading Our Classes rakho", "context": "single", "expect": {"ops": [{"op": "title", "target": "features", "text": "Our Classes"}]}}
+{"text": "call to action banner heading Book Now rakhna", "context": "single", "expect": {"ops": [{"op": "title", "target": "cta", "text": "Book Now"}]}}
+{"text": "common questions section ko Quick Answers naam do", "context": "single", "expect": {"ops": [{"op": "title", "target": "faq", "text": "Quick Answers"}]}}
+{"text": "doctors section title Our Doctors", "context": "single", "expect": {"ops": [{"op": "title", "target": "team", "text": "Our Doctors"}]}}
+{"text": "hey could you rename the process section to How We Work", "context": "single", "expect": {"ops": [{"op": "title", "target": "steps", "text": "How We Work"}]}}
+{"text": "services wale section ka heading Our Treatments karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "features", "text": "Our Treatments"}]}}
+{"text": "rename Services in the menu to Treatments", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "services", "text": "Treatments"}]}}
+{"text": "menu me About ko Our Story karo", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "about", "text": "Our Story"}]}}
+{"text": "navbar me pricing ka naam Rates likho", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "pricing", "text": "Rates"}]}}
+{"text": "change the Blog link to News", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "blog", "text": "News"}]}}
+{"text": "pricing page ka naam Rates karo", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "pricing", "text": "Rates"}]}}
+{"text": "nav me gallery ko Photos kar do", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "gallery", "text": "Photos"}]}}
+{"text": "tab name for FAQ should be Help", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "faq", "text": "Help"}]}}
+{"text": "menu mein team ko Our People rakho", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "team", "text": "Our People"}]}}
+{"text": "can you rename the contact link in the navigation to Reach Us", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "contact", "text": "Reach Us"}]}}
+{"text": "home ko menu me Start karo", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "home", "text": "Start"}]}}
+{"text": "मेन्यू में Services को Treatments कर दो", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "services", "text": "Treatments"}]}}
+{"text": "नेवबार में ब्लॉग का नाम News रखो", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "blog", "text": "News"}]}}
+{"text": "menu me about ka naam Hamari Kahani likho", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "about", "text": "Hamari Kahani"}]}}
+{"text": "services page ka naam Our Menu karo", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "services", "text": "Our Menu"}]}}
+{"text": "in the nav bar change FAQ to Questions", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "faq", "text": "Questions"}]}}
+{"text": "menu me gallery ka naam Portfolio likho", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "gallery", "text": "Portfolio"}]}}
+{"text": "mneu me pricing ko Plans karo", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "pricing", "text": "Plans"}]}}
+{"text": "navbar: Team link ko Staff naam do", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "team", "text": "Staff"}]}}
+{"text": "rename the About tab to Company", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "about", "text": "Company"}]}}
+{"text": "blog page ka naam Stories rakho", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "blog", "text": "Stories"}]}}
+{"text": "menu me contact ko Talk To Us karo", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "contact", "text": "Talk To Us"}]}}
+{"text": "please change Home to Welcome in the top menu", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "home", "text": "Welcome"}]}}
+{"text": "move pricing above about", "context": "single", "expect": {"ops": [{"op": "move", "section": "pricing", "where": "before", "target": "about"}]}}
+{"text": "FAQ ko sabse neeche karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "faq", "where": "bottom"}]}}
+{"text": "gallery ko top par lao", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "top"}]}}
+{"text": "testimonials ko features ke baad rakho", "context": "single", "expect": {"ops": [{"op": "move", "section": "testimonials", "where": "after", "target": "features"}]}}
+{"text": "move team up", "context": "single", "expect": {"ops": [{"op": "move", "section": "team", "where": "up"}]}}
+{"text": "put the blog at the bottom", "context": "single", "expect": {"ops": [{"op": "move", "section": "blog", "where": "bottom"}]}}
+{"text": "reviews ko about se pehle lagao", "context": "single", "expect": {"ops": [{"op": "move", "section": "testimonials", "where": "before", "target": "about"}]}}
+{"text": "can you move the faq section below pricing", "context": "single", "expect": {"ops": [{"op": "move", "section": "faq", "where": "after", "target": "pricing"}]}}
+{"text": "stats ko sabse upar rakho", "context": "single", "expect": {"ops": [{"op": "move", "section": "stats", "where": "top"}]}}
+{"text": "cta ko ek step neeche karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "cta", "where": "down"}]}}
+{"text": "move gallery down a bit", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "down"}]}}
+{"text": "pricing ko gallery ke upar le jao", "context": "single", "expect": {"ops": [{"op": "move", "section": "pricing", "where": "before", "target": "gallery"}]}}
+{"text": "team ko features ke niche daalo", "context": "single", "expect": {"ops": [{"op": "move", "section": "team", "where": "after", "target": "features"}]}}
+{"text": "how it works ko top par karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "steps", "where": "top"}]}}
+{"text": "contact section sabse last me rakho", "context": "single", "expect": {"ops": [{"op": "move", "section": "contact", "where": "bottom"}]}}
+{"text": "गैलरी को सबसे ऊपर करो", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "top"}]}}
+{"text": "FAQ को सबसे नीचे रखो", "context": "single", "expect": {"ops": [{"op": "move", "section": "faq", "where": "bottom"}]}}
+{"text": "प्राइसिंग को एबाउट से पहले रखो", "context": "multi", "expect": {"ops": [{"op": "move", "section": "pricing", "where": "before", "target": "about"}]}}
+{"text": "टीम को एक स्टेप ऊपर करो", "context": "single", "expect": {"ops": [{"op": "move", "section": "team", "where": "up"}]}}
+{"text": "रिव्यूज़ को गैलरी के बाद रखो", "context": "single", "expect": {"ops": [{"op": "move", "section": "testimonials", "where": "after", "target": "gallery"}]}}
+{"text": "plz put about us section above services", "context": "single", "expect": {"ops": [{"op": "move", "section": "about", "where": "before", "target": "features"}]}}
+{"text": "blog ko pricing ke baad le aao", "context": "single", "expect": {"ops": [{"op": "move", "section": "blog", "where": "after", "target": "pricing"}]}}
+{"text": "move the numbers section to the top", "context": "single", "expect": {"ops": [{"op": "move", "section": "stats", "where": "top"}]}}
+{"text": "photos wale section ko ek step neeche bhejo", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "down"}]}}
+{"text": "i'd like the packages above the team", "context": "single", "expect": {"ops": [{"op": "move", "section": "pricing", "where": "before", "target": "team"}]}}
+{"text": "scrolling strip ko sabse upar lagao", "context": "single", "expect": {"ops": [{"op": "move", "section": "marquee", "where": "top"}]}}
+{"text": "pricing section ko ek step upar karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "pricing", "where": "up"}]}}
+{"text": "move the FAQ section up", "context": "multi", "expect": {"ops": [{"op": "move", "section": "faq", "where": "up"}]}}
+{"text": "mov the gallry to the bottom", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "bottom"}]}}
+{"text": "our story ko sabse upar rakh do", "context": "single", "expect": {"ops": [{"op": "move", "section": "about", "where": "top"}]}}
+{"text": "cta ko pricing ke pehle rakho", "context": "single", "expect": {"ops": [{"op": "move", "section": "cta", "where": "before", "target": "pricing"}]}}
+{"text": "put contact after faq", "context": "single", "expect": {"ops": [{"op": "move", "section": "contact", "where": "after", "target": "faq"}]}}
+{"text": "features ko about ke upar karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "features", "where": "before", "target": "about"}]}}
+{"text": "staff section ko end me rakho", "context": "single", "expect": {"ops": [{"op": "move", "section": "team", "where": "bottom"}]}}
+{"text": "news section ko ek level neeche karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "blog", "where": "down"}]}}
+{"text": "move Pricing before About in the menu", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "pricing", "where": "before", "target": "about"}]}}
+{"text": "blog page ko menu me last karo", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "blog", "where": "bottom"}]}}
+{"text": "menu me team ko gallery ke baad rakho", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "team", "where": "after", "target": "gallery"}]}}
+{"text": "move the FAQ tab to the end of the nav", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "faq", "where": "bottom"}]}}
+{"text": "services page ko menu me sabse pehle rakho", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "services", "where": "top"}]}}
+{"text": "move gallery up in the menu", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "gallery", "where": "up"}]}}
+{"text": "pricing tab ko ek step peeche karo menu me", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "pricing", "where": "down"}]}}
+{"text": "menu me about ko pricing se pehle karo", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "about", "where": "before", "target": "pricing"}]}}
+{"text": "put the contact page last in the navbar", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "contact", "where": "bottom"}]}}
+{"text": "मेन्यू में ब्लॉग को सबसे आखिर में रखो", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "blog", "where": "bottom"}]}}
+{"text": "टीम पेज को मेन्यू में गैलरी से पहले रखो", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "team", "where": "before", "target": "gallery"}]}}
+{"text": "navbar me faq ko blog ke baad lagao", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "faq", "where": "after", "target": "blog"}]}}
+{"text": "move the team page down in the menu", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "team", "where": "down"}]}}
+{"text": "can you put the about tab above services in navigation", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "about", "where": "before", "target": "services"}]}}
+{"text": "make the gallery shorter", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "height", "factor": 0.7}]}}
+{"text": "pricing me thoda kam padding karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "pricing", "axis": "height", "factor": 0.85}]}}
+{"text": "hero ki height bahut kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 0.5}]}}
+{"text": "make the hero slightly taller", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 1.15}]}}
+{"text": "footer ka spacing kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "footer", "axis": "height", "factor": 0.7}]}}
+{"text": "increase the faq height", "context": "single", "expect": {"ops": [{"op": "size", "target": "faq", "axis": "height", "factor": 1.3}]}}
+{"text": "features section bahut zyada ooncha karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "features", "axis": "height", "factor": 1.6}]}}
+{"text": "double the height of the hero", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 1.6}]}}
+{"text": "half the height of the gallery please", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "height", "factor": 0.5}]}}
+{"text": "reduce gap in team section", "context": "single", "expect": {"ops": [{"op": "size", "target": "team", "axis": "height", "factor": 0.7}]}}
+{"text": "make everything shorter", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "height", "factor": 0.7}]}}
+{"text": "poori website ka spacing thoda kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "height", "factor": 0.85}]}}
+{"text": "make the cta bigger", "context": "single", "expect": {"ops": [{"op": "size", "target": "cta", "axis": "height", "factor": 1.3}]}}
+{"text": "testimonials ka padding zyada karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "testimonials", "axis": "height", "factor": 1.3}]}}
+{"text": "stats section thoda chhota karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "stats", "axis": "height", "factor": 0.85}]}}
+{"text": "much less space in the blog", "context": "single", "expect": {"ops": [{"op": "size", "target": "blog", "axis": "height", "factor": 0.5}]}}
+{"text": "header ki height thodi kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "header", "axis": "height", "factor": 0.85}]}}
+{"text": "गैलरी की ऊंचाई कम करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "height", "factor": 0.7}]}}
+{"text": "हीरो की ऊंचाई बहुत कम करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 0.5}]}}
+{"text": "प्राइसिंग का पैडिंग ज्यादा करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "pricing", "axis": "height", "factor": 1.3}]}}
+{"text": "फुटर की ऊंचाई थोड़ी कम करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "footer", "axis": "height", "factor": 0.85}]}}
+{"text": "slightly more space around steps", "context": "single", "expect": {"ops": [{"op": "size", "target": "steps", "axis": "height", "factor": 1.15}]}}
+{"text": "make the about section smaller", "context": "single", "expect": {"ops": [{"op": "size", "target": "about", "axis": "height", "factor": 0.7}]}}
+{"text": "contact ke upar neeche ki jagah kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "contact", "axis": "height", "factor": 0.7}]}}
+{"text": "pls make the marquee strip slightly shorter", "context": "single", "expect": {"ops": [{"op": "size", "target": "marquee", "axis": "height", "factor": 0.85}]}}
+{"text": "increase the hero height", "context": "multi", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 1.3}]}}
+{"text": "gallery ki lambai zyada karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "height", "factor": 1.3}]}}
+{"text": "faq ka gap bahut kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "faq", "axis": "height", "factor": 0.5}]}}
+{"text": "reduce spacing everywhere", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "height", "factor": 0.7}]}}
+{"text": "hero ko much taller karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 1.6}]}}
+{"text": "make the pricing narrower", "context": "single", "expect": {"ops": [{"op": "size", "target": "pricing", "axis": "width", "factor": 0.7}]}}
+{"text": "features ko thoda patla karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "features", "axis": "width", "factor": 0.85}]}}
+{"text": "gallery wider karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "width", "factor": 1.3}]}}
+{"text": "hero ki chaurai kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "width", "factor": 0.7}]}}
+{"text": "make everything a bit narrower", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "factor": 0.85}]}}
+{"text": "container ko bahut patla karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "factor": 0.5}]}}
+{"text": "increase the team width", "context": "single", "expect": {"ops": [{"op": "size", "target": "team", "axis": "width", "factor": 1.3}]}}
+{"text": "much wider testimonials please", "context": "single", "expect": {"ops": [{"op": "size", "target": "testimonials", "axis": "width", "factor": 1.6}]}}
+{"text": "faq section slightly wider", "context": "single", "expect": {"ops": [{"op": "size", "target": "faq", "axis": "width", "factor": 1.15}]}}
+{"text": "footer ko half width me karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "footer", "axis": "width", "factor": 0.5}]}}
+{"text": "blog ko thoda chauda karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "blog", "axis": "width", "factor": 1.15}]}}
+{"text": "cta narrow karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "cta", "axis": "width", "factor": 0.7}]}}
+{"text": "stats ki chaurai double karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "stats", "axis": "width", "factor": 1.6}]}}
+{"text": "header narrower", "context": "single", "expect": {"ops": [{"op": "size", "target": "header", "axis": "width", "factor": 0.7}]}}
+{"text": "about ko wider karna", "context": "single", "expect": {"ops": [{"op": "size", "target": "about", "axis": "width", "factor": 1.3}]}}
+{"text": "गैलरी की चौड़ाई कम करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "width", "factor": 0.7}]}}
+{"text": "फीचर्स की चौड़ाई ज्यादा करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "features", "axis": "width", "factor": 1.3}]}}
+{"text": "पूरी वेबसाइट थोड़ी पतली करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "factor": 0.85}]}}
+{"text": "टीम सेक्शन बहुत चौड़ा करो", "context": "single", "expect": {"ops": [{"op": "size", "target": "team", "axis": "width", "factor": 1.6}]}}
+{"text": "make the steps section much narrower", "context": "single", "expect": {"ops": [{"op": "size", "target": "steps", "axis": "width", "factor": 0.5}]}}
+{"text": "contact form patla karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "contact", "axis": "width", "factor": 0.7}]}}
+{"text": "reviews thode patle karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "testimonials", "axis": "width", "factor": 0.85}]}}
+{"text": "marquee ko zyada chauda karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "marquee", "axis": "width", "factor": 1.3}]}}
+{"text": "sab sections thode patle karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "factor": 0.85}]}}
+{"text": "make everything wider", "context": "multi", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "factor": 1.3}]}}
+{"text": "set the gallery width to 800px", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "width", "px": 800}]}}
+{"text": "hero height 500 px karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "px": 500}]}}
+{"text": "reduce the pricing height by 20%", "context": "single", "expect": {"ops": [{"op": "size", "target": "pricing", "axis": "height", "factor": 0.8}]}}
+{"text": "increase team width by 50%", "context": "single", "expect": {"ops": [{"op": "size", "target": "team", "axis": "width", "factor": 1.5}]}}
+{"text": "make the faq section 60%", "context": "single", "expect": {"ops": [{"op": "size", "target": "faq", "axis": "height", "factor": 0.6}]}}
+{"text": "features ki chaurai 900px rakho", "context": "single", "expect": {"ops": [{"op": "size", "target": "features", "axis": "width", "px": 900}]}}
+{"text": "footer height 120px", "context": "single", "expect": {"ops": [{"op": "size", "target": "footer", "axis": "height", "px": 120}]}}
+{"text": "blog ko 30% kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "blog", "axis": "height", "factor": 0.7}]}}
+{"text": "pricing width 20% kam karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "pricing", "axis": "width", "factor": 0.8}]}}
+{"text": "hero ki height 40% badhao", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "factor": 1.4}]}}
+{"text": "gallery width 1000 px please", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "width", "px": 1000}]}}
+{"text": "whole site width 1100px kar do", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "px": 1100}]}}
+{"text": "टीम की चौड़ाई 75% कर दो", "context": "single", "expect": {"ops": [{"op": "size", "target": "team", "axis": "width", "factor": 0.75}]}}
+{"text": "cta height 300px kar do", "context": "single", "expect": {"ops": [{"op": "size", "target": "cta", "axis": "height", "px": 300}]}}
+{"text": "center the pricing heading", "context": "single", "expect": {"ops": [{"op": "align", "target": "pricing", "align": "center"}]}}
+{"text": "faq ko left align karo", "context": "single", "expect": {"ops": [{"op": "align", "target": "faq", "align": "left"}]}}
+{"text": "text right me karo", "context": "single", "expect": {"ops": [{"op": "align", "target": "page", "align": "right"}]}}
+{"text": "poori website center", "context": "single", "expect": {"ops": [{"op": "align", "target": "page", "align": "center"}]}}
+{"text": "hero text center karo", "context": "single", "expect": {"ops": [{"op": "align", "target": "hero", "align": "center"}]}}
+{"text": "align the features to the left", "context": "single", "expect": {"ops": [{"op": "align", "target": "features", "align": "left"}]}}
+{"text": "gallery ko beech me karo", "context": "single", "expect": {"ops": [{"op": "align", "target": "gallery", "align": "center"}]}}
+{"text": "footer right align please", "context": "single", "expect": {"ops": [{"op": "align", "target": "footer", "align": "right"}]}}
+{"text": "blog section ka text left me rakho", "context": "single", "expect": {"ops": [{"op": "align", "target": "blog", "align": "left"}]}}
+{"text": "cta ko center me lao", "context": "single", "expect": {"ops": [{"op": "align", "target": "cta", "align": "center"}]}}
+{"text": "make the about section centered", "context": "single", "expect": {"ops": [{"op": "align", "target": "about", "align": "center"}]}}
+{"text": "team ko right side karo", "context": "single", "expect": {"ops": [{"op": "align", "target": "team", "align": "right"}]}}
+{"text": "प्राइसिंग को सेंटर करो", "context": "single", "expect": {"ops": [{"op": "align", "target": "pricing", "align": "center"}]}}
+{"text": "फुटर का टेक्स्ट लेफ्ट करो", "context": "single", "expect": {"ops": [{"op": "align", "target": "footer", "align": "left"}]}}
+{"text": "पूरी वेबसाइट सेंटर में रखो", "context": "single", "expect": {"ops": [{"op": "align", "target": "page", "align": "center"}]}}
+{"text": "हीरो राइट अलाइन करो", "context": "single", "expect": {"ops": [{"op": "align", "target": "hero", "align": "right"}]}}
+{"text": "testimonials ko beech me rakho", "context": "single", "expect": {"ops": [{"op": "align", "target": "testimonials", "align": "center"}]}}
+{"text": "left align everything", "context": "multi", "expect": {"ops": [{"op": "align", "target": "page", "align": "left"}]}}
+{"text": "stats center me karo", "context": "single", "expect": {"ops": [{"op": "align", "target": "stats", "align": "center"}]}}
+{"text": "cetner the steps", "context": "single", "expect": {"ops": [{"op": "align", "target": "steps", "align": "center"}]}}
+{"text": "reset the sizes", "context": "single", "expect": {"ops": [{"op": "resetLayout"}]}}
+{"text": "pricing ka size normal karo", "context": "single", "expect": {"ops": [{"op": "resetLayout", "target": "pricing"}]}}
+{"text": "layout reset", "context": "single", "expect": {"ops": [{"op": "resetLayout"}]}}
+{"text": "reset layout of the gallery", "context": "single", "expect": {"ops": [{"op": "resetLayout", "target": "gallery"}]}}
+{"text": "hero ko normal size me lao", "context": "single", "expect": {"ops": [{"op": "resetLayout", "target": "hero"}]}}
+{"text": "साइज़ रीसेट करो", "context": "single", "expect": {"ops": [{"op": "resetLayout"}]}}
+{"text": "footer ka layout reset karo", "context": "single", "expect": {"ops": [{"op": "resetLayout", "target": "footer"}]}}
+{"text": "reset the faq to its normal size", "context": "multi", "expect": {"ops": [{"op": "resetLayout", "target": "faq"}]}}
+{"text": "rename the pricing section to Our Plans and center it", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Our Plans"}, {"op": "align", "target": "pricing", "align": "center"}]}}
+{"text": "move faq to the bottom and make gallery shorter", "context": "single", "expect": {"ops": [{"op": "move", "section": "faq", "where": "bottom"}, {"op": "size", "target": "gallery", "axis": "height", "factor": 0.7}]}}
+{"text": "gallery ko top par lao aur uski height kam karo", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "top"}, {"op": "size", "target": "gallery", "axis": "height", "factor": 0.7}]}}
+{"text": "remove the blog and move team up", "context": "single", "expect": {"ops": [{"op": "remove", "section": "blog"}, {"op": "move", "section": "team", "where": "up"}]}}
+{"text": "make the buttons blue and center the hero", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#2563eb"}, {"op": "align", "target": "hero", "align": "center"}]}}
+{"text": "rename it to Zen Cafe and move pricing above about", "context": "single", "expect": {"ops": [{"op": "rename", "name": "Zen Cafe"}, {"op": "move", "section": "pricing", "where": "before", "target": "about"}]}}
+{"text": "features ka title Our Menu karo aur use patla karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "features", "text": "Our Menu"}, {"op": "size", "target": "features", "axis": "width", "factor": 0.7}]}}
+{"text": "move cta to top, center it and make it taller", "context": "single", "expect": {"ops": [{"op": "move", "section": "cta", "where": "top"}, {"op": "align", "target": "cta", "align": "center"}, {"op": "size", "target": "cta", "axis": "height", "factor": 1.3}]}}
+{"text": "menu me Services ko Treatments karo aur Blog ko News", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "services", "text": "Treatments"}, {"op": "navLabel", "target": "blog", "text": "News"}]}}
+{"text": "rename Pricing to Rates in the menu and move it before About in the menu", "context": "multi", "expect": {"ops": [{"op": "navLabel", "target": "pricing", "text": "Rates"}, {"op": "movePage", "page": "pricing", "where": "before", "target": "about"}]}}
+{"text": "dark mode karo aur gallery ko neeche karo", "context": "single", "expect": {"ops": [{"op": "mode", "mode": "dark"}, {"op": "move", "section": "gallery", "where": "bottom"}]}}
+{"text": "team section ka title Our Chefs karo and make it half height", "context": "single", "expect": {"ops": [{"op": "title", "target": "team", "text": "Our Chefs"}, {"op": "size", "target": "team", "axis": "height", "factor": 0.5}]}}
+{"text": "reset the sizes and make the hero shorter", "context": "single", "expect": {"ops": [{"op": "resetLayout"}, {"op": "size", "target": "hero", "axis": "height", "factor": 0.7}]}}
+{"text": "footer green karo aur footer ko center align karo", "context": "single", "expect": {"ops": [{"op": "sectionColor", "target": "footer", "hex": "#16a34a"}, {"op": "align", "target": "footer", "align": "center"}]}}
+{"text": "faq ka heading Help Centre rakho, phir faq ko sabse neeche karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "faq", "text": "Help Centre"}, {"op": "move", "section": "faq", "where": "bottom"}]}}
+{"text": "make everything narrower and center everything", "context": "single", "expect": {"ops": [{"op": "size", "target": "page", "axis": "width", "factor": 0.7}, {"op": "align", "target": "page", "align": "center"}]}}
+{"text": "remove the stats section and rename gallery section to Our Work", "context": "single", "expect": {"ops": [{"op": "remove", "section": "stats"}, {"op": "title", "target": "gallery", "text": "Our Work"}]}}
+{"text": "pricing heading Our Plans, gallery heading Our Work, team heading Our Crew", "context": "single", "expect": {"ops": [{"op": "title", "target": "pricing", "text": "Our Plans"}, {"op": "title", "target": "gallery", "text": "Our Work"}, {"op": "title", "target": "team", "text": "Our Crew"}]}}
+{"text": "hero height 500px karo aur hero text center karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "hero", "axis": "height", "px": 500}, {"op": "align", "target": "hero", "align": "center"}]}}
+{"text": "theme colour red karo aur pricing ko about ke upar rakho", "context": "single", "expect": {"ops": [{"op": "accent", "hex": "#dc2626"}, {"op": "move", "section": "pricing", "where": "before", "target": "about"}]}}
+{"text": "move the Blog page to the end of the menu and rename it to Stories in the menu", "context": "multi", "expect": {"ops": [{"op": "movePage", "page": "blog", "where": "bottom"}, {"op": "navLabel", "target": "blog", "text": "Stories"}]}}
+{"text": "make gallery wider and move it above team", "context": "single", "expect": {"ops": [{"op": "size", "target": "gallery", "axis": "width", "factor": 1.3}, {"op": "move", "section": "gallery", "where": "before", "target": "team"}]}}
+{"text": "reviews ka title Happy Clients karo aur reviews ko top par lao", "context": "single", "expect": {"ops": [{"op": "title", "target": "testimonials", "text": "Happy Clients"}, {"op": "move", "section": "testimonials", "where": "top"}]}}
+{"text": "गैलरी को सबसे ऊपर करो और उसे सेंटर करो", "context": "single", "expect": {"ops": [{"op": "move", "section": "gallery", "where": "top"}, {"op": "align", "target": "gallery", "align": "center"}]}}
+{"text": "FAQ हटाओ और प्राइसिंग का नाम Our Plans रखो", "context": "single", "expect": {"ops": [{"op": "remove", "section": "faq"}, {"op": "title", "target": "pricing", "text": "Our Plans"}]}}
+{"text": "footer ki height 100px karo aur right align karo", "context": "single", "expect": {"ops": [{"op": "size", "target": "footer", "axis": "height", "px": 100}, {"op": "align", "target": "footer", "align": "right"}]}}
+{"text": "change the main headline to Fresh Every Day and make the hero shorter", "context": "single", "expect": {"ops": [{"op": "text", "field": "heroTitle", "text": "Fresh Every Day"}, {"op": "size", "target": "hero", "axis": "height", "factor": 0.7}]}}
+{"text": "add a gallery and move it to the top", "context": "single", "expect": {"ops": [{"op": "add", "section": "gallery"}, {"op": "move", "section": "gallery", "where": "top"}]}}
+{"text": "add team page, then move team up in the menu", "context": "multi", "expect": {"ops": [{"op": "addPage", "page": "team"}, {"op": "add", "section": "team"}, {"op": "movePage", "page": "team", "where": "up"}]}}
+{"text": "about section ka heading Our Story karo, use center karo aur thoda chhota karo", "context": "single", "expect": {"ops": [{"op": "title", "target": "about", "text": "Our Story"}, {"op": "align", "target": "about", "align": "center"}, {"op": "size", "target": "about", "axis": "height", "factor": 0.85}]}}
+{"text": "undo", "context": "single", "expect": {"control": "undo"}}
+{"text": "undo that last move please", "context": "single", "expect": {"control": "undo"}}
+{"text": "redo", "context": "multi", "expect": {"control": "redo"}}
+{"text": "phir se lagao", "context": "single", "expect": {"control": "redo"}}
+{"text": "reset everything", "context": "single", "expect": {"control": "reset"}}
+{"text": "सब बदलाव हटा दो", "context": "single", "expect": {"control": "reset"}}
+{"text": "move home to the bottom of the menu", "context": "multi", "expect": {"ops": []}}
+{"text": "remove the contact page", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "contact page hatao menu se", "context": "multi", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "home ko menu me last karo", "context": "multi", "expect": {"ops": []}}
+{"text": "contact section remove karo", "context": "single", "expect": {"ops": [{"op": "remove", "section": "contact"}]}}
+{"text": "move Home below Blog in the menu", "context": "multi", "expect": {"ops": []}}

@@ -248,3 +248,11 @@ Found by testing real prompts (see the analysis in the session notes) and fixed:
 **Prices.** The price part says what the person wrote and nothing more: a period ("/ month") only when they wrote one ("per class"). A business that sells by plans or sessions (gym, yoga/salon, course, software) has a price page without being asked; its plans say "Ask for price" until the person writes real prices. Clinics, law firms, NGOs, shops have none unless asked ("without pricing" always wins). `npm run qa:gen -- 30 --prices` checks that every price the person wrote is on the price page.
 
 `node scripts/gen-selfrate.mjs 40 pricing faq quotes gallery` writes likes (`auto:true`) for designs that passed the browser check, on the person's instruction that what is built this way counts as liked.
+
+## Editing a built site, and businesses without a pack
+
+- **Item-level edits** (`src/generator/edit/itemParse.ts`): the second service, the third FAQ, a named plan, a review, a step, a stat, an about paragraph or a gallery caption can be changed, added or removed ("pehli service ka naam X karo", "FAQ me naya sawal jodo: …", "remove the Pro plan"). A missing item gets an honest "I could not find …" note instead of a wrong change.
+- **Single texts**: hero title, subtitle ("under the headline write: …"), button, section titles and the business name; opening hours ("sunday ko band rakho"); replace a phrase everywhere ("Jaipur ki jagah Udaipur").
+- **Controls**: "another design" / "kuch alag design" redraws the same business; reset and undo as before. **Letters**: bold, italic and UPPERCASE for headings or text, per part or for the page. Underline, letter spacing and shadows are still refused with an answer.
+- **Businesses with no pack** (`src/generator/bespoke.ts`): a kite workshop, a robot-toy shop, a pet-taxi: when the subject words are not in any niche pack the copy comes from a neutral mode (shop, service, learn, event, …) built around the person's own words, with its own design and pictures, never a foreign pack's claims.
+- Checks: `scripts/eval-edit.mjs` (917 commands, about 98%), `eval-edit-real/heldout/blind3.mjs` (compare the result, not the label), `scripts/test-edit-real.mjs` in `npm test`.
