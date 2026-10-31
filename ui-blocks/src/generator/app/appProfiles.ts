@@ -9,7 +9,7 @@ export type AppKind = 'ngo' | 'legal' | 'construction' | 'auto' | 'homeservices'
 const NAMES = ['Aarav Mehta', 'Diya Sharma', 'Vihaan Rao', 'Ananya Iyer', 'Kabir Singh', 'Isha Verma', 'Rohan Gupta', 'Meera Nair', 'Arjun Patel', 'Sara Khan', 'Ishaan Joshi', 'Tara Menon', 'Neil Fernandes', 'Priya Das', 'Yash Kulkarni', 'Riya Bose', 'Dev Malhotra', 'Kiara Shah']
 
 /** which kind of dashboard fits the business (by niche, by type of site and by what the business says it is) */
-export function appKindOf(o: { themeKey: string; niche?: string; subject?: string; voice?: string; bespoke?: boolean; prompt?: string }): AppKind {
+export function rankKinds(o: { themeKey: string; niche?: string; subject?: string; voice?: string; bespoke?: boolean; prompt?: string; /** the headline of the page (what the business says it does) */ title?: string }): { kind: AppKind; score: number }[] {
   const s = `${o.niche ?? ''} ${o.subject ?? ''} ${o.prompt ?? ''}`.toLowerCase().replace(/_/g, ' ')
   const RULES: [AppKind, RegExp][] = [
     ['creator', /\b(?:influencer|youtuber|podcast|streamer|blogger|vlogger|followers|subscribers)\b/],
@@ -39,16 +39,19 @@ export function appKindOf(o: { themeKey: string; niche?: string; subject?: strin
     ['homeservices', /\b(?:cleaning|pest|repair|ac service|appliance|laundry|maid|housekeeping|handyman|home services?|pest control|locksmith)\b/],
     ['shop', /\b(?:shop|store|boutique|kirana|grocery|retail|fashion|jewel|furniture|electronics|mart|thrift|mobile|gift|stationery|toys|books?|pharmacy store|optical|footwear|garments?|saree|kurti|cloth\w*)\b/],
   ]
-  if (o.voice === 'me') return 'creator'
+  if (o.voice === 'me') return [{ kind: 'creator' as AppKind, score: 9 }]
   // the words of the subject and of the niche count most, the other words (the cards of the page) less: "home cleaning" with a "kitchen cleaning" card is not a restaurant
   const strong = `${o.niche ?? ''} ${o.subject ?? ''}`.toLowerCase().replace(/_/g, ' ')
+  const title = (o.title ?? '').toLowerCase()
   // (a single word of the cards of the page, "training" on a security agency's page, is not enough: it takes two such words, or a word of the subject or of the niche)
   const hits = (re: RegExp) => (s.match(new RegExp(re.source, 'gi')) ?? []).length
-  const scored = RULES.map(([kind, re], order) => ({ kind, order, score: (re.test(strong) ? 3 : 0) + Math.min(2, hits(re)) })).filter((x) => x.score >= 2).sort((a, b) => b.score - a.score || a.order - b.order)
-  if (scored.length) return scored[0].kind
+  const scored = RULES.map(([kind, re], order) => ({ kind, order, score: (re.test(strong) ? 3 : re.test(title) ? 2 : 0) + Math.min(2, hits(re)) })).filter((x) => x.score >= 2).sort((a, b) => b.score - a.score || a.order - b.order)
+  if (scored.length) return scored.map((x) => ({ kind: x.kind, score: x.score }))
   const BY_THEME: Record<string, AppKind> = { nonprofit: 'ngo', automotive: 'auto', home_services: 'homeservices', pets_animals: 'pets', organic_nature: 'farm', modern_tech: 'software', healthcare: 'clinic', bold_fitness: 'gym', beauty_wellness: 'salon', food_dining: 'food', education: 'learning', real_estate: 'property', events_wedding: 'events', travel_tourism: 'travel', fashion_retail: 'shop' }
-  return BY_THEME[o.themeKey] ?? 'general'
+  return [{ kind: (BY_THEME[o.themeKey] ?? 'general') as AppKind, score: 1 }]
 }
+
+export const appKindOf = (o: Parameters<typeof rankKinds>[0]): AppKind => rankKinds(o)[0].kind
 
 /** the same numbers every time for the same business */
 function seeded(text: string) {
@@ -102,12 +105,12 @@ const SPECS: Record<string, Spec[]> = {
   'general:service': [['Requests', 'in total', 'requests', 'count'], ['New', 'to answer', 'requests', 'status', 'status', 'New'], ['Done', 'so far', 'requests', 'status', 'status', 'Done'], ['Customers', 'on record', 'customers', 'count']],
 }
 
-export function appConfigFor(content: WebsiteContent, o: { themeKey: string; niche?: string; prompt?: string }): AppConfig {
+export function appConfigFor(content: WebsiteContent, o: { themeKey: string; niche?: string; prompt?: string; /** the kind to build, when it is not the one the page says (used for the second kind of a business) */ kind?: AppKind; noExtra?: boolean }): AppConfig {
   const brand = content.brandName
   const r = seeded(`${brand}|${o.niche ?? ''}|${content.subject}`)
   // what the business says about itself, from the page (the prompt is not there in an export: the preview and the exports must give the same dashboard)
   const said = [content.subject, content.hero.title, content.hero.subtitle, content.features.items.map((f) => f.title).join(' ')].join(' ')
-  const kind = appKindOf({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: said })
+  const kind = o.kind ?? appKindOf({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: said, title: content.hero.title })
   const cur = /₹/.test(JSON.stringify(content.pricing.plans)) || /\brupees?\b|₹/i.test(o.prompt ?? '') ? '₹' : /£/.test(JSON.stringify(content.pricing.plans)) ? '£' : /€/.test(JSON.stringify(content.pricing.plans)) ? '€' : /₹|india|jaipur|delhi|mumbai|pune|surat|lucknow/i.test(`${o.prompt} ${content.contact.address}`) ? '₹' : '$'
   const today = new Date()
   const iso = (d: Date) => d.toISOString().slice(0, 10)
@@ -401,6 +404,16 @@ export function appConfigFor(content: WebsiteContent, o: { themeKey: string; nic
       tables = [...tables, table(slug(edit.page), label, label.replace(/s$/i, '').toLowerCase(), 'list', [col('name', 'Name'), col('details', 'Details'), col('date', 'Date', 'date'), col('status', 'Status', 'status', ['New', 'In progress', 'Done'])], toRows(5, () => ({ name: g.name(), details: g.pick(g.serviceList), date: g.date(14, 7), status: g.pick(['New', 'In progress', 'Done']) }), g))]
     }
   }
+  // a business of two kinds (a shop that also repairs, a gym with a juice bar): the first page of the second kind joins the dashboard
+  if (!o.noExtra) {
+    const second = rankKinds({ themeKey: o.themeKey, niche: o.niche, subject: content.subject, voice: content.voice, prompt: said, title: content.hero.title }).find((x) => x.kind !== kind && x.score >= 3 && x.kind !== 'general' && x.kind !== 'creator')
+    if (second && tables.length < 5) {
+      const other = appConfigFor(content, { ...o, kind: second.kind, noExtra: true })
+      const fresh = other.tables.find((x) => !tables.some((y) => norm(y.label) === norm(x.label) || y.id === x.id) && !/customer|client|guest|owner|patient|member|student|donor/i.test(x.id))
+      if (fresh) tables = [...tables, fresh]
+    }
+  }
+
   // the dates of every page are spread over the last half year and the coming three weeks, so the charts by month have something to show from the first day
   tables = tables.map((t) => {
     const dc = t.columns.find((c) => c.type === 'date')

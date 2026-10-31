@@ -179,5 +179,16 @@ for (const [p, ok] of CASES) {
   if (!cfg.tables.length || !cfg.kpis.length) { bad += 1; console.log(` - ${p.slice(0, 60)}: an empty dashboard`) }
   else if (!cfg.charts.some((c) => c.kind === 'status') || !cfg.charts.some((c) => c.kind !== 'status')) { bad += 1; console.log(` - ${p.slice(0, 60)}: the overview lacks a chart by status or a chart by month`) }
 }
+// a business of two kinds: the first page of the second kind joins; a business of one kind gets nothing extra
+{
+  const labels = (p) => { const lib = generateLibraryPage(p, 7, undefined, true, 'auto', undefined, true); return appConfigFor(lib.content, { themeKey: lib.themeKey, niche: typeof lib.niche === 'string' ? lib.niche : lib.niche?.id }).tables.map((t) => t.label) }
+  const check = (cond, label) => { if (!cond) { bad += 1; console.log(` - ${label}`) } }
+  const shop = labels('Mobile shop in Lucknow, phones, accessories and mobile repair service')
+  check(shop[0] === 'Orders' && shop.includes('Jobs') && shop.length === 4, `a mobile shop that repairs: shop pages and Jobs (got ${shop.join(', ')})`)
+  check(JSON.stringify(labels('Dental clinic in Surat, braces, implants')) === JSON.stringify(['Appointments', 'Patients', 'Billing']), 'a dental clinic with a "cleaning" card gets no extra page')
+  check(JSON.stringify(labels('Gym in Pune with a juice bar and personal training')) === JSON.stringify(['Members', 'Classes', 'Payments']), 'a gym with classes gets no extra page')
+  check(labels('Hardware shop and plumbing services in Noida').length <= 5, 'at most five pages')
+}
+
 console.log(`app-kinds: ${CASES.length * 2 - bad} checks passed, ${bad} failed`)
 process.exit(bad ? 1 : 0)

@@ -84,7 +84,7 @@ const CSS = `
 .ap-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 .ap-demo{font-size:12px;padding:6px 24px;background:color-mix(in srgb,var(--g-accent,#4f46e5) 14%,transparent);text-align:center}
 .ap-bars{display:flex;align-items:flex-end;gap:10px;height:170px;padding-top:8px}
-.ap-bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;gap:4px}
+.ap-bars div{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;gap:4px}
 .ap-bars i{display:block;width:100%;border-radius:6px 6px 0 0;background:var(--g-accent,#4f46e5);min-height:3px}
 .ap-two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px}.ap-two>*,.ap-body>*,.ap-kpis>*{min-width:0}.ap-body{min-width:0}
 @media(max-width:860px){.ap-shell{grid-template-columns:1fr}.ap-side{position:fixed;left:0;top:0;width:250px;z-index:4;background:var(--ap-bg,#fff);transform:translateX(-100%);transition:transform .2s}.ap-shell.open .ap-side{transform:none}.ap-burger{display:inline-flex}.ap-two{grid-template-columns:1fr}.ap-body{padding:16px}}
@@ -440,7 +440,20 @@ export function initApp(cfg: AppConfig): void {
     const max = Math.max(1, ...items.map((x) => x.value))
     return horizontal
       ? `<div style="display:grid;gap:8px">${items.map((x) => `<div style="display:grid;grid-template-columns:110px 1fr 36px;gap:10px;align-items:center;font-size:13px"><span>${esc(x.label)}</span><span style="background:color-mix(in srgb,currentColor 10%,transparent);border-radius:99px;height:10px;overflow:hidden"><i style="display:block;height:100%;width:${Math.round((x.value / max) * 100)}%;background:var(--g-accent,#4f46e5)"></i></span><b>${x.value}</b></div>`).join('')}</div>`
-      : `<div class="ap-bars">${items.map((x) => `<div title="${esc(x.label)}: ${x.value}"><span>${x.value >= 10000 ? Math.round(x.value / 1000) + 'k' : x.value}</span><i style="height:${Math.round((x.value / max) * 120)}px"></i><span>${esc(x.label)}</span></div>`).join('')}</div>`
+      : `<div class="ap-bars" style="${items.length > 8 ? 'gap:3px;font-size:9px' : ''}">${items.map((x) => `<div title="${esc(x.label)}: ${x.value}"><span>${x.value >= 10000 ? Math.round(x.value / 1000) + 'k' : x.value}</span><i style="height:${Math.round((x.value / max) * 120)}px"></i><span>${esc(x.label)}</span></div>`).join('')}</div>`
+  }
+  // a ring with the parts of a whole (rows by status), and what each part is
+  const DONUT = ['var(--g-accent,#4f46e5)', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#7c3aed']
+  const donut = (items: { label: string; value: number }[]) => {
+    const total = items.reduce((t, x) => t + x.value, 0)
+    if (!total) return ''
+    let at = 0
+    const stops = items.filter((x) => x.value > 0).map((x, i) => {
+      const from = at
+      at += (x.value / total) * 100
+      return `${DONUT[i % DONUT.length]} ${from.toFixed(2)}% ${at.toFixed(2)}%`
+    })
+    return `<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div role="img" aria-label="Rows by status" style="width:104px;height:104px;border-radius:50%;background:conic-gradient(${stops.join(',')});display:grid;place-items:center"><div style="width:60px;height:60px;border-radius:50%;background:var(--ap-bg,#fff);display:grid;place-items:center;font-weight:700">${total}</div></div><div style="display:grid;gap:6px;font-size:13px">${items.map((x, i) => `<span style="display:flex;gap:8px;align-items:center"><i style="width:10px;height:10px;border-radius:3px;background:${DONUT[i % DONUT.length]};display:inline-block"></i>${esc(x.label)} <b>${x.value}</b> <span style="opacity:.6">(${Math.round((x.value / total) * 100)}%)</span></span>`).join('')}</div></div>`
   }
   const chartOf = (c: AppConfig['charts'][number], data: Data) => {
     const t = cfg.tables.find((x) => x.id === c.table)
@@ -484,7 +497,7 @@ export function initApp(cfg: AppConfig): void {
         const sums = t.columns.filter((c) => c.type === 'money').map((c) => `<p style="margin:6px 0 0;font-size:14px">${esc(c.label)} in total: <b>${esc(moneyText(rows.reduce((n, r) => n + toNumber(r[c.key]), 0), cfg.currency))}</b></p>`).join('')
         const money = t.columns.find((c) => c.type === 'money')
         const top = money ? [...rows].sort((a, b) => toNumber(b[money.key]) - toNumber(a[money.key])).slice(0, 3) : []
-        return `<div class="ap-card ap-panel"><h3 style="font-size:16px">${esc(t.label)}</h3><p style="margin:4px 0 12px;opacity:.7;font-size:13px">${rows.length} row${rows.length === 1 ? '' : 's'}</p>${status.length ? bars(status, true) : ''}${monthMini(t, rows)}${sums}${top.length ? `<p style="margin:14px 0 6px;font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.05em">Biggest ${esc(money!.label.toLowerCase())}</p>${top.map((r) => `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${esc(r[t.columns[0].key])}</span><b>${esc(r[money!.key])}</b></div>`).join('')}` : ''}<p style="margin:14px 0 0"><a href="#/app/${esc(t.id)}">Open ${esc(t.label.toLowerCase())}</a></p></div>`
+        return `<div class="ap-card ap-panel"><h3 style="font-size:16px">${esc(t.label)}</h3><p style="margin:4px 0 12px;opacity:.7;font-size:13px">${rows.length} row${rows.length === 1 ? '' : 's'}</p>${status.length ? donut(status) : ''}${monthMini(t, rows)}${sums}${top.length ? `<p style="margin:14px 0 6px;font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.05em">Biggest ${esc(money!.label.toLowerCase())}</p>${top.map((r) => `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${esc(r[t.columns[0].key])}</span><b>${esc(r[money!.key])}</b></div>`).join('')}` : ''}<p style="margin:14px 0 0"><a href="#/app/${esc(t.id)}">Open ${esc(t.label.toLowerCase())}</a></p></div>`
       })
       .join('')}</div>`
   }
