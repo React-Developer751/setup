@@ -269,11 +269,14 @@ export function allowedBand(prompt: string, theme: ThemeKey): HueBand {
   const hits = HINTS.map((hint) => ({ hint, n: words.filter((w) => hint.words.includes(w)).length })).filter((x) => x.n)
   if (hits.length) {
     const best = hits.reduce((a, b) => (b.n > a.n ? b : a)).hint
-    const half = best.half ?? 50
+    // (a law firm or a clinic keeps to a narrow band around its hint: a bolder turn of the colour must still look like that business)
+    const half = theme === 'professional_services' || theme === 'healthcare' ? Math.min(best.half ?? 50, 28) : (best.half ?? 50)
     return { lo: best.hue - half, hi: best.hue + half, source: best.label }
   }
   const [low, high] = MOODS[theme].range
-  return { lo: low - 35, hi: high + 35, source: `${theme.replace(/_/g, ' ')} range` }
+  // a law firm, a clinic, an accountant: a colour that is a long way from the range of the business type (violet, pink) reads as a different business, so the room around the range is small
+  const margin = theme === 'professional_services' || theme === 'healthcare' ? 12 : 35
+  return { lo: low - margin, hi: high + margin, source: `${theme.replace(/_/g, ' ')} range` }
 }
 export function inBand(hue: number, band: HueBand): boolean {
   const mid = (band.lo + band.hi) / 2

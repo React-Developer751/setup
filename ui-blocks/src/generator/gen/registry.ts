@@ -5,12 +5,16 @@ import { faq, faqTree } from './faqSpec'
 import { footer, footerTree } from './footerSpec'
 import { gallery, galleryTree } from './gallerySpec'
 import { nav, navTree } from './navSpec'
+import { blog, blogTree } from './blogSpec'
+import { banner, bannerTree } from './bannerSpec'
 import { pricing, pricingTree } from './pricingSpec'
+import { stats, statsTree } from './statsSpec'
+import { steps, stepsTree } from './stepsSpec'
 import { quotes, quotesTree } from './quotesSpec'
 import type { Node } from './heroTree'
 import type { Part } from './partKit'
 
-export type KitRole = 'pricing' | 'faq' | 'testimonial' | 'gallery' | 'about' | 'contact' | 'footer' | 'nav'
+export type KitRole = 'pricing' | 'faq' | 'testimonial' | 'gallery' | 'about' | 'contact' | 'footer' | 'nav' | 'stats' | 'steps' | 'blog' | 'banner'
 export type KitPart = {
   role: KitRole
   part: Part<never>
@@ -29,6 +33,10 @@ export const KIT_PARTS: KitPart[] = [
   entry('contact', contact, contactTree, 'row', ['title', 'lead', 'row', 'row-label', 'row-value', 'form', 'button']),
   entry('footer', footer, footerTree, 'col', ['brand', 'tagline', 'col', 'col-title', 'link', 'rights']),
   entry('nav', nav, navTree, 'link', ['brand', 'link', 'button']),
+  entry('stats', stats, statsTree, 'stat', ['stat', 'stat-value', 'stat-label']),
+  entry('steps', steps, stepsTree, 'step', ['title', 'step', 'step-title', 'step-text']),
+  entry('blog', blog, blogTree, 'post', ['title', 'post', 'post-tag', 'post-title', 'post-image']),
+  entry('banner', banner, bannerTree, 'text', ['text', 'button']),
 ]
 
 export const kitOfId = (id: string) => KIT_PARTS.find((k) => id.startsWith(k.part.head))

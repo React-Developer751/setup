@@ -2,7 +2,8 @@
 import { generateLibraryPage, type LibrarySection } from './generator/library/generateLibraryPage'
 
 export function partPage(prompt: string, variation: number, role: string, id: string) {
-  const lib = generateLibraryPage(prompt, variation, 'better', true, 'auto', undefined, false)
+  // (an announcement bar needs an offer to announce)
+  const lib = generateLibraryPage(role === 'banner' ? `${prompt}, free delivery above 999 rupees` : prompt, variation, 'better', true, 'auto', undefined, false)
   const nav = lib.sections.filter((s) => s.role === 'nav' && role !== 'nav')
   const own = lib.sections.find((s) => (s.role as string) === role)
   const part: LibrarySection = { ...(own ?? { role: role as LibrarySection['role'], page: '*' }), role: role as LibrarySection['role'], componentId: id, page: '*' }

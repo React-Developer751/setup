@@ -891,14 +891,24 @@ function fillBackgrounds(root: Element, role: Role, c: WebsiteContent, colors?: 
   })
 }
 
+/**
+ * The pictures a part may use. The first screen and the about part have their own; the gallery takes the gallery pictures in order; every other part (cards, steps, blog ...) takes them from the far end
+ * first, so the cards above the gallery and the gallery itself do not show the same scene next to each other.
+ */
+export function picturesFor(role: Role | string, photos: WebsiteContent['photos']): (string | undefined)[] {
+  const g = photos?.gallery ?? []
+  if (role === 'hero') return [photos?.hero]
+  if (role === 'about' || role === 'profile') return [photos?.about, g[g.length - 1], g[g.length - 2]]
+  if (role === 'gallery') return g
+  return [...g.slice(Math.ceil(g.length / 2)), ...g.slice(0, Math.ceil(g.length / 2)), photos?.about, photos?.hero]
+}
+
 function fillImages(root: Element, role: Role, c: WebsiteContent, colors?: { accent: string; alt: string }) {
   const photos = c.photos
-  const gallery = photos?.gallery ?? []
   const people = role === 'testimonial' ? c.testimonials.map((t) => t.author) : role === 'team' ? c.team.members.map((m) => m.name) : [c.brandName]
-  const pool = role === 'hero' ? [photos?.hero] : role === 'about' || role === 'profile' ? [photos?.about, ...gallery.slice(0, 3)] : role === 'gallery' ? gallery : [...gallery, photos?.about, photos?.hero]
-  const own = pool.filter((p): p is string => !!p)
+  const own = picturesFor(role, photos).filter((p): p is string => !!p)
   // every part starts at another picture, so the same scene is not on the page four times
-  const START: Partial<Record<Role, number>> = { features: 1, steps: 2, team: 2, testimonial: 3, blog: 3, pricing: 4, cta: 5, faq: 1 }
+  const START: Partial<Record<Role, number>> = { features: 0, steps: 2, team: 2, testimonial: 3, blog: 1, pricing: 4, cta: 5, faq: 1 }
   let next = START[role] ?? 0
   let person = 0
   root.querySelectorAll('img').forEach((img) => {
@@ -1274,7 +1284,7 @@ export function fillContent(root: Element, role: Role, c: WebsiteContent, links:
   if (role === 'pagehead') return step('title block', () => fillPageHead(root))
   // the components of the reference kit mark their parts with data-slot: they are filled by name
   if (root.querySelector('[data-ref]')) {
-    const own = [c.photos?.hero, c.photos?.about, ...(c.photos?.gallery ?? [])].filter((p): p is string => !!p)
+    const own = picturesFor(role, c.photos).filter((p): p is string => !!p)
     const picture = (index: number, w: number, h: number) => own.length ? own[index % own.length] : ((colors && artFor(`ref|${role}|${index}`, colors, w, h)) || blank(w, h))
     step('reference kit', () => fillRef(root, role, c, picture, links))
     step('forms', () => readyForms(root))

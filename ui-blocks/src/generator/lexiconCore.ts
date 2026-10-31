@@ -4,20 +4,20 @@ import type { Lexicon } from './lexiconTypes'
 export const modernTech: Lexicon = {
   nouns: {
     thing: ['Infrastructure', 'Workflows', 'Pipelines', 'Products', 'Platforms', 'Operations', 'Deployments', 'Dashboards'],
-    quality: ['Reliability', 'Performance', 'Security', 'Velocity'],
+    quality: ['Reliability', 'Performance', 'Security', 'Support'],
     group: ['Teams', 'Developers', 'Startups'],
   },
   adjectives: {
     thing: ['Digital', 'Next-Gen', 'Automated', 'Cloud-Native', 'Smart', 'Seamless', 'Connected', 'Intelligent'],
-    quality: ['Rock-Solid', 'Unmatched', 'Next-Level', 'Everyday'],
+    quality: ['Dependable', 'Practical', 'Steady', 'Everyday'],
     group: ['Growing', 'Ambitious', 'Modern', 'Fast-Moving'],
   },
   verbs: {
-    thing: ['Automate', 'Streamline', 'Scale', 'Accelerate', 'Transform', 'Redefine', 'Simplify'],
+    thing: ['Automate', 'Streamline', 'Scale', 'Organise', 'Simplify'],
     quality: ['Unlock', 'Boost', 'Deliver'],
     group: ['Empower', 'Equip', 'Support'],
   },
-  benefits: ['Instantly', 'Without Friction', 'At Lightning Speed', 'Effortlessly', 'From Day One', 'At Any Scale'],
+  benefits: ['Without Friction', 'Effortlessly', 'From Day One', 'Step By Step'],
   audiences: ['growing teams', 'modern builders', 'ambitious startups', 'product teams', 'fast-moving companies'],
   promises: ['ships every week', 'obsesses over reliability', 'treats your uptime as its own', 'answers within minutes'],
   buttons: ['Start Free Trial', 'Get Started', 'Book A Demo', 'Try It Free'],

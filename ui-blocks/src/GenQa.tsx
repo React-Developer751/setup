@@ -60,7 +60,7 @@ export default function GenQa() {
             if (d.documentElement.scrollWidth > w.innerWidth + 1) problems.push(`${label}: sideways scroll`)
             if (kit) {
               const t = hero.querySelector<HTMLElement>('[data-slot="title"]')
-              if (kit.role !== 'nav' && kit.role !== 'footer' && (!t || t.textContent!.trim().length < 3)) problems.push(`${label}: no heading`)
+              if (kit.role !== 'nav' && kit.role !== 'footer' && kit.role !== 'stats' && kit.role !== 'banner' && (!t || t.textContent!.trim().length < 3)) problems.push(`${label}: no heading`)
               else if (t && t.scrollWidth > t.clientWidth + 2) problems.push(`${label}: heading clipped`)
               const unit = hero.querySelectorAll<HTMLElement>(`[data-slot="${kit.unit}"]`)
               if (!unit.length && kit.role !== 'contact') problems.push(`${label}: nothing shown`)

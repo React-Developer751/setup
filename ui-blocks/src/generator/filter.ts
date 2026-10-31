@@ -89,7 +89,9 @@ function extractSubject(userPrompt: string) {
   // "online clothing store for men": the business is in front of "for", "men" is the audience
   const beforeFor = stripped.split(/\s+for\s+/i)[0].trim()
   const afterHasBusiness = (afterFor ?? '').split(/\W+/).some(isBusinessWord)
-  const lead = afterFor && !afterHasBusiness && beforeFor !== stripped.trim() && beforeFor.split(/\W+/).some(isBusinessWord) ? beforeFor : afterFor
+  // "invoice software for small businesses": the product is in front of "for" (what is sold), the businesses after it are the customers
+  const productBefore = beforeFor !== stripped.trim() && /\b(?:software|app|application|tool|platform|system|saas|crm|erp|portal|dashboard|plugin|extension|solution)$/i.test(beforeFor)
+  const lead = afterFor && productBefore ? beforeFor : afterFor && !afterHasBusiness && beforeFor !== stripped.trim() && beforeFor.split(/\W+/).some(isBusinessWord) ? beforeFor : afterFor
   const candidates = hinglish ? [] : [lead, stripped]
   for (const candidate of candidates) {
     const raw = clean(candidate ?? '')

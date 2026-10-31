@@ -179,11 +179,47 @@ function fillShow(root: Element, kind: string, c: WebsiteContent, picture: Pictu
       })
       break
     }
+    case 'show-stats': {
+      repeat(root, 'stat', c.stats.slice(0, 4), (el, item) => {
+        put(el, 'stat-value', item.value)
+        put(el, 'stat-label', item.label)
+      })
+      break
+    }
+    case 'show-steps': {
+      put(root, 'title', c.steps.title)
+      repeat(root, 'step', c.steps.items.slice(0, 5), (el, item) => {
+        put(el, 'step-title', item.title)
+        put(el, 'step-text', short(item.text, 120))
+      })
+      break
+    }
+    case 'show-blog': {
+      put(root, 'title', c.blog.title)
+      repeat(root, 'post', c.blog.posts.slice(0, 4), (el, post, i) => {
+        put(el, 'post-tag', post.tag)
+        put(el, 'post-title', post.title)
+        const img = el.querySelector('[data-slot="post-image"]')
+        if (img) {
+          img.setAttribute('src', picture(i, 900, 600))
+          img.setAttribute('alt', post.title)
+        }
+      })
+      break
+    }
+    case 'show-banner': {
+      const offer = c.offers?.[0]
+      // an announcement is an offer the person named; without one there is nothing to announce
+      if (!offer) return root.setAttribute('hidden', '')
+      put(root, 'text', offer)
+      put(root, 'button', short(c.hero.button, 22))
+      break
+    }
     case 'show-about': {
       put(root, 'title', c.about.title)
       repeat(root, 'para', c.about.paragraphs.slice(0, 2), (el, text) => (el.textContent = text))
       repeat(root, 'point', c.about.points.slice(0, 4), (el, text) => (el.textContent = text))
-      setImg(one(root, 'image'), 1, 1200, 1300)
+      setImg(one(root, 'image'), 0, 1200, 1300)
       break
     }
     case 'show-contact': {

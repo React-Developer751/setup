@@ -159,13 +159,16 @@ const businessPhrase = (prompt: string | undefined) => {
   const head = withoutVibe(stripFiller(prompt.split(/\b(?:called|named|naam)\b/i)[0].split(/\s+(?:in|at|near|from)\s+(?=[A-Z])/)[0]).replace(/\b(?:me|mein)$/i, '').trim())
   let words = head
     .split(/\s+/)
-    .filter((w, i) => !(i > 0 && /^[A-Z][\p{L}&'-]*$/u.test(w)) && !REQUEST_WORDS.has(w.toLowerCase().replace(/[^\p{L}]/gu, '')) )
+    .filter((w, i) => !(i > 0 && /^[A-Z][\p{L}&'-]*$/u.test(w)) && (/^for$/i.test(w) || !REQUEST_WORDS.has(w.toLowerCase().replace(/[^\p{L}]/gu, ''))))
     .map((w) => w.replace(/[^\p{L}\p{N}'&-]+/gu, ''))
     .filter(Boolean)
+  // "website for a bakery" starts with the word for; "invoice software for small businesses" ends at it (the business is what comes before)
+  while (words.length && /^(?:for|a|an|the|my|our)$/i.test(words[0])) words = words.slice(1)
   while (words.length > 2 && /^(?:service|services|company|firm|business|agency)$/i.test(words[words.length - 1])) words = words.slice(0, -1)
   // "organic farm selling vegetables" is the business "organic farm"; "coaching institute for upsc and" ends at "institute"
   const cut = words.findIndex((w, k) => k > 0 && /^(?:for|with|selling|offering|that|which|who|where|providing|having|in|at|near)$/i.test(w))
   if (cut > 0) words = words.slice(0, cut)
+  words = words.filter((w) => !REQUEST_WORDS.has(w.toLowerCase()))
   while (words.length > 1 && /^(?:and|or|with|for|of|the|a|an|to|at|in|near|from)$/i.test(words[words.length - 1])) words = words.slice(0, -1)
   const phrase = words.join(' ').toLowerCase()
   if (phrase.length < 4 || words.length > 5 || isVague(phrase)) return ''
@@ -241,16 +244,18 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
   // a business the theme words do not describe ("bike rental" under the car theme): headlines and a subtitle that name the business itself
   const biz = plain ? '' : businessPhrase(userPrompt)
   const bizRand = biz ? seededRandom(Math.floor(rand() * 2 ** 31)) : rand
-  const Biz = titleCase(biz)
+  const ACRONYMS: Record<string, string> = { saas: 'SaaS', crm: 'CRM', erp: 'ERP', api: 'API', ngo: 'NGO', hr: 'HR', it: 'IT', ai: 'AI', seo: 'SEO', cctv: 'CCTV', gst: 'GST', upsc: 'UPSC', ac: 'AC', pg: 'PG', ca: 'CA' }
+  const Biz = titleCase(biz).replace(/\b[A-Za-z]{2,5}\b/g, (w) => ACRONYMS[w.toLowerCase()] ?? w)
+  const aBiz = /^[AEIOU]/i.test(Biz) && !/^(?:uni|use|user)/i.test(Biz) ? `An ${Biz}` : `A ${Biz}`
   const oneWord = !biz.includes(' ')
   // headlines about the business of the prompt: none of them is a stock ending ("Made Simple", "Starts Here"), each one says something about how the place works
   const bizTitles = oneWord
-    ? [`A ${Biz} That Listens`, `Your Neighbourhood ${Biz}`, `Honest ${Biz}, Start To Finish`, `Good ${Biz}, Fairly Priced`, `${Biz} With A Human Touch`, `${Biz} Without The Guesswork`]
-    : [`A ${Biz} That Listens`, `Your Neighbourhood ${Biz}`, `Honest ${Biz}, Start To Finish`, `Good ${Biz}, Fairly Priced`, `${Biz} With A Human Touch`, `${Biz} Without The Guesswork`, `${Biz} Built Around You`, `Where ${Biz} Feels Personal`]
+    ? [`${aBiz} That Listens`, `Your Neighbourhood ${Biz}`, `Honest ${Biz}, Start To Finish`, `Good ${Biz}, Fairly Priced`, `${Biz} With A Human Touch`, `${Biz} Without The Guesswork`]
+    : [`${aBiz} That Listens`, `Your Neighbourhood ${Biz}`, `Honest ${Biz}, Start To Finish`, `Good ${Biz}, Fairly Priced`, `${Biz} With A Human Touch`, `${Biz} Without The Guesswork`, `${Biz} Built Around You`, `Where ${Biz} Feels Personal`]
   const heroMarkov = fresh(markov?.hero, heroPlain)
   // no business in the prompt, only the wish to stand out: a headline about the page itself, not a made-up service
   const standOut = ['Made To Be Noticed', 'Not Like The Others', 'Built To Stand Out', 'Ordinary Was Never The Plan', 'Seen Once, Remembered Always', 'Where Bold Ideas Move']
-  const heroTitle = !biz && theme === 'general_business' && asksForBold(userPrompt) ? standOut[Math.floor(rand() * standOut.length)] : biz && bizRand() < 0.65 ? bizTitles[Math.floor(bizRand() * bizTitles.length)] : heroMarkov
+  const heroTitle = !biz && theme === 'general_business' && asksForBold(userPrompt) ? standOut[Math.floor(rand() * standOut.length)] : biz && bizRand() < 0.92 ? bizTitles[Math.floor(bizRand() * bizTitles.length)] : heroMarkov
 
   const heroSubtitlePlain = write(
     [
@@ -280,8 +285,11 @@ export function writeContent(theme: ThemeKey, brand: string, rand: () => number,
     () => { const p = phrase(); return `Your Next Chapter Of ${p.adj} ${p.noun} Starts Here.` },
   ])
 
-  const featureTitle = fresh(markov?.feature, featurePlain)
-  const ctaTitle = fresh(markov?.cta, ctaPlain)
+  // the business is named in the prompt: the headings of the other parts talk about it too, not about "velocity" and "pipelines"
+  const bizFeature = [`What ${Biz} Includes`, `What You Get With ${Biz}`, `${Biz}, In Detail`, `How Our ${Biz} Helps`]
+  const bizCta = [`Ready For Better ${Biz}?`, `Talk To Us About ${Biz}`, `Let's Talk ${Biz}`, `Start With ${Biz} Today`]
+  const featureTitle = biz && bizRand() < 0.9 ? bizFeature[Math.floor(bizRand() * bizFeature.length)] : fresh(markov?.feature, featurePlain)
+  const ctaTitle = biz && bizRand() < 0.9 ? bizCta[Math.floor(bizRand() * bizCta.length)] : fresh(markov?.cta, ctaPlain)
 
   const aboutTitle = write([
     () => `The Story Behind ${brand}`,

@@ -218,14 +218,16 @@ async function specSet(prompt: string, plan: ScenePlan, accent: string | undefin
     { slot: 'hero-1', subject: plan.hero.prompt },
     { slot: 'about', subject: plan.about.prompt },
     ...plan.gallery.slice(0, 4).map((g, i) => ({ slot: `gallery-${i + 1}`, subject: g.prompt })),
-  ]
+    // four more scenes, so that the cards, the steps and the gallery of one page do not repeat the same picture (they are the far end of the gallery list; if one cannot be drawn the page does without it)
+    ...plan.gallery.slice(4, 8).map((g, i) => ({ slot: ['gallery-5', 'gallery-6', 'card-1', 'card-2'][i], subject: g.prompt, extra: true })),
+  ] as { slot: string; subject: string; extra?: boolean }[]
   const results: (string | undefined)[] = new Array(subjects.length)
   let fell = false
   let next = 0
   const worker = async () => {
     while (next < subjects.length && !fell) {
       const i = next++
-      const { slot, subject } = subjects[i]
+      const { slot, subject, extra } = subjects[i]
       const query = new URLSearchParams({ prompt: `${subject}, for a ${niche.label.toLowerCase()} website.${palette}`, slot, seed: String(Math.abs(Math.round(seed)) % 999_999) })
       if (accent && /^#[0-9a-f]{6}$/i.test(accent)) query.set('accent', accent)
       if (bg && /^#[0-9a-f]{6}$/i.test(bg)) query.set('bg', bg)
@@ -236,12 +238,14 @@ async function specSet(prompt: string, plan: ScenePlan, accent: string | undefin
         res = await fetch(`/api/ai-spec?${query}`, { signal: AbortSignal.timeout(100_000) })
       }
       if (!res.ok) {
+        if (extra) continue
         fell = true
         return
       }
       const body = (await res.json()) as { image_base64?: string; mime?: string; report?: { fallback?: boolean; niche?: string | null } }
       // a neutral picture for a business the image AI does not know is not a picture of this business
       if (!body.image_base64 || body.report?.fallback || !body.report?.niche) {
+        if (extra) continue
         fell = true
         return
       }
@@ -249,12 +253,12 @@ async function specSet(prompt: string, plan: ScenePlan, accent: string | undefin
     }
   }
   try {
-    await Promise.all([worker(), worker()])
+    await Promise.all([worker(), worker(), worker()])
   } catch {
     return undefined
   }
-  if (fell || results.some((r) => !r)) return undefined
-  const pictures = results as string[]
+  if (fell || results.slice(0, 6).some((r) => !r)) return undefined
+  const pictures = (results as (string | undefined)[]).filter((r): r is string => !!r)
   return { ops: [{ op: 'photos', hero: pictures[0], about: pictures[1], gallery: pictures.slice(2) }], report: { pictures: pictures.length, redrawn: 0, otherScene: 0, directed: 0, notes: [`pictures for a ${niche.label.toLowerCase()} website from the image AI's spec: the scene of the business, the size of each place, the colours of your site, no text`] } }
 }
 

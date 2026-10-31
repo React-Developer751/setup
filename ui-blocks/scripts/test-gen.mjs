@@ -71,7 +71,7 @@ for (let v = 1; v <= 200; v += 1) {
   if (pick.pickGenHero({ ...base, variation: v })) some += 1
   if (pick.pickGenHero({ ...base, variation: v, level: 'wild' })) wild += 1
 }
-ok(some > 40 && some < 120 && wild > some, `balanced uses it now and then (${some} of 200), wild more often (${wild})`)
+ok(some > 100 && some < 160 && wild > some, `balanced uses it most of the time (${some} of 200), wild more often (${wild})`)
 ok(pick.pickGenHero({ ...base, variation: 5 }) === pick.pickGenHero({ ...base, variation: 5 }), 'a prompt and a variation give the same choice')
 // a page that uses one
 let page
@@ -233,6 +233,37 @@ ok(CL.claimChoices(claim, cafe).some((c) => c.action === 'dismiss') && CL.claimC
 let withForm = 0
 for (let v = 1; v <= 30; v += 1) { const l = generateLibraryPage('law firm website', v * 13, undefined, true, 'auto', undefined, v % 2 === 0); const c = l.sections.find((x) => x.role === 'contact'); if (c && !/^contact\/Contact(?:1|2|3|5|6)$/.test(c.componentId)) withForm += 1 }
 ok(withForm === 30, `every contact part has a form (${withForm} of 30)`)
+// points 6 to 9: the pictures are spread, the headlines are about the business, the colours of a law firm stay professional, the generated parts are the usual
+const FI = await loadGeneratorModule('library/fillContent.ts').catch(() => undefined)
+const FL = await loadGeneratorModule('filter.ts')
+ok(['Invoice software for small businesses, plans 499 rupees', 'Billing software for pharmacies in Pune', 'CRM tool for real estate agents'].every((t, i) => FL.extractContentDetails(t).subject === ['invoice software', 'billing software', 'crm tool'][i]), 'the product in front of "for" is the subject, the customers after it are not')
+let namesProduct = 0
+let buzz = 0
+for (let v = 1; v <= 12; v += 1) {
+  const c = generateLibraryPage('Invoice software for small businesses, plans 499 rupees and 999 rupees per month', v * 11, undefined, true, 'auto', undefined, false).content
+  if (/invoice/i.test(c.hero.title) || /invoice/i.test(c.hero.subtitle)) namesProduct += 1
+  if (/rock-solid|unmatched|next-level|lightning speed|redefine|velocity/i.test(`${c.hero.title} ${c.hero.subtitle} ${c.features.title} ${c.cta.title}`)) buzz += 1
+}
+ok(namesProduct === 12 && buzz === 0, `a software prompt gets headlines about its product and no empty praise (${namesProduct} of 12 name it, ${buzz} buzzwords)`)
+if (FI?.picturesFor) {
+  const photos = { hero: 'H', about: 'A', gallery: ['g0', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7'] }
+  ok(FI.picturesFor('hero', photos)[0] === 'H' && FI.picturesFor('about', photos)[0] === 'A' && FI.picturesFor('gallery', photos).join() === photos.gallery.join(), 'the first screen, the about part and the gallery have their own pictures')
+  ok(FI.picturesFor('features', photos)[0] === 'g4' && FI.picturesFor('blog', photos).slice(0, 4).every((x) => ['g4', 'g5', 'g6', 'g7'].includes(x)), 'the cards and the notes start at the far end of the gallery, not at the pictures the gallery shows first')
+}
+const noOffer = generateLibraryPage('shoe store website', 5, 'premium', true, 'auto', undefined, true).sections.some((x) => x.role === 'banner')
+const withOffer = [1, 2, 3, 4, 5, 6].some((v) => generateLibraryPage('shoe store with free shipping above 999', v, 'premium', true, 'auto', undefined, true).sections.some((x) => x.role === 'banner'))
+ok(!noOffer && withOffer, 'an announcement bar appears only when there is an offer to announce')
+const PL = await loadGeneratorModule('memory/designPlanner.ts')
+const PS = await loadGeneratorModule('memory/designStore.ts')
+const RN = await loadGeneratorModule('random.ts')
+const hueOf = (hex) => { const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255); const mx = Math.max(r, g, b); const mn = Math.min(r, g, b); const d = mx - mn; if (!d) return 0; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return Math.round((h * 60 + 360) % 360) }
+let odd = 0
+for (let i = 0; i < 16; i += 1) {
+  const plan = await PL.planDesign('Sharma & Associates law firm in Delhi', new PS.MemoryStore(), { group: `l${i}`, creativity: 'wild', temperature: 0.6, rand: RN.seededRandom(300 + i) })
+  const a = plan.ops.find((o) => o.op === 'concept')?.data?.light?.accent ?? plan.ops.find((o) => o.op === 'accent')?.hex
+  if (a && hueOf(a) > 250 && hueOf(a) < 345) odd += 1
+}
+ok(odd === 0, `a law firm is never violet or pink, also at a wild creativity (${odd} of 16)`)
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

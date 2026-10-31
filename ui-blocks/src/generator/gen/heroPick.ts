@@ -30,8 +30,8 @@ export type PickInput = {
 export function pickGenHero(i: PickInput): string | undefined {
   if (i.keep || i.level === 'safe' || i.tier === 'normal') return undefined
   const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|genhero|${i.variation}`))
-  const chance = i.level === 'wild' ? 0.7 : 0.4
-  if (rand() >= Math.min(0.95, chance + (i.bold ? 0.3 : 0))) return undefined
+  const chance = i.level === 'wild' ? 0.9 : 0.65
+  if (rand() >= Math.min(0.97, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return specId(randomSpec(rand, mood))
 }
@@ -63,8 +63,8 @@ export async function loadHeroTaste(): Promise<number> {
 export function pickGenFeatures(i: PickInput): string | undefined {
   if (i.keep || i.level === 'safe' || i.tier === 'normal') return undefined
   const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|genfeatures|${i.variation}`))
-  const chance = i.level === 'wild' ? 0.6 : 0.3
-  if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
+  const chance = i.level === 'wild' ? 0.85 : 0.6
+  if (rand() >= Math.min(0.95, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return featuresId(randomFeatures(rand, mood))
 }
@@ -73,19 +73,19 @@ export function pickGenFeatures(i: PickInput): string | undefined {
 export function pickGenCta(i: PickInput): string | undefined {
   if (i.keep || i.level === 'safe' || i.tier === 'normal') return undefined
   const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|gencta|${i.variation}`))
-  const chance = i.level === 'wild' ? 0.6 : 0.3
-  if (rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
+  const chance = i.level === 'wild' ? 0.8 : 0.55
+  if (rand() >= Math.min(0.95, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return ctaId(randomCta(rand, mood))
 }
 
-/** pricing, FAQ, testimonials, gallery: a little less often than the first screen (these parts are the same on many pages and a stored one is fine) */
+/** the other parts (pricing, FAQ, gallery, about, contact, footer, navigation, numbers, steps, notes, announcement): most of the time at a balanced creativity, nearly always at a wild one (the thumbs on the first screens, the services and the closing banner were 95% likes, the stored parts are the fallback) */
 export function pickGenKit(role: string, i: PickInput, force = false): string | undefined {
   const kit = kitOfRole(role)
   if (!kit) return undefined
   if (!force && (i.keep || i.level === 'safe' || i.tier === 'normal')) return undefined
   const rand = seededRandom(hash(`${i.prompt.trim().toLowerCase()}|gen${role}|${i.variation}`))
-  const chance = i.level === 'wild' ? 0.55 : 0.28
+  const chance = i.level === 'wild' ? 0.8 : 0.55
   if (!force && rand() >= Math.min(0.9, chance + (i.bold ? 0.3 : 0))) return undefined
   const mood: HeroMood = i.bold ? 'bold' : i.dark ? 'dark' : (MOOD_OF[archetypeOf(i.theme)] ?? 'any')
   return kit.part.id(kit.part.random(rand, mood) as never)

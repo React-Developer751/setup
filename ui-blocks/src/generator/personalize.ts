@@ -224,12 +224,12 @@ function pricesWritten(text: string): { name: string; amount: number; period?: s
 }
 
 const CARD_TEXT = [
-  '{S}, explained in plain words and done properly the first time.',
-  'Tell us what you need for {s} and we reply with a clear plan.',
-  '{S} handled by people who do this every day.',
-  'Straight answers and fair terms for {s}.',
-  'Ask us about {s}: we tell you honestly what makes sense.',
-  '{S} with clear steps from the first message to the finish.',
+  '{S}: tell us what you need and we reply with a clear plan.',
+  '{S}, explained in plain words before anything starts.',
+  'Ask about {s}: you get a straight answer, not a sales pitch.',
+  'Need {s}? Message us the details and we tell you what it involves.',
+  '{S}: what it includes and how long it takes, told up front.',
+  'Questions about {s}? We explain the options and the next step.',
 ]
 
 /** a feature-card sentence for a service the person listed (no invented claims) */
@@ -267,6 +267,12 @@ export function personalize(content: WebsiteContent, facts: Facts, size: 'compac
   } else if (services.length >= 2) {
     const shown = services.slice(0, 3).map((s, i) => (i === 0 ? upperFirst(lowerFirst(fixAcronyms(s))) : lowerFirst(fixAcronyms(s))))
     const subtitle = `${list(shown)}${audience ? ` for ${audience}` : ''}${place ? ` in ${place}` : ''}.${facts.details?.length ? ` ${upperFirst(list(facts.details.map((d) => lowerFirst(fixAcronyms(d)))))}.` : ''}${perkLine ? ` ${perkLine}` : ''}`
+    if (subtitle.length <= 150) next = { ...next, hero: { ...next.hero, subtitle } }
+  } else if (content.subject && audience && !next.hero.subtitle.toLowerCase().includes(audience.toLowerCase())) {
+    // no pack for this business, no services named, but who it is for ("small businesses") and the plans the person wrote: the line says so
+    const cheapest = prices.length ? [...prices].sort((a, b) => a.amount - b.amount)[0] : undefined
+    const money = cheapest ? ` Plans from ${facts.currency ?? '₹'}${cheapest.amount.toLocaleString(facts.currency === '$' ? 'en-US' : 'en-IN')}${prices.find((x) => x.period)?.period ? ` ${prices.find((x) => x.period)!.period}` : ''}.` : ''
+    const subtitle = `${upperFirst(content.subject)} for ${audience}${place ? ` in ${place}` : ''}.${money}`
     if (subtitle.length <= 150) next = { ...next, hero: { ...next.hero, subtitle } }
   } else if (place && !next.hero.subtitle.includes(place) && next.hero.subtitle.length < 120) {
     next = { ...next, hero: { ...next.hero, subtitle: `${next.hero.subtitle.replace(/[.]?$/, '.')} Serving ${place}.` } }

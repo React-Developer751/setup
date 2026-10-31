@@ -136,6 +136,8 @@ export function generateLibraryPage(
       : ['nav', 'hero', 'about', 'features', 'testimonial', 'cta', 'contact', 'footer', ...(['stats', 'steps', 'pricing', 'gallery', 'team', 'blog', 'links', 'faq', 'banner'] as const).filter((role) => show(role))],
   )
   if (hasOffers) visible.add('banner')
+  // an announcement bar without an offer only repeats the call to action below: not shown
+  else visible.delete('banner')
   // a page of this business must not end too soon: the parts it needs most are added until it has the least its kind of business has (experience.ts)
   if (!multiOn && tier !== 'normal') {
     const need = atLeast(base.themeKey)
@@ -165,7 +167,7 @@ export function generateLibraryPage(
   if (priceNatural) visible.add('pricing')
   if (menuOn && tier !== 'normal') visible.add('pricing')
   if (menuOn) chosen.pricing = 'refkit/RefMenu1'
-  for (const role of ['pricing', 'faq', 'testimonial', 'gallery', 'about', 'contact', 'footer', 'nav'] as const) {
+  for (const role of ['pricing', 'faq', 'testimonial', 'gallery', 'about', 'contact', 'footer', 'nav', 'stats', 'steps', 'blog', 'banner'] as const) {
     const mine = pickGenKit(role, { prompt: userPrompt, variation, level: creativityLevel(), tier, theme: base.themeKey, dark: base.initialMode === 'dark', bold: asksForBold(userPrompt), keep: chosen[role] === 'refkit/RefMenu1' })
     if (mine) chosen[role] = mine
   }

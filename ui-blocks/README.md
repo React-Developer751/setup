@@ -221,6 +221,13 @@ Same helper and registry. `gen/About_…` (picture left/right, centred, columns,
 
 Height and resize edits ("make the hero taller", "hero 900px high") work on generated parts: the wrapper sets `--gp-scale` and `--gp-min`, the parts use them. The design stays the same.
 
+### Variety, pictures, colours, headlines
+
+- **More generated parts.** Numbers (`gen/Stats_…`), steps (`gen/Steps_…`), notes (`gen/Blog_…`) and the announcement bar (`gen/Banner_…`) are generated too (partKit, `registry.ts`, slots `show-stats|steps|blog|banner`). The announcement bar is shown only when the person named an offer (it used to repeat the call to action). At a balanced creativity the generated part is chosen most of the time (first screen 65%, services 60%, closing banner 55%, the other parts 55%; wild 80 to 90%): the thumbs on the first screens, services and banners were 95% likes. Safe creativity and the short page keep the stored parts.
+- **Pictures.** The image AI is asked for 10 scenes per site (first screen, about, gallery 1 to 6, card 1 and 2; the extra four may fail without failing the set). `fillContent.picturesFor` gives each part its own: the gallery takes them in order, the cards and the notes start at the far end, so the same scene is not next to itself.
+- **Colours.** A law firm or a clinic keeps to a narrow band around its hint (`colorBrain.allowedBand`): never violet or pink, also for a bold turn.
+- **Headlines.** The subject of "X software for Y" is X (`filter.ts`), the headlines of the hero, the services and the call to action name that business (`creativeBrain.ts`), the empty praise of the tech lexicon ("Rock-Solid", "Lightning Speed") is gone, and the lines under the headline say who it is for and the plans from the price the person wrote. The card sentences for a service the person named no longer say "handled by people who do this every day".
+
 ### What the person wrote, what the page claims, how people reach them
 
 Found by testing real prompts (see the analysis in the session notes) and fixed:
