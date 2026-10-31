@@ -273,6 +273,12 @@ const packFaq = generateLibraryPage('dental clinic in Pune', 5, undefined, true,
 ok(!packFaq.some((f) => !f.own && /within \d|guarantee|certificate|refund|money[- ]back/i.test(f.a)), 'no FAQ answer of a page promises a time, a guarantee or a refund the person never gave')
 const blogCount = (prompt, multi) => { let n = 0; for (let v = 1; v <= 10; v += 1) if (generateLibraryPage(prompt, v * 7, undefined, true, 'auto', undefined, multi).sections.some((x) => x.role === 'blog')) n += 1; return n }
 ok(blogCount('cafe website in Jaipur', false) === 0 && blogCount('cafe website in Jaipur', true) === 0 && blogCount('cafe website with a blog', true) === 10 && blogCount('cafe website, no blog', true) === 0, 'a blog is on the page only when it was asked for')
+// found by a real prompt: "Gym ... with diet plans" was taken for a dietitian, "plans basic" became a service
+const NI = await loadGeneratorModule('niche/applyNiche.ts')
+const NN = await loadGeneratorModule('niche/niches.ts')
+const nicheOf = (t) => NI.detectNiche(t, NN.NICHES)?.id
+ok(nicheOf('Gym in Pune with personal training and diet plans') === 'gym_fitness_studio' && nicheOf('gym with diet plans') === 'gym_fitness_studio' && nicheOf('dietitian in Pune with gym plans') === 'nutritionist_dietitian' && nicheOf('ngo for stray dogs') === 'animal_welfare', 'the business named first decides the kind of business (a gym with diet plans is a gym; an NGO for dogs is about the dogs)')
+ok(!facts('Gym in Pune with personal training and diet plans, plans: basic 999 rupees, premium 1999 rupees', 'gym').services.some((x) => /^plans?\b/.test(x)), '"plans basic" is not a service')
 console.log(`${pass} passed, ${fail.length} failed`)
 for (const f of [...new Set(fail)].slice(0, 12)) console.log(`  ✗ ${f}`)
 process.exit(fail.length ? 1 : 0)

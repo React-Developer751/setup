@@ -190,12 +190,14 @@ function notAService(item: string, prices: { name: string }[]): boolean {
   if (prices.some((p) => p.name.toLowerCase() === x) && /^(?:basic|standard|premium|pro|plus|starter|business)$/.test(x)) return true
   if (/\b(?:web ?site|landing page|web page|webpage|portfolio site)\b/.test(x)) return true
   if (/\bplans?$/.test(x) && /^(?:gym|membership|monthly|pricing|price|fee|class)\b/.test(x)) return true
+  // "plans basic", "pricing premium": the word for the list and the name of one plan
+  if (/^(?:plans?|pricing|prices?|fees?|rates?)\s+\p{L}+$/u.test(x)) return true
   if (/^(?:rooms?|booking|bookings|online booking|online|app|site)$/.test(x)) return true
   if (/\b(?:view|views|wifi|wi-fi|parking|ac rooms?)$/.test(x) && x.split(' ').length <= 3) return true
   return false
 }
 
-const PROMISE = /\b\d+\s*(?:hours?|hrs?|days?|minutes?|mins?|weeks?|months?|years?|%)|\bwithin\b|same[- ]day|next[- ]day|24\s*\/?\s*7|guarantee[sd]?|certificat\w*|refund\w*|money[- ]back|\bfree\b|no (?:extra |hidden )?(?:charge|cost|fee)s?|cashless|insur\w*|warrant\w*|\balways\b|\bnever\b|\bevery\b|licensed|certified|accredited|award\w*|\busually\b|\btypically\b|\bwe (?:answer|reply|respond)\b|₹|\$|\brupees?\b|\bdeposit\b|\bcancel\w*/i
+const PROMISE = /\b\d+\s*(?:hours?|hrs?|days?|minutes?|mins?|weeks?|months?|years?|%)|\bwithin\b|same[- ]day|next[- ]day|24\s*\/?\s*7|guarantee[sd]?|certificat\w*|refund\w*|money[- ]back|\bfree\b|no (?:extra |hidden )?(?:charge|cost|fee)s?|cashless|insur\w*|warrant\w*|\balways\b|licensed|certified|accredited|award\w*|\bwe (?:answer|reply|respond)\b|₹|\$|\brupees?\b|\bdeposit\b|\bcancel\w*/i
 const DEFER = ['Please message us with the details and we will confirm this for your case.', 'This depends on your case: send us a message and we will tell you exactly.', 'Ask us directly: we answer this person by person, so you get the right answer for you.']
 /**
  * The answers of a text pack that promise something specific (a time, a guarantee, a certificate, "free", a refund) are claims nobody made: the question stays and the answer sends the visitor to a message.
@@ -213,7 +215,7 @@ const DEFAULT_PLAN_NAMES: Record<number, string[]> = { 2: ['Basic', 'Pro'], 3: [
 function pricesWritten(text: string): { name: string; amount: number; period?: string }[] {
   const money = /₹|\brupees?\b|\brs\.?(?=\s*\d|\s*$|\s*,)|\binr\b|\$|£|€|\bdollars?\b|\bpounds?\b|\beuros?\b|\/-/i
   const out: { name: string; amount: number; period?: string }[] = []
-  for (const seg of text.split(/\s*(?:,|;|\n|\band\b|\baur\b)\s*/i)) {
+  for (const seg of text.split(/\s*(?:,|;|\n|\.\s+|\band\b|\baur\b)\s*/i)) {
     if (!money.test(seg) && !(out.length && /^[^\d]{2,40}\s+\d{3,6}$/.test(seg.trim()))) continue
     if (/(?<![\p{L}])(?:above|over|under|below|minimum|min|off|discount|returns?|days?|years?|since|shipping|delivery|trial|call|phone|whatsapp|open)(?![\p{L}])/iu.test(seg)) continue
     const m = seg.match(/^(?:.*?(?:pricing|prices?|plans?|rates?|packages?|price list)\s*[:\-]\s*)?([^\d₹$£€:]{0,40}?)\s*(?:@|:|=|-|\b(?:at|for|is)\b)?\s*(?:rs\.?\s*|₹\s*|inr\s*|\$\s*|£\s*|€\s*)?(\d[\d,]{2,7})\s*(?:rupees?|rs\.?|inr|only|dollars?|pounds?|euros?|\/-)?\s*(?:\/\s*(\p{L}+)|per\s+(\p{L}+))?\s*$/iu)

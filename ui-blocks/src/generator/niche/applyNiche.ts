@@ -38,14 +38,19 @@ export function detectNiche(prompt: string, niches: Niche[]): Niche | undefined 
   return ownDetection(prompt, niches) ?? niches.find((n) => n.id === nicheHint(prompt))
 }
 
+/** words that name a kind of place or organisation, not what it does ("ngo for stray dogs" is about the dogs): they get no extra weight for standing first */
+const GENERIC_HEAD = new Set(['ngo', 'shop', 'store', 'clinic', 'agency', 'company', 'centre', 'center', 'school', 'institute', 'hospital', 'business', 'service', 'services', 'firm', 'trust', 'foundation', 'charity', 'studio', 'academy', 'classes', 'online store', 'online shop'])
+
 function ownDetection(prompt: string, niches: Niche[]): Niche | undefined {
   const described = prompt.replace(/(?<![\p{L}])(?:called|named|naam)(?![\p{L}])[\s\S]*$/iu, ' ')
   let best: { niche: Niche; score: number } | undefined
   for (const text of described.trim() ? [described, prompt] : [prompt]) {
+    // the business is named first ("Gym in Pune with personal training and diet plans" is a gym, not a dietitian): what comes before "with / for / in / ," counts more than what the business offers
+    const head = text.split(/(?<![\p{L}])(?:with|for|in|at|offering|selling|including|providing|that|which)(?![\p{L}])|[,.;:]/iu)[0] ?? ''
     for (const niche of niches) {
       let score = 0
       regexesOf(niche).forEach((re, i) => {
-        if (re.test(text)) score += 4 + niche.keywords[i].length
+        if (re.test(text)) score += 4 + niche.keywords[i].length + (head.trim().length > 2 && !GENERIC_HEAD.has(niche.keywords[i].toLowerCase()) && re.test(head) ? 20 : 0)
       })
       if (score > (best?.score ?? 0)) best = { niche, score }
     }

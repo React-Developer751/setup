@@ -221,6 +221,15 @@ Same helper and registry. `gen/About_…` (picture left/right, centred, columns,
 
 Height and resize edits ("make the hero taller", "hero 900px high") work on generated parts: the wrapper sets `--gp-scale` and `--gp-min`, the parts use them. The design stays the same.
 
+### What the page may say without the person's word
+
+- **Pricing.** Plans made from the prices the person wrote carry no perks (nobody wrote them). Prices nobody wrote show one card, "Get a quote" / "Ask for price", not the pack's guesses of plans.
+- **FAQ.** An answer of a text pack that promises something specific (a time, a guarantee, a certificate, "free", a refund, a price) is replaced by "message us"; the question stays. Answers made from the person's own words (`own: true`) stay (`personalize.safeFaq`).
+- **Blog.** A blog has no articles behind it, so it is on the page only when the person asked ("with a blog", "add a blog"); "no blog" wins.
+- **Name.** When the prompt gave no name the generator makes one up. Download, project export and publishing wait (Tools, Project) until the person writes theirs or presses "Keep"; the chat form asks too.
+- **Photos.** The image AI draws illustrations, not photographs. The chat form after a new site takes the person's own photos (first = main picture, second = About, the rest the gallery) and they replace the drawn ones.
+- **Kind of business.** The business named first decides it ("Gym in Pune with personal training and diet plans" is a gym, not a dietitian; "NGO for stray dogs" is about the dogs): `niche/applyNiche.ts`.
+
 ### Variety, pictures, colours, headlines
 
 - **More generated parts.** Numbers (`gen/Stats_…`), steps (`gen/Steps_…`), notes (`gen/Blog_…`) and the announcement bar (`gen/Banner_…`) are generated too (partKit, `registry.ts`, slots `show-stats|steps|blog|banner`). The announcement bar is shown only when the person named an offer (it used to repeat the call to action). At a balanced creativity the generated part is chosen most of the time (first screen 65%, services 60%, closing banner 55%, the other parts 55%; wild 80 to 90%): the thumbs on the first screens, services and banners were 95% likes. Safe creativity and the short page keep the stored parts.

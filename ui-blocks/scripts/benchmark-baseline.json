@@ -1,26 +1,26 @@
 {
  "summary": {
-  "average": 98.4,
+  "average": 98.6,
   "byKind": {
-   "niche": 98.4,
+   "niche": 98.2,
    "hinglish": 99,
    "vague": 98.3,
-   "long": 97.9,
+   "long": 99.3,
    "short": 97.2,
-   "edge": 98.9
+   "edge": 100
   },
-  "distinctPalettes": 40,
+  "distinctPalettes": 39,
   "distinctHeadlines": 86,
-  "distinctConcepts": 43,
+  "distinctConcepts": 45,
   "worst": [
-   "86 Luxury boutique hotel in Udaipur with lake view ro [theme]",
    "86 lawyer [headline,relevant]",
    "89 website banao [original]",
-   "89 bakry website for my shop [original]",
    "93 bakery website for eggless cakes in Pune [headline]",
+   "93 hospital website with departments and doctors [features]",
    "93 law firm website [headline]",
    "93 NGO website for girl education [headline]",
-   "93 pet shop and grooming website [headline]"
+   "93 pet shop and grooming website [headline]",
+   "93 kids toy store website [headline]"
   ]
  },
  "scores": {
@@ -30,7 +30,7 @@
   "gym website with personal training and a free trial": 100,
   "yoga studio website in Rishikesh": 100,
   "dental clinic website in Delhi": 100,
-  "hospital website with departments and doctors": 100,
+  "hospital website with departments and doctors": 93,
   "law firm website": 93,
   "chartered accountant website": 100,
   "coaching institute for UPSC and NEET in Kota": 98,
@@ -103,7 +103,7 @@
   "Gym called Iron Pulse in Gurgaon with strength training, zumba, personal trainers, diet plans and membership pricing": 100,
   "Coaching institute for class 10 and 12 maths and science in Kota with test series, doubt sessions and a demo class": 100,
   "Architecture firm called Studio North with residential and commercial projects, a portfolio and a team page": 100,
-  "Luxury boutique hotel in Udaipur with lake view rooms, a spa, a restaurant and wedding venues": 86,
+  "Luxury boutique hotel in Udaipur with lake view rooms, a spa, a restaurant and wedding venues": 100,
   "cafe": 100,
   "gym": 100,
   "lawyer": 86,
@@ -118,7 +118,7 @@
   "dentsit website": 100,
   "resturant website banao": 100,
   "gyym ki website": 100,
-  "bakry website for my shop": 89,
+  "bakry website for my shop": 100,
   "tea stall": 100,
   "paan shop website": 100,
   "tailor shop website": 100,
